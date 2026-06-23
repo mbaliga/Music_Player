@@ -29,9 +29,15 @@ file** to scrub real material.
 ## Get a sideloadable APK
 
 A Capacitor wrapper + a GitHub Actions workflow (`.github/workflows/android.yml`)
-build a debug APK on every push. Grab it from the run's **Artifacts**
-(`runout-debug-apk`) — or trigger it manually via *Actions → Android APK → Run
-workflow* — then `adb install app-debug.apk` (or open it on the phone).
+build a debug APK on every push and publish it two ways:
+
+- **Release asset (easiest — tap to install on the phone):**
+  <https://github.com/mbaliga/Music_Player/releases/download/v0-latest/app-debug.apk>
+  Direct `.apk`, no login, no zip. Updated on every push.
+- **Actions artifact:** the run's **Artifacts → `runout-debug-apk`** (downloads
+  as a `.zip` you must unpack first; requires being logged in).
+
+Then `adb install app-debug.apk`, or just open the `.apk` on the phone.
 
 > The APK runs the web build inside the system **WebView**. That uses the
 > web-Android audio output path the spec flags as the latency weak point, and

@@ -16,6 +16,9 @@ on:
     branches: ["main", "claude/**"]
   workflow_dispatch:
 
+permissions:
+  contents: write # needed to publish the APK to a Release
+
 jobs:
   build-apk:
     runs-on: ubuntu-latest
@@ -55,3 +58,19 @@ jobs:
           name: runout-debug-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
+
+      # Publish the same APK as a Release asset so it has a stable, tap-to-install
+      # URL on the phone (no login, no .zip to unpack like an Actions artifact):
+      #   https://github.com/mbaliga/Music_Player/releases/download/v0-latest/app-debug.apk
+      - name: Publish APK to the rolling v0 release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v0-latest
+          name: Runout v0 — latest debug APK
+          prerelease: true
+          body: >
+            Auto-built debug APK from the latest push on this branch. This is the
+            v0 web build wrapped in a Capacitor WebView (postMessage fallback, not
+            native Oboe — see README §3). Install: download app-debug.apk and open
+            it on the phone, or `adb install app-debug.apk`.
+          files: android/app/build/outputs/apk/debug/app-debug.apk
