@@ -89,7 +89,14 @@ async function loadTrack(track) {
 function sizeCanvas() {
   const dpr = window.devicePixelRatio || 1;
   const wrap = canvas.parentElement;
-  const css = Math.min(wrap.clientWidth, window.innerHeight * 0.7);
+  // On mobile (single-col) wrap.clientHeight is 0 because the row is auto-sized;
+  // fall back to viewport fractions. On desktop it's the actual stage height.
+  const stageH = wrap.clientHeight > 10 ? wrap.clientHeight : window.innerHeight;
+  const css = Math.min(
+    wrap.clientWidth,
+    stageH,
+    window.innerHeight * 0.62,
+  );
   canvas.style.width = css + 'px';
   canvas.style.height = css + 'px';
   canvas.width = Math.round(css * dpr);

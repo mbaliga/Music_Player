@@ -23,17 +23,30 @@
     color: var(--ink);
     font: 14px/1.5 ui-sans-serif, system-ui, -apple-system, sans-serif;
     -webkit-user-select: none; user-select: none;
-    touch-action: none; overscroll-behavior: none;
+    overscroll-behavior: none;
   }
   .app {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 320px;
     gap: 20px; height: 100%; padding: 20px;
+    overflow: hidden;
   }
+  /* Mobile: stack disc above panel, both naturally sized, page scrolls */
   @media (max-width: 820px) {
-    .app { grid-template-columns: 1fr; grid-template-rows: minmax(0,1fr) auto; overflow:auto; }
+    html, body { height: auto; overflow-y: auto; }
+    .app {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto auto;
+      height: auto;
+      min-height: 100svh;
+      overflow: visible;
+      padding: 16px;
+      gap: 16px;
+    }
+    .stage { overflow: visible; }
+    .panel { max-height: none; }
   }
-  .stage { display: grid; place-items: center; min-height: 0; }
+  .stage { display: grid; place-items: center; min-height: 0; overflow: hidden; }
   #disc {
     touch-action: none; cursor: grab;
     filter: drop-shadow(0 24px 48px rgba(0,0,0,.6));
@@ -46,7 +59,10 @@
     border: 1px solid #23232e;
     border-radius: var(--rx);
     padding: 16px; display: flex; flex-direction: column; gap: 16px;
-    overflow: auto;
+    overflow-y: auto;
+    min-width: 0;
+    touch-action: pan-y; /* allow scroll within the panel on mobile */
+    -webkit-overflow-scrolling: touch;
   }
   h1 { font-size: 15px; margin: 0; letter-spacing: .08em; text-transform: uppercase; color: var(--dim); font-weight: 600; }
   h1 b { color: var(--violet); }
@@ -71,7 +87,9 @@
   }
   .brake.active { background: var(--violet); color: #0c0c10; border-color: var(--violet); }
 
-  .stat { display: flex; justify-content: space-between; font-variant-numeric: tabular-nums; }
+  .stat { display: flex; justify-content: space-between; gap: 8px; font-variant-numeric: tabular-nums; min-width: 0; }
+  .stat .dim { flex-shrink: 0; }
+  .stat b, .stat span:last-child { color: var(--violet); text-align: right; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .stat b { color: var(--violet); }
 
   .knob { display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; align-items: center; }
