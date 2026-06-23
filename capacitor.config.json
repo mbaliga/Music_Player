@@ -1,0 +1,8 @@
+{
+  "appId": "com.runout.app",
+  "appName": "Runout",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": false
+  }
+}

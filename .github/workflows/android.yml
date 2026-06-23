@@ -1,0 +1,57 @@
+name: Android APK
+
+# Builds a sideloadable debug APK of the Runout web app wrapped in Capacitor.
+# This container has no Android SDK, so the build runs here, where the
+# GitHub-hosted runner already ships the SDK + build-tools. The APK lands as a
+# downloadable artifact on every push (and on-demand via "Run workflow").
+#
+# Caveat (spec §3): a Capacitor APK runs the web build inside the system
+# WebView, which uses the web-Android audio output path the spec flags as the
+# latency weak point — and cross-origin isolation headers aren't sent for the
+# local scheme, so SharedArrayBuffer is unavailable and the engine takes its
+# postMessage fallback. This measures *wrapped-web* feel, not native Oboe.
+
+on:
+  push:
+    branches: ["main", "claude/**"]
+  workflow_dispatch:
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Stage web app into www/
+        run: npm run build:web
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Add Android platform
+        run: npx --no-install cap add android
+
+      - name: Sync web assets into the Android project
+        run: npx --no-install cap sync android
+
+      - name: Build debug APK
+        run: |
+          cd android
+          chmod +x ./gradlew
+          ./gradlew assembleDebug --stacktrace
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: runout-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error

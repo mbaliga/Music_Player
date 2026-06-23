@@ -26,6 +26,22 @@ bundled) built with sharp transients and a quiet→loud→breakdown dynamic arc,
 the groove banding visibly shows the music's shape. **Drop in any local audio
 file** to scrub real material.
 
+## Get a sideloadable APK
+
+A Capacitor wrapper + a GitHub Actions workflow (`.github/workflows/android.yml`)
+build a debug APK on every push. Grab it from the run's **Artifacts**
+(`runout-debug-apk`) — or trigger it manually via *Actions → Android APK → Run
+workflow* — then `adb install app-debug.apk` (or open it on the phone).
+
+> The APK runs the web build inside the system **WebView**. That uses the
+> web-Android audio output path the spec flags as the latency weak point, and
+> cross-origin isolation headers aren't sent for the local scheme, so
+> `SharedArrayBuffer` is unavailable and the engine takes its `postMessage`
+> fallback. It's a real installable app, but it measures *wrapped-web* feel —
+> **not** native Oboe. For the truest web read of the §3 gate, prefer
+> `adb reverse tcp:8000 tcp:8000` + `serve.py` over `localhost` (a secure
+> context, so SAB stays on).
+
 ## Gestures (spec §5)
 
 | Gesture | How | What you hear |
