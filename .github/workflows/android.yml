@@ -32,6 +32,12 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      # Correctness gate for the pure model layer (radius↔time inversion,
+      # platter physics, envelope DSP). Fast, dependency-free; fails the build
+      # before we bother wrapping an APK around a broken model.
+      - name: Test the model layer
+        run: npm test
+
       - name: Stage web app into www/
         run: npm run build:web
 

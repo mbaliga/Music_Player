@@ -112,13 +112,20 @@ function rebake() {
 
 // ── the frame loop ─────────────────────────────────────────────────────────
 function loop(now) {
-  const dt = state.lastFrameTime ? Math.min(0.05, (now - state.lastFrameTime) / 1000) : 0.016;
+  // Floor dt as well as cap it: on a 120 Hz panel (or when two rAF timestamps
+  // land sub-millisecond apart) an un-floored dt makes angleDelta/dt explode —
+  // and at dt≈0 it's Infinity/NaN, which would become the kinematic ω and
+  // poison the audio rate. 1 ms floor keeps the scrub velocity finite.
+  const dt = state.lastFrameTime ? clamp((now - state.lastFrameTime) / 1000, 0.001, 0.05) : 0.016;
   state.lastFrameTime = now;
 
   // 1. Resolve finger angular velocity (scrub) from the current pointer angle.
   if (state.touchingPlatter && dt > 0) {
     const ang = pointerAngle();
-    state.fingerOmega = angleDelta(state.prevFingerAngle, ang) / dt;
+    // Clamp to a sane hand-scrub range so a single jumpy frame can't fling the
+    // platter (or feed a NaN into the rate). ±40 rad/s ≈ 380 rpm — well past any
+    // real backspin, so legitimate scrubs are untouched.
+    state.fingerOmega = clamp(angleDelta(state.prevFingerAngle, ang) / dt, -40, 40);
     state.prevFingerAngle = ang;
   }
 

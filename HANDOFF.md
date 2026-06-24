@@ -42,6 +42,16 @@ APK (latest): https://github.com/mbaliga/Music_Player/releases/download/v0-lates
 
 The screenshot showed **12 ms estimated output latency ("on the sound ✓")** on the RedMagic WebView. That beats the 30 ms target. **However:** that's the browser's self-reported estimate, not a true end-to-end touch-to-sound measurement (which needs a loopback mic). Treat it as a green signal but confirm by feel on-device before closing the gate.
 
+### Tests & hardening (automated, this round)
+
+The pure model layer now has a committed, dependency-free test suite (`test/model.test.mjs`, run with `npm test` — uses only `node:test`). It is wired into CI **before** the APK build, so a broken model fails the build rather than shipping. 22 checks cover radius↔time inversion exactness, the RPM↔rate transform (1× at reference, 1.35× at 45, true −1× reverse), platter spin-up/brake/coast, envelope normalization, and the angle-wrap helper.
+
+Three correctness fixes fell out of that work and a source review:
+
+1. **Steady-state speed was ~6% slow (the record played flat).** With proportional-only motor control, ω settled where motor pull balanced friction — `ω_ss = target·k/(k+c)` ≈ 0.9375× at the default knobs, ~1.1 semitones flat. Worse, the offset depended on `k`, so dialing the motor knob on-device would have *detuned playback*. Fixed in `model.js:stepPlatter` with a direct-drive-style friction feed-forward (`+c·motorTarget`) so steady-state ω locks to nominal regardless of the knobs — the brake still wins (its target is 0). This makes the on-device knob-dialing clean: `k` now changes spin-up snappiness without touching pitch.
+2. **Scrub could fling / NaN on a high-refresh panel.** `main.js` capped frame `dt` on the high side but never floored it; a sub-millisecond frame made `angleDelta/dt` explode (Infinity/NaN → poisoned audio rate). Now `dt` is clamped to `[1 ms, 50 ms]` and finger ω is bounded to ±40 rad/s (≈380 rpm, past any real backspin).
+3. **SAB capability over-claimed.** `audio-engine.js` treated `crossOriginIsolated === undefined` as SAB-capable, which could hand the worklet a buffer it can't share (presents as silence). Now requires `=== true`; the WebView/`file://` path degrades cleanly to postMessage as intended.
+
 ---
 
 ## What's pending
@@ -66,6 +76,7 @@ These are the remaining items before the v0 gate is officially passed:
 - [ ] **Hyle WebGL/AGSL material pass (§6).** The canvas2D renderer validates feel; the real glass + ferrofluid materials come in the WebGL pass. This is the visual upgrade that makes it feel like the spec's Hyle language.
 - [ ] **Persistence beyond wear counter.** Last position per track, per-track atmosphere settings.
 - [ ] **Wear surfaces.** Play count → crackle density + patina material (already scaffolded: `dust` param in `drawFrame`, `playCount` in localStorage).
+- [ ] **Harden the seek handshake with `Atomics`.** The seek control channel writes `C_SEEK_POS` then bumps `C_SEEK_GEN` as two plain Float64 stores; the worklet reads them in the opposite order. The write/read ordering is correct, but without `Atomics` release/acquire there's no formal barrier, so a CPU/JIT reorder could (very rarely) let the worklet see a new generation with a stale position — one occasional tonearm seek landing wrong, self-corrected by re-seeking. Negligible for v0; the proper fix needs an `Int32Array` view for the gen/ack counters (Float64 can't take `Atomics`), so it was deferred rather than redesign the control channel mid-v0.
 
 ### v2 — depth + port
 

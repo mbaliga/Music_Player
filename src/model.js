@@ -83,7 +83,14 @@ export function stepPlatter(state, input, dt, params = DEFAULT_PARAMS) {
     // against it (target → 0) rather than fighting the brake, so ω decays to a
     // true stop and then winds back up on release.
     const motorTarget = input.braking ? 0 : input.omegaTarget;
-    const motor = params.k * (motorTarget - omega);
+    // Direct-drive servo: a proportional pull toward target PLUS feed-forward
+    // compensation for the bearing friction it must hold against. Without the
+    // feed-forward term, steady state settles where motor pull equals friction
+    // drag — ω_ss = target·k/(k+c), i.e. ~6% slow at the default knobs, so the
+    // record plays flat and the `k` knob would detune pitch as a side effect.
+    // The +c·motorTarget term cancels friction at ω = target, locking nominal
+    // speed (and reducing to pure damping when motorTarget → 0 under the brake).
+    const motor = params.k * (motorTarget - omega) + params.c * motorTarget;
     const friction = -params.c * omega;
     const brake = input.braking ? -params.brakeDamp * omega : 0;
     const torque = motor + friction + brake;

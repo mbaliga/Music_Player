@@ -33,8 +33,11 @@ export class AudioEngine {
   }
 
   get isSharedMemory() {
-    return typeof SharedArrayBuffer !== 'undefined' &&
-           (self.crossOriginIsolated === undefined || self.crossOriginIsolated);
+    // Require confirmed cross-origin isolation. A defined-but-false value (the
+    // APK WebView / file:// case) must fall back to postMessage; treating an
+    // *undefined* value as "capable" risks handing the worklet a SAB it can't
+    // actually share — which presents as silence, not a clean degrade.
+    return typeof SharedArrayBuffer !== 'undefined' && self.crossOriginIsolated === true;
   }
 
   async init() {

@@ -2,9 +2,11 @@
   "name": "runout",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
   "description": "Runout — tactile vinyl listening instrument (v0)",
   "scripts": {
     "build:web": "node scripts/build-web.mjs",
+    "test": "node --test",
     "cap:sync": "cap sync android"
   },
   "dependencies": {

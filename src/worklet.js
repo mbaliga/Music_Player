@@ -104,7 +104,8 @@ class RunoutProcessor extends AudioWorkletProcessor {
     if (this.control) {
       this.control[C_READ_POS] = this.readPosition;
     } else {
-      // Throttle the fallback report to ~every 256 blocks to limit messaging.
+      // Throttle the fallback position report to every 4th block (~10 ms at a
+      // 128-frame quantum) — smooth enough for the needle, light on messaging.
       if ((this._posReportCounter++ & 0x3) === 0) {
         this.port.postMessage({ type: 'pos', value: this.readPosition });
       }
