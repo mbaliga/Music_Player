@@ -18,6 +18,8 @@ import {
   DEFAULT_PARAMS,
 } from './model.js';
 import { bakeGroove, drawFrame, makeGeometry } from './render.js';
+import { Walkthrough } from './walkthrough.js';
+import { LibraryManager, GridView } from './library.js';
 
 // The track is mastered for one fixed reference speed. The needle plays it
 // correctly at this RPM (rate = 1). Moving the speed dial above/below it shifts
@@ -64,6 +66,8 @@ async function boot() {
   window.addEventListener('resize', sizeCanvas);
   installInput();
   installControls();
+  installToolbar();
+  installLibrary();
   requestAnimationFrame(loop);
   updateLatencyReadout();
 }
@@ -294,6 +298,9 @@ function setRpm(rpm) {
   state.rpm = rpm;
   el('rpmSlider').value = String(rpm);
   el('rpmReadout').textContent = rpm.toFixed(1).replace(/\.0$/, '');
+  document.querySelectorAll('[data-rpm]').forEach((b) => {
+    b.classList.toggle('active', Math.abs(Number(b.dataset.rpm) - rpm) < 0.01);
+  });
 }
 
 function bindKnob(id, key) {
@@ -325,6 +332,94 @@ function updateHud(rate, t) {
   el('rate').textContent = rate.toFixed(2) + '×';
   el('pos').textContent = `${t.toFixed(1)} / ${state.T.toFixed(1)} s`;
   el('wear').textContent = `${state.playCount} plays`;
+}
+
+// ── Toolbar: walkthrough, mode, theme ────────────────────────────────────────
+function installToolbar() {
+  const root = document.documentElement;
+  const walkthrough = new Walkthrough();
+
+  // Show walkthrough on first run.
+  walkthrough.showIfFirstRun();
+  el('btnWalkthrough').addEventListener('click', () => walkthrough.show(0));
+
+  // Audiophile / Casual mode toggle.
+  const btnMode = el('btnMode');
+  let mode = 'casual';
+  btnMode.addEventListener('click', () => {
+    mode = mode === 'casual' ? 'audiophile' : 'casual';
+    root.dataset.mode = mode;
+    btnMode.textContent = mode === 'audiophile' ? '♦' : '◦';
+    btnMode.classList.toggle('active', mode === 'audiophile');
+  });
+
+  // Light / dark theme toggle. Persist choice.
+  const btnTheme = el('btnTheme');
+  const applyTheme = (t) => {
+    root.dataset.theme = t;
+    btnTheme.textContent = t === 'dark' ? '☾' : '☀';
+    localStorage.setItem('runout.theme', t);
+  };
+  const savedTheme = localStorage.getItem('runout.theme') || 'dark';
+  applyTheme(savedTheme);
+  btnTheme.addEventListener('click', () => {
+    applyTheme(root.dataset.theme === 'dark' ? 'light' : 'dark');
+  });
+
+  // Library open.
+  el('btnLibrary').addEventListener('click', () => el('libOverlay').classList.remove('hidden'));
+}
+
+// ── Library overlay ───────────────────────────────────────────────────────────
+function installLibrary() {
+  const library = new LibraryManager();
+  const gridEl  = el('albumGrid');
+  const emptyEl = el('libEmpty');
+  const scanBtn = el('libScan');
+  const progressEl = document.createElement('div');
+  progressEl.className = 'lib-progress';
+  progressEl.style.display = 'none';
+  el('libGridWrap').insertBefore(progressEl, gridEl);
+
+  const grid = new GridView(gridEl, library, async (file) => {
+    el('libOverlay').classList.add('hidden');
+    await state.engine.resume();
+    const track = await loadFile(file, state.engine.ctx);
+    await loadTrack(track);
+  });
+
+  el('libClose').addEventListener('click', () => el('libOverlay').classList.add('hidden'));
+
+  scanBtn.addEventListener('click', async () => {
+    scanBtn.disabled = true;
+    scanBtn.textContent = 'Scanning…';
+    progressEl.style.display = 'block';
+    progressEl.textContent = 'Starting…';
+
+    await library.scan((done, total) => {
+      progressEl.textContent = `${done} / ${total} files…`;
+    });
+
+    scanBtn.disabled = false;
+    scanBtn.textContent = 'Scan music folder…';
+    progressEl.style.display = 'none';
+
+    emptyEl.classList.add('hidden');
+    gridEl.classList.remove('hidden');
+    grid.render();
+  });
+
+  el('sortChips').addEventListener('click', (e) => {
+    const chip = e.target.closest('[data-sort]');
+    if (!chip) return;
+    el('sortChips').querySelectorAll('.sort-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    grid.setSort(chip.dataset.sort);
+    if (!library.isEmpty) {
+      emptyEl.classList.add('hidden');
+      gridEl.classList.remove('hidden');
+    }
+  });
 }
 
 boot().catch((err) => {
