@@ -366,15 +366,13 @@ function installToolbar() {
     applyTheme(root.dataset.theme === 'dark' ? 'light' : 'dark');
   });
 
-  // Library open.
-  el('btnLibrary').addEventListener('click', () => el('libOverlay').classList.remove('hidden'));
+  // (Library open is wired in installLibrary so it can refresh the grid.)
 }
 
 // ── Library overlay ───────────────────────────────────────────────────────────
 function installLibrary() {
   const library = new LibraryManager();
   const gridEl  = el('albumGrid');
-  const emptyEl = el('libEmpty');
   const scanBtn = el('libScan');
   const progressEl = document.createElement('div');
   progressEl.className = 'lib-progress';
@@ -388,6 +386,14 @@ function installLibrary() {
     await loadTrack(track);
   });
 
+  // The grid always renders (placeholder-backfilled) — show it from the start.
+  gridEl.classList.remove('hidden');
+  grid.render();
+
+  el('btnLibrary').addEventListener('click', () => {
+    el('libOverlay').classList.remove('hidden');
+    grid.render(); // refresh in case albums changed
+  });
   el('libClose').addEventListener('click', () => el('libOverlay').classList.add('hidden'));
 
   scanBtn.addEventListener('click', async () => {
@@ -398,14 +404,12 @@ function installLibrary() {
 
     await library.scan((done, total) => {
       progressEl.textContent = `${done} / ${total} files…`;
+      grid.render(); // live-fill the grid as albums come in
     });
 
     scanBtn.disabled = false;
     scanBtn.textContent = 'Scan music folder…';
     progressEl.style.display = 'none';
-
-    emptyEl.classList.add('hidden');
-    gridEl.classList.remove('hidden');
     grid.render();
   });
 
@@ -415,10 +419,6 @@ function installLibrary() {
     el('sortChips').querySelectorAll('.sort-chip').forEach(c => c.classList.remove('active'));
     chip.classList.add('active');
     grid.setSort(chip.dataset.sort);
-    if (!library.isEmpty) {
-      emptyEl.classList.add('hidden');
-      gridEl.classList.remove('hidden');
-    }
   });
 }
 

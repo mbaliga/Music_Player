@@ -400,45 +400,73 @@ export class GridView {
 
   setSort(sort) { this._sort = sort; this.render(); }
 
+  // The grid ALWAYS renders. Real albums come first; if there are fewer than
+  // MIN_CELLS, the remainder backfills with non-interactive placeholder cards so
+  // the layout, pinch-zoom, and colour rhythm are visible before/without a scan.
   render() {
+    const MIN_CELLS = 18;
     const albums = this._lib.albums(this._sort);
     this._container.innerHTML = '';
     this._container.style.setProperty('--cell', this._cellSize + 'px');
 
-    if (!albums.length) {
-      this._container.innerHTML = '<div class="grid-empty">No music yet — tap "Scan" to add albums.</div>';
-      return;
-    }
-
     for (const alb of albums) {
-      const card = document.createElement('div');
-      card.className = 'alb-card';
-      card.style.setProperty('--alb-color', alb.color);
-
-      const art = document.createElement('div');
-      art.className = 'alb-art';
-      if (alb.coverUrl) {
-        const img = document.createElement('img');
-        img.src = alb.coverUrl;
-        img.alt = alb.album;
-        img.loading = 'lazy';
-        art.appendChild(img);
-      }
-
-      const info = document.createElement('div');
-      info.className = 'alb-info';
-      info.innerHTML = `
-        <div class="alb-name">${esc(alb.album)}</div>
-        <div class="alb-artist">${esc(alb.artist)}</div>`;
-
-      card.appendChild(art);
-      card.appendChild(info);
-      card.addEventListener('click', () => {
-        const first = alb.tracks[0];
-        if (first) this._onSelect(first.file, alb.album, alb.artist);
-      });
-      this._container.appendChild(card);
+      this._container.appendChild(this._albumCard(alb));
     }
+
+    // Backfill with placeholders up to MIN_CELLS (keeps the grid populated even
+    // with zero or only a handful of real albums).
+    for (let i = albums.length; i < MIN_CELLS; i++) {
+      this._container.appendChild(this._placeholderCard(i));
+    }
+  }
+
+  _albumCard(alb) {
+    const card = document.createElement('div');
+    card.className = 'alb-card';
+    card.style.setProperty('--alb-color', alb.color);
+
+    const art = document.createElement('div');
+    art.className = 'alb-art';
+    if (alb.coverUrl) {
+      const img = document.createElement('img');
+      img.src = alb.coverUrl;
+      img.alt = alb.album;
+      img.loading = 'lazy';
+      art.appendChild(img);
+    }
+
+    const info = document.createElement('div');
+    info.className = 'alb-info';
+    info.innerHTML = `
+      <div class="alb-name">${esc(alb.album)}</div>
+      <div class="alb-artist">${esc(alb.artist)}</div>`;
+
+    card.appendChild(art);
+    card.appendChild(info);
+    card.addEventListener('click', () => {
+      const first = alb.tracks[0];
+      if (first) this._onSelect(first.file, alb.album, alb.artist);
+    });
+    return card;
+  }
+
+  _placeholderCard(i) {
+    const card = document.createElement('div');
+    card.className = 'alb-card alb-placeholder';
+    card.style.setProperty('--alb-color', hueToHex((i * 47) % 360));
+
+    const art = document.createElement('div');
+    art.className = 'alb-art';
+
+    const info = document.createElement('div');
+    info.className = 'alb-info';
+    info.innerHTML = `
+      <div class="alb-name skeleton-line"></div>
+      <div class="alb-artist skeleton-line short"></div>`;
+
+    card.appendChild(art);
+    card.appendChild(info);
+    return card;
   }
 
   _onTouchStart(e) {

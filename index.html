@@ -396,6 +396,18 @@
     text-align: center; color: var(--ink2); font-size: 14px; padding: 32px;
   }
 
+  /* Placeholder / skeleton cards — shown when there's no/too-little real music */
+  .alb-placeholder { cursor: default; opacity: 0.5; pointer-events: none; }
+  .alb-placeholder .alb-art {
+    background:
+      linear-gradient(135deg, var(--alb-color) 0%, rgba(0,0,0,0.35) 100%);
+  }
+  .skeleton-line {
+    height: 9px; border-radius: 4px; margin-bottom: 5px;
+    background: var(--surface2);
+  }
+  .skeleton-line.short { width: 62%; }
+
   /* Utility */
   .hidden { display: none !important; }
 
@@ -520,11 +532,7 @@
     </div>
   </div>
   <div class="lib-grid-wrap" id="libGridWrap">
-    <div class="lib-empty" id="libEmpty">
-      <div class="lib-empty-icon">◎</div>
-      <p>No music loaded yet.<br>Tap <strong>Scan music folder</strong> to browse your phone.</p>
-    </div>
-    <div class="album-grid hidden" id="albumGrid"></div>
+    <div class="album-grid" id="albumGrid"></div>
   </div>
 </div>
 
