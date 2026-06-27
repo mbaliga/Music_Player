@@ -58,16 +58,29 @@ jobs:
           chmod +x ./gradlew
           ./gradlew assembleDebug --stacktrace
 
+      # Give the APK a UNIQUE, per-commit filename. Reusing app-debug.apk meant
+      # browsers and Android's download manager served a stale cached copy, so
+      # new builds looked like they "didn't ship". A unique name is cache-proof.
+      - name: Name the APK by commit
+        id: apkname
+        run: |
+          SHORT=$(git rev-parse --short HEAD)
+          cp android/app/build/outputs/apk/debug/app-debug.apk "runout-${SHORT}.apk"
+          echo "file=runout-${SHORT}.apk" >> "$GITHUB_OUTPUT"
+          echo "short=${SHORT}" >> "$GITHUB_OUTPUT"
+
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: runout-debug-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          path: ${{ steps.apkname.outputs.file }}
           if-no-files-found: error
 
-      # Publish the same APK as a Release asset so it has a stable, tap-to-install
-      # URL on the phone (no login, no .zip to unpack like an Actions artifact):
-      #   https://github.com/mbaliga/Music_Player/releases/download/v0-latest/app-debug.apk
+      # Publish to the rolling v0 release. We upload BOTH:
+      #   • runout-<sha>.apk — unique per build, cache-proof, the link to share
+      #   • app-debug.apk    — stable name, for anyone who wants the latest
+      # Download (cache-proof):
+      #   https://github.com/mbaliga/Music_Player/releases/download/v0-latest/runout-<sha>.apk
       - name: Publish APK to the rolling v0 release
         uses: softprops/action-gh-release@v2
         with:
@@ -75,8 +88,12 @@ jobs:
           name: Runout v0 — latest debug APK
           prerelease: true
           body: >
-            Auto-built debug APK from the latest push on this branch. This is the
-            v0 web build wrapped in a Capacitor WebView (postMessage fallback, not
-            native Oboe — see README §3). Install: download app-debug.apk and open
-            it on the phone, or `adb install app-debug.apk`.
-          files: android/app/build/outputs/apk/debug/app-debug.apk
+            Auto-built debug APK from the latest push on this branch
+            (build ${{ steps.apkname.outputs.short }}). v0 web build wrapped in a
+            Capacitor WebView (postMessage fallback, not native Oboe — see README
+            §3). For a guaranteed-fresh download use the per-build file
+            runout-${{ steps.apkname.outputs.short }}.apk rather than the cached
+            app-debug.apk.
+          files: |
+            ${{ steps.apkname.outputs.file }}
+            android/app/build/outputs/apk/debug/app-debug.apk
