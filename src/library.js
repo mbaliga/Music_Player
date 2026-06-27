@@ -389,10 +389,10 @@ export class GridView {
     this._lib = library;
     this._onSelect = onSelect;
     this._sort = 'artist';
-    this._cellSize = 130;
+    this._cellSize = 96;  // smaller default → denser grid, more cards on screen
 
     this._pinchDist = null;
-    this._pinchCell = 130;
+    this._pinchCell = 96;
     container.addEventListener('touchstart', this._onTouchStart.bind(this), { passive: true });
     container.addEventListener('touchmove',  this._onTouchMove.bind(this),  { passive: true });
     container.addEventListener('touchend',   () => { this._pinchDist = null; }, { passive: true });
@@ -404,7 +404,7 @@ export class GridView {
   // MIN_CELLS, the remainder backfills with non-interactive placeholder cards so
   // the layout, pinch-zoom, and colour rhythm are visible before/without a scan.
   render() {
-    const MIN_CELLS = 18;
+    const MIN_CELLS = 30;   // denser: more placeholder cards when library is sparse
     const albums = this._lib.albums(this._sort);
     this._container.innerHTML = '';
     this._container.style.setProperty('--cell', this._cellSize + 'px');
@@ -433,6 +433,8 @@ export class GridView {
       img.alt = alb.album;
       img.loading = 'lazy';
       art.appendChild(img);
+    } else {
+      art.appendChild(noteIcon());
     }
 
     const info = document.createElement('div');
@@ -457,6 +459,7 @@ export class GridView {
 
     const art = document.createElement('div');
     art.className = 'alb-art';
+    art.appendChild(noteIcon());
 
     const info = document.createElement('div');
     info.className = 'alb-info';
@@ -487,6 +490,13 @@ export class GridView {
     this._cellSize = Math.round(Math.min(240, Math.max(80, this._pinchCell * (d / this._pinchDist))));
     this._container.style.setProperty('--cell', this._cellSize + 'px');
   }
+}
+
+function noteIcon() {
+  const el = document.createElement('span');
+  el.className = 'alb-note';
+  el.textContent = '♫';
+  return el;
 }
 
 function esc(s) {

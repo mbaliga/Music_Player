@@ -68,6 +68,7 @@ async function boot() {
   installControls();
   installToolbar();
   installLibrary();
+  installPinchTransition();
   requestAnimationFrame(loop);
   updateLatencyReadout();
 }
@@ -333,6 +334,101 @@ function updateHud(rate, t) {
   el('wear').textContent = `${state.playCount} plays`;
 }
 
+// ── Library open / close (shared by button, pinch, and close button) ─────────
+const appEl = () => document.querySelector('.app');
+
+function openLibrary() {
+  const lib = el('libOverlay');
+  lib.style.opacity = '1';
+  lib.style.transition = '';
+  lib.classList.remove('hidden');
+  appEl().style.transform = '';
+}
+
+function closeLibrary() {
+  const lib = el('libOverlay');
+  lib.classList.add('hidden');
+  lib.style.opacity = '';
+  lib.style.transition = '';
+  appEl().style.transform = '';
+}
+
+// ── Pinch-out → library zoom transition ──────────────────────────────────────
+function installPinchTransition() {
+  const lib = el('libOverlay');
+  let pinch = null;
+
+  const twoFingerDist = (e) => Math.hypot(
+    e.touches[0].clientX - e.touches[1].clientX,
+    e.touches[0].clientY - e.touches[1].clientY,
+  );
+
+  window.addEventListener('touchstart', (e) => {
+    if (e.touches.length !== 2) return;
+    const libOpen = !lib.classList.contains('hidden');
+
+    if (!libOpen) {
+      // Cancel any single-finger disc gesture so it doesn't fight the pinch.
+      state.touchingPlatter = false;
+      state.seeking = false;
+      state.fingerOmega = 0;
+      lib.style.opacity = '0';
+      lib.style.transition = 'none';
+      lib.classList.remove('hidden');
+      appEl().style.transition = 'none';
+      pinch = { d0: twoFingerDist(e), mode: 'open' };
+    } else {
+      // Pinch in to close from library.
+      appEl().style.transform = 'scale(0.65)';
+      appEl().style.transition = 'none';
+      lib.style.transition = 'none';
+      pinch = { d0: twoFingerDist(e), mode: 'close' };
+    }
+  }, { passive: true });
+
+  window.addEventListener('touchmove', (e) => {
+    if (!pinch || e.touches.length !== 2) return;
+    const d = twoFingerDist(e);
+
+    if (pinch.mode === 'open') {
+      const t = clamp((d / pinch.d0 - 1) * 2.5, 0, 1);
+      appEl().style.transform = `scale(${1 - t * 0.35})`;
+      lib.style.opacity = String(t);
+    } else {
+      const t = clamp((pinch.d0 / d - 1) * 2.5, 0, 1);
+      lib.style.opacity = String(1 - t);
+      appEl().style.transform = `scale(${0.65 + t * 0.35})`;
+    }
+  }, { passive: true });
+
+  const endPinch = () => {
+    if (!pinch) return;
+    const alpha = parseFloat(lib.style.opacity) || 0;
+    const T = 'transform 0.32s cubic-bezier(.4,0,.2,1)';
+    const O = 'opacity 0.32s cubic-bezier(.4,0,.2,1)';
+    appEl().style.transition = T;
+    lib.style.transition = O;
+
+    if (alpha > 0.45) {
+      lib.style.opacity = '1';
+      appEl().style.transform = '';
+      setTimeout(() => { appEl().style.transition = ''; lib.style.transition = ''; }, 360);
+    } else {
+      lib.style.opacity = '0';
+      appEl().style.transform = '';
+      setTimeout(() => {
+        lib.classList.add('hidden');
+        lib.style.cssText = '';
+        appEl().style.transition = '';
+      }, 360);
+    }
+    pinch = null;
+  };
+
+  window.addEventListener('touchend',   endPinch, { passive: true });
+  window.addEventListener('touchcancel', endPinch, { passive: true });
+}
+
 // ── Toolbar: walkthrough, mode, theme ────────────────────────────────────────
 function installToolbar() {
   const root = document.documentElement;
@@ -365,7 +461,7 @@ function installToolbar() {
     applyTheme(root.dataset.theme === 'dark' ? 'light' : 'dark');
   });
 
-  // (Library open is wired in installLibrary so it can refresh the grid.)
+  // Library open handled in installLibrary (needs grid refresh).
 }
 
 // ── Library overlay ───────────────────────────────────────────────────────────
@@ -385,15 +481,11 @@ function installLibrary() {
     await loadTrack(track);
   });
 
-  // The grid always renders (placeholder-backfilled) — show it from the start.
-  gridEl.classList.remove('hidden');
+  // Render the grid immediately so it's ready when the pinch transition opens it.
   grid.render();
 
-  el('btnLibrary').addEventListener('click', () => {
-    el('libOverlay').classList.remove('hidden');
-    grid.render(); // refresh in case albums changed
-  });
-  el('libClose').addEventListener('click', () => el('libOverlay').classList.add('hidden'));
+  el('btnLibrary').addEventListener('click', () => { openLibrary(); grid.render(); });
+  el('libClose').addEventListener('click', closeLibrary);
 
   scanBtn.addEventListener('click', async () => {
     scanBtn.disabled = true;

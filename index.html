@@ -399,17 +399,22 @@
     text-align: center; color: var(--ink2); font-size: 14px; padding: 32px;
   }
 
-  /* Placeholder / skeleton cards — shown when there's no/too-little real music */
-  .alb-placeholder { cursor: default; opacity: 0.5; pointer-events: none; }
-  .alb-placeholder .alb-art {
-    background:
-      linear-gradient(135deg, var(--alb-color) 0%, rgba(0,0,0,0.35) 100%);
+  /* Note icon inside album art */
+  .alb-note {
+    font-size: 28px; opacity: 0.55; color: #fff;
+    user-select: none; pointer-events: none;
   }
+  .alb-art {
+    background: linear-gradient(145deg, var(--alb-color, var(--surface2)) 0%, rgba(0,0,0,0.5) 100%);
+  }
+
+  /* Placeholder / skeleton cards */
+  .alb-placeholder { cursor: default; opacity: 0.45; pointer-events: none; }
   .skeleton-line {
-    height: 9px; border-radius: 4px; margin-bottom: 5px;
-    background: var(--surface2);
+    height: 8px; border-radius: 4px; margin-bottom: 5px;
+    background: rgba(255,255,255,0.1);
   }
-  .skeleton-line.short { width: 62%; }
+  .skeleton-line.short { width: 58%; }
 
   /* Utility */
   .hidden { display: none !important; }
