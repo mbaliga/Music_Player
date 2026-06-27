@@ -201,6 +201,7 @@ function radialDist(client) {
 
 function installInput() {
   canvas.addEventListener('pointerdown', async (e) => {
+    if (pinch.active) return;            // a two-finger pinch owns this gesture
     canvas.setPointerCapture(e.pointerId);
     await state.engine.resume();
     state.pointer = { x: e.clientX, y: e.clientY };
@@ -334,99 +335,131 @@ function updateHud(rate, t) {
   el('wear').textContent = `${state.playCount} plays`;
 }
 
-// ── Library open / close (shared by button, pinch, and close button) ─────────
+// ── Library open / close + pinch transition ──────────────────────────────────
+// The whole app screen lives in `.app`; the library is a fixed full-screen
+// overlay above it. Pinch OUT zooms `.app` down while the library fades in
+// (zoom out of one record into the crate); pinch IN reverses it.
+
 const appEl = () => document.querySelector('.app');
+const libEl = () => el('libOverlay');
+const barEl = () => document.querySelector('.toolbar');
+
+// Shared pinch state, read by the canvas pointerdown guard above.
+const pinch = { active: false, mode: null, d0: 0, progress: 0, pointers: new Map() };
+
+function clearTransientStyles() {
+  const a = appEl(), l = libEl(), b = barEl();
+  a.style.transition = ''; a.style.transform = ''; a.style.opacity = '';
+  l.style.transition = ''; l.style.opacity = '';
+  b.style.transition = ''; b.style.opacity = '';
+}
 
 function openLibrary() {
-  const lib = el('libOverlay');
-  lib.style.opacity = '1';
-  lib.style.transition = '';
-  lib.classList.remove('hidden');
-  appEl().style.transform = '';
+  clearTransientStyles();
+  libEl().classList.remove('hidden');
 }
 
 function closeLibrary() {
-  const lib = el('libOverlay');
-  lib.classList.add('hidden');
-  lib.style.opacity = '';
-  lib.style.transition = '';
-  appEl().style.transform = '';
+  clearTransientStyles();
+  libEl().classList.add('hidden');
 }
 
-// ── Pinch-out → library zoom transition ──────────────────────────────────────
 function installPinchTransition() {
-  const lib = el('libOverlay');
-  let pinch = null;
-
-  const twoFingerDist = (e) => Math.hypot(
-    e.touches[0].clientX - e.touches[1].clientX,
-    e.touches[0].clientY - e.touches[1].clientY,
-  );
-
-  window.addEventListener('touchstart', (e) => {
-    if (e.touches.length !== 2) return;
-    const libOpen = !lib.classList.contains('hidden');
-
-    if (!libOpen) {
-      // Cancel any single-finger disc gesture so it doesn't fight the pinch.
-      state.touchingPlatter = false;
-      state.seeking = false;
-      state.fingerOmega = 0;
-      lib.style.opacity = '0';
-      lib.style.transition = 'none';
-      lib.classList.remove('hidden');
-      appEl().style.transition = 'none';
-      pinch = { d0: twoFingerDist(e), mode: 'open' };
-    } else {
-      // Pinch in to close from library.
-      appEl().style.transform = 'scale(0.65)';
-      appEl().style.transition = 'none';
-      lib.style.transition = 'none';
-      pinch = { d0: twoFingerDist(e), mode: 'close' };
-    }
-  }, { passive: true });
-
-  window.addEventListener('touchmove', (e) => {
-    if (!pinch || e.touches.length !== 2) return;
-    const d = twoFingerDist(e);
-
-    if (pinch.mode === 'open') {
-      const t = clamp((d / pinch.d0 - 1) * 2.5, 0, 1);
-      appEl().style.transform = `scale(${1 - t * 0.35})`;
-      lib.style.opacity = String(t);
-    } else {
-      const t = clamp((pinch.d0 / d - 1) * 2.5, 0, 1);
-      lib.style.opacity = String(1 - t);
-      appEl().style.transform = `scale(${0.65 + t * 0.35})`;
-    }
-  }, { passive: true });
-
-  const endPinch = () => {
-    if (!pinch) return;
-    const alpha = parseFloat(lib.style.opacity) || 0;
-    const T = 'transform 0.32s cubic-bezier(.4,0,.2,1)';
-    const O = 'opacity 0.32s cubic-bezier(.4,0,.2,1)';
-    appEl().style.transition = T;
-    lib.style.transition = O;
-
-    if (alpha > 0.45) {
-      lib.style.opacity = '1';
-      appEl().style.transform = '';
-      setTimeout(() => { appEl().style.transition = ''; lib.style.transition = ''; }, 360);
-    } else {
-      lib.style.opacity = '0';
-      appEl().style.transform = '';
-      setTimeout(() => {
-        lib.classList.add('hidden');
-        lib.style.cssText = '';
-        appEl().style.transition = '';
-      }, 360);
-    }
-    pinch = null;
+  const dist = () => {
+    const p = [...pinch.pointers.values()];
+    return Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y);
   };
 
-  window.addEventListener('touchend',   endPinch, { passive: true });
-  window.addEventListener('touchcancel', endPinch, { passive: true });
+  // Capture-phase so we run before the canvas's own pointerdown handler and can
+  // claim the gesture (set pinch.active) before scrub/seek starts.
+  window.addEventListener('pointerdown', (e) => {
+    pinch.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pinch.pointers.size === 2 && !pinch.active) beginPinch();
+  }, true);
+
+  window.addEventListener('pointermove', (e) => {
+    if (!pinch.pointers.has(e.pointerId)) return;
+    pinch.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pinch.active && pinch.pointers.size >= 2) updatePinch(dist());
+  }, true);
+
+  const drop = (e) => {
+    if (!pinch.pointers.has(e.pointerId)) return;
+    pinch.pointers.delete(e.pointerId);
+    if (pinch.active && pinch.pointers.size < 2) endPinch();
+  };
+  window.addEventListener('pointerup', drop, true);
+  window.addEventListener('pointercancel', drop, true);
+
+  function beginPinch() {
+    // Cancel any in-progress disc gesture so it doesn't fight the pinch.
+    state.touchingPlatter = false;
+    state.seeking = false;
+    state.fingerOmega = 0;
+
+    pinch.active = true;
+    pinch.progress = 0;
+    pinch.d0 = dist();
+    pinch.mode = libEl().classList.contains('hidden') ? 'open' : 'close';
+
+    const a = appEl(), l = libEl();
+    a.style.transition = 'none';
+    l.style.transition = 'none';
+    if (pinch.mode === 'open') {
+      l.classList.remove('hidden');
+      l.style.opacity = '0';
+    }
+  }
+
+  function updatePinch(d) {
+    const a = appEl(), l = libEl(), b = barEl();
+    if (pinch.mode === 'open') {
+      const t = clamp((d / pinch.d0 - 1) * 2.2, 0, 1); // spread → t
+      pinch.progress = t;
+      a.style.transform = `scale(${1 - t * 0.4})`;
+      a.style.opacity = String(1 - t * 0.5);
+      b.style.opacity = String(1 - t);
+      l.style.opacity = String(t);
+    } else {
+      const t = clamp((pinch.d0 / d - 1) * 2.2, 0, 1); // squeeze → t
+      pinch.progress = t;
+      l.style.opacity = String(1 - t);
+      a.style.transform = `scale(${0.6 + t * 0.4})`;
+      a.style.opacity = String(0.5 + t * 0.5);
+      b.style.opacity = String(t);
+    }
+  }
+
+  function endPinch() {
+    const a = appEl(), l = libEl(), b = barEl();
+    const commit = pinch.progress > 0.4;
+    const wantLib = pinch.mode === 'open' ? commit : !commit;
+
+    const T = 'transform .3s cubic-bezier(.4,0,.2,1), opacity .3s';
+    a.style.transition = T;
+    b.style.transition = 'opacity .3s';
+    l.style.transition = 'opacity .3s';
+
+    requestAnimationFrame(() => {
+      if (wantLib) {
+        l.style.opacity = '1';
+        a.style.transform = 'scale(0.4)';
+        a.style.opacity = '0';
+        b.style.opacity = '0';
+      } else {
+        l.style.opacity = '0';
+        a.style.transform = '';
+        a.style.opacity = '';
+        b.style.opacity = '';
+      }
+      setTimeout(() => {
+        if (wantLib) openLibrary(); else closeLibrary();
+      }, 320);
+    });
+
+    pinch.active = false;
+    pinch.mode = null;
+  }
 }
 
 // ── Toolbar: walkthrough, mode, theme ────────────────────────────────────────

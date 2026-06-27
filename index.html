@@ -87,7 +87,11 @@
   /* Mobile: single column, page scrolls */
   .app {
     display: flex; flex-direction: column;
+    transform-origin: 50% 40%;   /* zoom toward the disc on pinch */
+    will-change: transform, opacity;
   }
+  .lib-overlay { will-change: opacity; }
+  .toolbar { will-change: opacity; }
   /* Desktop: two-column, each column scrolls independently */
   @media (min-width: 820px) {
     body { overflow: hidden; }
