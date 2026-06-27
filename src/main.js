@@ -93,14 +93,13 @@ async function loadTrack(track) {
 function sizeCanvas() {
   const dpr = window.devicePixelRatio || 1;
   const wrap = canvas.parentElement;
-  // On mobile (single-col) wrap.clientHeight is 0 because the row is auto-sized;
-  // fall back to viewport fractions. On desktop it's the actual stage height.
+  const isMobile = window.innerWidth <= 820;
   const stageH = wrap.clientHeight > 10 ? wrap.clientHeight : window.innerHeight;
-  const css = Math.min(
-    wrap.clientWidth,
-    stageH,
-    window.innerHeight * 0.62,
-  );
+  // Mobile: edge-to-edge — disc fills the full stage width (4px breathing room).
+  // Desktop: constrained by both stage width and height with a small gap.
+  const css = isMobile
+    ? wrap.clientWidth - 8
+    : Math.min(wrap.clientWidth - 16, stageH - 16);
   canvas.style.width = css + 'px';
   canvas.style.height = css + 'px';
   canvas.width = Math.round(css * dpr);
