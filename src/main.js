@@ -345,7 +345,7 @@ const libEl = () => el('libOverlay');
 const barEl = () => document.querySelector('.toolbar');
 
 // Shared pinch state, read by the canvas pointerdown guard above.
-const pinch = { active: false, mode: null, d0: 0, progress: 0, pointers: new Map() };
+const pinch = { active: false, mode: null, d0: 0, progress: 0 };
 
 function clearTransientStyles() {
   const a = appEl(), l = libEl(), b = barEl();
@@ -365,33 +365,34 @@ function closeLibrary() {
 }
 
 function installPinchTransition() {
-  const dist = () => {
-    const p = [...pinch.pointers.values()];
-    return Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y);
-  };
+  const touchDist = (t) => Math.hypot(
+    t[0].clientX - t[1].clientX,
+    t[0].clientY - t[1].clientY,
+  );
 
-  // Capture-phase so we run before the canvas's own pointerdown handler and can
-  // claim the gesture (set pinch.active) before scrub/seek starts.
-  window.addEventListener('pointerdown', (e) => {
-    pinch.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    if (pinch.pointers.size === 2 && !pinch.active) beginPinch();
-  }, true);
+  // NON-PASSIVE touch listeners. The instant a 2nd finger lands we call
+  // preventDefault() so the Android WebView never starts its own scroll/zoom —
+  // which would otherwise fire pointercancel and kill the gesture. This is THE
+  // fix: a passive listener can't preventDefault, so the pinch never survived.
+  document.addEventListener('touchstart', (e) => {
+    if (e.touches.length === 2 && !pinch.active) {
+      e.preventDefault();
+      beginPinch(touchDist(e.touches));
+    }
+  }, { passive: false });
 
-  window.addEventListener('pointermove', (e) => {
-    if (!pinch.pointers.has(e.pointerId)) return;
-    pinch.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    if (pinch.active && pinch.pointers.size >= 2) updatePinch(dist());
-  }, true);
+  document.addEventListener('touchmove', (e) => {
+    if (pinch.active && e.touches.length === 2) {
+      e.preventDefault();
+      updatePinch(touchDist(e.touches));
+    }
+  }, { passive: false });
 
-  const drop = (e) => {
-    if (!pinch.pointers.has(e.pointerId)) return;
-    pinch.pointers.delete(e.pointerId);
-    if (pinch.active && pinch.pointers.size < 2) endPinch();
-  };
-  window.addEventListener('pointerup', drop, true);
-  window.addEventListener('pointercancel', drop, true);
+  const end = (e) => { if (pinch.active && e.touches.length < 2) endPinch(); };
+  document.addEventListener('touchend', end);
+  document.addEventListener('touchcancel', end);
 
-  function beginPinch() {
+  function beginPinch(d0) {
     // Cancel any in-progress disc gesture so it doesn't fight the pinch.
     state.touchingPlatter = false;
     state.seeking = false;
@@ -399,7 +400,7 @@ function installPinchTransition() {
 
     pinch.active = true;
     pinch.progress = 0;
-    pinch.d0 = dist();
+    pinch.d0 = d0 || 1;
     pinch.mode = libEl().classList.contains('hidden') ? 'open' : 'close';
 
     const a = appEl(), l = libEl();
