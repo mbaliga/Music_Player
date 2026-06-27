@@ -112,8 +112,11 @@ class RunoutProcessor extends AudioWorkletProcessor {
     }
   }
 
-  process(outputs) {
+  // AudioWorklet calls process(inputs, outputs, parameters) — inputs FIRST.
+  // We have no inputs (numberOfInputs: 0); the audio sink is outputs[0].
+  process(inputs, outputs) {
     const out = outputs[0];
+    if (!out || out.length === 0) return true; // no output sink this quantum
     const blockLen = out[0].length;
     this.readControl();
 
