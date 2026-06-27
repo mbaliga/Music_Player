@@ -71,6 +71,18 @@ async function boot() {
   installPinchTransition();
   requestAnimationFrame(loop);
   updateLatencyReadout();
+  showBuildId();
+}
+
+// Stamp which build this is, so a stale/cached APK download is obvious at a
+// glance. The SHA is injected into the <meta> at CI build time; in local dev
+// the placeholder is left untouched and we just say "dev".
+function showBuildId() {
+  const meta = document.querySelector('meta[name="build-id"]');
+  const raw = meta?.getAttribute('content') || '';
+  const id = (!raw || raw.includes('BUILD_ID')) ? 'dev' : raw;
+  const node = el('buildId');
+  if (node) node.textContent = 'build: ' + id;
 }
 
 async function loadTrack(track) {

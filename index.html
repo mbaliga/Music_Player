@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<meta name="build-id" content="__BUILD_ID__" />
 <title>Runout</title>
 <style>
   /* ── Design tokens ─────────────────────────────────────────────────────────── */
@@ -524,6 +525,8 @@
       <input id="fileInput" type="file" accept="audio/*" />
       <p class="hint">Or drop a file anywhere. Local only — no streaming.</p>
     </div>
+
+    <p class="hint" id="buildId" style="opacity:.5">build: dev</p>
 
   </aside>
 </div><!-- /.app -->
