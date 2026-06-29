@@ -17,7 +17,7 @@ import {
   computeEnvelope, radiusAtTime, timeAtRadius, angleDelta, clamp, TAU,
   DEFAULT_PARAMS,
 } from './model.js';
-import { bakeGroove, drawFrame, makeGeometry, setLayout, getLayoutName, armTransform } from './render.js';
+import { bakeMatSprite, bakeRecord, drawFrame, makeGeometry, setLayout, getLayoutName, armTransform } from './render.js';
 import { Walkthrough } from './walkthrough.js';
 import { LibraryManager, GridView } from './library.js';
 
@@ -147,8 +147,10 @@ function sizeCanvas() {
 }
 
 function rebake() {
-  // The mat is independent of the audio envelope, so it only needs baking once.
-  if (!state.sprite) state.sprite = bakeGroove();
+  // Mat (slipmat) is static + track-independent → bake once. The record's groove
+  // IS the waveform → rebake per track from the envelope.
+  if (!state.matSprite) state.matSprite = bakeMatSprite();
+  if (state.envelope) state.recordSprite = bakeRecord(state.envelope);
 }
 
 // ── the frame loop ─────────────────────────────────────────────────────────
@@ -199,9 +201,9 @@ function loop(now) {
   }
   if (t < state.T - 0.2) state.reachedEnd = false;
 
-  // 5. Render: rotate-blit the baked mat. The tonearm is the screen-fixed SVG
-  // overlay; we only toggle its "lifted" pose during a silent seek.
-  drawFrame(ctx, state.sprite, {
+  // 5. Render: static mat + the record spinning on top. The tonearm is the
+  // screen-fixed SVG overlay; we only toggle its "lifted" pose on a silent seek.
+  drawFrame(ctx, { mat: state.matSprite, record: state.recordSprite }, {
     theta: state.platter.theta,
     dust: clamp(state.playCount / 20, 0, 1),
   }, state.geom);
