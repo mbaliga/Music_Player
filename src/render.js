@@ -5,22 +5,42 @@
 // disc-centred sprite by mat.js. Each frame we rotate-blit that sprite so the
 // platter spins under the (screen-fixed, SVG) tonearm.
 //
-// Everything is drawn in the reference's LOGICAL stage coordinates (760×1000);
-// drawFrame installs the device transform from the canvas size, so the same
-// composition scales to any screen without re-tuning. The disc bleeds off the
-// left exactly as in the reference hero shot; the tonearm is a separate SVG
-// overlay positioned in the same coordinate system (see index.html).
+// Everything is drawn in LOGICAL stage coordinates; drawFrame installs the
+// device transform from the canvas size. Two LAYOUTS share the same disc + arm
+// assets via a single similarity transform:
+//   • cinematic   — the disc is large and bleeds off the left (the hero crop).
+//   • utilitarian — the disc is centred and fully visible with small margins.
 
 import { clamp } from './model.js';
 import { bakeMat } from './mat.js';
 
-export const STAGE = { w: 760, h: 1000 };
-export const DISC = { cx: 150, cy: 478, R: 362, rInner: 34 };
+const MAT_R = 362; // the mat sprite's native disc radius (see mat.js)
 
+// The tonearm SVG is authored for the cinematic disc at (150,478), R=362.
+const BASE_ARM = 'translate(55,0) translate(500,500) scale(0.86) translate(-500,-500)';
+
+const LAYOUTS = {
+  cinematic:   { stageW: 760, stageH: 1000, cx: 150, cy: 478, R: 362 },
+  utilitarian: { stageW: 760, stageH: 880,  cx: 370, cy: 445, R: 320 },
+};
+
+let _layout = LAYOUTS.cinematic;
 let _mat = null;
 
-// Kept name-compatible with the old API. The mat is independent of the audio
-// envelope (groove = wordmark, not waveform), so the args are ignored.
+export function setLayout(name) { if (LAYOUTS[name]) _layout = LAYOUTS[name]; }
+export function getLayoutName() { return _layout === LAYOUTS.utilitarian ? 'utilitarian' : 'cinematic'; }
+
+// The SVG arm transform that places the authored arm onto the current disc.
+// A similarity maps the cinematic disc (150,478,R362) onto this layout's disc,
+// so the arm and mat always stay aligned.
+export function armTransform() {
+  const s = _layout.R / MAT_R;
+  const dx = _layout.cx - s * 150, dy = _layout.cy - s * 478;
+  return `translate(${dx.toFixed(2)} ${dy.toFixed(2)}) scale(${s.toFixed(4)}) ${BASE_ARM}`;
+}
+
+// Kept name-compatible with the old API; the mat ignores the audio envelope
+// (groove = wordmark, not waveform) and bakes only once.
 export function bakeGroove() {
   if (!_mat) _mat = bakeMat();
   return _mat.sprite;
@@ -28,19 +48,17 @@ export function bakeGroove() {
 
 export function drawFrame(ctx, sprite, state, geom) {
   const cw = ctx.canvas.width, ch = ctx.canvas.height;
-  // Logical (760×1000) → device px. Independent x/y scale; the stage element is
-  // constrained to the 760/1000 aspect in CSS so the disc stays circular.
-  ctx.setTransform(cw / STAGE.w, 0, 0, ch / STAGE.h, 0, 0);
-  ctx.clearRect(0, 0, STAGE.w, STAGE.h);
+  ctx.setTransform(cw / geom.stageW, 0, 0, ch / geom.stageH, 0, 0);
+  ctx.clearRect(0, 0, geom.stageW, geom.stageH);
 
-  const half = sprite.width / 2; // sprite native disc+rim half-size == DISC.R+PAD
+  const matScale = geom.rOut / MAT_R;
+  const half = (sprite.width / 2) * matScale;
   ctx.save();
   ctx.translate(geom.cx, geom.cy);
   ctx.rotate(state.theta);
-  ctx.drawImage(sprite, -half, -half);
+  ctx.drawImage(sprite, -half, -half, half * 2, half * 2);
   ctx.restore();
 
-  // Wear dust haze over the platter (subtle).
   if (state.dust > 0.001) {
     ctx.save();
     ctx.globalAlpha = clamp(state.dust * 0.18, 0, 0.3);
@@ -53,12 +71,10 @@ export function drawFrame(ctx, sprite, state, geom) {
   }
 }
 
-// Logical disc geometry (the device transform is applied per-frame in drawFrame
-// and, for input, in main.js canvasPoint()).
 export function makeGeometry() {
   return {
-    stageW: STAGE.w, stageH: STAGE.h,
-    cx: DISC.cx, cy: DISC.cy,
-    rOut: DISC.R, rIn: DISC.rInner,
+    stageW: _layout.stageW, stageH: _layout.stageH,
+    cx: _layout.cx, cy: _layout.cy,
+    rOut: _layout.R, rIn: 34 * _layout.R / MAT_R,
   };
 }

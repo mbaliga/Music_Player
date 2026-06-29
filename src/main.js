@@ -17,7 +17,7 @@ import {
   computeEnvelope, radiusAtTime, timeAtRadius, angleDelta, clamp, TAU,
   DEFAULT_PARAMS,
 } from './model.js';
-import { bakeGroove, drawFrame, makeGeometry } from './render.js';
+import { bakeGroove, drawFrame, makeGeometry, setLayout, getLayoutName, armTransform } from './render.js';
 import { Walkthrough } from './walkthrough.js';
 import { LibraryManager, GridView } from './library.js';
 
@@ -69,10 +69,40 @@ async function boot() {
   installControls();
   installToolbar();
   installLibrary();
+  installLayout();
   installPinchTransition();
   requestAnimationFrame(loop);
   updateLatencyReadout();
   showBuildId();
+}
+
+// ── Layout: Utilitarian (full disc, vertical) vs Cinematic (cropped, immersive)
+function applyLayout(name) {
+  setLayout(name);
+  document.documentElement.dataset.layout = name;
+  armEl.querySelector('#armGroup').setAttribute('transform', armTransform());
+  localStorage.setItem('runout.layout', name);
+  sizeCanvas();
+}
+
+function installLayout() {
+  const saved = localStorage.getItem('runout.layout') || 'cinematic';
+  applyLayout(saved);
+
+  const pop = el('settingsPop');
+  const gear = el('btnSettings');
+  const toggle = (show) => {
+    const open = show ?? pop.classList.contains('hidden');
+    pop.classList.toggle('hidden', !open);
+    gear.classList.toggle('active', open);
+  };
+  gear.addEventListener('click', (e) => { e.stopPropagation(); toggle(); });
+  pop.addEventListener('click', (e) => e.stopPropagation());
+  document.addEventListener('click', () => { if (!pop.classList.contains('hidden')) toggle(false); });
+
+  pop.querySelectorAll('.sp-opt').forEach((b) => {
+    b.addEventListener('click', () => { applyLayout(b.dataset.layout); toggle(false); });
+  });
 }
 
 // Stamp which build this is, so a stale/cached APK download is obvious at a
