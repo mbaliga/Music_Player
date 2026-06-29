@@ -57,6 +57,7 @@ const state = {
 const el = (id) => document.getElementById(id);
 const canvas = el('disc');
 const ctx = canvas.getContext('2d');
+const armEl = el('arm');
 
 // ── boot ─────────────────────────────────────────────────────────────────────
 async function boot() {
@@ -104,26 +105,20 @@ async function loadTrack(track) {
 }
 
 function sizeCanvas() {
-  const dpr = window.devicePixelRatio || 1;
-  const wrap = canvas.parentElement;
-  const isMobile = window.innerWidth <= 820;
-  const stageH = wrap.clientHeight > 10 ? wrap.clientHeight : window.innerHeight;
-  // Mobile: edge-to-edge — disc fills the full stage width (4px breathing room).
-  // Desktop: constrained by both stage width and height with a small gap.
-  const css = isMobile
-    ? wrap.clientWidth - 8
-    : Math.min(wrap.clientWidth - 16, stageH - 16);
-  canvas.style.width = css + 'px';
-  canvas.style.height = css + 'px';
-  canvas.width = Math.round(css * dpr);
-  canvas.height = Math.round(css * dpr);
-  state.geom = makeGeometry(canvas.width);
+  // The canvas fills the stage element (constrained to the 760×1000 aspect in
+  // CSS). We back it at device-pixel resolution; drawFrame installs the
+  // logical→device transform from these dimensions.
+  const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = Math.max(1, Math.round(rect.width * dpr));
+  canvas.height = Math.max(1, Math.round(rect.height * dpr));
+  state.geom = makeGeometry();
   rebake();
 }
 
 function rebake() {
-  if (!state.geom || !state.envelope) return;
-  state.sprite = bakeGroove(state.envelope, state.geom);
+  // The mat is independent of the audio envelope, so it only needs baking once.
+  if (!state.sprite) state.sprite = bakeGroove();
 }
 
 // ── the frame loop ─────────────────────────────────────────────────────────
@@ -174,15 +169,17 @@ function loop(now) {
   }
   if (t < state.T - 0.2) state.reachedEnd = false;
 
-  // 5. Render: rotated blit of the baked groove + the screen-fixed needle.
-  const needleT = state.seeking ? timeAtRadius(state.seekRadius, state.T, state.geom.rOut, state.geom.rIn) : t;
+  // 5. Render: rotate-blit the baked mat. The tonearm is the screen-fixed SVG
+  // overlay; we only toggle its "lifted" pose during a silent seek.
   drawFrame(ctx, state.sprite, {
     theta: state.platter.theta,
-    t: needleT,
-    T: state.T,
     dust: clamp(state.playCount / 20, 0, 1),
-    lifted: state.seeking,
   }, state.geom);
+
+  if (state.seeking !== state._armLifted) {
+    state._armLifted = state.seeking;
+    armEl.classList.toggle('lifted', state.seeking);
+  }
 
   updateHud(rate, t);
   requestAnimationFrame(loop);
@@ -199,10 +196,13 @@ function pointerAngle() {
 }
 
 function canvasPoint(client) {
+  // Map a client point into LOGICAL stage coordinates (760×1000), matching the
+  // geometry drawFrame and the SVG arm use.
   const rect = canvas.getBoundingClientRect();
-  const sx = canvas.width / rect.width;
-  const sy = canvas.height / rect.height;
-  return { x: (client.x - rect.left) * sx, y: (client.y - rect.top) * sy };
+  return {
+    x: (client.x - rect.left) / rect.width * state.geom.stageW,
+    y: (client.y - rect.top) / rect.height * state.geom.stageH,
+  };
 }
 
 function radialDist(client) {
