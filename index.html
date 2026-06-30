@@ -106,18 +106,18 @@
   }
 
   /* ── Turntable stage ────────────────────────────────────────────────────────── */
-  /* The CSS aspect MUST match the render layout's stageW/stageH so the disc stays
-     circular. Cinematic = tall hero crop; Utilitarian = shorter, whole record. */
+  /* Geometry adapts to the canvas box (see render.js), so the stage can be any
+     size and the disc stays circular. Portrait: a tall area; landscape (row): fills. */
   .stage {
     position: relative;
     width: 100%;
-    aspect-ratio: 760 / 1000;
+    height: 60svh;
     background: #000;
     overflow: hidden;
   }
-  [data-layout="utilitarian"] .stage { aspect-ratio: 760 / 880; }
+  [data-layout="cinematic"] .stage { height: 66svh; }
   @media (min-width: 820px) {
-    .stage { height: 100%; width: auto; }
+    .stage { flex: 1; height: 100%; width: auto; }
   }
   .stage #disc,
   .stage #arm {

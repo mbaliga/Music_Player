@@ -80,9 +80,8 @@ async function boot() {
 function applyLayout(name) {
   setLayout(name);
   document.documentElement.dataset.layout = name;
-  armEl.querySelector('#armGroup').setAttribute('transform', armTransform());
   localStorage.setItem('runout.layout', name);
-  sizeCanvas();
+  sizeCanvas();   // recomputes geometry + re-points the SVG arm transform
 }
 
 function installLayout() {
@@ -135,14 +134,18 @@ async function loadTrack(track) {
 }
 
 function sizeCanvas() {
-  // The canvas fills the stage element (constrained to the 760×1000 aspect in
-  // CSS). We back it at device-pixel resolution; drawFrame installs the
-  // logical→device transform from these dimensions.
+  // Geometry is computed from the canvas's ACTUAL pixel box (in CSS px), so the
+  // disc stays circular at any stage aspect. We back the canvas at device-pixel
+  // resolution; drawFrame installs a uniform device scale. The SVG arm shares the
+  // same CSS-px coordinate space via its viewBox, so it always lines up.
   const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
   const rect = canvas.getBoundingClientRect();
-  canvas.width = Math.max(1, Math.round(rect.width * dpr));
-  canvas.height = Math.max(1, Math.round(rect.height * dpr));
-  state.geom = makeGeometry();
+  const W = Math.max(1, rect.width), H = Math.max(1, rect.height);
+  canvas.width = Math.round(W * dpr);
+  canvas.height = Math.round(H * dpr);
+  state.geom = makeGeometry(W, H);
+  armEl.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  armEl.querySelector('#armGroup').setAttribute('transform', armTransform(state.geom));
   rebake();
 }
 
@@ -228,13 +231,9 @@ function pointerAngle() {
 }
 
 function canvasPoint(client) {
-  // Map a client point into LOGICAL stage coordinates (760×1000), matching the
-  // geometry drawFrame and the SVG arm use.
+  // Geometry is in CSS px (the canvas box), so a client point maps straight in.
   const rect = canvas.getBoundingClientRect();
-  return {
-    x: (client.x - rect.left) / rect.width * state.geom.stageW,
-    y: (client.y - rect.top) / rect.height * state.geom.stageH,
-  };
+  return { x: client.x - rect.left, y: client.y - rect.top };
 }
 
 function radialDist(client) {
