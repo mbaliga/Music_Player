@@ -1,5 +1,8 @@
 # Runout — v0
 
+> **Constellation** · `state: seeded` · public · [registry: `Personal-Tracker/CONSTELLATION.md`](https://github.com/mbaliga/Personal-Tracker/blob/main/CONSTELLATION.md)
+> "Runout" — tactile vinyl audio instrument for web/mobile (SharedArrayBuffer + AudioWorklet, sub-30ms scrub).
+
 A tactile vinyl listening instrument. One disc, one needle, direct manipulation:
 the gestures **are** the playback. Position on the disc maps continuously to
 position in the sound, with no progress bar in between.
@@ -115,3 +118,8 @@ Local library + import, off-thread envelope precompute, per-track procedural
 grooves from real files, the Hyle WebGL/AGSL material pass, the atmosphere
 subsystem (patina bus + empty-groove surfaces), persistence beyond the wear
 counter, and the native port. See the spec phasing (§10).
+
+## Do not touch
+
+- The **pure model layer** (spiral/platter physics, `src/model.js`) is intentionally isolated for a later native (Oboe/AAudio) swap — **keep it portable** (zero browser deps).
+- **COOP/COEP headers** are required for SharedArrayBuffer — the dev server (`serve.py`) sets them; don't drop them.
