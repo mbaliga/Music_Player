@@ -1,0 +1,64 @@
+name: Cleanup old Actions artifacts
+
+on:
+  schedule:
+    # Weekly, Sunday 03:00 UTC
+    - cron: '0 3 * * 0'
+  workflow_dispatch:
+    inputs:
+      keep:
+        description: 'Most recent artifacts to keep per artifact name'
+        required: false
+        default: '3'
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete artifacts older than the most recent N per name
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const keep = parseInt(
+              '${{ github.event.inputs.keep }}' || '3',
+              10
+            ) || 3;
+            const { owner, repo } = context.repo;
+
+            const artifacts = await github.paginate(
+              github.rest.actions.listArtifactsForRepo,
+              { owner, repo, per_page: 100 }
+            );
+
+            const byName = new Map();
+            for (const a of artifacts) {
+              if (!byName.has(a.name)) byName.set(a.name, []);
+              byName.get(a.name).push(a);
+            }
+
+            let deletedCount = 0;
+            let deletedBytes = 0;
+            for (const [name, list] of byName) {
+              list.sort((x, y) => new Date(y.created_at) - new Date(x.created_at));
+              for (const artifact of list.slice(keep)) {
+                console.log(
+                  `Deleting "${name}" #${artifact.id} ` +
+                  `(created ${artifact.created_at}, ${artifact.size_in_bytes} bytes)`
+                );
+                await github.rest.actions.deleteArtifact({
+                  owner, repo, artifact_id: artifact.id,
+                });
+                deletedCount++;
+                deletedBytes += artifact.size_in_bytes;
+              }
+            }
+
+            console.log(
+              `Deleted ${deletedCount} artifact(s), ` +
+              `freed ${(deletedBytes / (1024 * 1024)).toFixed(1)} MiB. ` +
+              `Kept up to ${keep} most recent per artifact name.`
+            );
