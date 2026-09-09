@@ -1,0 +1,3 @@
+First release. Direct scrubbing of a single disc with a low-latency audio path,
+groove banding that shows the music's shape, and drop-in playback of your own
+audio files.
