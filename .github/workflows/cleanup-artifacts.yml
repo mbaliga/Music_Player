@@ -2,8 +2,10 @@ name: Cleanup old Actions artifacts
 
 on:
   schedule:
-    # Weekly, Sunday 03:00 UTC
-    - cron: '0 3 * * 0'
+    # Every 6 hours — some repos were regenerating gigabytes of cache/artifacts
+    # per day, and the previous weekly schedule let the account's storage
+    # quota blow out between runs.
+    - cron: '0 */6 * * *'
   workflow_dispatch:
     inputs:
       keep:
