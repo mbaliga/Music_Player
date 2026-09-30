@@ -52,6 +52,87 @@ Three correctness fixes fell out of that work and a source review:
 2. **Scrub could fling / NaN on a high-refresh panel.** `main.js` capped frame `dt` on the high side but never floored it; a sub-millisecond frame made `angleDelta/dt` explode (Infinity/NaN → poisoned audio rate). Now `dt` is clamped to `[1 ms, 50 ms]` and finger ω is bounded to ±40 rad/s (≈380 rpm, past any real backspin).
 3. **SAB capability over-claimed.** `audio-engine.js` treated `crossOriginIsolated === undefined` as SAB-capable, which could hand the worklet a buffer it can't share (presents as silence). Now requires `=== true`; the WebView/`file://` path degrades cleanly to postMessage as intended.
 
+### Custom theme (JSON paste → verbatim preview → Apply)
+
+Added `src/theme.js` + a "Custom theme…" entry in the settings popover
+(`#btnSettings`), so the owner can restyle the app by pasting a JSON theme
+document — the same feature, and the same shared JSON schema (`version`,
+`name`, `colors.light`/`colors.dark`, 8 hex keys each, `#RRGGBB` or the
+`#AARRGGBB` alpha-prefixed superset), already shipped on the Fylz/Fyl-Manager
+and Fotoz/Foto-Xplorr apps. This is a **separate, independent** selector from
+the existing dark/light toggle (`#btnTheme` → `data-theme`, unchanged) — a
+custom theme supplies its own light *and* dark color pairs, and the existing
+toggle just decides which of those (or which of the built-in pair) is showing.
+
+**Flow:** paste/edit JSON in a textarea → "Preview →" shows the *exact* text
+back, byte-for-byte, in a read-only monospace block (never a swatch/summary)
+→ a malformed paste shows a specific named error there (e.g. `Missing
+"colors.dark.primary".`) and disables Apply → only an explicit "Apply" from
+that screen commits it (writes `localStorage['runout.customTheme']` and sets
+the CSS vars); Cancel/Back change nothing. Also added a "Reset to default"
+action in the edit step (not explicitly asked for, but there was otherwise no
+way back out of a custom theme once applied) — clears the stored theme and
+the inline CSS vars, reverting to the built-in defaults.
+
+**Validation** (`parseTheme` in `src/theme.js`) never throws and always names
+the exact problem: JSON parse failure, missing/wrong `version`, missing
+`colors`/`colors.light`/`colors.dark`, a missing key naming the exact field
+(`colors.<mode>.<key>`), or a bad hex naming the field and the bad value
+(missing `#`, wrong length, non-hex digit). `name` has no named malformed
+case in the spec, so a missing/blank one is tolerated (defaults to "Custom
+theme") rather than refusing the whole document.
+
+**CSS variable mapping** — index.html's tokens are `--violet` (fixed accent,
+same in both modes today), `--violet-glow`, `--bg`, `--surface`, `--surface2`,
+`--border`, `--ink`, `--ink2`. The schema's 8 keys land as:
+
+| schema key | CSS var | reasoning |
+|---|---|---|
+| `primary` | `--violet` | the instrument's core accent — toolbar active state, RPM dial, brake, sliders, stat readouts, walkthrough nav (all the places `--violet` already drove) |
+| `secondary` | `--secondary` (new) | the library/browsing surface — sort-chip active state + scan button. A visible, self-contained second accent without touching the turntable's own controls |
+| `tertiary` | `--tertiary` (new) | optional/audiophile info surfaces — feel-knob values + the latency readout's bold figures |
+| `background` | `--bg` | direct |
+| `surface` | `--surface` | direct |
+| `surfaceVariant` | `--surface2` | direct — reads naturally as the "variant" input/button surface it already was |
+| `onSurface` | `--ink` | most UI text sits on `--surface` (panel, track name, stats, etc.) |
+| `onBackground` | `--ink-bg` (new) | the *one* piece of text painted directly on `--bg` — the toolbar logo. `.logo` reads `var(--ink-bg, var(--ink))`, so the built-in theme needs no new default and is untouched until a custom theme sets `--ink-bg` |
+
+`--secondary`/`--tertiary` are declared once in `:root` as `var(--violet)` (a
+pure alias, zero default-appearance change) so the built-in theme still
+renders exactly as before; a custom theme overrides them directly via inline
+style, which always wins over that stylesheet default.
+
+Two tokens have no schema slot, by design:
+- `--violet-glow` and `--ink2` **are** derived — alpha-blended from
+  `primary`/`onSurface` at the same alphas the built-in theme already uses
+  (glow: .28 dark / .18 light; ink2: .48 dark / .5 light). Same kind of call
+  the Fotoz agent made blending its `AccentPalette` presets into concrete
+  secondary/tertiary hex — a real, accepted design call, not an oversight.
+- `--border` is deliberately **left alone** — the built-in low-alpha
+  white/black hairline, not derived from the palette at all. It's a
+  structural separator, not a themed color slot in the schema, and reads
+  fine over any custom background/surface without a schema-side alpha value
+  to derive it from.
+
+8-digit `#AARRGGBB` hex is accepted (Android's `Color.parseColor` alpha-first
+order) and converted to an `rgba()` CSS value; 6-digit hex passes straight
+through.
+
+Verified end-to-end with Playwright against `serve.py` (headless Chromium):
+opened the settings gear → "Custom theme…", pasted a malformed theme (missing
+`colors.dark.primary`) and confirmed the exact named error showed with Apply
+disabled and nothing changed; pasted a valid theme and confirmed the preview
+matched the pasted text byte-for-byte, Apply changed `--violet`/`--secondary`/
+`--tertiary`/`--bg`/`--surface`/`--ink`/`--ink-bg` (computed via
+`getComputedStyle`) and the *rendered* background-color of real elements
+(the mode toggle button, the library scan button/sort chip, the logo text);
+toggling dark/light while the custom theme was active correctly swapped to
+its own light color set; and "Reset to default" reverted every var. Added
+`test/theme.test.mjs` (24 tests: valid round-trip incl. 8-digit hex, every
+named malformed case, the color-math helpers) alongside the existing
+`test/model.test.mjs`/`test/worklet.test.mjs` — `npm test` went from 27 to 51
+passing checks.
+
 ---
 
 ## What's pending
