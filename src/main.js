@@ -20,6 +20,10 @@ import {
 import { bakeMatSprite, bakeRecord, drawFrame, makeGeometry, setLayout, getLayoutName, armTransform } from './render.js';
 import { Walkthrough } from './walkthrough.js';
 import { LibraryManager, GridView } from './library.js';
+import {
+  parseTheme, setThemeVars, clearThemeVars,
+  storeTheme, loadStoredTheme, clearStoredTheme,
+} from './theme.js';
 
 // The track is mastered for one fixed reference speed. The needle plays it
 // correctly at this RPM (rate = 1). Moving the speed dial above/below it shifts
@@ -70,6 +74,7 @@ async function boot() {
   installToolbar();
   installLibrary();
   installLayout();
+  installCustomTheme();
   installPinchTransition();
   requestAnimationFrame(loop);
   updateLatencyReadout();
@@ -100,8 +105,128 @@ function installLayout() {
   document.addEventListener('click', () => { if (!pop.classList.contains('hidden')) toggle(false); });
 
   pop.querySelectorAll('.sp-opt').forEach((b) => {
-    b.addEventListener('click', () => { applyLayout(b.dataset.layout); toggle(false); });
+    // The custom-theme entry (#btnCustomTheme) is also an .sp-opt but opens
+    // its own overlay instead of picking a layout — skip it here.
+    if (b.dataset.layout) b.addEventListener('click', () => { applyLayout(b.dataset.layout); toggle(false); });
   });
+}
+
+// ── Custom theme: JSON paste → mandatory verbatim preview → Apply ───────────
+// Independent of the dark/light toggle above (installToolbar): a custom
+// theme supplies ITS OWN light and dark color sets, and the toggle just
+// decides which of those (or which of the built-in pair) is currently shown.
+
+// Re-applies whichever theme is active — the stored custom one, or none (the
+// built-in default) — for the given mode ('dark'|'light'). Called at boot and
+// every time the dark/light toggle flips, so a custom theme's own light/dark
+// pair tracks that toggle exactly like the built-in colors do.
+function applyActiveCustomTheme(mode) {
+  const stored = loadStoredTheme();
+  if (stored) setThemeVars(stored, mode);
+  else clearThemeVars();
+}
+
+function installCustomTheme() {
+  const overlay = el('themeOverlay');
+  const stepEdit = el('themeStepEdit');
+  const stepPreview = el('themeStepPreview');
+  const input = el('themeInput');
+  const previewText = el('themePreviewText');
+  const errorBox = el('themeError');
+  const okBox = el('themeOk');
+  const applyBtn = el('themeApplyBtn');
+  const statusEl = el('customThemeStatus');
+
+  // The last successfully parsed theme from the CURRENT preview screen, or
+  // null. Apply only ever commits this — never re-parses on click — so
+  // there's no window where a malformed paste could sneak through.
+  let pendingParsed = null;
+
+  function refreshStatus() {
+    const stored = loadStoredTheme();
+    if (stored) {
+      statusEl.textContent = `Custom: ${stored.name}`;
+      statusEl.classList.add('theme-current');
+    } else {
+      statusEl.textContent = 'Built-in (default)';
+      statusEl.classList.remove('theme-current');
+    }
+  }
+
+  function showEdit() {
+    stepPreview.classList.add('hidden');
+    stepEdit.classList.remove('hidden');
+  }
+
+  function showPreview() {
+    // The preview renders the EXACT textarea text back, byte-for-byte —
+    // via .textContent (never innerHTML, never reformatted/pretty-printed),
+    // so the user sees precisely what they typed before anything can apply.
+    const raw = input.value;
+    previewText.textContent = raw;
+
+    const result = parseTheme(raw);
+    pendingParsed = result.ok ? result.theme : null;
+
+    if (result.ok) {
+      errorBox.classList.add('hidden');
+      okBox.classList.remove('hidden');
+      okBox.textContent = `Looks good — "${result.theme.name}". Apply to use it.`;
+      applyBtn.disabled = false;
+    } else {
+      okBox.classList.add('hidden');
+      errorBox.classList.remove('hidden');
+      errorBox.textContent = result.error;
+      applyBtn.disabled = true; // malformed input can never be applied
+    }
+
+    stepEdit.classList.add('hidden');
+    stepPreview.classList.remove('hidden');
+  }
+
+  function openOverlay() {
+    // Re-opening pre-fills the currently active custom theme's JSON (if any)
+    // rather than starting blank, so tweaking one is easy.
+    const stored = loadStoredTheme();
+    input.value = stored ? JSON.stringify(stored, null, 2) : '';
+    pendingParsed = null;
+    showEdit();
+    overlay.classList.remove('hidden');
+  }
+
+  function closeOverlay() {
+    overlay.classList.add('hidden');
+  }
+
+  el('btnCustomTheme').addEventListener('click', (e) => {
+    e.stopPropagation();
+    el('settingsPop').classList.add('hidden');
+    el('btnSettings').classList.remove('active');
+    openOverlay();
+  });
+
+  el('themePreviewBtn').addEventListener('click', showPreview);
+  el('themeBack').addEventListener('click', showEdit);
+  el('themeCancel1').addEventListener('click', closeOverlay);   // Cancel/back discards — nothing was ever applied.
+  el('themeCancel2').addEventListener('click', closeOverlay);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) closeOverlay(); });
+
+  el('themeResetDefault').addEventListener('click', () => {
+    clearStoredTheme();
+    clearThemeVars();
+    refreshStatus();
+    closeOverlay();
+  });
+
+  applyBtn.addEventListener('click', () => {
+    if (!pendingParsed) return; // guard: never apply a malformed theme
+    storeTheme(pendingParsed);
+    setThemeVars(pendingParsed, document.documentElement.dataset.theme);
+    refreshStatus();
+    closeOverlay();
+  });
+
+  refreshStatus();
 }
 
 // Stamp which build this is, so a stale/cached APK download is obvious at a
@@ -525,12 +650,16 @@ function installToolbar() {
     btnMode.classList.toggle('active', mode === 'audiophile');
   });
 
-  // Light / dark theme toggle. Persist choice.
+  // Light / dark theme toggle. Persist choice. Independent of the custom
+  // palette (installCustomTheme below) — this only ever flips which of the
+  // two color sets (built-in, or a custom theme's light/dark colors) is
+  // showing, never which colors those are.
   const btnTheme = el('btnTheme');
   const applyTheme = (t) => {
     root.dataset.theme = t;
     btnTheme.textContent = t === 'dark' ? '☾' : '☀';
     localStorage.setItem('runout.theme', t);
+    applyActiveCustomTheme(t);
   };
   const savedTheme = localStorage.getItem('runout.theme') || 'dark';
   applyTheme(savedTheme);
