@@ -229,3 +229,51 @@ Numbered; each says what it blocks. Master ids in brackets.
 In this repo: `README.md`, `STATE.md`, `HANDOFF.md`, `package.json`, `capacitor.config.json`, `serve.py`, `.gitignore`, `.github/workflows/android.yml`, `.github/workflows/cleanup-artifacts.yml`, `scripts/build-web.mjs`, `index.html` (head, tags, external-URL grep), `src/audio-engine.js` (full), `src/model.js` (header and API), `src/worklet.js`, `src/library.js`, `src/track.js`, `src/mat.js`, `src/walkthrough.js`, `src/main.js` (greps and the latency readout), `test/model.test.mjs`, `test/worklet.test.mjs`, and `git log`, `git ls-files`, `git remote` (read-only).
 
 Outside this repo: `Personal-Tracker/PORTING_PROGRAM.md` (§0–§3, §4, this repo's §5 row, §6, §7, §8), `Personal-Tracker/NAMES.md` (Runout row), `Personal-Tracker/DECISIONS.md` (D-L), `Personal-Tracker/CONSTELLATION.md` (licence gap), and the platform briefs `Personal-Tracker/porting/platforms/{ubuntu-touch,linux,ios,macos,windows,framework-strategy}.md`. Platform facts in this plan come from those briefs, except the `outputLatency` WebKit note in §2, which is the author's unverified recollection and not in the briefs; all are unverified here and nothing was built or run.
+
+## Owner rulings and the proposed line (added 2026-10-07)
+
+Status: PLAN. Nothing here is built, run on a device, signed or submitted. The program-level plan is Personal-Tracker `PORTING_PROGRAM.md` ([PR #10](https://github.com/mbaliga/Personal-Tracker/pull/10)), which holds the owner's rulings and section 5A, the proposed port / no-port line. The cells, estimates and open questions above are this repo's original plan and are unedited. Where the owner has since answered a question, the answer is below. Section 5A is a proposal; the owner has not yet confirmed it.
+
+### Where Music_Player sits in the proposed line (program section 5A.3, a proposal)
+
+| Target       | Verdict | Weeks and flags |
+| ------------ | ------- | --------------- |
+| Ubuntu Touch | port    | 2w g            |
+| Linux        | no-port | -               |
+| iOS/iPadOS   | port    | 3w              |
+| macOS        | no-port | -               |
+| Windows      | no-port | -               |
+
+Key: `follows` means it ports only as far as the products that depend on it; `exists` means the program reads it as already running there, unverified (finish, verify and sign); flags: `g` gated on a prerequisite, `r` re-estimate or floor, `o` its own program, `s` scope note. The program's P4, P8, P12 and P13 gate whole columns or repos and are not flagged per cell. A port verdict counts the deliverable in the line; where this repo's plan calls a deliverable a reframe (program rule R12) it keeps that label. Tests cited in the reason: (a) the owner said it is needed there; (b) its job is really done on that OS by real users; (c) that OS is where it is sold or its audience is; it has no reason to exist if (x) its surface is absent or untouchable, (y) the capability is forbidden or impossible, or (z) the only form is a thin wrapper or a different product nobody asked for. Numbers written "program P4" and OQ-numbers refer to the program plan; this plan's own "Proposed P-1 to P-4" are local (Personal-Tracker `PORTING_PROGRAM.md`, sections 5A.5 and 8).
+
+Reason: iOS is the port. On UT it is a web-view host, a port after the owner's answer of 2026-10-07 (OQ-34) with its 30 ms audio-latency probe (program P15) as a precondition; it goes back to no-port if the probe fails (the program plan's reading of the option's "if its audio-latency probe passes"). Its desktop cells stay no-port: it is a touch-feel instrument and a browser tab does the same job there.
+
+### Owner rulings that apply here
+
+- **OQ-34 web hosts (2026-10-07):** "Yes, extend it": a web bundle in a native host counts as a port for Runout on Ubuntu Touch, with its audio-latency probe as a precondition; Runout is a web app and not on the program plan's Android-only list for the Ubuntu Touch scope ruling (its reading, not the owner's words), so the program plan does not apply that ruling to it. Its desktop cells stay no-port.
+- **Ubuntu Touch device:** the owner owns one and says it is a OnePlus 6; research reads it as 20.04-only while the program plan targets 24.04. On 2026-10-07 the owner chose "OnePlus 6 pre-spike now, decide later" (OQ-37): a labelled "S-UT1 (focal)" headless-JVM pre-spike, no 24.04 flashing, a 24.04 device decision afterwards. Every Ubuntu Touch device gate stays NDV until then. The pre-spike tests a headless JVM and does not exercise this repo's shape (a web-view host with a loopback server). S-UT1 does not gate Runout (plan section 7); its Ubuntu Touch gates are the audio-latency probe (program P15) and the plan's RS-2 spike.
+- **OQ-31 Mac (2026-10-06 and 2026-10-07):** "Buy a Mac", and on 2026-10-07 an Apple-silicon Mac mini, not yet bought; no Apple device gate is called checkable before then.
+- **Apple (OQ-2, 2026-10-06):** "Whatever let's me sell apps on the app store": the paid Developer Program and the App Store are the target channel. TestFlight is not used until the exception to I-1 (OQ-32, drafted as PROPOSED-1, not approved) is approved.
+- **OQ-20 CI (2026-10-06):** "Linux-only CI when private (Recommended)": this repo is public, so the ruling does not limit its macOS and Windows lanes; going private would stop them. Actions artifact storage is still exhausted (program rule R6).
+- **Directives (2026-10-06):** "Draft amendments for approval": program directives I-1 to I-12 and rules R1 to R12 are unchanged; PROPOSED-1 to PROPOSED-4 in Personal-Tracker `DECISIONS.md` are drafts awaiting the owner.
+
+### Prerequisites and open questions that touch this repo (program sections 5A.5 and 8)
+
+Prerequisites (program-level; not costed here):
+
+- program P4: A device that can run the 24.04 Ubuntu Touch the program plan targets (the owner's OnePlus 6 is read as 20.04-only)
+- program P8: An Apple-silicon Mac (OQ-31: a Mac mini chosen on 2026-10-07, not yet bought)
+- program P15: Runout's 30 ms audio-latency probe and the OQ-15 loopback server
+
+Owner questions in the program register that concern this repo (status as of 2026-10-07):
+
+- OQ-2 (ruled): Apple Developer Program and the delivery route
+- OQ-12 (open): Licences for repos without a LICENSE
+- OQ-15 (open): Runout and Bocal: loopback server for COOP/COEP, Electron fallback
+- OQ-20 (ruled): CI minutes, storage and repo visibility
+- OQ-31 (ruled): CI for App Store builds; which Mac
+- OQ-32 (open): Exception to I-1 for TestFlight and App Store crash reports
+- OQ-34 (ruled): Web-view hosts and "installed apps will always have more to offer"
+- OQ-37 (answered in part): A second Ubuntu Touch device
+
+When the owner confirms or changes the line, this repo's original cells above stay as the engineering detail; only the verdicts and re-costs in program section 5A change.
