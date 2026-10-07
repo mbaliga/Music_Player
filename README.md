@@ -119,6 +119,8 @@ grooves from real files, the Hyle WebGL/AGSL material pass, the atmosphere
 subsystem (patina bus + empty-groove surfaces), persistence beyond the wear
 counter, and the native port. See the spec phasing (§10).
 
+Platform packaging (Ubuntu Touch, Linux, iOS/iPadOS, macOS, Windows) is planned, not built: see [`PORTING_PLAN.md`](PORTING_PLAN.md).
+
 ## Do not touch
 
 - The **pure model layer** (spiral/platter physics, `src/model.js`) is intentionally isolated for a later native (Oboe/AAudio) swap — **keep it portable** (zero browser deps).
