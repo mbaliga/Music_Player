@@ -123,3 +123,7 @@ counter, and the native port. See the spec phasing (§10).
 
 - The **pure model layer** (spiral/platter physics, `src/model.js`) is intentionally isolated for a later native (Oboe/AAudio) swap — **keep it portable** (zero browser deps).
 - **COOP/COEP headers** are required for SharedArrayBuffer — the dev server (`serve.py`) sets them; don't drop them.
+
+## Licence
+
+Source-available, free for noncommercial use under the [PolyForm Noncommercial License 1.0.0](LICENSE). If you make money with it, you need a commercial licence: see [COMMERCIAL-LICENSE.md](COMMERCIAL-LICENSE.md).
