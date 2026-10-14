@@ -277,3 +277,36 @@ Owner questions in the program register that concern this repo (status as of 202
 - OQ-37 (answered in part): A second Ubuntu Touch device
 
 When the owner confirms or changes the line, this repo's original cells above stay as the engineering detail; only the verdicts and re-costs in program section 5A change.
+
+## Update 2026-10-14: the market lens, iPadOS and the owner's latest answers
+
+Status: PLAN. Nothing here is built, run on a device, signed or submitted. This update follows the section "Owner rulings and the proposed line (added 2026-10-07)" above and the program plan's section 5A.12 (Personal-Tracker `PORTING_PROGRAM.md`, [PR #10](https://github.com/mbaliga/Personal-Tracker/pull/10)), which governs where the two differ. It records the owner's market lens and answers of 2026-10-13 and 2026-10-14; the proposed line is still a proposal. Two tests were added to the program's section 5A.1: (d) a real gap, or we are better or cheaper ("better" only where it has been measured; free alone is no gap when free tools exist); (w) mature free alternatives abound and the app adds nothing.
+
+### Where Music_Player sits now (program section 5A.12, a proposal)
+
+| Target       | Verdict, weeks and flags |
+| ------------ | ------------------------ |
+| Ubuntu Touch | port 2w g                |
+| Linux        | no-port                  |
+| iPhone       | follows                  |
+| iPad         | port 3w (early)          |
+| macOS        | no-port                  |
+| Windows      | no-port                  |
+
+The Apple column is now split: iPhone and iPad are judged apart. Where an app ports to both, the weeks are counted once on the lead cell and the other reads follows. The wave (early or later) is for the iPad, and for the iPhone where it leads.
+
+### What changed for this repo
+
+- iPad is now its own column: **port, early wave, 3 weeks**; iPhone follows. The two direct vinyl-scrub rivals found (Vinyls, CRPlayer) only play the Apple Music or iPod library, while Runout scrubs the user's own files; djay, a DJ tool, also plays local files, so the difference is the listening-instrument job, and the research could not confirm that no other app covers it.
+- Cross-origin isolation under Capacitor is unproven. Whether audio keeps playing in the background inside a WKWebView is an unmeasured risk that needs a locked-screen test on the iPad before any claim.
+
+### Owner answers that apply here
+
+- **TestFlight (PT:D-Z, approved 2026-10-14):** "Approve PROPOSED-1 as drafted". Directive I-1 now carries an exception for crash reports that Apple collects on TestFlight and the App Store. The app does not transmit those reports and adds no crash-reporting or analytics SDK of its own, and its README, store listing and about/privacy page must name the exception. This supersedes any statement in the earlier section that TestFlight is not used until the exception is approved. Any repo-local no-telemetry rule here is a restatement that PT:D-Z does not amend; recording the exception there is for the owner.
+- **Mac mini timing (OQ-31, 2026-10-14):** "Use hosted macOS runners on public repos first, buy later". This repo is public, so hosted macOS runners are free for it; simulator builds, unit tests and unsigned archives are possible there when this repo's own sequencing allows. This repo's own gate comes first: the v0 feel gate on the RedMagic 11 Pro blocks every wave (plan section 5). The Mac mini stays chosen and not bought. Signing and a TestFlight upload need the Apple Developer Program, which the owner has not yet joined (owner action).
+- **Apple ids and signing:** Apple bundle ids use `com.asoc.<appname>` (OQ-25, in part; a NAMES.md row first, R11). Signing material is to live in GitHub environment secrets behind a required-approval gate (OQ-3, Apple half). The owner will enrol in the Apple Developer Program ("Not yet, I'll enrol"); until then every Apple build is a simulator or unsigned hosted build.
+- **Apple devices:** the owner has an iPad Pro M4, an Apple Pencil and an iPhone 12 mini; the Mac mini is not yet bought, and nothing is device-verified.
+- **Ubuntu Touch device (OQ-37, 2026-10-14):** "Wait for the OnePlus 6 on a newer image". No second device is bought; the research reads the OnePlus 6 as 20.04-only (the installed image is not stated, OQ-33), so it only takes the S-UT1 (focal) pre-spike, and every Ubuntu Touch device gate stays NDV until it runs 24.04.
+- **Skin contract (OQ-39, 2026-10-14):** proposed conformance level for this app: Level 1 now and Level 3 later, once Runout has a part list; the web twin is the third rollout step. The owner chose Tier 1 (palette) everywhere first and every app declaring its own level; the assistant chose JSON, not XML, after the owner asked for a check; the draft spec is Personal-Tracker `porting/skin-contract/SPEC-DRAFT.md`. This is a proposal, not decided for this app.
+
+When the owner confirms or changes the line, this repo's original cells above stay as the engineering detail; only the verdicts and re-costs in program section 5A.12 change.
