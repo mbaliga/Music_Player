@@ -16,6 +16,10 @@
     --border: rgba(255,255,255,0.07);
     --ink: #e8e8f0;
     --ink2: rgba(232,232,240,0.48);
+    /* Secondary/tertiary accents — default to the primary so the built-in
+       theme is unchanged; a custom theme (src/theme.js) overrides these. */
+    --secondary: var(--violet);
+    --tertiary: var(--violet);
     --rx: 12px;
     --ease: cubic-bezier(.4, 0, .2, 1);
     --toolbar-h: 52px;
@@ -54,7 +58,12 @@
   }
   .logo {
     flex: 1; font-size: 15px; font-weight: 700;
-    letter-spacing: .07em; color: var(--ink);
+    letter-spacing: .07em;
+    /* The logo sits directly on --bg (not --surface), so it's the one place
+       onBackground (rather than onSurface/--ink) applies. --ink-bg is only
+       ever set by a custom theme (src/theme.js); falls back to --ink
+       otherwise, so the built-in theme needs no new default. */
+    color: var(--ink-bg, var(--ink));
   }
   .logo span { color: var(--violet); }
 
@@ -226,7 +235,9 @@
   /* ── Feel knobs ─────────────────────────────────────────────────────────────── */
   .knob { display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; align-items: center; }
   .knob .lbl { font-size: 12px; color: var(--ink2); }
-  .knob .val { font-variant-numeric: tabular-nums; color: var(--violet); font-size: 11px; }
+  /* Feel-knob readouts + latency figures use --tertiary — the optional/
+     audiophile info surfaces (see src/theme.js CSS_VAR_MAP notes). */
+  .knob .val { font-variant-numeric: tabular-nums; color: var(--tertiary); font-size: 11px; }
   .knob input { grid-column: 1 / 3; }
 
   /* ── Audiophile mode gating ─────────────────────────────────────────────────── */
@@ -238,7 +249,7 @@
 
   /* ── Latency block ──────────────────────────────────────────────────────────── */
   #latency { font-size: 12px; line-height: 1.7; color: var(--ink2); }
-  #latency b { color: var(--violet); }
+  #latency b { color: var(--tertiary); }
 
   /* ── File input ─────────────────────────────────────────────────────────────── */
   input[type=file] { font-size: 12px; color: var(--ink2); max-width: 100%; }
@@ -338,10 +349,13 @@
     flex-shrink: 0;
   }
 
+  /* Library surface: sort chips + scan button use --secondary rather than
+     --violet, so a custom theme's "secondary" hex has a visible, self-
+     contained place to land (see src/theme.js CSS_VAR_MAP notes). */
   .lib-scan {
     padding: 8px 16px; border-radius: 20px;
     font-weight: 700; font-size: 13px;
-    background: var(--violet); color: #fff;
+    background: var(--secondary); color: #fff;
     border: none; cursor: pointer; flex-shrink: 0;
     box-shadow: 0 2px 10px rgba(142,123,255,0.45);
     transition: opacity .15s;
@@ -354,7 +368,7 @@
     border: 1px solid var(--border); background: var(--surface2); color: var(--ink2);
     cursor: pointer; transition: all .15s;
   }
-  .sort-chip.active { background: var(--violet); color: #fff; border-color: var(--violet); }
+  .sort-chip.active { background: var(--secondary); color: #fff; border-color: var(--secondary); }
 
   /* Empty state */
   .lib-empty {
@@ -476,6 +490,96 @@
     background: linear-gradient(180deg, rgba(142,123,255,0.16), rgba(142,123,255,0.06));
     box-shadow: inset 0 0 0 1px rgba(142,123,255,0.4);
   }
+  /* Divider + entry point for the custom-theme flow inside the settings popover. */
+  .sp-sep { height: 1px; background: var(--border); margin: 4px 0; }
+  .sp-opt-d.theme-current { color: var(--violet); font-weight: 600; }
+
+  /* ══════════════════════════════════════════════════════════════════════════════
+     Custom theme overlay — paste JSON → verbatim plain-text preview → Apply.
+     Same modal idiom as the walkthrough overlay (.wt-*), so it doesn't invent
+     a new UI pattern.
+     ══════════════════════════════════════════════════════════════════════════════ */
+  .theme-overlay {
+    position: fixed; inset: 0; z-index: 210;
+    background: rgba(0,0,0,0.82);
+    backdrop-filter: blur(10px);
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  .theme-overlay.hidden { display: none; }
+
+  .theme-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    padding: 24px 22px 20px;
+    max-width: 460px; width: 100%;
+    max-height: 86dvh; overflow-y: auto;
+    display: flex; flex-direction: column; gap: 12px;
+    box-shadow:
+      0 40px 90px rgba(0,0,0,0.92),
+      0 0 0 1px rgba(255,255,255,0.045);
+  }
+  [data-theme="light"] .theme-card {
+    box-shadow: 0 24px 60px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.06);
+  }
+  .theme-title { font-size: 17px; font-weight: 700; color: var(--ink); }
+  .theme-hint { font-size: 12px; line-height: 1.6; color: var(--ink2); }
+
+  .theme-step.hidden { display: none; }
+
+  #themeInput {
+    width: 100%; min-height: 220px; resize: vertical;
+    padding: 10px 12px; border-radius: 10px;
+    background: var(--surface2); border: 1px solid var(--border); color: var(--ink);
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 12px; line-height: 1.5;
+    -webkit-user-select: text; user-select: text;
+  }
+
+  /* The verbatim preview: read-only, unmodified, exactly what was typed —
+     never a rendered swatch summary. */
+  .theme-preview {
+    width: 100%; max-height: 300px; overflow: auto;
+    padding: 10px 12px; border-radius: 10px;
+    background: var(--surface2); border: 1px solid var(--border); color: var(--ink);
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 12px; line-height: 1.5;
+    white-space: pre-wrap; word-break: break-word;
+    -webkit-user-select: text; user-select: text;
+  }
+
+  .theme-error {
+    font-size: 12px; line-height: 1.6; color: #ff6b6b;
+    background: rgba(255,107,107,0.1); border: 1px solid rgba(255,107,107,0.3);
+    border-radius: 8px; padding: 9px 11px;
+  }
+  .theme-error.hidden { display: none; }
+  .theme-ok {
+    font-size: 12px; color: #5ad18a;
+    background: rgba(90,209,138,0.1); border: 1px solid rgba(90,209,138,0.3);
+    border-radius: 8px; padding: 9px 11px;
+  }
+  .theme-ok.hidden { display: none; }
+
+  .theme-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+  .theme-foot-left { display: flex; gap: 8px; }
+  .theme-foot-right { display: flex; gap: 8px; }
+  .theme-btn {
+    padding: 9px 16px; border-radius: 8px; font-size: 13px; font-weight: 600;
+    cursor: pointer; border: 1px solid var(--border);
+    background: var(--surface2); color: var(--ink);
+  }
+  .theme-btn.primary {
+    background: var(--violet); color: #fff; border-color: var(--violet);
+  }
+  .theme-btn.primary:disabled {
+    opacity: 0.4; cursor: default;
+  }
+  .theme-btn.link {
+    background: none; border: none; color: var(--ink2);
+    font-weight: 500; text-decoration: underline; padding: 9px 4px;
+  }
 </style>
 </head>
 <body>
@@ -501,6 +605,14 @@
     <button class="sp-opt" data-layout="cinematic">
       <span class="sp-opt-t">Cinematic</span>
       <span class="sp-opt-d">Immersive · cropped, real-size</span>
+    </button>
+  </div>
+  <div class="sp-sep"></div>
+  <div class="sp-label">Theme</div>
+  <div class="sp-seg">
+    <button class="sp-opt" id="btnCustomTheme" type="button">
+      <span class="sp-opt-t">Custom theme…</span>
+      <span class="sp-opt-d" id="customThemeStatus">Built-in (default)</span>
     </button>
   </div>
 </div>
@@ -745,6 +857,51 @@
   </div>
   <div class="lib-grid-wrap" id="libGridWrap">
     <div class="album-grid" id="albumGrid"></div>
+  </div>
+</div>
+
+<!-- ── Custom theme overlay: paste JSON → verbatim preview → Apply ─────────── -->
+<div class="theme-overlay hidden" id="themeOverlay">
+  <div class="theme-card" role="dialog" aria-modal="true" aria-label="Custom theme">
+
+    <!-- Step 1: paste/edit the theme JSON. -->
+    <div class="theme-step" id="themeStepEdit">
+      <div class="theme-title">Custom theme</div>
+      <p class="theme-hint">
+        Paste a theme JSON document (<code>version</code>, <code>name</code>,
+        <code>colors.light</code>/<code>colors.dark</code> — 8 hex colors each).
+        You'll see the exact text back before anything is applied.
+      </p>
+      <textarea id="themeInput" spellcheck="false" placeholder='{&#10;  "version": 1,&#10;  "name": "My Theme",&#10;  "colors": { "light": { ... }, "dark": { ... } }&#10;}'></textarea>
+      <div class="theme-foot">
+        <div class="theme-foot-left">
+          <button class="theme-btn" id="themeCancel1" type="button">Cancel</button>
+          <button class="theme-btn link" id="themeResetDefault" type="button">Reset to default</button>
+        </div>
+        <div class="theme-foot-right">
+          <button class="theme-btn primary" id="themePreviewBtn" type="button">Preview →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2: the mandatory verbatim plain-text preview. -->
+    <div class="theme-step hidden" id="themeStepPreview">
+      <div class="theme-title">Confirm theme</div>
+      <p class="theme-hint">This is exactly what you entered, unmodified. Nothing is applied yet.</p>
+      <pre class="theme-preview" id="themePreviewText"></pre>
+      <div class="theme-error hidden" id="themeError"></div>
+      <div class="theme-ok hidden" id="themeOk"></div>
+      <div class="theme-foot">
+        <div class="theme-foot-left">
+          <button class="theme-btn" id="themeBack" type="button">← Back to edit</button>
+          <button class="theme-btn" id="themeCancel2" type="button">Cancel</button>
+        </div>
+        <div class="theme-foot-right">
+          <button class="theme-btn primary" id="themeApplyBtn" type="button" disabled>Apply</button>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
