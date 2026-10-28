@@ -20,7 +20,10 @@ class Handler(http.server.SimpleHTTPRequestHandler):
     def end_headers(self):
         # Cross-origin isolation → SharedArrayBuffer available.
         self.send_header("Cross-Origin-Opener-Policy", "same-origin")
-        self.send_header("Cross-Origin-Embedder-Policy", "require-corp")
+        # "credentialless" (not "require-corp"): still cross-origin isolated, but
+        # lets no-cors cross-origin media load — the radio streams (radio-player.js)
+        # are third-party <audio> sources that don't send CORP headers.
+        self.send_header("Cross-Origin-Embedder-Policy", "credentialless")
         # No caching while iterating on feel.
         self.send_header("Cache-Control", "no-store")
         super().end_headers()

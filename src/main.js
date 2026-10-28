@@ -20,6 +20,7 @@ import {
 import { bakeMatSprite, bakeRecord, drawFrame, makeGeometry, setLayout, getLayoutName, armTransform } from './render.js';
 import { Walkthrough } from './walkthrough.js';
 import { MixtapeUI } from './mixtape-ui.js';
+import { RadioUI } from './radio-player.js';
 import { LibraryManager, GridView } from './library.js';
 import {
   parseTheme, setThemeVars, clearThemeVars,
@@ -253,6 +254,7 @@ async function loadTrack(track) {
   state.envelope = computeEnvelope(mono, track.frames, 1024);
 
   await state.engine.load(track.channels, track.frames);
+  state.engine.setPlaying(!state.radioOn); // load() re-arms the bus; keep it muted under a live station
   state.engine.setRate(0);
   state.reachedEnd = false;
   el('trackName').textContent = track.name;
@@ -404,7 +406,7 @@ function installInput() {
       // Tonearm set-down: hard jump to the time under the needle, music resumes.
       const tSeek = timeAtRadius(state.seekRadius, state.T, state.geom.rOut, state.geom.rIn);
       state.engine.seek(tSeek * state.engine.sampleRate);
-      state.engine.setPlaying(true);
+      state.engine.setPlaying(!state.radioOn);
       state.seeking = false;
     }
     if (state.touchingPlatter) {
@@ -692,13 +694,21 @@ function installLibrary() {
   // Render the grid immediately so it's ready when the pinch transition opens it.
   grid.render();
 
-  // Tabs: Albums | Mixtapes.
-  const panes = { albums: el('paneAlbums'), mixtapes: el('paneMixtapes') };
+  // Radio: real stations via an <audio> element. While one plays the vinyl bus is
+  // muted (a live stream has no spiral to scrub); stopping restores it.
+  const radio = new RadioUI({
+    onActive: (on) => { state.radioOn = on; state.engine.setPlaying(!on); },
+  });
+  radio.mount(el('paneRadio'));
+
+  // Tabs: Albums | Mixtapes | Radio.
+  const panes = { albums: el('paneAlbums'), mixtapes: el('paneMixtapes'), radio: el('paneRadio') };
   el('libTabs').addEventListener('click', (e) => {
     const tab = e.target.closest('[data-tab]');
     if (!tab) return;
     el('libTabs').querySelectorAll('.lib-tab').forEach((b) => b.classList.toggle('active', b === tab));
     for (const [k, p] of Object.entries(panes)) p.classList.toggle('hidden', k !== tab.dataset.tab);
+    if (tab.dataset.tab === 'radio') radio.activate();
   });
 
   // Mixtapes: custom playlists (pure model in mixtape.js; this is wiring only).
@@ -707,7 +717,6 @@ function installLibrary() {
     closeLibrary,
     playFile: async (file) => {
       await state.engine.resume();
-      state.engine.setPlaying(true);
       await loadTrack(await loadFile(file, state.engine.ctx));
     },
   });

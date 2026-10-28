@@ -135,6 +135,32 @@ passing checks.
 
 ---
 
+## Albums, Mixtapes, Radio (Workstream A)
+
+**New files:** `albums.js`, `mixtape.js`, `radio.js`, `stations.js` are PURE (node:test in `test/`); `cassette.js`, `mixtape-ui.js`, `radio-player.js` are browser glue. `library.js`/`main.js` only wire them. Library overlay now has Albums | Mixtapes | Radio tabs. `npm test` is 84 checks.
+
+### Albums
+- **Exact rule** (`albums.js`): a disc label is `cd|disc|disk` + optional one of ` . _ -` + 1-2 digit number as a standalone word (`CD1`, `cd 2`, `Disc 02`, `Album [CD1]`, `(Disc 2)`, optional `of N`). Looked for in the album tag first, then folder names deepest-first. `CD` with no number, `Discovery`, `ACD1`, `CD123` are NOT labels. A disc-number ID3 tag alone does not make a CD.
+- One labelled track makes its whole album a CD (tags are often inconsistent). Disc-labelled variants merge into one album keyed by (albumArtist||artist, label-stripped title); the shelf shows one CD per disc ("Title · CD 2"). Untagged tracks fall back to their parent folder name, so `library.js` now stores a folder path per track (FS Access files get a stamped `runoutPath`; the `webkitdirectory` fallback uses `webkitRelativePath`).
+- **Visuals:** vinyl = square sleeve with a record peeking out, badge "LP"; CD = jewel case with spine strip + rainbow disc, badge "CD". **Playing UI:** a CD reuses the vinyl platter for now (no distinct playing view yet). Track order inside an album is natural-sorted by file path (no track-number tag parsing yet).
+
+### Mixtapes
+- Refs are `{title, artist, album}` metadata, not file handles (a File can't survive a reload). Playing resolves them against the CURRENT scanned library (`resolveTracks`); unmatched refs stay on the tape, dimmed, and resolve after a re-scan. So a tape only plays after the library has been scanned this session.
+- Colours are `#RRGGBB`/`#AARRGGBB` validated with `theme.js:validateHexColor`; JSON is `{version:1,name,style,font,fontColor,tracks}`; parser never throws and names the exact error; import shows the pasted text verbatim before Add (same idiom as custom theme).
+- Reels: `reelRadii(progress)` conserves tape area (rS^2 + rT^2 constant). Progress = tape position, equal weight per track (durations are unknown before decode; `tapeProgress` is time-weighted if durations are supplied).
+- Playback uses the same engine/platter as the vinyl view, so the speed dial and scrub still apply; the next playable track loads at the runout; the tape stops at the end.
+
+### Radio
+- Directory: discovery list (`all.api.radio-browser.info/json/servers`) -> shuffled, plus hard-coded fallbacks (de1 first); tries servers in order with a 6 s timeout each. Stations filtered to: last check ok, not HLS (`<audio>` can't play `.m3u8` in Chromium/Android WebView), **https only** (a Capacitor https origin blocks http media as mixed content; flip `httpsOnly` in `parseStations` if you serve over http). Dedupe by name+url, sort by votes.
+- Playback via `<audio>` (not the worklet); the vinyl bus is muted while a station plays and restored on Stop. Failures: offline, directory unreachable (Retry), connect timeout 12 s, dead/unsupported stream (message + Retry).
+- **`serve.py` now sends `COEP: credentialless`** instead of `require-corp`: still cross-origin isolated (SAB on), but third-party radio streams (no CORP header) can load. With `require-corp` they were blocked. The Capacitor WebView isn't isolated anyway.
+- **Extension point:** `stations.js` StationType/Session interface (documented at the top). AI/"You"/"You City" stations register a type there; see `docs/RADIO_ARCHITECTURE.md`. Nothing AI is implemented.
+
+### Not verified on a real device
+Everything here was exercised in desktop headless Chromium only (Playwright against `serve.py`): grouping on generated WAV folders, mixtape build/play/persist, a live station playing, dead-stream and directory-down states. NOT checked on the RedMagic/Android WebView: radio codec/mixed-content behaviour, touch ergonomics of the new tabs, mixtape playback latency, the CD/vinyl card look on a real screen, FS Access folder paths.
+
+---
+
 ## What's pending
 
 ### v0 — still to close
@@ -175,7 +201,7 @@ These are the remaining items before the v0 gate is officially passed:
 1. **Single deck, single spiral.** Load-bearing for the whole data model. No two-deck drift.
 2. **Coupled pitch+tempo only.** Rate = pitch. No time-stretch / phase vocoder. Keeps the engine simple and latency low.
 3. **One continuous spiral per track** (not A/B sides). Album = a crate of tracks.
-4. **Local-only library.** No streaming, ever.
+4. **Local-only library.** The library itself never streams. (Radio, below, is a separate live-stream surface; it does not touch the library or the worklet.)
 5. **Audio time `t` owned by the worklet**, never the main thread. Main thread only reads it back for display.
 6. **The feel knobs are the product.** `J`, `k`, `c`, `brakeDamp` in `model.js:DEFAULT_PARAMS` — dial them by hand on-device, not by theory.
 

@@ -112,6 +112,14 @@ explicit: **decide the stack by feel on-device, not on theory.**
   Oboe/AAudio. Because the engine is the only swappable layer, that is not a
   rewrite.
 
+## Albums, Mixtapes, Radio
+
+The library overlay (`≡`) has three tabs:
+
+- **Albums.** Vinyls and CDs are albums (`src/albums.js`, pure + tested). An album, or any folder in a track's path, labelled `CD1`/`CD 2`/`Disc 2`/`Disk_1` (case-insensitive, 1-2 digit number) is a **CD**, one per disc for multi-disc sets; everything else is a **Vinyl**. Cards show the distinction (sleeve + peeking record vs. jewel case + disc); filter All/Vinyl/CD. A CD currently reuses the vinyl platter to play.
+- **Mixtapes.** Custom playlists (`src/mixtape.js`): name, ordered tracks, one of 8 procedural cassette shells (`src/cassette.js`), font, font colour; JSON export/import with a verbatim preview; saved in `localStorage`. The player shows only the name; tap the cassette for the track list; reels change size with progress.
+- **Radio.** Real public stations from the [Radio Browser](https://www.radio-browser.info) directory (`src/radio.js`, `src/radio-player.js`), streamed via an `<audio>` element. Needs a network; degrades to a retry message. `src/stations.js` is the seam where AI/"You" stations will plug in (not implemented).
+
 ## Not in v0 (later phases)
 
 Local library + import, off-thread envelope precompute, per-track procedural
