@@ -509,6 +509,70 @@
   .alb-detail-list li::before { content: counter(n) '  '; color: var(--ink2); font-variant-numeric: tabular-nums; }
   .alb-detail.cd .alb-detail-list li::before { color: #9fb4ff; }
 
+  /* ── Library tabs / panes ─────────────────────────────────────────────── */
+  .lib-tabs { display: flex; gap: 6px; padding: 8px 14px 0; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .lib-tab {
+    padding: 8px 14px; font-size: 13px; font-weight: 700; cursor: pointer;
+    background: none; border: none; color: var(--ink2); border-bottom: 2px solid transparent;
+  }
+  .lib-tab.active { color: var(--ink); border-bottom-color: var(--secondary); }
+  .lib-pane { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+
+  /* ── Mixtapes ─────────────────────────────────────────────────────────── */
+  .mt-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; }
+  .mt-card {
+    position: relative; cursor: pointer; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 6px 6px 10px; display: flex; flex-direction: column; align-items: center;
+  }
+  .mt-card-meta { width: 100%; padding: 2px 6px 0; }
+  .mt-edit { position: absolute; top: 8px; right: 8px; font-size: 11px; padding: 3px 9px; }
+  .mt-thumb { display: block; max-width: 100%; }
+  .mt-editor { position: absolute; inset: 0; z-index: 6; background: var(--bg); display: flex; flex-direction: column; }
+  .mt-editor-body { flex: 1; overflow-y: auto; padding: 12px 16px 28px; display: flex; flex-direction: column; gap: 10px; }
+  .mt-editor-body > * { flex-shrink: 0; }
+  .mt-preview { align-self: center; max-width: 100%; }
+  .mt-name {
+    width: 100%; padding: 10px 12px; border-radius: 10px; font-size: 15px;
+    background: var(--surface2); border: 1px solid var(--border); color: var(--ink);
+  }
+  .mt-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .mt-styles { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; }
+  .mt-swatch { flex: 0 0 auto; background: none; border: 2px solid transparent; border-radius: 10px; padding: 0; cursor: pointer; }
+  .mt-swatch.on { border-color: var(--secondary); }
+  .mt-dot { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--border); cursor: pointer; }
+  .mt-dot.on { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--secondary); }
+  .mt-tracks { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+  .mt-tracks li { display: flex; align-items: center; gap: 6px; padding: 8px 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; font-size: 13px; }
+  .mt-tracks li.missing { opacity: .55; }
+  .mt-t { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mt-t small, .mt-pick-row small, .tp-list small { color: var(--ink2); font-size: 11px; }
+  .mt-mini { width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface2); color: var(--ink); cursor: pointer; }
+  .mt-picker { display: flex; flex-direction: column; gap: 8px; }
+  .mt-pick-rows { max-height: 260px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; }
+  .mt-pick-row { display: flex; justify-content: space-between; padding: 10px 12px; font-size: 13px; cursor: pointer; border-bottom: 1px solid var(--border); }
+  .mt-textarea {
+    width: 100%; min-height: 200px; resize: vertical; padding: 10px 12px; border-radius: 10px;
+    background: var(--surface2); border: 1px solid var(--border); color: var(--ink);
+    font: 12px/1.5 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  .mt-dialog { z-index: 230; }
+
+  /* Player: the cassette fills the screen; ONLY the name is on it until tapped. */
+  .tp { position: fixed; inset: 0; z-index: 120; background: radial-gradient(circle at 50% 40%, #1c1c24, #000 70%); }
+  .tp.hidden { display: none; }
+  .tp-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .tp-close { position: absolute; top: 12px; right: 12px; z-index: 3; }
+  .tp-list {
+    position: absolute; left: 12px; right: 12px; bottom: 12px; max-height: 46%; overflow-y: auto; z-index: 2;
+    list-style: none; background: rgba(13,13,18,.92); border: 1px solid var(--border); border-radius: 14px;
+    counter-reset: n; backdrop-filter: blur(8px);
+  }
+  .tp-list li { counter-increment: n; padding: 12px 16px; font-size: 14px; color: #e8e8f0; cursor: pointer; border-bottom: 1px solid var(--border); }
+  .tp-list li::before { content: counter(n) '  '; color: rgba(232,232,240,.45); }
+  .tp-list li.now { color: var(--violet); font-weight: 700; }
+  .tp-list li.missing { opacity: .4; cursor: default; }
+  .tp-msg { position: absolute; left: 24px; right: 24px; bottom: 40px; text-align: center; color: #e8e8f0; font-size: 13px; line-height: 1.6; }
+
   /* Utility */
   .hidden { display: none !important; }
 
@@ -908,6 +972,11 @@
     <span class="lib-title">Library</span>
     <button class="btn-close" id="libClose">✕</button>
   </div>
+  <div class="lib-tabs" id="libTabs">
+    <button class="lib-tab active" data-tab="albums" type="button">Albums</button>
+    <button class="lib-tab" data-tab="mixtapes" type="button">Mixtapes</button>
+  </div>
+  <div class="lib-pane" id="paneAlbums">
   <div class="lib-toolbar">
     <button class="lib-scan" id="libScan">Scan music folder…</button>
     <div class="sort-chips kind-chips" id="kindChips">
@@ -924,6 +993,15 @@
   </div>
   <div class="lib-grid-wrap" id="libGridWrap">
     <div class="album-grid" id="albumGrid"></div>
+  </div>
+  </div><!-- /#paneAlbums -->
+
+  <div class="lib-pane hidden" id="paneMixtapes">
+    <div class="lib-toolbar">
+      <button class="lib-scan" id="mtNew" type="button">+ New mixtape</button>
+      <button class="sort-chip" id="mtImport" type="button">Import JSON</button>
+    </div>
+    <div class="lib-grid-wrap"><div class="mt-list" id="mtList"></div></div>
   </div>
 </div>
 

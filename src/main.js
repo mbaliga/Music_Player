@@ -19,6 +19,7 @@ import {
 } from './model.js';
 import { bakeMatSprite, bakeRecord, drawFrame, makeGeometry, setLayout, getLayoutName, armTransform } from './render.js';
 import { Walkthrough } from './walkthrough.js';
+import { MixtapeUI } from './mixtape-ui.js';
 import { LibraryManager, GridView } from './library.js';
 import {
   parseTheme, setThemeVars, clearThemeVars,
@@ -341,6 +342,7 @@ function loop(now) {
     armEl.classList.toggle('lifted', state.seeking);
   }
 
+  state.mixtapes?.tick(t, state.T, rate, dt);
   updateHud(rate, t);
   requestAnimationFrame(loop);
 }
@@ -689,6 +691,27 @@ function installLibrary() {
 
   // Render the grid immediately so it's ready when the pinch transition opens it.
   grid.render();
+
+  // Tabs: Albums | Mixtapes.
+  const panes = { albums: el('paneAlbums'), mixtapes: el('paneMixtapes') };
+  el('libTabs').addEventListener('click', (e) => {
+    const tab = e.target.closest('[data-tab]');
+    if (!tab) return;
+    el('libTabs').querySelectorAll('.lib-tab').forEach((b) => b.classList.toggle('active', b === tab));
+    for (const [k, p] of Object.entries(panes)) p.classList.toggle('hidden', k !== tab.dataset.tab);
+  });
+
+  // Mixtapes: custom playlists (pure model in mixtape.js; this is wiring only).
+  state.mixtapes = new MixtapeUI({
+    getLibraryTracks: () => library.tracks,
+    closeLibrary,
+    playFile: async (file) => {
+      await state.engine.resume();
+      state.engine.setPlaying(true);
+      await loadTrack(await loadFile(file, state.engine.ctx));
+    },
+  });
+  state.mixtapes.mount(el('mtList'), el('mtNew'), el('mtImport'));
 
   el('btnLibrary').addEventListener('click', () => { openLibrary(); grid.render(); });
   el('libClose').addEventListener('click', closeLibrary);
