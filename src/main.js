@@ -710,6 +710,14 @@ function installLibrary() {
     grid.render();
   });
 
+  el('kindChips').addEventListener('click', (e) => {
+    const chip = e.target.closest('[data-kind]');
+    if (!chip) return;
+    el('kindChips').querySelectorAll('.sort-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    grid.setKind(chip.dataset.kind);
+  });
+
   el('sortChips').addEventListener('click', (e) => {
     const chip = e.target.closest('[data-sort]');
     if (!chip) return;

@@ -447,6 +447,68 @@
   }
   .skeleton-line.short { width: 58%; }
 
+
+  /* Albums: Vinyl vs CD treatment (src/albums.js decides which). */
+  .alb-art { position: relative; }
+  .alb-badge {
+    position: absolute; top: 6px; left: 6px; z-index: 2;
+    font-size: 9px; font-weight: 800; letter-spacing: .08em;
+    padding: 2px 6px; border-radius: 4px;
+    background: rgba(0,0,0,.62); color: #fff;
+  }
+  .alb-card.cd .alb-badge { background: rgba(220,230,255,.85); color: #112; }
+  /* Vinyl: square sleeve (78%) with a black record peeking out from behind it. */
+  .alb-card.vinyl .alb-art > img, .alb-card.vinyl .alb-art > .alb-note {
+    position: absolute; left: 3%; top: 11%; width: 74%; height: 78%; z-index: 1;
+    box-shadow: 2px 2px 8px rgba(0,0,0,.55);
+  }
+  .alb-card.vinyl .alb-art > .alb-note {
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(145deg, var(--alb-color), rgba(0,0,0,.55));
+  }
+  .alb-card.vinyl .alb-art::after {
+    content: ''; position: absolute; left: 20%; top: 11%; width: 78%; height: 78%; z-index: 0;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--alb-color) 0 13%, #000 14% 16%, #26262e 17% 100%);
+    box-shadow: 0 0 0 1px rgba(255,255,255,.22);
+  }
+  .alb-card.vinyl .alb-art { background: rgba(255,255,255,.04); }
+  /* CD: jewel case — spine strip, glossy frame, rainbow-sheen disc corner. */
+  .alb-card.cd { border-radius: 6px; border-color: rgba(200,215,255,.35); }
+  .alb-card.cd .alb-art { padding: 8% 8% 8% 16%; background-clip: padding-box; }
+  .alb-card.cd .alb-art::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 11%; z-index: 2;
+    background: linear-gradient(90deg, rgba(255,255,255,.28), rgba(0,0,0,.35));
+  }
+  .alb-card.cd .alb-art::after {
+    content: ''; position: absolute; right: 4%; bottom: 4%; width: 34%; aspect-ratio: 1; z-index: 3;
+    border-radius: 50%;
+    background: radial-gradient(circle, transparent 0 14%, rgba(255,255,255,.85) 15% 20%, transparent 21%),
+      conic-gradient(from 20deg, #cfd8ff, #ffd6f0, #d6fff2, #fff6c9, #cfd8ff);
+    box-shadow: 0 0 6px rgba(0,0,0,.45); opacity: .92;
+  }
+  .alb-card.cd .alb-art > img { box-shadow: 0 2px 8px rgba(0,0,0,.5); }
+  .kind-chips { display: flex; gap: 6px; }
+
+  .alb-detail {
+    position: absolute; inset: 0; z-index: 5; background: var(--bg);
+    display: flex; flex-direction: column;
+  }
+  .alb-detail-head {
+    display: flex; align-items: center; gap: 12px; padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .alb-detail-titles { min-width: 0; }
+  .alb-detail-title { font-size: 15px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .alb-detail-sub { font-size: 12px; color: var(--ink2); }
+  .alb-detail-list { list-style: none; overflow-y: auto; flex: 1; counter-reset: n; }
+  .alb-detail-list li {
+    counter-increment: n; padding: 13px 16px; font-size: 14px; cursor: pointer;
+    border-bottom: 1px solid var(--border); color: var(--ink);
+  }
+  .alb-detail-list li::before { content: counter(n) '  '; color: var(--ink2); font-variant-numeric: tabular-nums; }
+  .alb-detail.cd .alb-detail-list li::before { color: #9fb4ff; }
+
   /* Utility */
   .hidden { display: none !important; }
 
@@ -848,6 +910,11 @@
   </div>
   <div class="lib-toolbar">
     <button class="lib-scan" id="libScan">Scan music folder…</button>
+    <div class="sort-chips kind-chips" id="kindChips">
+      <button class="sort-chip active" data-kind="all">All</button>
+      <button class="sort-chip" data-kind="vinyl">Vinyl</button>
+      <button class="sort-chip" data-kind="cd">CD</button>
+    </div>
     <div class="sort-chips" id="sortChips">
       <button class="sort-chip active" data-sort="artist">Artist</button>
       <button class="sort-chip" data-sort="album">Album</button>

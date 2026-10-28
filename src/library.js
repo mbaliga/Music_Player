@@ -7,6 +7,10 @@
 // Metadata: inline ID3v2 parser (MP3) + FLAC Vorbis comment parser.
 // Cover art → dominant hue → color-sort support.
 // Grid view: CSS grid, pinch-to-zoom column count, sort by color/genre/A-Z.
+// Albums: grouping + Vinyl/CD classification live in the pure albums.js; this
+// file only collects tracks and draws the shelf.
+
+import { groupTracks, shelfItems, KIND_CD } from './albums.js';
 
 // ── ID3 genre table (first 80 entries; covers nearly all real-world files) ──
 const ID3_GENRES = [
@@ -258,25 +262,31 @@ async function processFile(file) {
   const name = file.name.replace(/\.[^.]+$/, '');
   const title  = meta?.title  || name;
   const artist = meta?.artist || meta?.albumArtist || 'Unknown Artist';
-  const album  = meta?.album  || name;
+  // Album stays '' when untagged: albums.js falls back to the parent folder
+  // (so "Some Album CD2/" folders classify and group correctly).
+  const album  = meta?.album  || '';
+  const albumArtist = meta?.albumArtist || '';
   const genre  = meta?.genre  || '';
+  const path   = file.runoutPath || file.webkitRelativePath || '';
 
   let coverUrl = null;
   if (meta?.coverBlob) {
     coverUrl = URL.createObjectURL(meta.coverBlob);
   }
 
-  const hue = coverUrl ? await dominantHue(coverUrl) : hashHue(artist + album);
+  const hue = coverUrl ? await dominantHue(coverUrl) : hashHue(artist + (album || path || name));
   const color = hueToHex(hue);
 
-  return { file, title, artist, album, genre, coverUrl, hue, color };
+  return { file, title, artist, albumArtist, album, path, genre, coverUrl, hue, color };
 }
 
 // ── Library manager ──────────────────────────────────────────────────────────
+const AUDIO_RE = /\.(mp3|flac|ogg|m4a|aac|opus|wav|wma|aiff?)$/i;
+
 export class LibraryManager {
   constructor() {
     this.tracks = [];
-    this._albums = new Map(); // key → { artist, album, genre, coverUrl, color, hue, tracks }
+    this._shelf = null; // cached shelfItems(groupTracks(tracks)); null = dirty
   }
 
   // Scan a directory (File System Access API or webkitdirectory fallback).
@@ -287,64 +297,46 @@ export class LibraryManager {
       let dirHandle;
       try { dirHandle = await window.showDirectoryPicker({ mode: 'read' }); }
       catch { return; } // user cancelled
-      files = await collectFilesFromDir(dirHandle);
+      files = await collectFilesFromDir(dirHandle, [], dirHandle.name);
     } else {
       files = await pickFilesViaInput();
     }
 
     if (!files?.length) return;
+    await this._ingest(files.filter(f => AUDIO_RE.test(f.name)), onProgress);
+  }
 
-    const AUDIO = /\.(mp3|flac|ogg|m4a|aac|opus|wav|wma|aiff?)$/i;
-    const audioFiles = files.filter(f => AUDIO.test(f.name));
+  // Add files directly (drag-drop or file input).
+  async addFiles(fileList, onProgress) {
+    await this._ingest(Array.from(fileList).filter(f => AUDIO_RE.test(f.name)), onProgress);
+  }
+
+  async _ingest(audioFiles, onProgress) {
     let done = 0;
-
     for (const f of audioFiles) {
       try {
-        const track = await processFile(f);
-        this.tracks.push(track);
-        const key = `${track.artist}\0${track.album}`;
-        if (!this._albums.has(key)) {
-          this._albums.set(key, {
-            artist: track.artist, album: track.album,
-            genre: track.genre, coverUrl: track.coverUrl,
-            color: track.color, hue: track.hue,
-            tracks: [],
-          });
-        }
-        this._albums.get(key).tracks.push(track);
+        this.tracks.push(await processFile(f));
+        this._shelf = null;
       } catch {}
       done++;
       onProgress?.(done, audioFiles.length);
     }
   }
 
-  // Add files directly (drag-drop or file input).
-  async addFiles(fileList, onProgress) {
-    const AUDIO = /\.(mp3|flac|ogg|m4a|aac|opus|wav|wma|aiff?)$/i;
-    const files = Array.from(fileList).filter(f => AUDIO.test(f.name));
-    let done = 0;
-    for (const f of files) {
-      try {
-        const track = await processFile(f);
-        this.tracks.push(track);
-        const key = `${track.artist}\0${track.album}`;
-        if (!this._albums.has(key)) {
-          this._albums.set(key, {
-            artist: track.artist, album: track.album,
-            genre: track.genre, coverUrl: track.coverUrl,
-            color: track.color, hue: track.hue,
-            tracks: [],
-          });
-        }
-        this._albums.get(key).tracks.push(track);
-      } catch {}
-      done++;
-      onProgress?.(done, files.length);
-    }
-  }
-
+  // Shelf items (a vinyl = one item, each CD disc = one item), shaped for the
+  // grid: album-level display fields come from the first track that has them.
   albums(sortBy = 'artist') {
-    const list = [...this._albums.values()];
+    if (!this._shelf) {
+      this._shelf = shelfItems(groupTracks(this.tracks)).map((it) => {
+        const pick = (k) => it.tracks.find((t) => t[k])?.[k];
+        return {
+          id: it.id, kind: it.kind, album: it.label, artist: it.album.artist,
+          genre: pick('genre') || '', coverUrl: pick('coverUrl') || null,
+          color: it.tracks[0].color, hue: it.tracks[0].hue, tracks: it.tracks,
+        };
+      });
+    }
+    const list = [...this._shelf];
     if (sortBy === 'color')  list.sort((a, b) => a.hue - b.hue);
     else if (sortBy === 'genre') list.sort((a, b) => (a.genre || 'zzz').localeCompare(b.genre || 'zzz') || a.album.localeCompare(b.album));
     else if (sortBy === 'album') list.sort((a, b) => a.album.localeCompare(b.album));
@@ -352,14 +344,21 @@ export class LibraryManager {
     return list;
   }
 
-  get isEmpty() { return this._albums.size === 0; }
+  get isEmpty() { return this.tracks.length === 0; }
 }
 
 // ── File collection helpers ──────────────────────────────────────────────────
-async function collectFilesFromDir(handle, acc = []) {
-  for await (const [, entry] of handle.entries()) {
-    if (entry.kind === 'file') acc.push(await entry.getFile());
-    else if (entry.kind === 'directory') await collectFilesFromDir(entry, acc);
+async function collectFilesFromDir(handle, acc = [], prefix = '') {
+  for await (const [name, entry] of handle.entries()) {
+    if (entry.kind === 'file') {
+      const f = await entry.getFile();
+      // File System Access files carry no folder path; stamp one so albums.js
+      // can read disc labels out of folder names (e.g. "Album CD2/").
+      try { Object.defineProperty(f, 'runoutPath', { value: `${prefix}/${name}` }); } catch {}
+      acc.push(f);
+    } else if (entry.kind === 'directory') {
+      await collectFilesFromDir(entry, acc, `${prefix}/${name}`);
+    }
   }
   return acc;
 }
@@ -389,6 +388,7 @@ export class GridView {
     this._lib = library;
     this._onSelect = onSelect;
     this._sort = 'artist';
+    this._kind = 'all';   // 'all' | 'vinyl' | 'cd'
     this._cellSize = 96;  // smaller default → denser grid, more cards on screen
 
     this._pinchDist = null;
@@ -399,13 +399,15 @@ export class GridView {
   }
 
   setSort(sort) { this._sort = sort; this.render(); }
+  setKind(kind) { this._kind = kind; this.render(); }
 
   // The grid ALWAYS renders. Real albums come first; if there are fewer than
   // MIN_CELLS, the remainder backfills with non-interactive placeholder cards so
   // the layout, pinch-zoom, and colour rhythm are visible before/without a scan.
   render() {
     const MIN_CELLS = 30;   // denser: more placeholder cards when library is sparse
-    const albums = this._lib.albums(this._sort);
+    const albums = this._lib.albums(this._sort)
+      .filter((a) => this._kind === 'all' || a.kind === this._kind);
     this._container.innerHTML = '';
     this._container.style.setProperty('--cell', this._cellSize + 'px');
 
@@ -415,14 +417,18 @@ export class GridView {
 
     // Backfill with placeholders up to MIN_CELLS (keeps the grid populated even
     // with zero or only a handful of real albums).
-    for (let i = albums.length; i < MIN_CELLS; i++) {
+    for (let i = albums.length; i < MIN_CELLS && this._kind === 'all'; i++) {
       this._container.appendChild(this._placeholderCard(i));
     }
   }
 
+  // Vinyl = square sleeve with a black disc peeking out of the side; CD =
+  // jewel case (spine strip, glossy frame) with a rainbow-sheen disc corner.
+  // Pure CSS (.alb-card.vinyl / .cd in index.html); the playing interface for
+  // a CD currently reuses the vinyl platter (see HANDOFF.md "Albums").
   _albumCard(alb) {
     const card = document.createElement('div');
-    card.className = 'alb-card';
+    card.className = 'alb-card ' + alb.kind;
     card.style.setProperty('--alb-color', alb.color);
 
     const art = document.createElement('div');
@@ -436,6 +442,10 @@ export class GridView {
     } else {
       art.appendChild(noteIcon());
     }
+    const badge = document.createElement('span');
+    badge.className = 'alb-badge';
+    badge.textContent = alb.kind === KIND_CD ? 'CD' : 'LP';
+    art.appendChild(badge);
 
     const info = document.createElement('div');
     info.className = 'alb-info';
@@ -445,11 +455,34 @@ export class GridView {
 
     card.appendChild(art);
     card.appendChild(info);
-    card.addEventListener('click', () => {
-      const first = alb.tracks[0];
-      if (first) this._onSelect(first.file, alb.album, alb.artist);
-    });
+    card.addEventListener('click', () => this._openDetail(alb));
     return card;
+  }
+
+  // Track list for one album/disc. Tapping a track plays it.
+  _openDetail(alb) {
+    const host = this._container.closest('.lib-overlay') || document.body;
+    host.querySelector('.alb-detail')?.remove();
+    const d = document.createElement('div');
+    d.className = 'alb-detail ' + alb.kind;
+    d.innerHTML = `
+      <div class="alb-detail-head">
+        <button class="btn-close alb-detail-back" type="button" aria-label="Back">←</button>
+        <div class="alb-detail-titles">
+          <div class="alb-detail-title">${esc(alb.album)}</div>
+          <div class="alb-detail-sub">${esc(alb.artist)} · ${alb.kind === KIND_CD ? 'CD' : 'Vinyl'} · ${alb.tracks.length} track${alb.tracks.length === 1 ? '' : 's'}</div>
+        </div>
+      </div>
+      <ol class="alb-detail-list"></ol>`;
+    const list = d.querySelector('.alb-detail-list');
+    alb.tracks.forEach((t) => {
+      const li = document.createElement('li');
+      li.textContent = t.title;
+      li.addEventListener('click', () => { d.remove(); this._onSelect(t.file, alb.album, alb.artist, t); });
+      list.appendChild(li);
+    });
+    d.querySelector('.alb-detail-back').addEventListener('click', () => d.remove());
+    host.appendChild(d);
   }
 
   _placeholderCard(i) {
