@@ -1,0 +1,59 @@
+name: Radio spike P1 APK (manual)
+
+# THROWAWAY. Builds a SEPARATE side-by-side debug APK (appId com.runout.radiospike) whose only screen is
+# the radio P1 spike page (spike/radio-p1/web) plus a minimal foreground-service/MediaSession plugin.
+# Manual trigger only, uploads a workflow artifact only: it never touches the v0-latest release and does
+# not alter android.yml. See docs/RADIO_SPIKE_P1.md. Not yet run in CI at the time of writing: UNVERIFIED.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-spike-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm install
+      - run: npm test
+
+      - name: Stage spike web app into www/ (replaces the app screen in THIS build only)
+        run: |
+          npm run build:web
+          rm -rf www/src www/index.html
+          mkdir -p www/spike/radio-p1
+          cp -r spike/radio-p1/web spike/radio-p1/lib www/spike/radio-p1/
+          printf '<!doctype html><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=spike/radio-p1/web/index.html">' > www/index.html
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Use a distinct app id (build-local edit, not committed)
+        run: |
+          node -e 'const f="capacitor.config.json",c=JSON.parse(require("fs").readFileSync(f));c.appId="com.runout.radiospike";c.appName="Runout Radio Spike";require("fs").writeFileSync(f,JSON.stringify(c,null,2))'
+
+      - run: npx --no-install cap add android
+
+      - name: Patch manifest, register plugin, copy service (package follows capacitor.config.json appId)
+        run: node spike/radio-p1/android/apply-spike.mjs android
+
+      - run: npx --no-install cap sync android
+
+      - name: Build debug APK
+        run: |
+          cd android
+          chmod +x ./gradlew
+          ./gradlew assembleDebug --stacktrace
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: runout-radio-spike-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error

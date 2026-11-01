@@ -1,0 +1,292 @@
+{
+  "runAt": "2026-11-01T19:32:43.932Z",
+  "conditions": "headless Chromium, fake media device (looped synthetic WAV or -60 dBFS noise), NO acoustic coupling, sandbox VM (not a phone)",
+  "checks": {
+    "env": {
+      "ua": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36",
+      "secureContext": true,
+      "crossOriginIsolated": false,
+      "capacitor": null,
+      "spikeNativePlugin": false,
+      "getUserMedia": true,
+      "supportedConstraints": {
+        "echoCancellation": true,
+        "noiseSuppression": true,
+        "autoGainControl": true,
+        "voiceIsolation": true,
+        "latency": true,
+        "channelCount": true
+      },
+      "audioWorklet": true,
+      "mediaSession": true,
+      "wakeLock": true,
+      "micPermission": "granted",
+      "audioContext": {
+        "sampleRate": 44100,
+        "baseLatencyMs": 10,
+        "outputLatencyMs": 0,
+        "state": "running"
+      },
+      "visibility": "visible",
+      "connection": {
+        "effectiveType": "4g",
+        "rtt": 0
+      }
+    },
+    "echoNullControl": [
+      {
+        "route": "speaker",
+        "mode": "raw-all-off",
+        "sim": null,
+        "granted": {
+          "echoCancellation": false,
+          "noiseSuppression": false,
+          "autoGainControl": false,
+          "sampleRate": 44100,
+          "latency": 0.01
+        },
+        "metrics": {
+          "lagMs": 134.85260770975057,
+          "rho": 0.011140976274272307,
+          "echoReturnDb": -79.19714845054038,
+          "noiseFloorDb": -60.8069438237355,
+          "playbackRmsDb": -60.846631179674134,
+          "excessDb": -0.03968735593863215,
+          "refRmsDb": -20.71101774190953
+        },
+        "verdict": "clean",
+        "at": "2026-11-01T19:32:50.812Z"
+      },
+      {
+        "route": "speaker",
+        "mode": "browser-defaults",
+        "sim": null,
+        "granted": {
+          "echoCancellation": true,
+          "noiseSuppression": true,
+          "autoGainControl": true,
+          "sampleRate": 48000,
+          "latency": 0.01
+        },
+        "metrics": {
+          "lagMs": 413.265306122449,
+          "rho": 0.013472176113441547,
+          "echoReturnDb": -82.45187492508862,
+          "noiseFloorDb": -64.90917665274769,
+          "playbackRmsDb": -65.75164769612508,
+          "excessDb": -0.8424710433773868,
+          "refRmsDb": -20.71101774190953
+        },
+        "verdict": "clean",
+        "at": "2026-11-01T19:32:57.368Z"
+      },
+      {
+        "route": "speaker",
+        "mode": "aec-only",
+        "sim": null,
+        "granted": {
+          "echoCancellation": true,
+          "noiseSuppression": false,
+          "autoGainControl": false,
+          "sampleRate": 48000,
+          "latency": 0.01
+        },
+        "metrics": {
+          "lagMs": 433.3786848072562,
+          "rho": 0.01323488593955812,
+          "echoReturnDb": -79.9328635219017,
+          "noiseFloorDb": -63.06747791681013,
+          "playbackRmsDb": -63.078285320443925,
+          "excessDb": -0.010807403633798174,
+          "refRmsDb": -20.71101774190953
+        },
+        "verdict": "clean",
+        "at": "2026-11-01T19:33:03.909Z"
+      },
+      {
+        "route": "speaker",
+        "mode": "aec+ns+agc",
+        "sim": null,
+        "granted": {
+          "echoCancellation": true,
+          "noiseSuppression": true,
+          "autoGainControl": true,
+          "sampleRate": 48000,
+          "latency": 0.01
+        },
+        "metrics": {
+          "lagMs": 430.6802721088435,
+          "rho": 0.013472176113442457,
+          "echoReturnDb": -82.45187492508802,
+          "noiseFloorDb": -64.95491333658698,
+          "playbackRmsDb": -65.75164769612508,
+          "excessDb": -0.7967343595380925,
+          "refRmsDb": -20.71101774190953
+        },
+        "verdict": "clean",
+        "at": "2026-11-01T19:33:10.465Z"
+      }
+    ],
+    "echoPositiveControls": [
+      {
+        "truth": {
+          "delayMs": 60,
+          "gainDb": -20,
+          "noiseDb": -60
+        },
+        "measured": {
+          "lagMs": 77.41496598639455,
+          "rho": 0.9941524116473369,
+          "echoReturnDb": -20.001188745543587,
+          "noiseFloorDb": -59.99024546576229,
+          "playbackRmsDb": -40.66126589498302,
+          "excessDb": 19.328979570779275,
+          "refRmsDb": -20.71101774190953
+        },
+        "verdict": "leaky"
+      },
+      {
+        "truth": {
+          "delayMs": 120,
+          "gainDb": -35,
+          "noiseDb": -60
+        },
+        "measured": {
+          "lagMs": 141.60997732426304,
+          "rho": 0.8528019562173366,
+          "echoReturnDb": -35.004811601104244,
+          "noiseFloorDb": -59.98310490752401,
+          "playbackRmsDb": -54.332793100993456,
+          "excessDb": 5.650311806530553,
+          "refRmsDb": -20.71101774190953
+        },
+        "verdict": "marginal"
+      },
+      {
+        "truth": {
+          "delayMs": 60,
+          "gainDb": -50,
+          "noiseDb": -60
+        },
+        "measured": {
+          "lagMs": 78.70748299319729,
+          "rho": 0.2812238866402571,
+          "echoReturnDb": -49.970226673464325,
+          "noiseFloorDb": -60.01935522850033,
+          "playbackRmsDb": -59.662288537171364,
+          "excessDb": 0.35706669132896707,
+          "refRmsDb": -20.71101774190953
+        },
+        "verdict": "clean"
+      }
+    ],
+    "background": {
+      "wallMinutes": 0.2,
+      "audioClockMinutes": 0.2,
+      "totalDriftMs": 1,
+      "maxStallMsBetweenHeartbeats": 3,
+      "heartbeatsWithStallOver250ms": 0,
+      "maxHeartbeatIntervalMs": 1001,
+      "hiddenHeartbeats": 0,
+      "nonRunningHeartbeats": 0,
+      "workletDiscontinuities": 0,
+      "workletMaxJumpMs": 0,
+      "workletBlocks": 4125,
+      "events": [
+        {
+          "t": 0,
+          "type": "mediasession-set",
+          "ctxState": "running",
+          "hidden": false
+        },
+        {
+          "t": 0,
+          "type": "native-unavailable",
+          "ctxState": "running",
+          "hidden": false
+        },
+        {
+          "t": 0,
+          "type": "started",
+          "ctxState": "running",
+          "hidden": false
+        }
+      ],
+      "opts": {
+        "ms": true,
+        "wl": false,
+        "native": true
+      },
+      "readThis": "Pass for S2 needs: nonRunningHeartbeats 0, stalls 0, workletDiscontinuities 0 AND no audible dropout (second-device recording). maxHeartbeatIntervalMs >> 1000 means JS timers were throttled while hidden (scheduler lookahead implication)."
+    },
+    "live": {
+      "rows": [
+        {
+          "id": "vad_endpoint",
+          "p50": 289.69999999995343,
+          "p95": 307.9200000000186,
+          "n": 5,
+          "provenance": "self-referenced"
+        },
+        {
+          "id": "stt_final",
+          "p50": 156.5,
+          "p95": 202.00000000002328,
+          "n": 5,
+          "provenance": "configured-fake"
+        },
+        {
+          "id": "uplink",
+          "p50": 94.30000000004657,
+          "p95": 110.23999999996741,
+          "n": 5,
+          "provenance": "configured-fake"
+        },
+        {
+          "id": "llm_ttft",
+          "p50": 591.2999999999302,
+          "p95": 656.4999999999534,
+          "n": 5,
+          "provenance": "configured-fake"
+        },
+        {
+          "id": "first_chunk",
+          "p50": 207.89999999990687,
+          "p95": 352.2400000000605,
+          "n": 5,
+          "provenance": "configured-fake"
+        },
+        {
+          "id": "tts_ttfb",
+          "p50": 265.29999999993015,
+          "p95": 319.58000000002795,
+          "n": 5,
+          "provenance": "configured-fake"
+        },
+        {
+          "id": "downlink",
+          "p50": 0.5,
+          "p95": 0.659999999962747,
+          "n": 5,
+          "provenance": "reported"
+        },
+        {
+          "id": "output",
+          "p50": 45,
+          "p95": 45,
+          "n": 5,
+          "provenance": "reported"
+        }
+      ],
+      "total": {
+        "n": 5,
+        "p50": 1600.4000000000233,
+        "p95": 1796.959999999986,
+        "max": 1841.0999999999767,
+        "min": 1392.7000000000698
+      },
+      "allStagesMeasured": false
+    }
+  },
+  "browser": "153.0.8010.12"
+}
