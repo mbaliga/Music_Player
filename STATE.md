@@ -11,3 +11,6 @@ Multi-platform packaging is a plan only (nothing built) and waits on that gate: 
 
 ## Owner-verified
 On-device latency.
+
+## Radio P1 spike
+Radio spike P1 done as far as a sandbox allows; verdicts are NEEDS-DEVICE (echo, background audio) and framework-GO (latency). Device procedure and results: `docs/RADIO_SPIKE_P1.md`. Throwaway code in `spike/radio-p1/`.

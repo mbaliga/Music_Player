@@ -129,7 +129,17 @@ async function runEcho(opts = {}) {
     } catch (e) { const row = { route, mode: mode.id, error: String(e) }; rows.push(row); RESULTS.echo.push(row); }
     refreshAll();
   }
-  show('outEcho', rows.map(fmtEchoRow).join('\n'));
+  const raw = rows.find((r) => r.mode === 'raw-all-off' && r.metrics);
+  let note = '';
+  if (!opts.sim && raw) {
+    // VALIDITY CONTROL: with every processing stage off the speaker->mic path must be visible, otherwise
+    // "clean" on the other rows proves nothing (phone too quiet / too far / mic muted by the OS).
+    note = raw.verdict === 'clean'
+      ? '\nINVALID RUN: raw-all-off shows NO speaker->mic coupling (excess <= 3 dB). Raise media volume / move closer and rerun; the other rows mean nothing.'
+      : '\nValid run: raw-all-off shows coupling. AEC attenuation vs raw (echoReturn, more negative = better): ' +
+        rows.filter((r) => r.metrics && r !== raw).map((r) => `${r.mode} ${(raw.metrics.echoReturnDb - r.metrics.echoReturnDb).toFixed(1)} dB`).join(', ');
+  }
+  show('outEcho', rows.map(fmtEchoRow).join('\n') + note);
   return rows;
 }
 function fmtEchoRow(r) {
