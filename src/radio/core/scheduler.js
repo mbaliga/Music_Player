@@ -23,7 +23,7 @@ export const SCHED = Object.freeze({
   maxPreRollSec: 6,        // how far into the previous outro the voice may start
   duck: Object.freeze({ depthDb: -14, leadMs: 250, releaseMs: 400 }), // tuning values, by ear
   callDuckDb: -22,         // music bed under a live call (8.2: -20 to -25)
-  voiceGapSec: 0.35,       // silence around standalone voice
+  voiceGapSec: 0.15,       // silence around standalone voice (must stay under deadAirToleranceSec)
   utterancePauseSec: 0.15, // default pause after an utterance
   radioOverlapSec: Object.freeze([2, 4]),
   deadAirToleranceSec: 0.25,
@@ -186,7 +186,7 @@ export function scheduleShow(items, { startSec = 0, crossfade = 'album', overlap
       if (pendingOverlay) {
         const utts = pendingOverlay.voice.utterances.map((u) => ({ ...u }));
         const outroLen = prev ? prev.durationSec - ((prev.cues && Number.isFinite(prev.cues.outroStartSec)) ? prev.cues.outroStartSec : prev.durationSec) : 0;
-        const plan = planTalkOverIntro({ songStartSec: start, cues: tr.cues, utterances: utts, prevOutroSec: outroLen });
+        const plan = planTalkOverIntro({ songStartSec: start, cues: tr.cues, utterances: utts.map((u) => ({ ...u, durationSec: u.durationSec + (u.pauseSec ?? SCHED.utterancePauseSec) })), prevOutroSec: outroLen });
         if (plan.droppedIds.length) notes.push({ slotId: pendingOverlay.slotId, note: `trimmed ${plan.droppedIds.join(',')}` });
         if (plan.mode === 'between_songs') {
           standalone(pendingOverlay, utts);
@@ -273,7 +273,7 @@ export function insertAtSafePoint(segments, nowSec, call, opts = {}) {
   const at = sp.atSec;
   const callSeg = {
     schemaVersion: 1, source: call.source || 'caller', segmentId: call.segmentId || 'call', slotId: call.slotId || 'call',
-    kind: 'voice', mode: 'cold', startSec: at, durationSec: D, duck: { depthDb: SCHED.callDuckDb, leadMs: SCHED.duck.leadMs, releaseMs: SCHED.duck.releaseMs },
+    kind: 'voice', mode: 'cold', startSec: at, durationSec: D, utterances: [{ id: call.segmentId || 'call', startSec: at, durationSec: D }], duck: { depthDb: SCHED.callDuckDb, leadMs: SCHED.duck.leadMs, releaseMs: SCHED.duck.releaseMs },
   };
   const out = [];
   if (sp.reason === 'utterance_end') {

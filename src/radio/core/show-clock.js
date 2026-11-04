@@ -123,11 +123,13 @@ export class ShowClock {
   }
 
   // ── what is due ────────────────────────────────────────────────────────────
-  /** start of the slot `n` positions before entry i (clamped to the show start) */
+  /** start of the slot `n` positions before entry i, counting only slots that take time (overlays sit on their song) */
   _startMinus(i, n) {
-    const live = this.live();
-    const pos = live.indexOf(this.entries[i]);
-    const anchor = live[Math.max(0, pos - n)];
+    const list = this.live().filter((e) => !e.overlay);
+    let pos = list.indexOf(this.entries[i]);
+    if (pos < 0) pos = list.findIndex((e) => this.entries.indexOf(e) > i); // overlay: the song after it
+    if (pos < 0) pos = list.length;
+    const anchor = list[Math.max(0, pos - n)];
     return anchor ? Math.min(anchor.start, this.entries[i].start) : this.startSec;
   }
 
