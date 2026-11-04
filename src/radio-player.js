@@ -10,8 +10,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { discoverServers, searchStations, describeStation, streamCandidates, MAX_RECONNECTS } from './radio.js';
-import { registerStationType, createSessionFor, listStationTypes } from './stations.js';
+import { registerStationType, registerAiStationTypes, createSessionFor, listStationTypes } from './stations.js';
 import { createStreamSession } from './radio-session.js';
+import { isRadioAiEnabled } from './radio/flag.js';
 import {
   loadModel, saveModel, stationKey, stationFromEntry, isFavourite, toggleFavourite, recordPlayed, clearRecents,
 } from './radio-store.js';
@@ -22,6 +23,13 @@ registerStationType({
   id: 'radio-browser',
   label: 'Radio stations',
   createSession: (station, env = {}) => createStreamSession(station, env),
+});
+
+// AI stations ('ai-you', 'ai-you-city'): OFF unless the `radio.ai` flag is set; the core is only ever
+// pulled in by this dynamic import when an AI station is actually started (see src/radio/core/README.md).
+registerAiStationTypes({
+  isEnabled: () => { try { return isRadioAiEnabled(window.localStorage); } catch { return false; } },
+  loadCore: () => import('./radio/core/index.js'),
 });
 
 const h = (tag, props = {}, ...kids) => {
