@@ -11,3 +11,4 @@ www/
 
 # Build output
 *.apk
+__pycache__/
