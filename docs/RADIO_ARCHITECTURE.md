@@ -1,6 +1,6 @@
 # Runout — AI Radio architecture ("You" Radio and "You City" Radio)
 
-Status: PLAN (Workstream B). Nothing here is built. Scope: the AI-generated stations only. Real/public
+Status: PLAN (Workstream B). P0 (`src/radio/core/`, contracts and skeleton, no network) is built; P1 device spikes are pending (`docs/RADIO_SPIKE_P1.md`); everything else here is not built. Scope: the AI-generated stations only. Real/public
 stations are Workstream A and are out of scope except where they share the audio bus (section 4.4) and the
 network policy (section 1.3).
 
@@ -530,9 +530,14 @@ These are **budget targets for the spike to confirm or kill, not measurements**.
 | 6 | TTS time-to-first-byte | 250 | 150–450 | Streaming TTS, warm connection |
 | 7 | Downlink + decode + jitter buffer | 100 | 60–200 | Small adaptive buffer |
 | 8 | Output device latency | 40 | 12–80 | Existing estimate showed 12 ms reported on the RedMagic (self-reported) [REPO HANDOFF] |
-| | **Sum (p50)** | **~1,570** | **~1,100–2,900** | Goal: p50 <= 1.6 s, p95 <= 2.5 s |
+| | **Sum (p50)** | **~1,570** | **~942–2,830** (column sums) | Gate on **p95 <= 2.5 s**; p50 <= 1.6 s is the typical-feel target |
 
-Masking: if stage 1–5 exceeds about 900 ms, play a short pre-rendered backchannel ("mm", "oh—", "right") from a local cache of about 20 clips per voice, at most once per few turns. Radio call-ins are tolerant of a beat of delay; do not chase below about 1 s at the cost of accuracy.
+Corrections from the P1 spike (`docs/RADIO_SPIKE_P1.md` 5.4), now applied here and in `src/radio/core/latency.js`:
+- The range row is the sum of the range columns: 942 (low) to 2,830 (high) ms. The earlier "~1,100–2,900" did not match the columns.
+- **Gate on p95, not p50.** A sum of per-stage medians is not the median of the sum: with right-skewed stage times, hitting every p50 gives an end-to-end p50 above 1,570 ms (about +44 ms at log-normal sigma 0.25, about +215 ms at sigma 0.6; configured simulation, not a measurement). The 1.6 s p50 has no slack, so the pass/fail gate is p95 <= 2.5 s, with p50 <= 1.6 s reported alongside.
+- The product targets (p50 <= 1.6 s, p95 <= 2.5 s) are also the P1 S1 exit (section 11); there is no looser spike target.
+
+Masking: if no speakable chunk exists about **1,400 ms** after the end of listener speech (stages 1–5 sum to 1,180 ms at their p50s, so this fires on the slow tail, not on every turn; the original 900 ms threshold sat below the p50 sum and would have fired on essentially every turn), play a short pre-rendered backchannel ("mm", "oh—", "right") from a local cache of about 20 clips per voice, at most once per 3 turns (cooldown). Radio call-ins are tolerant of a beat of delay; do not chase below about 1 s at the cost of accuracy. The threshold is a tuning value to re-measure in S1.
 
 ### 8.4 Turn-taking and barge-in
 - State machine in `core/turn-taking`: `IDLE -> LISTENING -> THINKING -> SPEAKING -> (LISTENING | INTERRUPTED)`. VAD events and timestamps are inputs; it is pure and unit-testable with scripted event sequences.
@@ -616,14 +621,14 @@ Only the listener's own local files are played; the AI never generates, streams,
 
 Rule: nothing in this plan changes behavior when Radio is off. Each milestone ends green on `npm test`.
 
-**P0. Contracts and skeleton (about 1 week).** `src/radio/core/` with the 5 schemas + validators, `show-clock`, `scheduler`, `grounding`, `markup`, `turn-taking`, `memory`, fake adapters; feature flag; no network. *Exit:* all core tests pass in CI; Radio absent from the boot path (verified by a bundle test).
+**P0. Contracts and skeleton (about 1 week). DONE** (`src/radio/core/`, flag `radio.ai` default off; see its README). `src/radio/core/` with the 5 schemas + validators, `show-clock`, `scheduler`, `grounding`, `markup`, `turn-taking`, `memory`, fake adapters; feature flag; no network. *Exit:* all core tests pass in CI; Radio absent from the boot path (verified by a bundle test).
 
 **P1. Spikes (time-box 2 weeks, throwaway code, results in a written note).**
-- **S1 Caller loop:** web page + minimal proxy + one STT + Claude Haiku-class + one TTS. *Exit:* p50 end-of-speech to first audio <= 2.0 s and p95 <= 3.0 s over Wi-Fi and LTE on the RedMagic 11 Pro (30 turns each); AEC verdict recorded (browser AEC works on speaker yes/no; headphone mode works); barge-in works within 300 ms; if AEC fails, decide on plugin vs headphone-only.
+- **S1 Caller loop:** web page + minimal proxy + one STT + Claude Haiku-class + one TTS. *Exit:* p50 end-of-speech to first audio <= 1.6 s and p95 <= 2.5 s (the 8.3 product targets; gate on p95) over Wi-Fi and LTE on the RedMagic 11 Pro (30 turns each); AEC verdict recorded (browser AEC works on speaker yes/no; headphone mode works); barge-in works within 300 ms; if AEC fails, decide on plugin vs headphone-only.
 - **S2 Background audio:** a 30-minute Web Audio program with the screen off and the app backgrounded in the Capacitor WebView, with a foreground service and MediaSession. *Exit:* no gap > 250 ms.
 - **S3 Voice bake-off:** 3–4 TTS candidates against a fixed rubric on a fixed script set (naturalness, expressive-markup fidelity, TTFB, cost per 1k characters, license for in-app commercial use). *Exit:* one primary and one fallback chosen.
 - **S4 Memory/decoding:** two decks plus decode-ahead on a 20-track library on the device. *Exit:* no OOM, no glitch; decides `DecodedDeck` vs `MediaElement` for the next song.
-- **Kill criteria:** if S1 cannot reach p95 <= 3.0 s with half-duplex, ship the show without the live caller (Phase 2 still stands) and keep the caller as a later "voice message" feature.
+- **Kill criteria** (looser than the S1 exit on purpose: the exit is the product target, this is the point where the live caller stops being worth building): if S1 cannot reach p95 <= 3.0 s with half-duplex, ship the show without the live caller (Phase 2 still stands) and keep the caller as a later "voice message" feature.
 
 **P2. You Radio, no caller (about 3–4 weeks).** Backend v0 (auth, quota, rundown, script, TTS), Director/Writer/verifier, program bus with decks A/B, ducking, crossfade, dead-air ladder, station bible, minimal Radio UI, AI label. Context: time/date/holiday/sun/library only. *Exit:* a 45-minute unattended show with zero audible dead air on-device; every script passes the verifier; cost per hour measured and below an owner-approved ceiling; offline start = music only and the app otherwise unchanged.
 

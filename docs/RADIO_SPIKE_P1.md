@@ -12,7 +12,7 @@ Status: spike complete as far as a sandbox allows. Code is THROWAWAY and lives i
 |---|---|---|---|
 | 1 | Echo cancellation / full-duplex in a WebView | **NEEDS-DEVICE. No go or no-go can be given.** | The sandbox has no speaker-to-mic acoustic path, so AEC cannot be exercised at all. The harness is built and its measurement chain is validated against known simulated echoes. Keep the accepted default (headphones full-duplex, push-to-talk on speaker) until a device run says otherwise. |
 | 2 | Background / screen-off audio | **NEEDS-DEVICE. Treat as the highest risk to the feature.** | Nothing about a paused Android activity or a vendor battery manager can be observed in a desktop headless browser. A concrete checklist, a test page, a foreground-service/MediaSession/wake-lock test APK and a manual-only CI workflow are ready, but the APK has not been built (no Android SDK here, workflow not yet run). |
-| 3 | Caller-loop latency | **NEEDS-DEVICE and needs vendors. Framework: GO.** | The pipeline skeleton, instrumentation and report work, and found real problems in the budget table (section 5.4). No vendor was wired, so stages 2 to 6 are configured delays. The S1 exit (p50 <= 2.0 s, p95 <= 3.0 s) is untestable until a vendor spike exists. |
+| 3 | Caller-loop latency | **NEEDS-DEVICE and needs vendors. Framework: GO.** | The pipeline skeleton, instrumentation and report work, and found real problems in the budget table (section 5.4). No vendor was wired, so stages 2 to 6 are configured delays. The S1 exit (now p50 <= 1.6 s, p95 <= 2.5 s, gate on p95; this spike was run against the earlier 2.0 / 3.0) is untestable until a vendor spike exists. |
 
 Nothing in this spike changes a locked decision. It does surface four corrections to the architecture doc (section 5.4) and one practical constraint on how to run the device test (secure context, section 7).
 
@@ -218,6 +218,6 @@ Remaining checks that are not in the page: whether the music bus changes volume/
 
 1. Owner runs section 7 (S2 first, then S1 echo). That decides whether the radio bus needs to be native before any P2 work.
 2. If B1 passes: keep Web Audio; productionise the service as a proper plugin. If it fails: decide native bus now.
-3. Correct the budget notes in `RADIO_ARCHITECTURE.md` 8.3 (section 5.4) when convenient.
+3. ~~Correct the budget notes in `RADIO_ARCHITECTURE.md` 8.3 (section 5.4)~~ Done in P0: range row, 1,400 ms masking threshold, gate on p95, S1 exit 1.6 / 2.5 s.
 4. Pick one STT, one writer and one TTS and replace the three stubs (S1 proper and S3), then rerun with `Source = measured` on every row.
 5. Delete `spike/radio-p1/`, the workflow and this document's procedure once P2 supersedes them.
