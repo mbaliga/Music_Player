@@ -49,6 +49,11 @@ jobs:
       - name: Add Android platform
         run: npx --no-install cap add android
 
+      - name: Install the Runout launcher icon
+        run: |
+          pip install --quiet pillow
+          python3 scripts/apply-icon.py
+
       - name: Sync web assets into the Android project
         run: npx --no-install cap sync android
 
