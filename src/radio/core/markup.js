@@ -144,7 +144,7 @@ const xml = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, 
 
 /**
  * Map one script utterance onto an engine. Returns
- *   {form:'ssml'|'text', body, params:{rate?, pitchSemitones?, engineStyle?, direction?}, sfx:[{name, atChar}], dropped:[...]}
+ *   {form:'ssml'|'text', body, params:{rate?, pitchSemitones?, engineStyle?, direction?}, sfx:[{name, atChar}] (atChar = index into the plain speech, markers excluded), dropped:[...]}
  * `dropped` names every feature the engine could not honour (so tests and telemetry-free
  * logs can see degradation). `resolve` renders late-bound templates (see templateResolver).
  */
@@ -163,14 +163,14 @@ export function degradeUtterance(utt, capsIn = CAPS_NONE, { resolve } = {}) {
     else if (t.type === 'template') { const r = resolve ? String(resolve(t.name) ?? '') : ''; add(caps.ssml ? xml(r) : r, r.length); }
     else if (t.type === 'pause') {
       if (caps.ssml) add(`<break time="${t.ms}ms"/>`, 0);
-      else add(t.ms >= 600 ? '... ' : t.ms >= 200 ? ', ' : ' ', 1);
+      else add(t.ms >= 600 ? '... ' : t.ms >= 200 ? ', ' : ' ', 0);
       if (!caps.ssml) dropped.add('pause-ms'); // approximated by punctuation
     } else if (t.type === 'breath') {
-      if (caps.audioTags && caps.audioTags.breath) add(` ${caps.audioTags.breath} `, 1);
+      if (caps.audioTags && caps.audioTags.breath) add(` ${caps.audioTags.breath} `, 0);
       else if (caps.ssml) { add('<break time="250ms"/>', 0); dropped.add('breath'); }
-      else { add(', ', 1); dropped.add('breath'); }
+      else { add(', ', 0); dropped.add('breath'); }
     } else if (t.type === 'laugh') {
-      if (caps.audioTags && caps.audioTags.laugh) add(` ${caps.audioTags.laugh} `, 1);
+      if (caps.audioTags && caps.audioTags.laugh) add(` ${caps.audioTags.laugh} `, 0);
       else dropped.add('laugh');
     } else if (t.type === 'sfx') sfx.push({ name: t.name, atChar: plainLen }); // played by the bus, not the voice
     else if (t.type === 'em') {

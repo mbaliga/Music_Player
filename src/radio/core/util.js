@@ -83,8 +83,9 @@ export function checker() {
     arr(v, path, o = {}) {
       if (absent(v, o)) return o.optional || o.nullable ? true : err(path, 'required');
       if (!Array.isArray(v)) return err(path, 'must be an array');
-      if (v.length < (o.min ?? 0)) return err(path, `needs at least ${o.min} item(s)`);
-      if (v.length > (o.max ?? Infinity)) return err(path, `more than ${o.max} items`);
+      // length problems are reported but the array is still returned for item checks
+      if (v.length < (o.min ?? 0)) err(path, `needs at least ${o.min} item(s)`);
+      if (v.length > (o.max ?? Infinity)) err(path, `more than ${o.max} items`);
       return true;
     },
     strArr(v, path, o = {}) {
