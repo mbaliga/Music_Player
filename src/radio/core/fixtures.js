@@ -145,11 +145,11 @@ const slot = (slotId, kind, targetSec, extra = {}) => ({ slotId, kind, targetSec
 /** Hand-checked Rundown for 'rainy-commute' (library: makeLibrary(20)). */
 export function goldenRundown() {
   return {
-    schemaVersion: 1, rundownId: 'fx-golden-1', snapshotId: 'fx-rainy-commute', horizonSec: 1085,
+    schemaVersion: 1, rundownId: 'fx-golden-1', snapshotId: 'fx-rainy-commute', horizonSec: 852,
     showSeed: { theme: 'rain on the glass', moodArc: ['warm', 'wry', 'hushed'], runningGag: null, callbackFromMemory: null },
     slots: [
       slot('g1', 'station_id', 6),
-      slot('g2', 'song', 205, { song: { constraints: { energy: 0.5, genres: ['jazz', 'soul'] }, trackIdHint: 't003' } }),
+      slot('g2', 'song', 187, { song: { constraints: { energy: 0.5, genres: ['jazz', 'soul'] }, trackIdHint: 't003' } }),
       slot('g3', 'talk_over_intro', 12, { talk: { budgetSec: 12, purpose: 'set the scene', factIds: ['wx.now'], mode: 'over_intro', mood: 'warm' } }),
       slot('g4', 'song', 198, { song: { constraints: { energy: 0.6, genres: ['rock'] } } }),
       slot('g5', 'talk_break', 30, { talk: { budgetSec: 30, purpose: 'weather and the evening ahead', factIds: ['wx.now', 'wx.next6h', 'sun.set'], mode: 'between_songs', mood: 'wry' } }),

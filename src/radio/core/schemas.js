@@ -256,6 +256,7 @@ export const validateSegment = guarded((g) => {
     c.num(g.duck.leadMs, 'duck.leadMs', { min: 0, max: 2000 });
     c.num(g.duck.releaseMs, 'duck.releaseMs', { min: 0, max: 5000 });
   }
+  c.str(g.attachedTo, 'attachedTo', { optional: true, max: 80 });
   c.num(g.fadeInSec, 'fadeInSec', { optional: true, min: 0, max: 30 });
   c.num(g.fadeOutSec, 'fadeOutSec', { optional: true, min: 0, max: 30 });
   return c.result();
