@@ -237,3 +237,14 @@ export function degradeSlotForServices(slot, snapshot, atMs) {
   if (needsConvert) { next.kind = 'talk_break'; next.talk.purpose = 'chat without facts'; }
   return { slot: next, converted: needsConvert, dropped };
 }
+
+/**
+ * Air-time expiry (4.3, 10.2 "stale air-time facts"): remove utterances whose facts expired by atMs.
+ * Returns {script, droppedIds}; an empty script means the slot should be skipped or swapped for a
+ * non-time-sensitive variant (e.g. canned.js).
+ */
+export function dropStaleUtterances(script, atMs) {
+  const keep = [], droppedIds = [];
+  for (const u of script.utterances || []) (utteranceStaleAt(u, atMs) ? droppedIds.push(u.id) : keep.push(u));
+  return { script: { ...script, utterances: keep }, droppedIds };
+}

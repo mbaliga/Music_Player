@@ -48,9 +48,11 @@ export const horizonOf = (slots) => slots.filter((s) => !OVERLAY_KINDS.includes(
 /**
  * repairRundown(raw, {snapshot, atMs, maxSlots}) ->
  *   {ok, rundown|null, repairs:[{code, slotId, detail}], errors[]}
+ * A rolling EXTENSION passes previousKind (kind of the last slot already on the clock): the first-slot rule is
+ * then skipped and adjacency is checked against it. idPrefix namespaces generated slot ids across calls.
  * ok=false only for unrepairable input (not an object, wrong schemaVersion, no usable slots).
  */
-export function repairRundown(raw, { snapshot = null, atMs, maxSlots = LIMITS.maxSlots } = {}) {
+export function repairRundown(raw, { snapshot = null, atMs, maxSlots = LIMITS.maxSlots, idPrefix = '', previousKind = null } = {}) {
   const repairs = [];
   const fix = (code, slotId, detail) => repairs.push({ code, slotId: slotId ?? null, detail: detail ?? null });
   let r;
@@ -70,7 +72,7 @@ export function repairRundown(raw, { snapshot = null, atMs, maxSlots = LIMITS.ma
   for (const s0 of r.slots) {
     if (!isObj(s0) || !SLOT_KINDS.includes(s0.kind)) { fix('drop_unknown_kind', isObj(s0) ? s0.slotId : null, isObj(s0) ? s0.kind : typeof s0); continue; }
     let s = { ...s0 };
-    if (typeof s.slotId !== 'string' || !s.slotId || seenIds.has(s.slotId)) { const old = s.slotId; s.slotId = `r${++n}-${s.kind}`; fix('rename_slot', s.slotId, `was ${JSON.stringify(old)}`); }
+    if (typeof s.slotId !== 'string' || !s.slotId || seenIds.has(s.slotId)) { const old = s.slotId; s.slotId = `${idPrefix}r${++n}-${s.kind}`; fix('rename_slot', s.slotId, `was ${JSON.stringify(old)}`); }
     seenIds.add(s.slotId);
     const target = clampDur(s.kind, s.targetSec);
     if (target !== s.targetSec) fix('clamp_duration', s.slotId, `${s.targetSec} -> ${target}`);
@@ -118,22 +120,22 @@ export function repairRundown(raw, { snapshot = null, atMs, maxSlots = LIMITS.ma
   let k = 0;
   const out = [];
   for (const s of slots) {
-    const prev = [...out].reverse().find((x) => !OVERLAY_KINDS.includes(x.kind));
+    const prev = [...out].reverse().find((x) => !OVERLAY_KINDS.includes(x.kind)) || (previousKind ? { kind: previousKind } : null);
     if (prev && isTalky(prev.kind) && isTalky(s.kind)) {
       if (s.skippable) { fix('drop_adjacent_talk', s.slotId, 'skippable'); continue; }
-      const filler = { slotId: `rep-song-${++k}`, kind: 'song', targetSec: DEFAULT_SONG_SEC, song: { constraints: {}, trackIdHint: null } };
+      const filler = { slotId: `${idPrefix}rep-song-${++k}`, kind: 'song', targetSec: DEFAULT_SONG_SEC, song: { constraints: {}, trackIdHint: null } };
       out.push(filler); fix('insert_song_between_talk', filler.slotId, `before ${s.slotId}`);
     }
     out.push(s);
   }
 
   // 4. first slot: music or a pre-rendered ID
-  if (out.length && !(out[0].kind === 'song' || out[0].kind === 'station_id')) {
-    const id = { slotId: 'rep-id-0', kind: 'station_id', targetSec: ID_SEC };
+  if (!previousKind && out.length && !(out[0].kind === 'song' || out[0].kind === 'station_id')) {
+    const id = { slotId: `${idPrefix}rep-id-0`, kind: 'station_id', targetSec: ID_SEC };
     out.unshift(id); fix('prepend_station_id', id.slotId, `first slot was ${out[1].kind}`);
     // cold start: an ID straight into talk is not a start; put a song between
     if (out[1].kind !== 'song' && !OVERLAY_KINDS.includes(out[1].kind)) {
-      const song = { slotId: 'rep-song-0', kind: 'song', targetSec: DEFAULT_SONG_SEC, song: { constraints: {}, trackIdHint: null } };
+      const song = { slotId: `${idPrefix}rep-song-0`, kind: 'song', targetSec: DEFAULT_SONG_SEC, song: { constraints: {}, trackIdHint: null } };
       out.splice(1, 0, song); fix('insert_song_after_cold_start_id', song.slotId);
     }
   }
@@ -200,4 +202,14 @@ export function rundownProblems(rundown, snapshot) {
     }
   });
   return bad;
+}
+
+/**
+ * Music-only slots made on the device when the Director is unreachable (offline, quota, refusal).
+ * Songs are chosen by song-select.js as usual; no talk, so nothing needs the network.
+ */
+export function musicOnlySlots(count, startIndex = 0) {
+  return Array.from({ length: count }, (_, i) => ({
+    slotId: `mo${startIndex + i}`, kind: 'song', targetSec: DEFAULT_SONG_SEC, song: { constraints: {}, trackIdHint: null }, skippable: false,
+  }));
 }

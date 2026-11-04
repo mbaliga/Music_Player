@@ -44,18 +44,18 @@ export function planTalkOverIntro({ songStartSec, cues, utterances, prevOutroSec
   const between = () => ({ mode: 'between_songs', voiceStartSec: null, durationSec: total(all), keptIds: all.map((u) => u.id), droppedIds: [] });
   const confident = cues && cues.confidence !== 'low' && Number.isFinite(cues.introEndSec) && cues.introEndSec >= minIntroSec;
   if (!confident) return between();
-  const window = cues.introEndSec - hitMarginSec;
+  const usable = cues.introEndSec - hitMarginSec;
   let kept = [...all];
   const dropped = [];
-  for (let i = kept.length - 1; i >= 0 && total(kept) > window + EPS; i--) {
+  for (let i = kept.length - 1; i >= 0 && total(kept) > usable + EPS; i--) {
     if (kept[i].droppable) { dropped.push(kept[i].id); kept.splice(i, 1); }
   }
   const D = total(kept);
   if (!kept.length) return between();
-  if (D <= window + EPS) {
-    return { mode: 'over_intro', voiceStartSec: songStartSec + Math.max(0, window - D), durationSec: D, keptIds: kept.map((u) => u.id), droppedIds: dropped };
+  if (D <= usable + EPS) {
+    return { mode: 'over_intro', voiceStartSec: songStartSec + Math.max(0, usable - D), durationSec: D, keptIds: kept.map((u) => u.id), droppedIds: dropped };
   }
-  const need = D - window;
+  const need = D - usable;
   if (need <= Math.min(prevOutroSec, maxPreRollSec) + EPS) {
     return { mode: 'pre_roll', voiceStartSec: songStartSec - need, durationSec: D, keptIds: kept.map((u) => u.id), droppedIds: dropped };
   }

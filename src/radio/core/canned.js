@@ -18,6 +18,9 @@ export const CANNED_TEXTS = Object.freeze([
   "That's the sound. Keep it close, there's more where that came from.",
 ]);
 
+/** Quota / spend ceiling (429): one in-character line, then music only. */
+export const ON_A_BREAK_TEXT = "We're taking a short break here at the station. Music coming right up.";
+
 /** Local pre-rendered audio the bus can always play. durationSec is the authored length. */
 export const LOCAL_STINGERS = Object.freeze([
   { id: 'stinger.id.1', kind: 'stinger', durationSec: 6 },
@@ -36,3 +39,12 @@ export function cannedScript(slotId, seed = 0) {
 }
 
 export const localStingerById = (id) => LOCAL_STINGERS.find((s) => s.id === id) || null;
+
+/** The in-character "on a break" line as a Script (no facts). */
+export function breakScript(slotId) {
+  return {
+    schemaVersion: 1,
+    slotId,
+    utterances: [{ id: `${slotId}.break`, text: ON_A_BREAK_TEXT, style: { emotion: 'warm', energy: 0.35, pace: 1 }, factRefs: [], droppable: false }],
+  };
+}
