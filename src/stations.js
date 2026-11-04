@@ -23,8 +23,10 @@
 //   Station  = { type, id, name, ... }            (type must match a StationType.id)
 //   Session  = { start(): Promise<void>, stop(): void,
 //                onChange(cb: ({phase, error}) => void): void }
-//     phase ∈ 'idle' | 'connecting' | 'buffering' | 'playing' | 'error'
+//     phase ∈ 'idle' | 'connecting' | 'buffering' | 'reconnecting' | 'playing' | 'error'
 //     (the reducer in radio.js:reduceSession is the reference state machine)
+//   Identity for favourites/recents is (station.type, station.id) — see radio-store.js; ids must be
+//   stable across sessions (a directory UUID, or e.g. 'you' / 'you-city:<slug>' for AI stations).
 //   env      = { audioElement?, isOnline(), ... }  supplied by the host
 //
 // Pure registry, no DOM. The real-stream Session (an <audio> element) is in

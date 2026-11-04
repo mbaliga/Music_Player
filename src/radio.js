@@ -92,6 +92,10 @@ export function parseStations(json, { httpsOnly = true, allowHls = false } = {})
       || (!allowHls && (r.hls === 1 || r.hls === true || /\.m3u8(\?|$)/i.test(url)))
       || (httpsOnly && !/^https:/i.test(url));
     if (bad) { skipped++; return; }
+    // The directory's other URL for the same station (url vs url_resolved) is an alternate to try if
+    // the primary is dead; it must pass the same https / HLS rules.
+    const alt = [r.url_resolved, r.url].find((u) => isHttp(u) && u !== url
+      && (!httpsOnly || /^https:/i.test(u)) && (allowHls || !/\.m3u8(\?|$)/i.test(u)));
     const dedupe = `${name.toLowerCase()}\0${url}`;
     if (seen.has(dedupe)) { skipped++; return; }
     seen.add(dedupe);
@@ -103,6 +107,7 @@ export function parseStations(json, { httpsOnly = true, allowHls = false } = {})
       id: `rb:${id}`,
       name,
       streamUrl: url,
+      streamUrls: alt ? [url, alt] : [url], // candidates in try order; [0] === streamUrl
       country: typeof r.country === 'string' ? r.country : '',
       tags,
       codec, bitrate,
@@ -192,11 +197,25 @@ export function classifyPlaybackFailure({ online = true, mediaErrorCode = 0, tim
   }
 }
 
-/** Playback-session reducer (pure). state = { phase, error }. */
+// ── Reconnect policy (mid-stream drops) ─────────────────────────────────────
+export const MAX_RECONNECTS = 4;
+/** Backoff before reconnect attempt n (0-based): 1 s, 2 s, 4 s, 8 s, capped at 8 s. */
+export const reconnectDelayMs = (attempt) => Math.min(8000, 1000 * 2 ** Math.max(0, attempt | 0));
+
+/** Distinct, valid stream URLs to try for a station, preferred first. Never throws. */
+export function streamCandidates(station) {
+  const list = [];
+  const add = (u) => { if (isHttp(u) && !list.includes(u)) list.push(u); };
+  if (station) { add(station.streamUrl); if (Array.isArray(station.streamUrls)) station.streamUrls.forEach(add); }
+  return list;
+}
+
+/** Playback-session reducer (pure). state = { phase, error, attempt? }. */
 export function reduceSession(state, event) {
   switch (event.type) {
     case 'play': return { phase: 'connecting', error: null };
-    case 'playing': return state.phase === 'connecting' || state.phase === 'buffering' ? { phase: 'playing', error: null } : state;
+    case 'reconnecting': return { phase: 'reconnecting', error: null, attempt: event.attempt | 0 };
+    case 'playing': return state.phase === 'connecting' || state.phase === 'buffering' || state.phase === 'reconnecting' ? { phase: 'playing', error: null } : state;
     case 'buffering': return state.phase === 'playing' ? { phase: 'buffering', error: null } : state;
     case 'error': return { phase: 'error', error: event.failure };
     case 'stop': return { phase: 'idle', error: null };
