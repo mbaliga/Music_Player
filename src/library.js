@@ -4,192 +4,18 @@
 //   1. File System Access API (showDirectoryPicker) — recursive folder scan.
 //   2. <input webkitdirectory> — fallback for WebViews / older Chrome.
 //
-// Metadata: inline ID3v2 parser (MP3) + FLAC Vorbis comment parser.
+// Metadata: tags.js (pure) reads ID3v2 / FLAC / Ogg / MP4 tags incl. track +
+// disc numbers; libindex.js + library-store.js persist the scanned metadata
+// (IndexedDB) so albums and mixtape refs survive a restart as "needs re-link".
 // Cover art → dominant hue → color-sort support.
 // Grid view: CSS grid, pinch-to-zoom column count, sort by color/genre/A-Z.
 // Albums: grouping + Vinyl/CD classification live in the pure albums.js; this
 // file only collects tracks and draws the shelf.
 
 import { groupTracks, shelfItems, KIND_CD } from './albums.js';
-
-// ── ID3 genre table (first 80 entries; covers nearly all real-world files) ──
-const ID3_GENRES = [
-  'Blues','Classic Rock','Country','Dance','Disco','Funk','Grunge','Hip-Hop',
-  'Jazz','Metal','New Age','Oldies','Other','Pop','R&B','Rap','Reggae','Rock',
-  'Techno','Industrial','Alternative','Ska','Death Metal','Pranks','Soundtrack',
-  'Euro-Techno','Ambient','Trip-Hop','Vocal','Jazz+Funk','Fusion','Trance',
-  'Classical','Instrumental','Acid','House','Game','Sound Clip','Gospel','Noise',
-  'Alternative Rock','Bass','Soul','Punk','Space','Meditative','Instrumental Pop',
-  'Instrumental Rock','Ethnic','Gothic','Darkwave','Techno-Industrial','Electronic',
-  'Pop-Folk','Eurodance','Dream','Southern Rock','Comedy','Cult','Gangsta Rap',
-  'Top 40','Christian Rap','Pop/Funk','Jungle','Native American','Cabaret',
-  'New Wave','Psychedelic','Rave','Showtunes','Trailer','Lo-Fi','Tribal',
-  'Acid Punk','Acid Jazz','Polka','Retro','Musical','Rock & Roll','Hard Rock',
-];
-
-// ── Tiny ID3v2 parser (MP3) ─────────────────────────────────────────────────
-async function parseID3v2(file) {
-  const maxRead = Math.min(file.size, 512 * 1024); // first 512 KB
-  const buf = await file.slice(0, maxRead).arrayBuffer();
-  const d = new Uint8Array(buf);
-
-  if (d[0] !== 0x49 || d[1] !== 0x44 || d[2] !== 0x33) return null; // not ID3
-
-  const majorVer = d[3];
-  const flags = d[5];
-  const tagSize = ((d[6] & 0x7f) << 21) | ((d[7] & 0x7f) << 14) |
-                  ((d[8] & 0x7f) << 7)  |  (d[9] & 0x7f);
-
-  let pos = 10;
-  if (flags & 0x40) { // extended header
-    const xs = majorVer === 4
-      ? ((d[10] & 0x7f) << 21) | ((d[11] & 0x7f) << 14) | ((d[12] & 0x7f) << 7) | (d[13] & 0x7f)
-      : (d[10] << 24) | (d[11] << 16) | (d[12] << 8) | d[13];
-    pos += xs + (majorVer === 4 ? 0 : 4);
-  }
-
-  const end = Math.min(tagSize + 10, d.length);
-  const result = {};
-  const SHORT = majorVer === 2; // v2.2 uses 3-char IDs and 3-byte sizes
-
-  const readText = (fd) => {
-    if (!fd.length) return '';
-    const enc = fd[0];
-    const bytes = fd.slice(1);
-    if (enc === 0) {
-      let s = '';
-      for (let i = 0; i < bytes.length && bytes[i] !== 0; i++)
-        s += String.fromCharCode(bytes[i]);
-      return s;
-    }
-    if (enc === 3) {
-      const z = bytes.indexOf(0);
-      try { return new TextDecoder('utf-8').decode(z >= 0 ? bytes.slice(0, z) : bytes); }
-      catch { return ''; }
-    }
-    // UTF-16 (enc 1 = with BOM, enc 2 = BE without BOM)
-    const le = enc === 1 && bytes[0] === 0xff && bytes[1] === 0xfe;
-    const start = (enc === 1 && (bytes[0] === 0xff || bytes[0] === 0xfe)) ? 2 : 0;
-    let s = '';
-    for (let i = start; i + 1 < bytes.length; i += 2) {
-      const cp = le ? bytes[i] | (bytes[i + 1] << 8) : (bytes[i] << 8) | bytes[i + 1];
-      if (cp === 0) break;
-      s += String.fromCodePoint(cp);
-    }
-    return s;
-  };
-
-  while (pos + (SHORT ? 6 : 10) <= end) {
-    const id = SHORT
-      ? String.fromCharCode(d[pos], d[pos + 1], d[pos + 2])
-      : String.fromCharCode(d[pos], d[pos + 1], d[pos + 2], d[pos + 3]);
-    if (!id || d[pos] === 0) break; // padding
-
-    const size = SHORT
-      ? (d[pos + 3] << 16) | (d[pos + 4] << 8) | d[pos + 5]
-      : majorVer === 4
-        ? ((d[pos + 4] & 0x7f) << 21) | ((d[pos + 5] & 0x7f) << 14) | ((d[pos + 6] & 0x7f) << 7) | (d[pos + 7] & 0x7f)
-        : (d[pos + 4] << 24) | (d[pos + 5] << 16) | (d[pos + 6] << 8) | d[pos + 7];
-
-    const ds = pos + (SHORT ? 6 : 10);
-    if (size <= 0 || ds + size > end) break;
-
-    const fd = d.slice(ds, ds + size);
-    pos = ds + size;
-
-    if (id === 'TIT2' || id === 'TT2') result.title = readText(fd);
-    else if (id === 'TPE1' || id === 'TP1') result.artist = readText(fd);
-    else if (id === 'TPE2' || id === 'TP2') result.albumArtist = readText(fd);
-    else if (id === 'TALB' || id === 'TAL') result.album = readText(fd);
-    else if (id === 'TCON' || id === 'TCO') {
-      let g = readText(fd);
-      g = g.replace(/^\((\d+)\)(.*)$/, (_, n, rest) => rest.trim() || ID3_GENRES[+n] || g);
-      result.genre = g.trim();
-    } else if ((id === 'APIC' || id === 'PIC') && !result.coverBlob) {
-      let i = 1; // skip encoding byte
-      if (SHORT) {
-        i += 3; // 3-char image format in v2.2
-      } else {
-        while (i < fd.length && fd[i] !== 0) i++;
-        i++; // skip null
-      }
-      i++; // skip picture type
-      const enc = fd[0];
-      if (enc === 1 || enc === 2) {
-        while (i + 1 < fd.length && !(fd[i] === 0 && fd[i + 1] === 0)) i += 2;
-        i += 2;
-      } else {
-        while (i < fd.length && fd[i] !== 0) i++;
-        i++;
-      }
-      if (i < fd.length) result.coverBlob = new Blob([fd.slice(i)]);
-    }
-  }
-
-  return result;
-}
-
-// ── FLAC Vorbis comment + PICTURE parser ────────────────────────────────────
-async function parseFLAC(file) {
-  const maxRead = Math.min(file.size, 1024 * 1024);
-  const buf = await file.slice(0, maxRead).arrayBuffer();
-  const d = new Uint8Array(buf);
-
-  if (d[0] !== 0x66 || d[1] !== 0x4c || d[2] !== 0x61 || d[3] !== 0x43) return null;
-
-  const result = {};
-  let pos = 4;
-
-  while (pos + 4 <= d.length) {
-    const header = d[pos];
-    const last = (header & 0x80) !== 0;
-    const type = header & 0x7f;
-    const blockLen = (d[pos + 1] << 16) | (d[pos + 2] << 8) | d[pos + 3];
-    pos += 4;
-    const blockEnd = Math.min(pos + blockLen, d.length);
-    const td = new TextDecoder('utf-8');
-
-    if (type === 4) { // VORBIS_COMMENT
-      let p = pos;
-      const vendorLen = d[p] | (d[p + 1] << 8) | (d[p + 2] << 16) | (d[p + 3] << 24);
-      p += 4 + vendorLen;
-      const count = d[p] | (d[p + 1] << 8) | (d[p + 2] << 16) | (d[p + 3] << 24);
-      p += 4;
-      for (let i = 0; i < count && p + 4 <= blockEnd; i++) {
-        const cLen = d[p] | (d[p + 1] << 8) | (d[p + 2] << 16) | (d[p + 3] << 24);
-        p += 4;
-        if (p + cLen > blockEnd) break;
-        const comment = td.decode(d.slice(p, p + cLen));
-        p += cLen;
-        const eq = comment.indexOf('=');
-        if (eq < 0) continue;
-        const key = comment.slice(0, eq).toUpperCase();
-        const val = comment.slice(eq + 1);
-        if (key === 'TITLE') result.title = val;
-        else if (key === 'ARTIST') result.artist = val;
-        else if (key === 'ALBUMARTIST') result.albumArtist = val;
-        else if (key === 'ALBUM') result.album = val;
-        else if (key === 'GENRE') result.genre = val;
-      }
-    } else if (type === 6 && !result.coverBlob) { // PICTURE
-      let p = pos;
-      const picType = (d[p] << 24) | (d[p + 1] << 16) | (d[p + 2] << 8) | d[p + 3];
-      p += 4;
-      const mimeLen = (d[p] << 24) | (d[p + 1] << 16) | (d[p + 2] << 8) | d[p + 3];
-      p += 4 + mimeLen;
-      const descLen = (d[p] << 24) | (d[p + 1] << 16) | (d[p + 2] << 8) | d[p + 3];
-      p += 4 + descLen + 16; // skip width/height/depth/colors
-      const dataLen = (d[p] << 24) | (d[p + 1] << 16) | (d[p + 2] << 8) | d[p + 3];
-      p += 4;
-      if (p + dataLen <= blockEnd) result.coverBlob = new Blob([d.slice(p, p + dataLen)]);
-    }
-
-    pos = blockEnd;
-    if (last) break;
-  }
-
-  return result;
-}
+import { readFileTags } from './tags.js';
+import { trackId, serializeIndex, parseIndex, mergeScanned, linkSummary } from './libindex.js';
+import { saveIndex, loadIndex, saveHandle, loadHandles } from './library-store.js';
 
 // ── Dominant hue extraction from album art ───────────────────────────────────
 async function dominantHue(imageUrl) {
@@ -251,13 +77,8 @@ function hueToHex(h) {
 
 // ── Parse a single audio file ────────────────────────────────────────────────
 async function processFile(file) {
-  const ext = file.name.split('.').pop().toLowerCase();
   let meta = null;
-
-  try {
-    if (ext === 'mp3') meta = await parseID3v2(file);
-    else if (ext === 'flac') meta = await parseFLAC(file);
-  } catch {}
+  try { meta = await readFileTags(file); } catch {}
 
   const name = file.name.replace(/\.[^.]+$/, '');
   const title  = meta?.title  || name;
@@ -268,16 +89,19 @@ async function processFile(file) {
   const albumArtist = meta?.albumArtist || '';
   const genre  = meta?.genre  || '';
   const path   = file.runoutPath || file.webkitRelativePath || '';
+  const trackNo = meta?.trackNo, discNo = meta?.discNo, durationSec = meta?.durationSec;
+  const size = file.size || 0;
 
   let coverUrl = null;
-  if (meta?.coverBlob) {
-    coverUrl = URL.createObjectURL(meta.coverBlob);
+  if (meta?.cover?.data?.length) {
+    coverUrl = URL.createObjectURL(new Blob([meta.cover.data], { type: meta.cover.mime || 'image/jpeg' }));
   }
 
   const hue = coverUrl ? await dominantHue(coverUrl) : hashHue(artist + (album || path || name));
   const color = hueToHex(hue);
+  const id = trackId({ title, artist, album, trackNo, discNo, size, durationSec });
 
-  return { file, title, artist, albumArtist, album, path, genre, coverUrl, hue, color };
+  return { id, file, title, artist, albumArtist, album, path, genre, trackNo, discNo, durationSec, size, coverUrl, hue, color };
 }
 
 // ── Library manager ──────────────────────────────────────────────────────────
@@ -297,6 +121,7 @@ export class LibraryManager {
       let dirHandle;
       try { dirHandle = await window.showDirectoryPicker({ mode: 'read' }); }
       catch { return; } // user cancelled
+      saveHandle(dirHandle); // best-effort: lets "Re-link" skip the picker next session
       files = await collectFilesFromDir(dirHandle, [], dirHandle.name);
     } else {
       files = await pickFilesViaInput();
@@ -313,14 +138,62 @@ export class LibraryManager {
 
   async _ingest(audioFiles, onProgress) {
     let done = 0;
+    let batch = [];
+    const flush = () => {
+      if (!batch.length) return;
+      // A scanned file REPLACES the persisted needs-re-link entry with its id.
+      this.tracks = mergeScanned(this.tracks, batch);
+      batch = [];
+      this._shelf = null;
+    };
     for (const f of audioFiles) {
-      try {
-        this.tracks.push(await processFile(f));
-        this._shelf = null;
-      } catch {}
+      try { batch.push(await processFile(f)); } catch {}
       done++;
+      if (batch.length >= 25) flush();
       onProgress?.(done, audioFiles.length);
     }
+    flush();
+    this._persist();
+  }
+
+  // ── Persisted index (metadata only; see libindex.js) ──────────────────────
+  _persist() {
+    saveIndex(serializeIndex(this.tracks, Date.now())).catch(() => {});
+  }
+
+  /** Load the persisted index at startup. Restored tracks are `relink: true`. */
+  async restore() {
+    if (this.tracks.length) return 0;
+    const restored = parseIndex(await loadIndex());
+    if (restored.length) { this.tracks = restored; this._shelf = null; }
+    return restored.length;
+  }
+
+  get linkSummary() { return linkSummary(this.tracks); }
+
+  /**
+   * Re-link persisted tracks to real files. MUST be called from a user gesture.
+   * Tries stored File System Access handles first (a prompt for read access at
+   * most; never silently), then falls back to the folder picker. Resolves with
+   * the new linkSummary.
+   */
+  async relink(onProgress) {
+    try {
+      const handles = await loadHandles();
+      let any = false;
+      for (const { name, handle } of handles) {
+        try {
+          let perm = await handle.queryPermission({ mode: 'read' });
+          if (perm !== 'granted') perm = await handle.requestPermission({ mode: 'read' });
+          if (perm !== 'granted') continue;
+          const files = await collectFilesFromDir(handle, [], handle.name || name);
+          await this._ingest(files.filter((f) => AUDIO_RE.test(f.name)), onProgress);
+          any = true;
+        } catch {}
+      }
+      if (!any) await this.scan(onProgress);
+    } catch {}
+    return this.linkSummary;
   }
 
   // Shelf items (a vinyl = one item, each CD disc = one item), shaped for the
@@ -410,6 +283,7 @@ export class GridView {
       .filter((a) => this._kind === 'all' || a.kind === this._kind);
     this._container.innerHTML = '';
     this._container.style.setProperty('--cell', this._cellSize + 'px');
+    this._renderRelinkBar();
 
     for (const alb of albums) {
       this._container.appendChild(this._albumCard(alb));
@@ -422,13 +296,38 @@ export class GridView {
     }
   }
 
+  // "N tracks need re-link [Re-link]" strip above the grid; hidden when nothing
+  // is pending. The button is the user gesture the folder permission needs.
+  _renderRelinkBar() {
+    const n = this._lib.linkSummary?.needsRelink || 0;
+    if (!this._bar) {
+      this._bar = document.createElement('div');
+      this._bar.className = 'relink-bar';
+      this._container.parentNode?.insertBefore(this._bar, this._container);
+    }
+    this._bar.hidden = !n;
+    this._bar.innerHTML = '';
+    if (!n) return;
+    const msg = document.createElement('span');
+    msg.textContent = `${n} saved track${n === 1 ? '' : 's'} need re-linking to play`;
+    const btn = document.createElement('button');
+    btn.type = 'button'; btn.className = 'sort-chip relink-btn'; btn.textContent = 'Re-link…';
+    btn.addEventListener('click', async () => {
+      btn.disabled = true;
+      await this._lib.relink?.((d, t) => { msg.textContent = `${d} / ${t} files…`; });
+      this.render();
+    });
+    this._bar.append(msg, btn);
+  }
+
   // Vinyl = square sleeve with a black disc peeking out of the side; CD =
   // jewel case (spine strip, glossy frame) with a rainbow-sheen disc corner.
   // Pure CSS (.alb-card.vinyl / .cd in index.html); the playing interface for
   // a CD currently reuses the vinyl platter (see HANDOFF.md "Albums").
   _albumCard(alb) {
     const card = document.createElement('div');
-    card.className = 'alb-card ' + alb.kind;
+    const needs = alb.tracks.length && alb.tracks.every((t) => !t.file);
+    card.className = 'alb-card ' + alb.kind + (needs ? ' relink' : '');
     card.style.setProperty('--alb-color', alb.color);
 
     const art = document.createElement('div');
@@ -478,7 +377,16 @@ export class GridView {
     alb.tracks.forEach((t) => {
       const li = document.createElement('li');
       li.textContent = t.title;
-      li.addEventListener('click', () => { d.remove(); this._onSelect(t.file, alb.album, alb.artist, t); });
+      if (!t.file) {
+        // Persisted metadata only: playing needs the file back (user gesture).
+        li.className = 'relink';
+        const tag = document.createElement('small');
+        tag.textContent = ' needs re-link';
+        li.appendChild(tag);
+        li.addEventListener('click', async () => { await this._lib.relink?.(); d.remove(); this.render(); });
+      } else {
+        li.addEventListener('click', () => { d.remove(); this._onSelect(t.file, alb.album, alb.artist, t); });
+      }
       list.appendChild(li);
     });
     d.querySelector('.alb-detail-back').addEventListener('click', () => d.remove());
