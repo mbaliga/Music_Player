@@ -142,7 +142,7 @@ passing checks.
 ### Albums
 - **Exact rule** (`albums.js`): a disc label is `cd|disc|disk` + optional one of ` . _ -` + 1-2 digit number as a standalone word (`CD1`, `cd 2`, `Disc 02`, `Album [CD1]`, `(Disc 2)`, optional `of N`). Looked for in the album tag first, then folder names deepest-first. `CD` with no number, `Discovery`, `ACD1`, `CD123` are NOT labels. A disc-number ID3 tag alone does not make a CD.
 - One labelled track makes its whole album a CD (tags are often inconsistent). Disc-labelled variants merge into one album keyed by (albumArtist||artist, label-stripped title); the shelf shows one CD per disc ("Title · CD 2"). Untagged tracks fall back to their parent folder name, so `library.js` now stores a folder path per track (FS Access files get a stamped `runoutPath`; the `webkitdirectory` fallback uses `webkitRelativePath`).
-- **Visuals:** vinyl = square sleeve with a record peeking out, badge "LP"; CD = jewel case with spine strip + rainbow disc, badge "CD". **Playing UI:** a CD reuses the vinyl platter for now (no distinct playing view yet). Track order inside an album is natural-sorted by file path (no track-number tag parsing yet).
+- **Visuals:** vinyl = square sleeve with a record peeking out, badge "LP"; CD = jewel case with spine strip + rainbow disc, badge "CD". **Playing UI:** a CD gets its own player view (see "Track jumping + CD view" below); vinyl keeps the platter. Track order inside an album is natural-sorted by file path (no track-number tag parsing yet).
 
 ### Mixtapes
 - Refs are `{title, artist, album}` metadata, not file handles (a File can't survive a reload). Playing resolves them against the CURRENT scanned library (`resolveTracks`); unmatched refs stay on the tape, dimmed, and resolve after a re-scan. So a tape only plays after the library has been scanned this session.
@@ -166,6 +166,26 @@ passing checks.
 ### Not verified on a real device
 Everything here was exercised in desktop headless Chromium only (Playwright against `serve.py`): grouping on generated WAV folders, mixtape build/play/persist, a live station playing, dead-stream and directory-down states. NOT checked on the RedMagic/Android WebView: radio codec/mixed-content behaviour, touch ergonomics of the new tabs, mixtape playback latency, the CD/vinyl card look on a real screen, FS Access folder paths.
 
+## Track jumping + CD view (Workstream V)
+
+**Files:** `tonearm.js` and `cd.js` are PURE (tests: `test/tonearm.test.mjs`, `test/cd.test.mjs`); `cd-view.js` (canvas CD + rainbow), `needle-fx.js` (synth lift/drop sounds) are browser glue; `main.js` wires them; `render.js` draws the ghost and gap lanes. `audio-engine.js:load()` now disconnects the previous worklet node (before, every track change left the old node sounding underneath).
+
+### Vinyl (album = one record, one band per track)
+- Picking a track from an LP builds a queue (`queueFor` in main.js: matches the picked track in `library.albums()`; falls back to a single track). The record is one spiral divided into **bands** (width ~ track duration) with thin bare-vinyl **gaps**. Durations of tracks not yet decoded are estimated (mean of known) so the layout shifts slightly as tracks are played. One track = exact old behaviour (tested against `model.js`).
+- **Silent seek (arm zone, d > 0.9 rOut):** while held, a dashed **ghost ring** + marker + label ("2 · 1:12", or "▸ track 3" in a gap) shows where the needle will land. Dropping **in a gap** starts the **next track at 0:00**; landing within `startSnapFrac` of a band's outer edge also snaps to 0:00. Entering a gap fires a short haptic (`navigator.vibrate(8)`, Android).
+- **Release:** set-down ripple on the canvas, arm settle animation (`#arm.dropping`), synthesized thump + stylus tick + hiss burst; the music bus reopens `dropDelayMs` later. **Lift** plays a soft click + rumble. Silence while lifted already existed.
+- **Flick = next / previous track:** while holding the tonearm, a quick *sideways* (tangential) swipe. It cannot be confused with a seek because seeks are radial; it is judged only on release. Clockwise = next, counter-clockwise = previous (previous restarts the track if > `prevRestartSec` in). Plain scrubbing on the platter (d < 0.9 rOut) is untouched. Prev/next buttons also sit under "Now playing" for LP queues.
+- Changing track decodes the file (arm stays lifted, silent), then seeks. No prefetch / gapless yet; a vinyl track still stops at its runout (CDs auto-advance).
+
+### Knobs to tune on the device (`TONEARM_KNOBS` in `tonearm.js`, `CD_KNOBS` in `cd.js`, `NEEDLE_FX` in `needle-fx.js`)
+`gapFrac` (drawn gap width, 0.02 of groove span), `gapGrabPx` (finger hit width of a gap, 14), `startSnapFrac`; flick: `flickMinArcPx` 70, `flickMaxMs` 280, `flickMinSpeed` 0.45 px/ms, `flickMaxRadialPx` 22; `dropDelayMs` 55, `dropAnimMs` 340, `prevRestartSec` 3; sound levels `liftLevel/dropLevel/hissLevel`; CD: `segGapRad`, ring radii, `skipMuteMs` 70. The arm-grab threshold is still `rOut * 0.9` in main.js.
+
+### CD view (albums classified CD by `albums.js`)
+Replaces platter + arm in `.stage` (speed dial and brake sections hidden via `.vinyl-only`). Disc drawn procedurally: static two-lobe diffraction field (light does not rotate) under a rotating data-ring/print/dust layer. Audio is always rate 1 (or 0 paused): **no scrub, no pitch bend**. Controls: play/pause, prev/next (deck semantics), a **segment ring** (one arc per track, tap = jump) and a **progress ring** (tap = seek, with `skipMuteMs` of silence), plus a tappable track list. Centre shows track number and time. Auto-advances at track end.
+
+### Not verified
+Only desktop headless Chromium (Playwright, generated WAV albums, mouse not touch): ghost/gap drop/flick/prev-next/CD taps all behave and screenshots look right. NOT done: any feel test on the RedMagic (flick thresholds, gap grab width, haptic, sound levels, arm-zone ergonomics), touch events, real-album durations/decode time, FS Access paths.
+
 ---
 
 ## What's pending
@@ -185,7 +205,7 @@ These are the remaining items before the v0 gate is officially passed:
 - [ ] **Off-thread envelope precompute** (Worker). Currently inline/sync — fine for the 24 s synth track, slow for real album-length files.
 - [ ] **Per-track procedural grooves from real audio.** Currently the groove uses the synth track's envelope. Each imported file needs its own envelope baked and used for groove banding.
 - [ ] **Album art label fill.** `bakeGroove()` in `render.js` already accepts an `albumImage` param (drawn inside `rIn`); just needs a real image source from track metadata.
-- [ ] **Tonearm silent-seek UI polish.** Currently the needle jumps on `pointerup`. Should show a ghost position while dragging and confirm with a brief set-down animation.
+- [x] **Tonearm silent-seek UI polish.** Done (ghost ring, lift/set-down, track gaps, flick). See "Track jumping + CD view". Feel NOT tested on device.
 - [ ] **Atmosphere subsystem (§7).** Separate audio bus: filtered noise + crackle impulses, wet/dry control. Material: dust/fog density on the glass instead of a slider. Empty-groove mode (needle past runout → music bus silent, atmosphere only). Selectable surfaces (clean crackle, rain, tape warmth, brown noise).
 - [ ] **Hyle WebGL/AGSL material pass (§6).** The canvas2D renderer validates feel; the real glass + ferrofluid materials come in the WebGL pass. This is the visual upgrade that makes it feel like the spec's Hyle language.
 - [ ] **Persistence beyond wear counter.** Last position per track, per-track atmosphere settings.

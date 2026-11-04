@@ -137,3 +137,7 @@ Platform packaging (Ubuntu Touch, Linux, iOS/iPadOS, macOS, Windows) is planned,
 ## Licence
 
 Source-available, free for noncommercial use under the [PolyForm Noncommercial License 1.0.0](LICENSE). If you make money with it, you need a commercial licence: see [COMMERCIAL-LICENSE.md](COMMERCIAL-LICENSE.md).
+
+
+## Track jumping and the CD view
+Vinyl albums are one record with a band per track: hold the tonearm (outer edge) to see a ghost needle, drop it in the gap between grooves to start the next track, or flick sideways for next/previous. CD albums get a separate player (rainbow disc, track ring, tap to skip; no scrubbing). Details and tuning knobs: HANDOFF.md.

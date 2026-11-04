@@ -19,6 +19,13 @@ import {
 } from './model.js';
 import { bakeMatSprite, bakeRecord, drawFrame, makeGeometry, setLayout, getLayoutName, armTransform } from './render.js';
 import { Walkthrough } from './walkthrough.js';
+import {
+  TONEARM_KNOBS, estimateDurations, buildLayout, locate, seekTarget, stepIndex,
+  previousTarget, classifyFlick,
+} from './tonearm.js';
+import { NeedleFX } from './needle-fx.js';
+import { CdView } from './cd-view.js';
+import { CD_KNOBS, formatTime } from './cd.js';
 import { MixtapeUI } from './mixtape-ui.js';
 import { RadioUI } from './radio-player.js';
 import { LibraryManager, GridView } from './library.js';
@@ -58,6 +65,18 @@ const state = {
   reachedEnd: false,
 
   lastFrameTime: 0,
+
+  // album context (Workstream V). queue = { kind:'vinyl'|'cd', index, items:[{file,title,dur}] }
+  // or null for a single loose track. layout = tonearm.js band layout for the record.
+  queue: null,
+  layout: null,
+  view: 'vinyl',             // 'vinyl' platter | 'cd' player
+  cdPlaying: true,
+  cdMute: false,             // brief CD "re-read" silence after a skip
+  jumping: false,            // a track change is decoding (arm stays lifted)
+  trail: [],                 // pointer trail while the tonearm is held (flick detection)
+  ghost: null,               // { r, angle, label, gap } while dragging the tonearm
+  dropFx: null,              // { r, t0 } set-down ripple
 };
 
 const el = (id) => document.getElementById(id);
@@ -68,11 +87,13 @@ const armEl = el('arm');
 // ── boot ─────────────────────────────────────────────────────────────────────
 async function boot() {
   await state.engine.init();
+  state.fx = new NeedleFX(state.engine.ctx);
   await loadTrack(synthesizeTrack(state.engine.sampleRate, 24));
   sizeCanvas();
   window.addEventListener('resize', sizeCanvas);
   installInput();
   installControls();
+  installAlbumNav();
   installToolbar();
   installLibrary();
   installLayout();
@@ -242,10 +263,16 @@ function showBuildId() {
   if (node) node.textContent = 'build: ' + id;
 }
 
-async function loadTrack(track) {
+// `q` is the album context when the track was picked from an album/CD
+// (see queueFor); every other caller (file picker, drop, mixtape) passes none
+// and gets a plain single-track record.
+async function loadTrack(track, q = null) {
   state.track = track;
   state.frames = track.frames;
   state.T = track.frames / state.engine.sampleRate;
+  state.queue = q;
+  if (q) q.items[q.index].dur = state.T;
+  setView(q?.kind === 'cd' ? 'cd' : 'vinyl');
 
   // Envelope: windowed RMS over a mono mixdown. (Off-thread in v1; cheap enough
   // inline for one synthesized track in v0.)
@@ -259,6 +286,7 @@ async function loadTrack(track) {
   state.reachedEnd = false;
   el('trackName').textContent = track.name;
   rebake();
+  syncAlbumUI();
 }
 
 function sizeCanvas() {
@@ -277,11 +305,19 @@ function sizeCanvas() {
   rebake();
 }
 
+// Record layout: one band per album track (single track = the classic record).
+function rebuildLayout() {
+  if (!state.geom) return;
+  const known = state.queue ? state.queue.items.map((it) => it.dur) : [state.T];
+  state.layout = buildLayout(estimateDurations(known), state.geom.rOut, state.geom.rIn);
+}
+
 function rebake() {
+  rebuildLayout();
   // Mat (slipmat) is static + track-independent → bake once. The record's groove
   // IS the waveform → rebake per track from the envelope.
   if (!state.matSprite) state.matSprite = bakeMatSprite();
-  if (state.envelope) state.recordSprite = bakeRecord(state.envelope);
+  if (state.envelope) state.recordSprite = bakeRecord(state.envelope, null, state.layout?.bands, state.queue?.index ?? 0);
 }
 
 // ── the frame loop ─────────────────────────────────────────────────────────
@@ -318,7 +354,10 @@ function loop(now) {
   );
 
   // 3. Platter ω → playback rate (normalized to the FIXED reference RPM).
-  const rate = state.seeking ? 0 : rateFromOmega(state.platter.omega, REFERENCE_RPM);
+  // CD view: steady 1x (or 0 when paused / re-reading) -- no platter, no pitch bend.
+  const rate = state.view === 'cd'
+    ? (state.cdPlaying && !state.jumping && !state.cdMute ? 1 : 0)
+    : (state.seeking || state.jumping ? 0 : rateFromOmega(state.platter.omega, REFERENCE_RPM));
   state.engine.setRate(rate);
 
   // 4. Read audio time back from the worklet to position the needle.
@@ -329,19 +368,29 @@ function loop(now) {
     state.reachedEnd = true;
     state.playCount += 1;
     localStorage.setItem('runout.playCount', String(state.playCount));
+    // A CD runs on to the next track by itself (a record just reaches the runout).
+    if (state.view === 'cd' && state.queue && stepIndex(state.queue.index, 1, state.queue.items.length) != null) {
+      goTo({ index: state.queue.index + 1, time: 0 }, false);
+    }
   }
   if (t < state.T - 0.2) state.reachedEnd = false;
 
   // 5. Render: static mat + the record spinning on top. The tonearm is the
   // screen-fixed SVG overlay; we only toggle its "lifted" pose on a silent seek.
-  drawFrame(ctx, { mat: state.matSprite, record: state.recordSprite }, {
-    theta: state.platter.theta,
-    dust: clamp(state.playCount / 20, 0, 1),
-  }, state.geom);
+  if (state.view === 'cd') {
+    state.cd.draw({ t, T: state.T, playing: state.cdPlaying, dt, loading: state.jumping });
+  } else {
+    drawFrame(ctx, { mat: state.matSprite, record: state.recordSprite }, {
+      theta: state.platter.theta,
+      dust: clamp(state.playCount / 20, 0, 1),
+      needle: needleOverlay(now),
+    }, state.geom);
+  }
 
-  if (state.seeking !== state._armLifted) {
-    state._armLifted = state.seeking;
-    armEl.classList.toggle('lifted', state.seeking);
+  const lifted = state.seeking || state.jumping;
+  if (lifted !== state._armLifted) {
+    state._armLifted = lifted;
+    armEl.classList.toggle('lifted', lifted);
   }
 
   state.mixtapes?.tick(t, state.T, rate, dt);
@@ -383,9 +432,15 @@ function installInput() {
     // Grab the tonearm (seek) when starting near/outside the outer edge; grab
     // the platter (scrub) when starting on the groove annulus.
     if (d > rOut * 0.9) {
+      if (state.jumping) return;          // a track change is still loading
       state.seeking = true;
       state.engine.setPlaying(false);     // tonearm lifted = music bus silent
+      state.fx?.lift();
       state.seekRadius = clamp(d, rIn, rOut);
+      state.trail = [];
+      state.dropFx = null;
+      trailPush();
+      updateGhost();
     } else if (d >= rIn * 0.9) {
       state.touchingPlatter = true;
       state.prevFingerAngle = pointerAngle();
@@ -398,16 +453,31 @@ function installInput() {
     if (state.seeking) {
       const { rIn, rOut } = state.geom;
       state.seekRadius = clamp(radialDist(state.pointer), rIn, rOut);
+      trailPush();
+      updateGhost();
     }
   });
 
   const endPointer = () => {
     if (state.seeking) {
-      // Tonearm set-down: hard jump to the time under the needle, music resumes.
-      const tSeek = timeAtRadius(state.seekRadius, state.T, state.geom.rOut, state.geom.rIn);
-      state.engine.seek(tSeek * state.engine.sampleRate);
-      state.engine.setPlaying(!state.radioOn);
+      // Tonearm set-down. A quick sideways flick = next / previous track;
+      // otherwise: whatever is under the needle (a point in a track, or the
+      // start of the next track if dropped in the gap between tracks).
+      const { cx, cy } = state.geom;
+      const flick = classifyFlick(state.trail, { x: cx, y: cy });
+      const q = state.queue;
+      let target = null;
+      if (flick.dir && q) {
+        target = flick.dir === 'next'
+          ? (stepIndex(q.index, 1, q.items.length) != null ? { index: q.index + 1, time: 0 } : null)
+          : previousTarget(q.index, state.engine.position / state.engine.sampleRate, q.items.length);
+      }
+      if (!target) target = seekTarget(state.layout, state.seekRadius);
+      state.trail = [];
+      state.ghost = null;
       state.seeking = false;
+      state.dropFx = { r: state.seekRadius, t0: performance.now() };
+      goTo(target, true);
     }
     if (state.touchingPlatter) {
       // Release: motor reclaims, ω winds back up to speed — you hear it.
@@ -425,6 +495,155 @@ function installInput() {
   window.addEventListener('keyup', (e) => {
     if (e.code === 'Space') { e.preventDefault(); state.braking = false; }
   });
+}
+
+// ── tonearm: ghost needle, set-down, track jumping (Workstream V) ────────────
+// Pure mapping lives in tonearm.js (radius -> track/gap, flick classifier);
+// this is only the glue. Tunables: TONEARM_KNOBS there.
+
+function trailPush() {
+  const p = canvasPoint(state.pointer);
+  state.trail.push({ x: p.x, y: p.y, t: performance.now() });
+  if (state.trail.length > 48) state.trail.shift();
+}
+
+function updateGhost() {
+  const loc = locate(state.layout, state.seekRadius);
+  const multi = state.layout.bands.length > 1;
+  const tgt = seekTarget(state.layout, state.seekRadius);
+  const gap = loc.zone === 'gap';
+  const label = gap
+    ? `▸ track ${tgt.index + 1}`
+    : (multi ? `${tgt.index + 1} · ` : '') + formatTime(tgt.time);
+  if (gap && !state._inGap) { try { navigator.vibrate?.(8); } catch { /* no haptics */ } }
+  state._inGap = gap;
+  state.ghost = { r: gap ? loc.gap.r : state.seekRadius, angle: pointerAngle(), label, gap };
+}
+
+// The overlay handed to drawFrame: live ghost while dragging, ripple after release.
+function needleOverlay(now) {
+  let dropR = null, dropT = 1;
+  if (state.dropFx) {
+    dropT = (now - state.dropFx.t0) / TONEARM_KNOBS.dropAnimMs;
+    if (dropT >= 1) state.dropFx = null; else dropR = state.dropFx.r;
+  }
+  if (!state.ghost && dropR == null) return null;
+  return { ghostR: state.ghost?.r ?? null, angle: state.ghost?.angle ?? 0, label: state.ghost?.label, gap: state.ghost?.gap, dropR, dropT };
+}
+
+// Commit a (index, time) target. Same track: a hard seek. Other track: decode it,
+// then seek. `needle` = play the vinyl set-down sound/animation (CD skips are silent).
+function goTo(target, needle) {
+  const q = state.queue;
+  const sr = state.engine.sampleRate;
+  if (!q || target.index === q.index) {
+    state.engine.seek(target.time * sr);
+    state.reachedEnd = false;
+    if (state.view === 'cd') cdSkipMute(); else finishDrop(needle);
+    return;
+  }
+  jumpTo(target, needle);
+}
+
+async function jumpTo(target, needle) {
+  const q = state.queue;
+  if (!q || state.jumping) return;
+  state.jumping = true;
+  state.engine.setPlaying(false);
+  try {
+    await state.engine.resume();
+    const track = await loadFile(q.items[target.index].file, state.engine.ctx);
+    q.index = target.index;
+    await loadTrack(track, q);
+    state.engine.seek(target.time * state.engine.sampleRate);
+  } catch (err) {
+    console.error('track jump failed', err);
+  } finally {
+    state.jumping = false;
+  }
+  if (state.view === 'cd') cdSkipMute(); else finishDrop(needle);
+}
+
+// Needle lands: thump + arm settle, then the music bus reopens a beat later.
+function finishDrop(needle) {
+  if (needle) {
+    state.fx?.drop();
+    armEl.classList.remove('dropping');
+    void armEl.getBoundingClientRect();           // restart the CSS animation
+    armEl.classList.add('dropping');
+    setTimeout(() => armEl.classList.remove('dropping'), TONEARM_KNOBS.dropAnimMs + 40);
+  }
+  setTimeout(() => state.engine.setPlaying(!state.radioOn), needle ? TONEARM_KNOBS.dropDelayMs : 0);
+}
+
+// CD "re-read": a few ms of silence on any skip, then straight back at 1x.
+function cdSkipMute() {
+  state.cdMute = true;
+  state.engine.setPlaying(!state.radioOn);
+  setTimeout(() => { state.cdMute = false; }, CD_KNOBS.skipMuteMs);
+}
+
+// Album context for a pick from the library: the shelf item (vinyl LP or one CD
+// disc) that holds the picked track. Null when it can't be found (single track).
+function queueFor(library, trackObj) {
+  if (!trackObj) return null;
+  const item = library.albums().find((a) => a.tracks.includes(trackObj));
+  if (!item) return null;
+  return {
+    kind: item.kind,
+    index: item.tracks.indexOf(trackObj),
+    items: item.tracks.map((t) => ({ file: t.file, title: t.title, dur: null })),
+  };
+}
+
+function setView(v) {
+  if (state.view === v && state._viewSet) return;
+  state._viewSet = true;
+  state.view = v;
+  document.querySelector('.stage').dataset.view = v;
+  appEl().dataset.view = v;
+  state.cd?.show(v === 'cd');
+  if (v === 'cd') state.cdPlaying = true;
+}
+
+function syncAlbumUI() {
+  const q = state.queue;
+  const n = q ? q.items.length : 0;
+  el('trkNav').classList.toggle('hidden', !(n > 1 && state.view === 'vinyl'));
+  if (q) el('trkIdx').textContent = `${q.index + 1} / ${n}`;
+  if (q && state.view === 'cd') {
+    state.cd.setTracks(q.items.map((it) => it.title), estimateDurations(q.items.map((it) => it.dur)), q.index);
+  }
+}
+
+function stepTrack(dir) {
+  const q = state.queue;
+  if (!q || state.jumping) return;
+  const t = state.engine.position / state.engine.sampleRate;
+  const target = dir > 0
+    ? (stepIndex(q.index, 1, q.items.length) != null ? { index: q.index + 1, time: 0 } : null)
+    : previousTarget(q.index, t, q.items.length);
+  if (!target) return;
+  state.dropFx = state.view === 'vinyl' ? { r: state.geom.rOut * 0.92, t0: performance.now() } : null;
+  if (state.view === 'vinyl') state.fx?.lift();
+  goTo(target, state.view === 'vinyl');
+}
+
+function installAlbumNav() {
+  el('btnPrevTrk').addEventListener('click', async () => { await state.engine.resume(); stepTrack(-1); });
+  el('btnNextTrk').addEventListener('click', async () => { await state.engine.resume(); stepTrack(1); });
+  state.cd = new CdView({
+    root: el('cdView'), canvas: el('cdCanvas'), list: el('cdList'),
+    prev: el('cdPrev'), next: el('cdNext'), play: el('cdPlay'),
+    num: el('cdNum'), time: el('cdTime'), title: el('cdTitle'),
+  }, {
+    onTrack: (i) => { if (state.queue && !state.jumping) goTo({ index: i, time: 0 }, false); },
+    onSeekFrac: (f) => { if (!state.jumping) goTo({ index: state.queue?.index ?? 0, time: f * state.T }, false); },
+    onPrev: () => stepTrack(-1),
+    onNext: () => stepTrack(1),
+    onToggle: async () => { await state.engine.resume(); state.cdPlaying = !state.cdPlaying; },
+  });
+  setView(state.view);
 }
 
 // ── controls / HUD ───────────────────────────────────────────────────────────
@@ -684,11 +903,11 @@ function installLibrary() {
   progressEl.style.display = 'none';
   el('libGridWrap').insertBefore(progressEl, gridEl);
 
-  const grid = new GridView(gridEl, library, async (file) => {
+  const grid = new GridView(gridEl, library, async (file, _album, _artist, trackObj) => {
     el('libOverlay').classList.add('hidden');
     await state.engine.resume();
     const track = await loadFile(file, state.engine.ctx);
-    await loadTrack(track);
+    await loadTrack(track, queueFor(library, trackObj));
   });
 
   // Render the grid immediately so it's ready when the pinch transition opens it.

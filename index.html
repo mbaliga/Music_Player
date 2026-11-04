@@ -144,6 +144,29 @@
   }
   #arm.lifted { transform: translateY(-14px) rotate(-2.2deg); opacity: .92; }
 
+  /* ── Tonearm flick / track-nav + CD view (Workstream V) ─────────────────── */
+  #arm.dropping { animation: armDrop .34s cubic-bezier(.3,1.5,.5,1); }
+  @keyframes armDrop { 0% { transform: translateY(-14px) rotate(-2.2deg); } 55% { transform: translateY(1.5px) rotate(.3deg); } 100% { transform: none; } }
+  .trk-nav { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+  .trk-nav.hidden { display: none; }
+  .trk-nav button { background: var(--surface2); color: var(--ink); border: 1px solid var(--border); border-radius: 8px; padding: 6px 14px; font-size: 15px; cursor: pointer; }
+  .trk-nav .trk-idx { font-size: 12px; color: var(--ink2); font-variant-numeric: tabular-nums; }
+  .cd-view { position: absolute; inset: 0; display: flex; flex-direction: column; gap: 6px; padding: 8px 12px; background: var(--bg); }
+  .cd-view.hidden { display: none; }
+  .stage[data-view="cd"] #disc, .stage[data-view="cd"] #arm { display: none; }
+  .app[data-view="cd"] .vinyl-only { display: none; }
+  .cd-view canvas { flex: 1 1 auto; min-height: 0; width: 100%; touch-action: manipulation; cursor: pointer; }
+  .cd-title { text-align: center; font-weight: 600; font-size: 14px; color: var(--ink-bg, var(--ink)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cd-meta { display: flex; justify-content: center; gap: 12px; font-size: 12px; color: var(--ink2); font-variant-numeric: tabular-nums; }
+  .cd-ctl { display: flex; justify-content: center; gap: 12px; }
+  .cd-ctl button { background: var(--surface2); color: var(--ink); border: 1px solid var(--border); border-radius: 50%; width: 44px; height: 44px; font-size: 16px; cursor: pointer; }
+  .cd-ctl button.cd-play { background: var(--violet); color: #fff; border-color: transparent; }
+  .cd-list { list-style: none; margin: 0; padding: 0; max-height: 18svh; overflow-y: auto; font-size: 13px; }
+  .cd-list li { padding: 7px 10px; border-radius: 6px; color: var(--ink2); cursor: pointer; counter-increment: cdt; }
+  .cd-list li::before { content: counter(cdt, decimal-leading-zero) "  "; font-variant-numeric: tabular-nums; opacity: .6; }
+  .cd-list { counter-reset: cdt; }
+  .cd-list li.cur { background: var(--violet-glow); color: var(--ink); font-weight: 600; }
+
   /* ── Panel ──────────────────────────────────────────────────────────────────── */
   .panel {
     background: var(--surface);
@@ -794,6 +817,18 @@
 
   <div class="stage">
     <canvas id="disc" width="760" height="1000"></canvas>
+    <!-- CD playing view (shown instead of the platter for CD albums) -->
+    <div class="cd-view hidden" id="cdView">
+      <div class="cd-title" id="cdTitle"></div>
+      <canvas id="cdCanvas"></canvas>
+      <div class="cd-meta"><span id="cdNum">Track 1 of 1</span><span id="cdTime">0:00 / 0:00</span></div>
+      <div class="cd-ctl">
+        <button id="cdPrev" type="button" aria-label="Previous track">⏮</button>
+        <button id="cdPlay" class="cd-play" type="button" aria-label="Play / pause">❚❚</button>
+        <button id="cdNext" type="button" aria-label="Next track">⏭</button>
+      </div>
+      <ol class="cd-list" id="cdList"></ol>
+    </div>
     <svg id="arm" viewBox="0 0 760 1000" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Turntable tonearm">
       <defs>
         <linearGradient id="cwGrad" x1="0" y1="0" x2="1" y2="0">
@@ -940,10 +975,15 @@
     <div class="section">
       <div class="section-title">Now playing</div>
       <div class="track-name" id="trackName">…</div>
+      <div class="trk-nav hidden" id="trkNav">
+        <button id="btnPrevTrk" type="button" aria-label="Previous track">⏮</button>
+        <span class="trk-idx" id="trkIdx"></span>
+        <button id="btnNextTrk" type="button" aria-label="Next track">⏭</button>
+      </div>
     </div>
 
     <!-- Speed dial -->
-    <div class="section">
+    <div class="section vinyl-only">
       <div class="section-title">Speed dial</div>
       <div class="rpms">
         <button data-rpm="33.333">33⅓</button>
@@ -958,10 +998,10 @@
     </div>
 
     <!-- Palm brake -->
-    <div class="section">
+    <div class="section vinyl-only">
       <div class="section-title">Palm brake</div>
       <div id="brakePad" class="brake">HOLD TO BRAKE · ⎵</div>
-      <p class="hint">Drag the disc to scratch. Start at the outer edge to swing the tonearm (silent seek).</p>
+      <p class="hint">Drag the disc to scratch. Start at the outer edge to swing the tonearm (silent seek): drop it in the gap between tracks to start the next one, or flick sideways there for next / previous.</p>
     </div>
 
     <!-- Live stats -->

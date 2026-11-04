@@ -66,7 +66,11 @@ export function bakeMatSprite() {
 
 // The spinning record — glossy black vinyl. Same sprite footprint as the mat so
 // it drops in centred; the vinyl disc inside is RECORD_RATIO of the mat radius.
-export function bakeRecord(env, albumImage = null) {
+// `bands` (optional, from tonearm.js buildLayout().bands) divides the grooves
+// into one band per album track with smooth bare-vinyl gaps between them; the
+// envelope of the loaded track (`cur`) modulates its own band, the others sit
+// at a flat level. With no bands (or one) this is the single-track record.
+export function bakeRecord(env, albumImage = null, bands = null, cur = 0) {
   const size = _mat ? _mat.size : MAT_R * 2 + 16;
   const cv = document.createElement('canvas');
   cv.width = size; cv.height = size;
@@ -76,6 +80,7 @@ export function bakeRecord(env, albumImage = null) {
   const rIn = rOut * 0.32;
 
   const sampleEnv = (u) => (env && env.length ? env[Math.min(env.length - 1, Math.floor(u * env.length))] : 0.3);
+  const multi = bands && bands.length > 1;
 
   // Glossy black base, upper-left key light.
   const base = g.createRadialGradient(cx - rOut * 0.28, cy - rOut * 0.28, rOut * 0.04, cx, cy, rOut);
@@ -93,7 +98,20 @@ export function bakeRecord(env, albumImage = null) {
   for (let i = 0; i < N; i++) {
     const u = i / N;
     const r = rOut - (rOut - rIn) * u;
-    const e = sampleEnv(u);
+    let e;
+    if (multi) {
+      const b = bands.find((x) => u >= x.uA && u <= x.uB);
+      if (!b) {
+        // bare vinyl between tracks: no groove, just a smooth lit lane
+        g.strokeStyle = 'rgba(210,210,230,0.045)';
+        g.lineWidth = 1;
+        g.beginPath(); g.arc(cx, cy, r, 0, TAU); g.stroke();
+        continue;
+      }
+      e = b.index === cur ? sampleEnv((u - b.uA) / Math.max(1e-6, b.uB - b.uA)) : 0.22;
+    } else {
+      e = sampleEnv(u);
+    }
     // dark groove valley
     g.strokeStyle = 'rgba(0,0,0,0.30)';
     g.lineWidth = 1;
@@ -194,4 +212,56 @@ export function drawFrame(ctx, sprites, state, geom) {
     ctx.beginPath(); ctx.arc(geom.cx, geom.cy, rr, 0, TAU); ctx.fill();
     ctx.restore();
   }
+
+  if (state.needle) drawNeedleGhost(ctx, state.needle, geom);
+}
+
+// Silent-seek overlay: a dashed ghost ring at the radius the needle WILL land
+// on, a marker on the finger's side, a label ("2 · 1:12" or "-> 3"), and after
+// release an expanding set-down ripple.
+//   needle = { ghostR, angle, label, gap, dropR, dropT }   (dropT 0..1 ripple age)
+function drawNeedleGhost(ctx, n, geom) {
+  const { cx, cy } = geom;
+  ctx.save();
+  if (n.ghostR != null) {
+    ctx.strokeStyle = n.gap ? 'rgba(255,214,140,0.85)' : 'rgba(170,150,255,0.8)';
+    ctx.lineWidth = n.gap ? 2.2 : 1.4;
+    ctx.setLineDash([5, 5]);
+    ctx.beginPath(); ctx.arc(cx, cy, n.ghostR, 0, TAU); ctx.stroke();
+    ctx.setLineDash([]);
+    const px = cx + Math.cos(n.angle) * n.ghostR, py = cy + Math.sin(n.angle) * n.ghostR;
+    ctx.fillStyle = n.gap ? '#ffd68c' : '#b9acff';
+    ctx.beginPath(); ctx.arc(px, py, 4.5, 0, TAU); ctx.fill();
+    if (n.label) {
+      ctx.font = '600 12px system-ui, sans-serif';
+      const w = ctx.measureText(n.label).width + 14;
+      const side = Math.cos(n.angle) > 0 ? -1 : 1;           // keep the pill on the disc side
+      const lx = clamp(px + side * (w / 2 + 12), w / 2 + 4, geom.W - w / 2 - 4);
+      const ly = clamp(py - 22, 14, geom.H - 14);
+      ctx.fillStyle = 'rgba(16,16,22,0.88)';
+      ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+      ctx.lineWidth = 1;
+      pill(ctx, lx - w / 2, ly - 11, w, 22); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#eceaff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(n.label, lx, ly + 0.5);
+    }
+  }
+  if (n.dropR != null && n.dropT < 1) {
+    const k = n.dropT;
+    ctx.strokeStyle = `rgba(190,175,255,${(0.7 * (1 - k)).toFixed(3)})`;
+    ctx.lineWidth = 3 * (1 - k) + 0.5;
+    ctx.beginPath(); ctx.arc(cx, cy, n.dropR + 14 * (1 - Math.pow(1 - k, 2)), 0, TAU); ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function pill(ctx, x, y, w, h) {
+  const r = h / 2;
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
 }

@@ -54,6 +54,12 @@ export class AudioEngine {
    * each `frames` long, already at the context sample rate.
    */
   async load(channels, frames) {
+    // A previous track's node would otherwise keep sounding (and layer under the
+    // new one) after every load: silence and detach it first.
+    if (this.node) {
+      try { this.node.port.onmessage = null; this.node.disconnect(); } catch { /* already gone */ }
+      this.node = null;
+    }
     this.frames = frames;
     this.channels = channels.length;
     this.usingSAB = this.isSharedMemory;
