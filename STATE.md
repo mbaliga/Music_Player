@@ -6,10 +6,12 @@ Beyond the v0 instrument, the library overlay now has **Albums** (Vinyl vs CD, b
 
 ## Next
 Run the v0 feel-gate; if web audio fails latency, swap `audio-engine.js` for native.
-Then: on-device check of the three new tabs (radio codecs/mixed content in the WebView); track-number/disc-number tag parsing; AI/"You" stations via the `stations.js` seam (plan: `docs/RADIO_ARCHITECTURE.md`).
+Then: on-device check of the three new tabs (radio codecs/mixed content in the WebView); AI/"You" stations via the `stations.js` seam (plan: `docs/RADIO_ARCHITECTURE.md`).
 Multi-platform packaging is a plan only (nothing built) and waits on that gate: see `PORTING_PLAN.md`.
 
 Vinyl track-jumping (ghost needle, gap drop = next track, flick) and a distinct CD player view are in; desktop-Chromium verified only, knobs listed in HANDOFF.md "Track jumping + CD view" need on-device tuning.
+
+Tag parsing, persisted library metadata (needs re-link) and the bounded-memory gapless mixtape queue are in (desktop-Chromium verified; device decode time/memory unverified; see HANDOFF.md).
 
 ## Owner-verified
 On-device latency.
