@@ -137,7 +137,7 @@ passing checks.
 
 ## Albums, Mixtapes, Radio (Workstream A)
 
-**New files:** `albums.js`, `mixtape.js`, `radio.js`, `stations.js` are PURE (node:test in `test/`); `cassette.js`, `mixtape-ui.js`, `radio-player.js` are browser glue. `library.js`/`main.js` only wire them. Library overlay now has Albums | Mixtapes | Radio tabs. `npm test` is 84 checks.
+**New files:** `albums.js`, `mixtape.js`, `radio.js`, `stations.js` are PURE (node:test in `test/`); `cassette.js`, `mixtape-ui.js`, `radio-player.js` are browser glue. `library.js`/`main.js` only wire them. Library overlay now has Albums | Mixtapes | Radio tabs. `npm test` is 84 checks (now 300+ with the radio core; see "AI radio" below).
 
 ### Albums
 - **Exact rule** (`albums.js`): a disc label is `cd|disc|disk` + optional one of ` . _ -` + 1-2 digit number as a standalone word (`CD1`, `cd 2`, `Disc 02`, `Album [CD1]`, `(Disc 2)`, optional `of N`). Looked for in the album tag first, then folder names deepest-first. `CD` with no number, `Discovery`, `ACD1`, `CD123` are NOT labels. A disc-number ID3 tag alone does not make a CD.
@@ -256,3 +256,14 @@ adb reverse tcp:8000 tcp:8000     # phone's localhost → this machine
 # then open http://localhost:8000 in Chrome on the phone
 ```
 `localhost` is a secure context even without HTTPS, so SharedArrayBuffer stays on and you get the full SAB latency path — the truest read of the §3 gate.
+
+---
+
+## AI radio ("You" / "You City"): status
+
+Plan: `docs/RADIO_ARCHITECTURE.md`. Spike notes: `docs/RADIO_SPIKE_P1.md`.
+
+* **P0 DONE (contracts and skeleton).** `src/radio/core/` is a pure, dependency-free core with `node:test` coverage in `test/radio-core/` (`src/radio/core/README.md` has the module map, the pure-vs-adapter split and how the fakes swap for real adapters). Feature flag `radio.ai` (`src/radio/flag.js`), **default off, no UI**; when off nothing in `src/radio/core/` is on the boot path (`test/radio-core/boot-path.test.mjs`) and behaviour is unchanged. `stations.js` has an inert `ai-you` / `ai-you-city` stub (registered only when the flag is on) that shares the existing `type|id` favourites keys.
+* **P1 device spikes pending** (owner runs `docs/RADIO_SPIKE_P1.md` section 7: S2 background audio first, then S1 echo/AEC and the vendor latency spike). Latency gate is now p95 <= 2.5 s (p50 <= 1.6 s reported); the 8.3 doc errors were corrected in P0.
+* **P2 gated** on the v0 feel gate and the owner's device results (if the engine goes native, the radio bus follows; `core/` stays portable). Open items for P2: see the P0 final report / `src/radio/core/README.md`.
+

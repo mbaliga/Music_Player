@@ -18,3 +18,7 @@ On-device latency.
 
 ## Radio P1 spike
 Radio spike P1 done as far as a sandbox allows; verdicts are NEEDS-DEVICE (echo, background audio) and framework-GO (latency). Device procedure and results: `docs/RADIO_SPIKE_P1.md`. Throwaway code in `spike/radio-p1/`.
+
+## AI radio
+P0 (contracts and skeleton) done: pure core in `src/radio/core/`, flag `radio.ai` default OFF, not on the boot path, inert `ai-you`/`ai-you-city` station stub. P1 device spikes pending (owner). P2 gated on the v0 feel gate and the owner's device results. See HANDOFF.md "AI radio".
+
