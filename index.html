@@ -448,6 +448,12 @@
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
 
+  /* Persisted-but-unlinked library entries (library.js / libindex.js) */
+  .relink-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 0 0 8px; padding: 8px 10px; font-size: 12px; color: var(--ink2); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; }
+  .relink-bar[hidden] { display: none; }
+  .alb-card.relink .alb-art { opacity: .55; filter: saturate(.6); }
+  .alb-detail-list li.relink { opacity: .6; }
+  .alb-detail-list li.relink small, .mt-tracks li small.relink { color: var(--ink2); font-size: 11px; }
   .grid-empty {
     grid-column: 1 / -1;
     text-align: center; color: var(--ink2); font-size: 14px; padding: 32px;

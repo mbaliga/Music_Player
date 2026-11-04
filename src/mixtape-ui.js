@@ -12,8 +12,9 @@ import {
   CASSETTE_STYLES, FONTS, FONT_COLOURS, STORAGE_KEY, styleById,
   createMixtape, withName, withStyle, withFont, withFontColor,
   addTrack, removeTrack, moveTrack, resolveTracks, tapeProgress,
-  serializeMixtape, parseMixtape, serializeCollection, parseCollection, newMixtapeId,
+  serializeMixtape, parseMixtape, serializeCollection, parseCollection, newMixtapeId, isFutureCollection,
 } from './mixtape.js';
+import { createQueue, reduce as queueReduce } from './queue.js';
 import { drawCassette, cassetteRect } from './cassette.js';
 
 const h = (tag, props = {}, ...kids) => {
@@ -28,7 +29,16 @@ const h = (tag, props = {}, ...kids) => {
 };
 
 function load() {
-  try { return parseCollection(localStorage.getItem(STORAGE_KEY)); } catch { return []; }
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    const list = parseCollection(raw);
+    // Never let an unreadable blob (e.g. written by a NEWER app) be silently
+    // overwritten by the next save: park a copy first.
+    if (!list.length && raw && isFutureCollection(raw)) {
+      try { localStorage.setItem(STORAGE_KEY + '.backup', raw); } catch {}
+    }
+    return list;
+  } catch { return []; }
 }
 function save(list) {
   try { localStorage.setItem(STORAGE_KEY, serializeCollection(list)); } catch {}
@@ -49,8 +59,15 @@ export class MixtapeUI {
   /**
    * deps = {
    *   getLibraryTracks: () => track[]           scanned library tracks
-   *   playFile: (file) => Promise<void>         load + play one file (main.js)
+   *   playFile: (file) => Promise<track|void>   load + play one file (main.js)
    *   closeLibrary: () => void
+   *   relink?: () => Promise<void>               user-gesture re-link of persisted tracks
+   * Optional gapless hooks (all four or none; see queue.js + AudioEngine.prepareNext):
+   *   decodeNext(file) -> Promise<track>         decode (+ envelope) without loading
+   *   prepareNext(track) -> Promise<void>        park it on the engine's next deck
+   *   joinNext(fadeSec) -> boolean               swap to it now (crossfade)
+   *   dropNext() -> void
+   *   adoptTrack(track) -> void                  tell the UI/render layer the track changed
    * }
    */
   constructor(deps) {
@@ -67,6 +84,9 @@ export class MixtapeUI {
     importBtn.addEventListener('click', () => this.importDialog());
     this.render();
   }
+
+  /** Re-render after the library changed (persisted restore / re-link). */
+  refresh() { if (this.listEl) this.render(); }
 
   render() {
     const el = this.listEl;
@@ -125,9 +145,11 @@ export class MixtapeUI {
         onclick: () => { m = withFontColor(m, c.hex); refresh(); },
       })));
       const lib = this.d.getLibraryTracks();
-      const have = new Set(resolveTracks(m, lib).map((t, i) => (t ? i : -1)));
+      const res = resolveTracks(m, lib);
+      const have = new Set(res.map((t, i) => (t ? i : -1)));
+      const note = (i) => (!have.has(i) ? ' · not in library' : res[i].file ? '' : ' · needs re-link');
       listEl.replaceChildren(...m.tracks.map((t, i) => h('li', { class: have.has(i) ? '' : 'missing' },
-        h('span', { class: 'mt-t' }, t.title, h('small', {}, ` ${t.artist}${have.has(i) ? '' : ' · not in library'}`)),
+        h('span', { class: 'mt-t' }, t.title, h('small', {}, ` ${t.artist}${note(i)}`)),
         h('button', { type: 'button', class: 'mt-mini', 'aria-label': 'Move up', onclick: () => { m = moveTrack(m, i, i - 1); refresh(); } }, '↑'),
         h('button', { type: 'button', class: 'mt-mini', 'aria-label': 'Move down', onclick: () => { m = moveTrack(m, i, i + 1); refresh(); } }, '↓'),
         h('button', { type: 'button', class: 'mt-mini', 'aria-label': 'Remove', onclick: () => { m = removeTrack(m, i); refresh(); } }, '✕'))));
@@ -263,8 +285,13 @@ export class MixtapeUI {
   }
 
   async startPlayback(m) {
-    const files = resolveTracks(m, this.d.getLibraryTracks()).map((t) => (t ? t.file : null));
-    this.play = { mix: m, files, idx: -1, loading: false, ended: false };
+    const resolved = resolveTracks(m, this.d.getLibraryTracks());
+    const files = resolved.map((t) => (t && t.file ? t.file : null));
+    const relink = resolved.map((t) => !!(t && !t.file));   // known to the library, file not linked yet
+    const durations = resolved.map((t) => (t && t.durationSec) || null);
+    this._dropQueued();
+    this.play = { mix: m, files, relink, idx: -1, loading: false, ended: false, tok: 0,
+      q: createQueue({ playable: files.map(Boolean), durations }) };
     this.d.closeLibrary();
     this.root.classList.remove('hidden');
     this.listPanel.classList.add('hidden');
@@ -272,12 +299,25 @@ export class MixtapeUI {
     this._fillList();
     const first = files.findIndex(Boolean);
     if (first < 0) {
-      this.msg.textContent = 'None of this tape’s tracks are in the library right now. Scan your music folder, then play again.';
-      this.msg.classList.remove('hidden');
+      this._showMsg(relink.some(Boolean)
+        ? 'This tape’s tracks are remembered but need re-linking to your music folder.'
+        : 'None of this tape’s tracks are in the library right now. Scan your music folder, then play again.',
+      relink.some(Boolean));
       return;
     }
     this.msg.classList.add('hidden');
     await this._goto(first);
+  }
+
+  _showMsg(text, withRelink) {
+    this.msg.replaceChildren(text);
+    if (withRelink && this.d.relink) {
+      this.msg.append(' ', h('button', { class: 'sort-chip relink-btn', type: 'button', onclick: async () => {
+        await this.d.relink();
+        const p = this.play; if (p) this.startPlayback(p.mix);
+      } }, 'Re-link…'));
+    }
+    this.msg.classList.remove('hidden');
   }
 
   _fillList() {
@@ -285,7 +325,7 @@ export class MixtapeUI {
     this.listPanel.replaceChildren(...p.mix.tracks.map((t, i) => h('li', {
       class: (i === p.idx ? 'now ' : '') + (p.files[i] ? '' : 'missing'),
       onclick: (e) => { e.stopPropagation(); if (p.files[i]) this._goto(i); },
-    }, t.title, h('small', {}, ` ${t.artist}`))));
+    }, t.title, h('small', {}, ` ${t.artist}`), p.relink[i] ? h('small', { class: 'relink' }, ' · needs re-link') : null)));
   }
 
   async _goto(i) {
@@ -293,19 +333,94 @@ export class MixtapeUI {
     if (!p || !p.files[i]) return;
     p.idx = i; p.loading = true; p.ended = false;
     this._fillList();
-    try { await this.d.playFile(p.files[i]); }
-    catch (e) { this.msg.textContent = 'Could not play “' + p.mix.tracks[i].title + '”.'; this.msg.classList.remove('hidden'); }
+    // Tell the queue first: jumping to the track it already decoded joins it
+    // with no re-decode; any other jump discards the queued deck.
+    const acts = this._q({ type: 'start', index: i });
+    if (acts.some((a) => a.type === 'join') && p.nextTrack && p.nextTrack.index === i) {
+      this._applyJoin(i, 0.02);
+      p.loading = false;
+      return;
+    }
+    p.tok++; p.nextTrack = null; this.d.dropNext?.();
+    try {
+      const tr = await this.d.playFile(p.files[i]);
+      if (tr && tr.frames) p.q = { ...p.q, curBytes: tr.frames * (tr.channels ? tr.channels.length : 2) * 4 };
+    } catch (e) { this.msg.textContent = 'Could not play “' + p.mix.tracks[i].title + '”.'; this.msg.classList.remove('hidden'); }
     p.loading = false;
+  }
+
+  // ── Gapless queue host (policy in queue.js; engine hooks in audio-engine.js) ──
+  get _gapless() { return !!(this.d.decodeNext && this.d.prepareNext && this.d.joinNext && this.d.adoptTrack); }
+
+  /** Feed an event to the pure queue; run the actions it returns. */
+  _q(ev) {
+    const p = this.play;
+    if (!p) return [];
+    const { state, actions } = queueReduce(p.q, ev);
+    p.q = state;
+    for (const a of actions) {
+      if (ev.type === 'start') continue; // _goto handles start's actions itself
+      if (a.type === 'preload') this._preload(a.index);
+      else if (a.type === 'join') this._applyJoin(a.index, a.fadeSec);
+      else if (a.type === 'cold') this._goto(a.index);
+      else if (a.type === 'end') p.ended = true;
+      else if (a.type === 'drop-next') { p.tok++; p.nextTrack = null; this.d.dropNext?.(); }
+    }
+    return actions;
+  }
+
+  async _preload(index) {
+    const p = this.play;
+    const tok = ++p.tok;
+    try {
+      const tr = await this.d.decodeNext(p.files[index]);
+      if (this.play !== p || p.tok !== tok) return;   // user jumped / new tape: discard
+      await this.d.prepareNext(tr);                   // engine copies the PCM...
+      const bytes = tr.frames * (tr.channels ? tr.channels.length : 2) * 4;
+      tr.channels = null;                             // ...so drop ours: bounded memory
+      if (this.play !== p || p.tok !== tok) { this.d.dropNext?.(); return; }
+      p.nextTrack = { index, tr };
+      this._q({ type: 'preloaded', index, bytes });
+    } catch {
+      if (this.play === p && p.tok === tok) this._q({ type: 'preloadFailed', index });
+    }
+  }
+
+  _applyJoin(index, fadeSec) {
+    const p = this.play;
+    const nt = p && p.nextTrack;
+    if (!nt || nt.index !== index || !this.d.joinNext(fadeSec)) {
+      // Nothing usable queued after all: fall back to a plain cold load.
+      this._dropQueued();
+      if (p) { p.q = createQueue({ playable: p.files.map(Boolean), durations: p.q.durations }); this._goto(index); }
+      return;
+    }
+    p.nextTrack = null;
+    p.idx = index;
+    this.d.adoptTrack(nt.tr);
+    this._q({ type: 'joined' });
+    this._fillList();
+  }
+
+  _dropQueued() {
+    if (this.play) { this.play.tok++; this.play.nextTrack = null; }
+    this.d.dropNext?.();
   }
 
   /** Called every frame by main.js with the live playback state. */
   tick(t, T, rate, dt) {
     const p = this.play;
     if (!p) return;
-    // Advance to the next playable track at the runout.
-    if (!p.loading && !p.ended && p.idx >= 0 && T > 0.5 && t >= T - 0.05) {
-      const next = p.files.findIndex((f, i) => i > p.idx && f);
-      if (next >= 0) this._goto(next); else p.ended = true;
+    if (!p.loading && p.idx >= 0) {
+      if (this._gapless) {
+        // Bounded-memory gapless advance: preload the next track ahead of the runout, join at it.
+        if (p.q.cur !== p.idx) p.q = { ...p.q, cur: p.idx };
+        this._q({ type: 'tick', t, T, rate });
+      } else if (!p.ended && T > 0.5 && t >= T - 0.05) {
+        // No engine hooks: plain load-at-the-runout (a short gap).
+        const next = p.files.findIndex((f, i) => i > p.idx && f);
+        if (next >= 0) this._goto(next); else p.ended = true;
+      }
     }
     if (this.root.classList.contains('hidden')) return;
     this.angle += rate * dt * 4;

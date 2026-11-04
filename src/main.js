@@ -912,6 +912,9 @@ function installLibrary() {
 
   // Render the grid immediately so it's ready when the pinch transition opens it.
   grid.render();
+  // Persisted library metadata (tags only, no audio) -> albums + mixtape refs
+  // resolve before any re-scan; those tracks show "needs re-link" until then.
+  library.restore().then((n) => { if (n) { grid.render(); state.mixtapes?.refresh?.(); } }).catch(() => {});
 
   // Radio: real stations via an <audio> element. While one plays the vinyl bus is
   // muted (a live stream has no spiral to scrub); stopping restores it.
@@ -936,7 +939,30 @@ function installLibrary() {
     closeLibrary,
     playFile: async (file) => {
       await state.engine.resume();
-      await loadTrack(await loadFile(file, state.engine.ctx));
+      const track = await loadFile(file, state.engine.ctx);
+      await loadTrack(track);
+      return track;
+    },
+    relink: () => library.relink(),
+    // Gapless hooks (queue.js model; AudioEngine.prepareNext/joinNext).
+    decodeNext: async (file) => {
+      const track = await loadFile(file, state.engine.ctx, { copy: false });
+      const [L, R] = track.channels;
+      track.envelope = computeEnvelope((i) => (L[i] + R[i]) * 0.5, track.frames, 1024); // off the join path
+      return track;
+    },
+    prepareNext: (track) => state.engine.prepareNext(track.channels, track.frames),
+    joinNext: (fadeSec) => state.engine.joinNext({ fadeSec }),
+    dropNext: () => state.engine.dropNext(),
+    adoptTrack: (track) => {
+      // The engine already switched decks; mirror loadTrack()'s non-engine state.
+      state.track = { frames: track.frames, name: track.name, channels: null };
+      state.frames = track.frames;
+      state.T = track.frames / state.engine.sampleRate;
+      state.envelope = track.envelope;
+      state.reachedEnd = false;
+      el('trackName').textContent = track.name;
+      rebake();
     },
   });
   state.mixtapes.mount(el('mtList'), el('mtNew'), el('mtImport'));
