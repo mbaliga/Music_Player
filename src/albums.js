@@ -17,6 +17,15 @@
 //   but does not on its own make a CD: plenty of vinyl box sets have "1/2").
 //   A multi-disc CD is ONE album with several discs; each disc is presented
 //   as its own CD (see shelfItems).
+//
+// TAGS (tags.js feeds track records optional `trackNo` / `discNo` numbers):
+//   - Track order inside a disc: tracks WITH a track number first, by number
+//     (ties and missing numbers fall back to natural file-path order).
+//   - A disc-number tag NEVER decides Vinyl vs CD (rule above is unchanged, on
+//     purpose: a lone "1/2" tag is common on vinyl rips and box sets). It only
+//     (a) orders a vinyl album's tracks disc-major (disc, then track) and
+//     (b) places a track that has no label number of its own on the right
+//     disc of an album that IS a CD by label (label number wins over the tag).
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const KIND_VINYL = 'vinyl';
@@ -68,6 +77,22 @@ export function foldersOf(path) {
   return parts;
 }
 
+const validNo = (n) => Number.isInteger(n) && n >= 1;
+
+/** Within one disc: numbered tracks by number, then the rest; path order breaks ties. */
+function compareTracks(x, y) {
+  const hx = validNo(x.trackNo), hy = validNo(y.trackNo);
+  if (hx && hy && x.trackNo !== y.trackNo) return x.trackNo - y.trackNo;
+  if (hx !== hy) return hx ? -1 : 1;
+  return naturalCmp(x.path || x.title || '', y.path || y.title || '');
+}
+
+/** Vinyl albums: disc tag major (untagged = disc 1), then compareTracks. */
+function compareVinyl(x, y) {
+  const dx = validNo(x.discNo) ? x.discNo : 1, dy = validNo(y.discNo) ? y.discNo : 1;
+  return dx - dy || compareTracks(x, y);
+}
+
 function naturalCmp(a, b) {
   return String(a).localeCompare(String(b), undefined, { numeric: true, sensitivity: 'base' });
 }
@@ -108,21 +133,23 @@ export function groupTracks(tracks) {
 
   const out = [];
   for (const a of byKey.values()) {
-    const sortTracks = (arr) => arr.sort((x, y) =>
-      naturalCmp(x.path || x.title || '', y.path || y.title || ''));
+    const sortTracks = (arr) => arr.sort(compareTracks);
     let discs;
     if (a.isCd) {
       const nums = [...a.byDisc.keys()].filter((n) => n != null).sort((x, y) => x - y);
       const home = nums.length ? nums[0] : 1;
       const merged = new Map();
       for (const [n, arr] of a.byDisc) {
-        const k = n == null ? home : n;
-        merged.set(k, (merged.get(k) || []).concat(arr));
+        for (const t of arr) {
+          const k = n != null ? n : (validNo(t.discNo) ? t.discNo : home);
+          if (!merged.has(k)) merged.set(k, []);
+          merged.get(k).push(t);
+        }
       }
       discs = [...merged.entries()].sort((x, y) => x[0] - y[0])
         .map(([number, arr]) => ({ number, tracks: sortTracks(arr) }));
     } else {
-      discs = [{ number: 1, tracks: sortTracks([...a.byDisc.values()].flat()) }];
+      discs = [{ number: 1, tracks: [...a.byDisc.values()].flat().sort(compareVinyl) }];
     }
     out.push({
       key: a.key, title: a.title, artist: a.artist,

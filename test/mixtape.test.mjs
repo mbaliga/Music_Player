@@ -9,6 +9,7 @@ import {
 } from '../src/mixtape.js';
 import { validateHexColor } from '../src/theme.js';
 
+import { isFutureCollection, MIXTAPE_VERSION } from '../src/mixtape.js';
 const tr = (title, artist = 'A', album = 'X') => ({ title, artist, album });
 
 test('catalogue: at least 6 styles with unique ids; fonts and colours are valid', () => {
@@ -109,7 +110,8 @@ test('parseMixtape names every malformed case and never throws', () => {
   assert.match(parseMixtape('[]').error, /an array/);
   assert.match(parseMixtape('3').error, /number/);
   bad((o) => delete o.version, /Missing "version"/);
-  bad((o) => { o.version = 2; }, /Unsupported "version"/);
+  bad((o) => { o.version = 3; }, /Unsupported "version"/);
+  bad((o) => { o.version = 0; }, /Unsupported "version"/);
   bad((o) => { o.name = ' '; }, /Missing "name"/);
   bad((o) => { o.style = 'zzz'; }, /Unknown "style"/);
   bad((o) => { o.font = 'zzz'; }, /Unknown "font"/);
@@ -136,4 +138,46 @@ test('newMixtapeId avoids collisions', () => {
   const a = newMixtapeId(1000, 0.5, []);
   const b = newMixtapeId(1000, 0.5, [{ id: a }]);
   assert.notEqual(a, b);
+});
+
+// ── v2: stable track ids + v1 migration ──────────────────────────────────────
+test('refs carry an optional stable id; resolve prefers id over tags', () => {
+  const lib = [{ id: 't-aaa', title: 'Retitled', artist: 'A', album: 'X' }, { title: 'One', artist: 'A', album: 'X' }];
+  assert.equal(makeTrackRef({ title: 'x', id: 't-aaa' }).id, 't-aaa');
+  assert.equal('id' in makeTrackRef({ title: 'x' }), false);
+  const m = createMixtape({ id: 'a', tracks: [{ title: 'Old name', artist: 'A', album: 'X', id: 't-aaa' }, tr('One')] });
+  const r = resolveTracks(m, lib);
+  assert.equal(r[0], lib[0]); // id match despite a changed title
+  assert.equal(r[1], lib[1]);
+});
+
+test('resolve: a linked track beats a needs-re-link one with the same key', () => {
+  const relink = { title: 'One', artist: 'A', album: 'X', relink: true, id: 'p' };
+  const live = { title: 'One', artist: 'A', album: 'X', file: {}, id: 'q' };
+  const m = createMixtape({ id: 'a', tracks: [tr('One')] });
+  assert.equal(resolveTracks(m, [relink, live])[0], live);
+  assert.equal(resolveTracks(m, [live, relink])[0], live);
+  assert.equal(resolveTracks(m, [relink])[0], relink);
+});
+
+test('v1 documents migrate: single parse and collection, ids round-trip in v2', () => {
+  const v1 = JSON.stringify({ version: 1, name: 'Old', style: 'noir', font: 'mono', fontColor: '#112233', tracks: [{ title: 'a', artist: 'b', album: 'c' }] });
+  const p = parseMixtape(v1);
+  assert.ok(p.ok); assert.equal(p.mixtape.tracks[0].id, undefined);
+  const out = JSON.parse(serializeMixtape({ ...p.mixtape, tracks: [{ title: 'a', artist: 'b', album: 'c', id: 'tid' }] }));
+  assert.equal(out.version, MIXTAPE_VERSION);
+  assert.equal(parseMixtape(JSON.stringify(out)).mixtape.tracks[0].id, 'tid');
+  const col = parseCollection(JSON.stringify({ version: 1, mixtapes: [{ id: 'm', name: 'N', tracks: [{ title: 't' }] }] }));
+  assert.equal(col.length, 1);
+  const back = parseCollection(serializeCollection([createMixtape({ id: 'm', tracks: [{ title: 't', id: 'zz' }] })]));
+  assert.equal(back[0].tracks[0].id, 'zz');
+});
+
+test('future / corrupt collections never throw; future is detectable', () => {
+  const fut = JSON.stringify({ version: 99, mixtapes: [{ id: 'x', tracks: [] }] });
+  assert.deepEqual(parseCollection(fut), []);
+  assert.equal(isFutureCollection(fut), true);
+  assert.equal(isFutureCollection('{nope'), false);
+  assert.equal(isFutureCollection(null), false);
+  for (const junk of ['', 'null', '[]', '"s"', '{"version":"2"}', '{"version":2}', undefined]) assert.deepEqual(parseCollection(junk), []);
 });

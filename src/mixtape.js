@@ -8,8 +8,11 @@
 // A mixtape = name + ordered track REFS + style variant id + font id + font
 // colour. Refs are metadata ({title, artist, album}), not file handles: a
 // browser can't persist a File across sessions, so a ref is matched back to
-// the scanned library at play time (resolveTracks). Unmatched refs stay in the
-// tape, shown as unavailable, and resolve again after a re-scan.
+// the library at play time (resolveTracks): stable track id first (libindex.js:
+// hash of tags + size/duration), then exact (artist, album, title), then loose
+// (artist, title). The library itself is persisted as metadata, so a ref
+// usually resolves to a "needs re-link" track (no File yet) rather than to
+// nothing; unmatched refs stay in the tape, shown as unavailable.
 //
 // JSON follows theme.js conventions: { version, ... }, never-throwing parser
 // that names the exact failure, colours as "#RRGGBB"/"#AARRGGBB" validated by
@@ -19,7 +22,12 @@
 
 import { validateHexColor } from './theme.js';
 
-export const MIXTAPE_VERSION = 1;
+// v1: refs {title, artist, album}. v2: refs may also carry `id` (stable track
+// id from libindex.js). Writers emit v2; readers accept v1 and v2 (a v1 doc is
+// a valid v2 doc with no ids). Anything newer is refused/ignored, never guessed.
+export const MIXTAPE_VERSION = 2;
+export const MIN_MIXTAPE_VERSION = 1;
+const versionOk = (v) => Number.isInteger(v) && v >= MIN_MIXTAPE_VERSION && v <= MIXTAPE_VERSION;
 export const MAX_NAME = 40;
 
 // ── Procedural cassette shell styles (drawn in cassette.js; no image assets) ─
@@ -75,11 +83,13 @@ export function trackKey(t) {
 
 /** A library track (or any {title, artist, album}) -> a persistable ref. */
 export function makeTrackRef(t) {
-  return {
+  const ref = {
     title: String(t.title || '').trim() || 'Untitled',
     artist: String(t.artist || '').trim(),
     album: String(t.album || '').trim(),
   };
+  if (typeof t.id === 'string' && t.id && t.id.length <= 64) ref.id = t.id;
+  return ref;
 }
 
 /**
@@ -90,16 +100,21 @@ export function makeTrackRef(t) {
  * most once per exact pass, but a tape may list the same song twice.
  */
 export function resolveTracks(mixtape, libraryTracks) {
+  const byId = new Map();
   const exact = new Map();
   const loose = new Map();
+  // A track that needs re-link (no File yet) loses to a live one with the same key.
+  const put = (m, k, t) => {
+    const cur = m.get(k);
+    if (!cur || (cur.relink && !t.relink)) m.set(k, t);
+  };
   for (const t of libraryTracks) {
-    const k = trackKey(t);
-    if (!exact.has(k)) exact.set(k, t);
-    const lk = `${norm(t.artist)}\0${norm(t.title)}`;
-    if (!loose.has(lk)) loose.set(lk, t);
+    if (typeof t.id === 'string' && t.id) put(byId, t.id, t);
+    put(exact, trackKey(t), t);
+    put(loose, `${norm(t.artist)}\0${norm(t.title)}`, t);
   }
   return mixtape.tracks.map((r) =>
-    exact.get(trackKey(r)) || loose.get(`${norm(r.artist)}\0${norm(r.title)}`) || null);
+    (r.id && byId.get(r.id)) || exact.get(trackKey(r)) || loose.get(`${norm(r.artist)}\0${norm(r.title)}`) || null);
 }
 
 // ── Construction + pure edits (all return NEW mixtapes) ──────────────────────
@@ -192,7 +207,9 @@ export function serializeMixtape(m) {
     style: m.styleId,
     font: m.fontId,
     fontColor: m.fontColor,
-    tracks: m.tracks.map((t) => ({ title: t.title, artist: t.artist, album: t.album })),
+    tracks: m.tracks.map((t) => (t.id
+      ? { title: t.title, artist: t.artist, album: t.album, id: t.id }
+      : { title: t.title, artist: t.artist, album: t.album })),
   }, null, 2);
 }
 
@@ -209,9 +226,9 @@ export function parseMixtape(text, { id } = {}) {
   if (!isPlainObject(raw)) {
     return { ok: false, error: 'Mixtape must be a JSON object (got ' + (Array.isArray(raw) ? 'an array' : typeof raw) + ').' };
   }
-  if (!('version' in raw)) return { ok: false, error: 'Missing "version" field (expected 1).' };
-  if (raw.version !== MIXTAPE_VERSION) {
-    return { ok: false, error: `Unsupported "version": ${JSON.stringify(raw.version)} (expected ${MIXTAPE_VERSION}).` };
+  if (!('version' in raw)) return { ok: false, error: `Missing "version" field (expected ${MIN_MIXTAPE_VERSION} or ${MIXTAPE_VERSION}).` };
+  if (!versionOk(raw.version)) {
+    return { ok: false, error: `Unsupported "version": ${JSON.stringify(raw.version)} (expected ${MIN_MIXTAPE_VERSION} or ${MIXTAPE_VERSION}).` };
   }
   if (typeof raw.name !== 'string' || !raw.name.trim()) return { ok: false, error: 'Missing "name" (a non-empty string).' };
   if (!CASSETTE_STYLES.some((s) => s.id === raw.style)) {
@@ -251,12 +268,17 @@ export function serializeCollection(list) {
   });
 }
 
-/** Tolerant: a corrupt blob reads as empty; bad entries are dropped, good ones kept. */
+/**
+ * Tolerant: a corrupt blob reads as empty; bad entries are dropped, good ones kept.
+ * v1 blobs migrate in place (refs just have no id); the next save writes v2.
+ * A blob from a NEWER version reads as empty here; callers that would
+ * overwrite it should check isFutureCollection first (mixtape-ui.js keeps a backup).
+ */
 export function parseCollection(text) {
   if (!text) return [];
   let raw;
   try { raw = JSON.parse(text); } catch { return []; }
-  if (!isPlainObject(raw) || raw.version !== MIXTAPE_VERSION || !Array.isArray(raw.mixtapes)) return [];
+  if (!isPlainObject(raw) || !versionOk(raw.version) || !Array.isArray(raw.mixtapes)) return [];
   const out = [];
   for (const e of raw.mixtapes) {
     if (!isPlainObject(e) || typeof e.id !== 'string' || !Array.isArray(e.tracks)) continue;
@@ -266,6 +288,12 @@ export function parseCollection(text) {
     }));
   }
   return out;
+}
+
+/** True when `text` is a well-formed collection written by a newer app version. */
+export function isFutureCollection(text) {
+  try { const r = JSON.parse(text); return isPlainObject(r) && Number.isInteger(r.version) && r.version > MIXTAPE_VERSION; }
+  catch { return false; }
 }
 
 /** Collision-free id from a clock + a random draw (both injected by the caller). */

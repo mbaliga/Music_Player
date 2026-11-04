@@ -107,3 +107,37 @@ test('groupTracks/shelfItems: empty and vinyl-only', () => {
   assert.equal(s[0].kind, KIND_VINYL);
   assert.equal(s[0].disc, null);
 });
+
+// ── tag-driven ordering (tags.js supplies trackNo / discNo) ──────────────────
+test('tracks order by track number, not file name; unnumbered go last by path', () => {
+  const t = (title, path, trackNo) => ({ title, artist: 'A', album: 'Rec', path, trackNo });
+  const [a] = groupTracks([
+    t('c', '/m/Rec/a.mp3', 3), t('x', '/m/Rec/z.mp3'), t('a', '/m/Rec/c.mp3', 1), t('b', '/m/Rec/b.mp3', 2), t('w', '/m/Rec/y.mp3'),
+  ]);
+  assert.deepEqual(a.tracks.map((x) => x.title), ['a', 'b', 'c', 'w', 'x']);
+});
+
+test('duplicate / invalid track numbers fall back to path order', () => {
+  const t = (title, path, trackNo) => ({ title, artist: 'A', album: 'Rec', path, trackNo });
+  const [a] = groupTracks([t('b', '/m/b.mp3', 1), t('a', '/m/a.mp3', 1), t('n', '/m/0.mp3', 0), t('q', '/m/q.mp3', 1.5)]);
+  assert.deepEqual(a.tracks.map((x) => x.title), ['a', 'b', 'n', 'q']);
+});
+
+test('a disc tag alone does NOT make a CD; it orders a vinyl disc-major', () => {
+  const t = (title, trackNo, discNo) => ({ title, artist: 'A', album: 'Box', path: `/m/Box/${title}.mp3`, trackNo, discNo });
+  const [a] = groupTracks([t('d2t1', 1, 2), t('d1t2', 2, 1), t('d1t1', 1, 1)]);
+  assert.equal(a.kind, KIND_VINYL);
+  assert.equal(a.discs.length, 1);
+  assert.deepEqual(a.tracks.map((x) => x.title), ['d1t1', 'd1t2', 'd2t1']);
+});
+
+test('CD by label: unlabelled track uses its disc tag; the label number wins over a tag', () => {
+  const t = (title, album, trackNo, discNo) => ({ title, artist: 'A', album, path: `/m/${title}.mp3`, trackNo, discNo });
+  const [a] = groupTracks([
+    t('c2', 'Set CD2', 1, 2), t('c1', 'Set CD1', 2, 1), t('tagged2', 'Set', 5, 2), t('tagged1', 'Set', 1, 1), t('lab', 'Set CD1', 3, 2),
+  ]);
+  assert.equal(a.kind, KIND_CD);
+  assert.deepEqual(a.discs.map((d) => d.number), [1, 2]);
+  assert.deepEqual(a.discs[0].tracks.map((x) => x.title), ['tagged1', 'c1', 'lab']); // label CD1 beats tag 2
+  assert.deepEqual(a.discs[1].tracks.map((x) => x.title), ['c2', 'tagged2']);
+});

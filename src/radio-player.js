@@ -9,59 +9,19 @@
 // stop, so the two never talk over each other.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import {
-  discoverServers, searchStations, describeStation, classifyPlaybackFailure, reduceSession,
-} from './radio.js';
+import { discoverServers, searchStations, describeStation, streamCandidates, MAX_RECONNECTS } from './radio.js';
 import { registerStationType, createSessionFor, listStationTypes } from './stations.js';
-
-const CONNECT_TIMEOUT_MS = 12000;
+import { createStreamSession } from './radio-session.js';
+import {
+  loadModel, saveModel, stationKey, stationFromEntry, isFavourite, toggleFavourite, recordPlayed, clearRecents,
+} from './radio-store.js';
 
 // ── StationType 'radio-browser': a Session is an <audio> element on a URL ────
+// (alternate-URL fallback + reconnect/backoff live in radio-session.js)
 registerStationType({
   id: 'radio-browser',
   label: 'Radio stations',
-  createSession(station, env = {}) {
-    const audio = env.audioElement || new Audio();
-    const isOnline = env.isOnline || (() => navigator.onLine !== false);
-    let state = { phase: 'idle', error: null };
-    let cb = () => {};
-    let timer = null;
-    let gen = 0; // ignore events from a superseded start()/stop()
-
-    const dispatch = (event) => { state = reduceSession(state, event); cb(state); };
-    const fail = (info) => { clearTimeout(timer); dispatch({ type: 'error', failure: classifyPlaybackFailure({ online: isOnline(), ...info }) }); };
-
-    const on = (name, fn) => audio.addEventListener(name, fn);
-    on('playing', () => { clearTimeout(timer); dispatch({ type: 'playing' }); });
-    on('waiting', () => dispatch({ type: 'buffering' }));
-    on('stalled', () => dispatch({ type: 'buffering' }));
-    on('error', () => { if (state.phase !== 'idle') fail({ mediaErrorCode: audio.error ? audio.error.code : 0 }); });
-    on('ended', () => { if (state.phase !== 'idle') fail({ mediaErrorCode: 2 }); }); // a live stream should never end
-
-    return {
-      onChange(fn) { cb = fn; },
-      get state() { return state; },
-      async start() {
-        const my = ++gen;
-        dispatch({ type: 'play' });
-        if (!isOnline()) return fail({});
-        clearTimeout(timer);
-        timer = setTimeout(() => { if (my === gen && state.phase === 'connecting') { try { audio.pause(); } catch {} fail({ timedOut: true }); } }, CONNECT_TIMEOUT_MS);
-        audio.src = station.streamUrl;
-        try { await audio.play(); }
-        catch (e) {
-          if (my !== gen || (e && e.name === 'AbortError')) return; // superseded / interrupted by stop()
-          if (e && e.name === 'NotAllowedError') return fail({}); // autoplay policy: needs a tap
-          if (state.phase === 'connecting') fail({ mediaErrorCode: audio.error ? audio.error.code : 4 });
-        }
-      },
-      stop() {
-        gen++; clearTimeout(timer);
-        try { audio.pause(); audio.removeAttribute('src'); audio.load(); } catch {}
-        dispatch({ type: 'stop' });
-      },
-    };
-  },
+  createSession: (station, env = {}) => createStreamSession(station, env),
 });
 
 const h = (tag, props = {}, ...kids) => {
@@ -85,16 +45,22 @@ export class RadioUI {
     this.session = null;
     this.station = null;
     this.loadedOnce = false;
+    this.store = loadModel(this._storage());
     this._pill = h('div', { class: 'radio-pill hidden' },
       h('span', { class: 'radio-pill-dot' }), (this._pillName = h('span', { class: 'radio-pill-name' })),
       h('button', { class: 'radio-pill-stop', type: 'button', 'aria-label': 'Stop radio', onclick: () => this.stop() }, '■'));
     document.body.append(this._pill);
   }
 
+  _storage() { try { return window.localStorage; } catch { return null; } }
+  _commit(model) { this.store = model; saveModel(this._storage(), model); }
+
   mount(pane) {
+    this.pane = pane;
     this.input = h('input', { class: 'mt-name', type: 'search', placeholder: 'Search stations…', 'aria-label': 'Search radio stations' });
     this.status = h('div', { class: 'radio-status' });
     this.listEl = h('div', { class: 'radio-list' });
+    this.savedEl = h('div', { class: 'radio-saved' });
     this.now = h('div', { class: 'radio-now hidden' });
     const form = h('form', { class: 'radio-search', onsubmit: (e) => { e.preventDefault(); this.search({ name: this.input.value }); } },
       this.input, h('button', { class: 'lib-scan', type: 'submit' }, 'Search'));
@@ -102,14 +68,55 @@ export class RadioUI {
       h('button', { class: 'sort-chip', type: 'button', onclick: () => { this.input.value = ''; this.search({}); } }, 'Top'),
       ...GENRES.map((g) => h('button', { class: 'sort-chip', type: 'button', onclick: () => { this.input.value = ''; this.search({ tag: g }); } }, g)));
     pane.append(h('div', { class: 'lib-toolbar radio-bar' }, form, chips),
-      h('div', { class: 'lib-grid-wrap' }, this.status, this.listEl),
+      h('div', { class: 'lib-grid-wrap' }, this.savedEl, this.status, this.listEl),
       this.now);
     // Retry when connectivity returns.
     window.addEventListener('online', () => { if (this._lastFailureOffline) this.search(this._lastParams || {}); });
   }
 
   /** Called when the Radio tab is shown: first visit loads the top stations. */
-  activate() { if (!this.loadedOnce) this.search({}); }
+  activate() { this._renderSaved(); if (!this.loadedOnce) this.search({}); }
+
+  /** One list row: tap to play, star to favourite. Works for live results and stored snapshots alike. */
+  _row(s) {
+    const fav = isFavourite(this.store, s);
+    const star = h('button', { class: 'radio-star' + (fav ? ' on' : ''), type: 'button', 'aria-pressed': String(fav),
+      'aria-label': (fav ? 'Remove ' : 'Add ') + s.name + (fav ? ' from favourites' : ' to favourites'),
+      onclick: (e) => { e.stopPropagation(); this.toggleFav(s); } }, fav ? '★' : '☆');
+    return h('div', { class: 'radio-row' + (this._isCurrent(s) ? ' on' : ''), 'data-k': stationKey(s) || '', onclick: () => this.play(s) },
+      h('div', { class: 'radio-row-main' },
+        h('div', { class: 'alb-name' }, s.name),
+        h('div', { class: 'alb-artist' }, describeStation({ country: '', codec: '', bitrate: 0, tags: [], ...s }))),
+      star, h('span', { class: 'radio-row-go' }, '▶'));
+  }
+
+  _isCurrent(s) { return !!this.station && stationKey(this.station) === stationKey(s); }
+
+  toggleFav(s) {
+    this._commit(toggleFavourite(this.store, s));
+    this._renderSaved();
+    this.listEl.querySelectorAll('.radio-row').forEach((r) => { // refresh result-list stars in place
+      if (r.dataset.k === stationKey(s)) r.querySelector('.radio-star')?.replaceWith(this._row(s).querySelector('.radio-star'));
+    });
+    if (this.station) this._showNow(this.station, this.session?.state || { phase: 'idle', error: null });
+  }
+
+  /** Resume + Favourites + Recents, straight from stored snapshots (no network needed). */
+  _renderSaved() {
+    const m = this.store;
+    const kids = [];
+    if (m.last) {
+      const last = stationFromEntry(m.last);
+      kids.push(h('button', { class: 'radio-resume', type: 'button', onclick: () => this.play(last) },
+        h('span', { class: 'radio-resume-go' }, '▶'), h('span', { class: 'radio-resume-txt' }, 'Resume ', h('b', {}, last.name))));
+    }
+    const section = (title, entries, extra) => entries.length ? h('div', { class: 'radio-sec' },
+      h('div', { class: 'radio-sec-head' }, h('span', {}, title), extra || null),
+      h('div', { class: 'radio-list' }, entries.map((e) => this._row(stationFromEntry(e))))) : null;
+    kids.push(section('Favourites', m.favs));
+    kids.push(section('Recents', m.recents.slice(0, 8), h('button', { class: 'sort-chip', type: 'button', onclick: () => { this._commit(clearRecents(this.store)); this._renderSaved(); } }, 'Clear')));
+    this.savedEl.replaceChildren(...kids.filter(Boolean));
+  }
 
   async search(params) {
     this._lastParams = params;
@@ -128,13 +135,7 @@ export class RadioUI {
       return;
     }
     this.status.textContent = r.stations.length ? '' : 'No stations found. Try another search.';
-    for (const s of r.stations) {
-      this.listEl.append(h('div', { class: 'radio-row' + (this.station && this.station.id === s.id ? ' on' : ''), onclick: () => this.play(s) },
-        h('div', { class: 'radio-row-main' },
-          h('div', { class: 'alb-name' }, s.name),
-          h('div', { class: 'alb-artist' }, describeStation(s))),
-        h('span', { class: 'radio-row-go' }, '▶')));
-    }
+    for (const s of r.stations) this.listEl.append(this._row(s));
   }
 
   play(station) {
@@ -143,7 +144,15 @@ export class RadioUI {
     if (!session) { this._showNow(station, { phase: 'error', error: { message: 'No player is registered for this station type.' } }); return; }
     this.session = session; this.station = station;
     this.d.onActive?.(true);
-    session.onChange((st) => this._showNow(station, st));
+    session.onChange((st) => {
+      if (this.session !== session) return;
+      if (st.phase === 'playing' && !this._recorded) { this._recorded = true; // remember the URL that actually worked as the preferred one
+        const urls = streamCandidates(station), i = session.urlIndex | 0;
+        const worked = urls.length ? { ...station, streamUrl: urls[i], streamUrls: [urls[i], ...urls.filter((_, j) => j !== i)] } : station;
+        this._commit(recordPlayed(this.store, worked)); this._renderSaved(); }
+      this._showNow(station, st);
+    });
+    this._recorded = false;
     this._showNow(station, { phase: 'connecting', error: null });
     session.start();
   }
@@ -153,22 +162,24 @@ export class RadioUI {
     this.session = null; this.station = null;
     this.now.classList.add('hidden'); this._pill.classList.add('hidden');
     this.d.onActive?.(false);
-    this.listEl.querySelectorAll('.radio-row.on').forEach((r) => r.classList.remove('on'));
+    this.pane?.querySelectorAll('.radio-row.on').forEach((r) => r.classList.remove('on'));
   }
 
   _showNow(station, st) {
-    const label = { connecting: 'Connecting…', buffering: 'Buffering…', playing: 'Live', error: 'Error', idle: '' }[st.phase] || '';
+    const label = { connecting: 'Connecting…', buffering: 'Buffering…', reconnecting: `Connection lost. Reconnecting (${st.attempt || 1}/${MAX_RECONNECTS})…`, playing: 'Live', error: 'Error', idle: '' }[st.phase] || '';
     this.now.className = 'radio-now ' + st.phase;
     this.now.replaceChildren(...[
       h('div', { class: 'radio-now-main' },
         h('div', { class: 'alb-name' }, station.name),
         h('div', { class: 'alb-artist' }, st.phase === 'error' ? st.error.message : label)),
+      (() => { const f = isFavourite(this.store, station);
+        return h('button', { class: 'radio-star' + (f ? ' on' : ''), type: 'button', 'aria-pressed': String(f), 'aria-label': f ? 'Remove from favourites' : 'Add to favourites', onclick: () => this.toggleFav(station) }, f ? '★' : '☆'); })(),
       st.phase === 'error' ? h('button', { class: 'sort-chip', type: 'button', onclick: () => this.play(station) }, 'Retry') : null,
       h('button', { class: 'theme-btn', type: 'button', onclick: () => this.stop() }, 'Stop'),
     ].filter(Boolean));
     this._pillName.textContent = station.name;
     this._pill.className = 'radio-pill ' + st.phase;
-    this.listEl.querySelectorAll('.radio-row').forEach((r, i) => r.classList.toggle('on', r.querySelector('.alb-name')?.textContent === station.name));
+    this.pane?.querySelectorAll('.radio-row').forEach((r) => r.classList.toggle('on', r.dataset.k === stationKey(station)));
   }
 }
 
