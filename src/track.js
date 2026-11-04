@@ -89,14 +89,16 @@ export function synthesizeTrack(sampleRate, seconds = 24) {
 }
 
 /** Decode a user-picked File into channel Float32Arrays at the ctx rate. */
-export async function loadFile(file, audioContext) {
+export async function loadFile(file, audioContext, { copy = true } = {}) {
   const arr = await file.arrayBuffer();
   const buf = await audioContext.decodeAudioData(arr);
   const channels = [];
+  // copy:false returns views into the decoded AudioBuffer (no second 85 MB
+  // copy); only for callers that hand the PCM straight to the engine (gapless preload).
   for (let c = 0; c < buf.numberOfChannels; c++) {
-    channels.push(buf.getChannelData(c).slice());
+    channels.push(copy ? buf.getChannelData(c).slice() : buf.getChannelData(c));
   }
-  if (channels.length === 1) channels.push(channels[0].slice()); // mono → stereo
+  if (channels.length === 1) channels.push(copy ? channels[0].slice() : channels[0]); // mono → stereo
   return {
     channels,
     frames: buf.length,
