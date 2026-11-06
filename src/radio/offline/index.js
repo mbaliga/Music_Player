@@ -11,7 +11,7 @@ export { createOfflineContext, daypartFor, localParts, makeTrackFact, HOSTS, STA
 export { createOfflineDirector } from './director.js';
 export { createTemplateWriter, estimateScriptSec } from './writer.js';
 export { BANK, BANK_LINE_COUNT } from './bank.js';
-export { createSystemVoice, webSpeechBackend, capacitorBackend, prepareUtterance, SYSTEM_CAPS } from './voice.js';
+export { createSystemVoice, webSpeechBackend, capacitorBackend, resolveCapacitorTts, prepareUtterance, SYSTEM_CAPS } from './voice.js';
 export { createDuckController, applyEnvelope } from './ducking.js';
 export { speakable, cleanTitle, cleanArtist } from './pronounce.js';
 export { sunTimes, season } from './sun.js';

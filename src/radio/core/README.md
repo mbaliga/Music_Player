@@ -96,6 +96,10 @@ grounding mutation/hallucination corpus, repair properties, scheduler math, turn
 corpus, a simulated 45-minute show (zero dead air, every script verified), the section 10.2 failure matrix, purity, and the
 boot-path test. Nothing needs a network, a clock or a device.
 
+## Used by the offline host
+
+`src/radio/offline/` (docs/RADIO_ARCHITECTURE.md section 16) implements the Context, Director, Writer and Voice seams offline on top of these modules. One core change came out of it: the grounding proper-noun scan is Unicode-aware (`test/radio-core/grounding-unicode.test.mjs`).
+
 ## Conventions worth knowing
 
 * Seconds on the show clock, milliseconds for wall time (`atMs`) and for the call state machine.

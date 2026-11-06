@@ -22,5 +22,7 @@ Radio spike P1 done as far as a sandbox allows; verdicts are NEEDS-DEVICE (echo,
 ## AI radio
 P0 (contracts and skeleton) done: pure core in `src/radio/core/`, flag `radio.ai` default OFF, not on the boot path, inert `ai-you`/`ai-you-city` station stub. Cue extraction (`cues.js`) done and wired into the sim (synthetic signals only, not validated on real music); web/APK build excludes dev-only core files. P1 device spikes pending (owner). P2 gated on the v0 feel gate and the owner's device results. See HANDOFF.md "AI radio".
 
+**You Radio (offline host)** is built and usable: Radio tab > Settings > "AI stations (experimental)" (default off) adds a station with templated hosts and the phone's own speech, no network, no models (`src/radio/offline/`; HANDOFF.md "You Radio (offline host)"; architecture section 16). Desktop-Chromium verified with INJECTED fake speech only: headless Chromium has no TTS voices, so real speech has not been heard and nothing is verified on the RedMagic (on-device checklist in HANDOFF.md).
+
 ## Mixtapes (Workstream C)
 The owner's cassette/mixtape design system is ported (`src/cassette/`, model v3 in `src/mixtape.js`): 37 styles, label editor, shelf, back-of-case, deck + player skins, reels driven by the real gapless queue, wind keys that seek. Desktop-Chromium verified only; on-device checklist in HANDOFF.md "Cassette mixtapes". Left out: flip-depth studio, synthesized audio, Google Fonts (see HANDOFF.md).

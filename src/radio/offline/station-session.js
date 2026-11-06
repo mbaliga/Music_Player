@@ -16,7 +16,7 @@ import { createOfflineContext, DEFAULT_PERSONA } from './context.js';
 import { createOfflineDirector } from './director.js';
 import { createTemplateWriter } from './writer.js';
 import { recentLines } from '../core/memory.js';
-import { createSystemVoice, webSpeechBackend, capacitorBackend, loadVoicePrefs, saveVoicePrefs } from './voice.js';
+import { createSystemVoice, webSpeechBackend, capacitorBackend, resolveCapacitorTts, loadVoicePrefs, saveVoicePrefs } from './voice.js';
 import { createDuckController } from './ducking.js';
 import { createShowRunner } from './show-runner.js';
 import { loadHistory, saveHistory } from './play-history.js';
@@ -56,7 +56,7 @@ export function createOfflineSession(station, env = {}) {
   let memory = loadMemory(storage, DEFAULT_PERSONA);
   const synth = env.speechSynthesis !== undefined ? env.speechSynthesis : g.speechSynthesis;
   const Utter = env.Utterance || g.SpeechSynthesisUtterance;
-  const cap = env.capPlugin !== undefined ? env.capPlugin : (g.Capacitor && g.Capacitor.Plugins && g.Capacitor.Plugins.TextToSpeech) || null;
+  const cap = env.capPlugin !== undefined ? env.capPlugin : resolveCapacitorTts(g.Capacitor);
   const voice = env.voice || createSystemVoice({
     backends: [webSpeechBackend({ synth, Utterance: Utter, timers }), capacitorBackend({ plugin: cap })],
     timers, now, prefs: loadVoicePrefs(storage),

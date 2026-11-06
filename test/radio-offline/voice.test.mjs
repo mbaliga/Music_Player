@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createSystemVoice, webSpeechBackend, capacitorBackend, prepareUtterance, SYSTEM_CAPS, englishVoices, defaultHostVoices, TIMEOUTS, loadVoicePrefs, saveVoicePrefs, VOICE_PREFS_KEY } from '../../src/radio/offline/voice.js';
+import { createSystemVoice, webSpeechBackend, capacitorBackend, resolveCapacitorTts, prepareUtterance, SYSTEM_CAPS, englishVoices, defaultHostVoices, TIMEOUTS, loadVoicePrefs, saveVoicePrefs, VOICE_PREFS_KEY } from '../../src/radio/offline/voice.js';
 import { degradeUtterance, CAPS_NONE } from '../../src/radio/core/markup.js';
 import { fakeTime, FakeSynth, FakeUtterance, VOICES } from './helpers.mjs';
 
@@ -241,4 +241,16 @@ test('speak never throws even if the backend does', async () => {
   const res = await voice.speak(prep('Hi.'));
   assert.equal(res.ok, false); assert.match(res.reason, /error:/);
   assert.doesNotThrow(() => voice.cancel());
+});
+
+test('resolveCapacitorTts: only a native platform with the plugin yields a proxy; the web build gets null', () => {
+  const plugin = { speak() {} };
+  assert.equal(resolveCapacitorTts(undefined), null); assert.equal(resolveCapacitorTts({}), null);
+  assert.equal(resolveCapacitorTts({ Plugins: { TextToSpeech: plugin } }), plugin);
+  let registered = 0;
+  const native = { isPluginAvailable: (n) => n === 'TextToSpeech', registerPlugin: (n) => { registered++; return { name: n }; } };
+  assert.deepEqual(resolveCapacitorTts(native), { name: 'TextToSpeech' }); assert.equal(registered, 1);
+  const web = { isPluginAvailable: () => false, registerPlugin: () => { throw new Error('must not be called on web'); } };
+  assert.equal(resolveCapacitorTts(web), null);
+  assert.equal(resolveCapacitorTts({ isPluginAvailable: () => { throw new Error('x'); } }), null);
 });

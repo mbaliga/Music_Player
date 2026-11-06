@@ -1,6 +1,6 @@
 # Runout — AI Radio architecture ("You" Radio and "You City" Radio)
 
-Status: PLAN (Workstream B). P0 (`src/radio/core/`, contracts and skeleton, no network) is built; P1 device spikes are pending (`docs/RADIO_SPIKE_P1.md`); everything else here is not built. Scope: the AI-generated stations only. Real/public
+Status: PLAN (Workstream B). P0 (`src/radio/core/`, contracts and skeleton, no network) is built; P1 device spikes are pending (`docs/RADIO_SPIKE_P1.md`); an OFFLINE host (templated writer + the phone's own speech, no network) is built behind the same seams as a P2-precursor (section 16); the cloud pieces (backend, LLM Director/Writer, cloud TTS, caller loop) are not built. Scope: the AI-generated stations only. Real/public
 stations are Workstream A and are out of scope except where they share the audio bus (section 4.4) and the
 network policy (section 1.3).
 
@@ -708,3 +708,29 @@ I know of no first-party Anthropic STT/TTS product; the speech layers are third-
 12. **Shared `Station` interface with Workstream A and one program bus for real + AI stations?** *Default: yes; one "dial" with real stations, You, and You City, one master output.*
 13. **If the v0 feel gate fails and the engine goes native Oboe:** should the radio bus follow it native? *Default: yes, and keep `core/` portable so only the bus implementation moves.*
 14. **Spend ceiling per user-hour** that the owner is willing to underwrite for the spike and the alpha. *Default: set after P2 measurement; until then a hard dev cap.*
+
+---
+
+## 16. The offline host: a P2-precursor (built, Workstream H)
+
+`src/radio/offline/` is a complete, working "You" Radio that needs no model, no account and no network. It is the owner's chosen first step before any cloud AI: the same Director / Writer / Voice / Context seams as sections 3.2 to 3.4, implemented offline, so the cloud adapters can later replace the offline ones one for one. It sits behind the `radio.ai` flag (default OFF in code); the Radio tab has a labelled "AI stations (experimental)" setting that flips it. Nothing in it calls the network (a test booby-traps `fetch`, XHR, `WebSocket`, `EventSource` and beacons and runs a full show). Module map and limits: `HANDOFF.md` "You Radio (offline host)".
+
+| Seam (core fake -> offline implementation) | Offline implementation |
+|---|---|
+| ContextProvider | `context.js`: clock/daypart/holiday (small fixed table), sunrise/sunset from a pure formula only if the owner TYPED a city (never requested), library facts, a new local play-history store; weather/traffic/place are `serviceStatus: 'down'` (the schema has no 'unavailable'), so the verifier forbids that talk |
+| Director | `director.js`: rule-based rundown (units of song / talk-over-intro / break / back-sell), purposes chosen only from facts that exist; output still goes through `repairRundown` |
+| Writer | `writer.js` + `bank.js`: a seedable templated writer over a 210-line bank (data module, easy to extend); every factual slot reads a fact and cites its id in `factRefs`; clock words are late-bound `{{time.*}}` tokens; anti-repeat per kind plus recent-show ids from core memory |
+| Voice (TtsAdapter) | `voice.js`: `window.speechSynthesis`, with the Capacitor TTS plugin as fallback. `capabilities()` is honest (rate and pitch only, `preRender:false`, `liveOnly:true`) and `render()` PREPARES utterances (it cannot make audio) |
+| show runner (sim.js's job) | `show-runner.js` + `show-state.js` (pure reducer): the live version of `runSimulatedShow`, driven by the real clock and engine position |
+
+**What the cloud version reuses unchanged.** All contracts and validators (the offline Writer's scripts pass `validateScript` and `verifyScript`); `ShowClock`, `repairRundown`, `planSongs`, `planTalkOverIntro`, `findDeadAir`, the dead-air ladder rules and `queue.js` gapless policy; the grounding verifier, run on EVERY break at air time (stale facts dropped, regenerate once, then a canned fact-free link); `memory.js` (recent-show ids feed anti-repeat); the `Session` contract and the `stations.js` seam (a lazy proxy session, so nothing loads until the owner starts the station); the UI (captions, "Automated host" disclosure label, now-playing, skip/stop, host-voice picker); `show-state.js`'s policy (cold start, skip, stop, bad file, mute voice); the line bank as the offline/quota fallback and as canned links; the system-speech voice as the "on-device TTS fallback" row of 10.2; `sim.js` runs unmodified with the offline adapters (the long-show test does exactly that).
+
+**What it does not reuse, and why the cloud bus is different.**
+* *No pre-rendered voice.* System TTS cannot be rendered to a buffer or routed into Web Audio, so core scheduler segments are not placed on an audio timeline. Breaks are LIVE-SPOKEN at moments the runner triggers from the song position: talk-over-intro at the start of a song (offset by `planTalkOverIntro` when the intro cue is confident), other breaks over the previous song's outro, timed from the estimated duration. Durations are estimates (words / rate); only engine events are real.
+* *Ducking is event-driven, not an envelope.* The core's `duckEnvelope` assumes a mixed buffer. Here `ducking.js` holds the music-bus gain down from the `speak()` call until onend / error / watchdog / cancel, with linear click-free ramps on a new additive `AudioEngine.musicBus` (unity by default). `applyEnvelope()` converts a core envelope to the same automation where the window is known in advance. A real-Chromium run found and fixed a release jump (a linear ramp interpolates from the previous event, so each ramp now pins its start value).
+* *No station voice chain* (4.3 / 3.4): the voice cannot be put through EQ/compression, so a vendor swap would change identity. *No expressive markup*: `{em}`, `{laugh}`, `{sfx}` are dropped (pauses become timed gaps, pace and pitch map to rate and pitch). *No caller loop*, no weather/place, no LLM variety beyond the bank.
+* *Watchdogs for dropped events.* Engines drop onstart/onend (Android WebView historically); every `speak()` settles. A cloud voice that streams PCM into the bus needs none of this.
+* *Not one voice for the product:* two "hosts" are two system voices (or one voice with pitch/rate offsets), so persona drift is up to the device's voice list.
+
+Core changes made for it (with tests): the grounding proper-noun scan is Unicode-aware (accented Latin names such as Bjork or Beyonce were cut at the accent and falsely flagged). Additive, optional extras that the cloud can ignore: a `speaker: 'a'|'b'` field on utterances, a `brief` argument to `Writer.write`. Names in non-Latin scripts are not named on air (the verifier cannot compare them), so those songs get nameless intros.
+

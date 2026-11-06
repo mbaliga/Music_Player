@@ -148,6 +148,20 @@ export function webSpeechBackend({ synth, Utterance, timers = { setTimeout, clea
   };
 }
 
+/**
+ * The Capacitor TextToSpeech plugin from the injected `Capacitor` global, or null. The app does not bundle plugin JS
+ * (plain static files), so the proxy is made with Capacitor.registerPlugin('TextToSpeech'); that only works when the
+ * native side has the plugin (isPluginAvailable), which is why the web build never calls it.
+ */
+export function resolveCapacitorTts(Cap) {
+  try {
+    if (!Cap) return null;
+    if (Cap.Plugins && Cap.Plugins.TextToSpeech) return Cap.Plugins.TextToSpeech;
+    if (typeof Cap.isPluginAvailable === 'function' && Cap.isPluginAvailable('TextToSpeech') && typeof Cap.registerPlugin === 'function') return Cap.registerPlugin('TextToSpeech');
+  } catch { /* not available */ }
+  return null;
+}
+
 /** Capacitor TextToSpeech plugin (Android/iOS). speak() resolves when the utterance finishes; no start/boundary events. */
 export function capacitorBackend({ plugin } = {}) {
   const ok = !!(plugin && typeof plugin.speak === 'function');
