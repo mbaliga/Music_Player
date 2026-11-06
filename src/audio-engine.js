@@ -46,6 +46,19 @@ export class AudioEngine {
     return typeof SharedArrayBuffer !== 'undefined' && self.crossOriginIsolated === true;
   }
 
+  /**
+   * The music bus: one unity GainNode every deck feeds, which feeds ctx.destination. Additive hook for the radio
+   * host (docs/RADIO_ARCHITECTURE.md 4.4): automating this gain ducks the music under speech without touching
+   * decks. At unity (the default) it changes nothing audible.
+   */
+  get musicBus() {
+    if (!this._bus) {
+      this._bus = this.ctx.createGain();
+      this._bus.connect(this.ctx.destination);
+    }
+    return this._bus;
+  }
+
   async init() {
     this.ctx = new (window.AudioContext || window.webkitAudioContext)({
       latencyHint: 'interactive', // lowest output latency the device offers (§3)
@@ -95,7 +108,7 @@ export class AudioEngine {
     });
     const gain = this.ctx.createGain();
     node.connect(gain);
-    gain.connect(this.ctx.destination);
+    gain.connect(this.musicBus);
 
     const deck = { node, gain, control, usingSAB, frames, channels: nch, fallbackPos: 0 };
     if (!usingSAB) {
