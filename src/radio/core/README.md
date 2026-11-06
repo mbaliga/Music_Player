@@ -43,10 +43,12 @@ That is what makes every test deterministic and what lets the core move unchange
 | `latency.js` | The corrected 8.3 budget and the p95 gate | 8.3 |
 | `memory.js` | Listener notes (expiring, PII/injection/safety filtered), recent shows, anti-repeat, compact writer summary, view/forget, persistence with injected storage | 7.3 |
 | `untrusted.js` | Prompt-injection hygiene: sanitise, `safeJson`, `<untrusted_data>` blocks, library allowlist (never paths), `filterActions` (only `request_song`, `note_for_show`, `end_call`) | 9.4 |
+| `cues.js` | Cue extraction (4.5): `extractCuesFromEnvelope` (cheap, over an RMS envelope) and `extractCuesFromPcm` (one pass, mono/stereo, BS.1770-style gated loudness); `introEnd`, `outroStart`, `startTrim`/`endTrim`, per-cue confidence, `toLibraryCues` (hand-set override wins), synthetic-signal generators for tests. Never throws | 4.3, 4.5 |
 | `fake-adapters.js` | Fake Context, Director, Writer, Brain, Voice, STT, Decoder: configurable delays on a virtual clock, failure injection | 13 |
 | `fixtures.js` | Snapshot scenarios, library generator, golden rundown and scripts | 13 |
 | `sim.js` | `runSimulatedShow`: a whole show through clock + scheduler + verifier with fakes on a virtual clock | 11 P2 exit |
-| `index.js` | Barrel (what the lazy import returns) | |
+| `index.js` | Shipped barrel (what the lazy import returns); no dev files | |
+| `dev.js` | Dev/test barrel: fakes, fixtures, `runSimulatedShow`. Not shipped | |
 
 ## Pure vs adapter
 
@@ -81,8 +83,11 @@ The core never trusts an adapter's output: Director output goes through `repairR
    timing log the latency harness already needs (`latency.js` `evaluateGate` is the gate).
 4. **Keep the fakes.** They become the contract tests for each real adapter (same call sequence, same fault kinds) and the CI show
    (`test/radio-core/simulated-show.test.mjs`) keeps running with fakes; real-vendor runs are nightly/manual.
-5. **Not shipped to users.** `fake-adapters.js`, `fixtures.js`, `sim.js` are dev/test tooling. The web build copies `src/` wholesale
-   (about 180 KB of unreferenced files today); P2 should exclude them from `build-web.mjs` ITEMS.
+5. **Not shipped to users.** `fake-adapters.js`, `fixtures.js`, `sim.js`, `dev.js` (and this README) are excluded by the explicit
+   deny list in `scripts/build-web.mjs` (about 54 KB; the old "180 KB" figure was an overestimate). `index.js` deliberately does not
+   re-export them, so the lazy import still works in the APK. `test/build-web.test.mjs` builds into a temp dir and checks that dev
+   files are absent, everything reachable from `index.html` (static, dynamic, `new URL`) is present, and the build is deterministic.
+   A new dev-only file must be added to `DENY`.
 
 ## Testing
 
@@ -98,3 +103,21 @@ boot-path test. Nothing needs a network, a clock or a device.
 * `Segment` (`runout/segment/1`) is the scheduler's output unit; it is in the P0 brief but not in the doc's 3.3. Candidates may carry
   an optional `energy` (0–1) the selector uses; `StationMemory.listenerNotes[].id` is added for forgetting a single note.
 * Tuning numbers (duck -14 dB, hit margin 0.4 s, 250 ms/400 ms ramps, backchannel at 1.4 s) are starting values, not measurements.
+
+## Cue extraction (`cues.js`)
+
+Library candidates carry `cues: {introEndSec, outroStartSec, loudnessGainDb?, confidence}` (times in seconds from file start). `extractCues*`
+produces exactly that shape plus additive `startTrimSec`/`endTrimSec`, and a `detail` block with per-cue `{sec, confidence 0..1, reason}`.
+The scheduler's single `confidence` label is the intro cue's when there is one (it gates talk-over-intro), else the weakest cue found.
+
+* **Cheap path:** `extractCuesFromEnvelope(env, {durationSec, absolute?, curve?})` over an envelope you already have (`model.js computeEnvelope`
+  output is accepted as is: normalised, `pow 0.6`; loudness is then unknown because the level is gone). About 0.3 ms for 1024 bins.
+* **PCM path:** `extractCuesFromPcm({channels|samples, sampleRate})`: real BS.1770-4 K-weighting + 400 ms/75 % blocks + -70/-10 gates,
+  mono as dual-mono. 4-minute stereo 44.1 kHz synthetic track: about 0.3 s in node (one run; machine dependent). Run it off the main
+  thread (decode worker) on device and prefer the envelope path when only structure cues are needed.
+* **Honest limits:** loudness is BS.1770-style, verified on sine references (+/-0.15 LU) and the K-filter gain at 997 Hz / 10 kHz / 30 Hz, NOT
+  against the official EBU test files, no true-peak. Envelope-only loudness is an unweighted RMS approximation (a few LU off on music).
+  `introEnd` is the first sustained rise to body level (band/main-section entry), not a vocal detector; thresholds were tuned and tested on
+  synthetic songs only. Gradual builds return null or low/med confidence on purpose.
+* **Sim:** `runSimulatedShow({cues: 'extracted' (default) | 'handset', cueOverrides: {trackId: partialCues}})` synthesises an envelope per
+  candidate and runs the extractor; hand-set fixture cues remain available and per-track overrides win key by key.

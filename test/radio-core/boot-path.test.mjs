@@ -59,8 +59,12 @@ test('the only door to the core is one dynamic import in radio-player.js, behind
 
 test('the web build is an unbundled copy of index.html + src/, so the static graph above is what ships and loads', () => {
   const build = read(resolve(root, 'scripts/build-web.mjs'));
-  assert.match(build, /const ITEMS = \['index\.html', 'src'\];/);
-  assert.doesNotMatch(build, /radio\/core|bundle|esbuild|rollup/);
+  assert.match(build, /export const ITEMS = \['index\.html', 'src'\];/);
+  assert.doesNotMatch(build, /esbuild|rollup|webpack|terser/);
+  // the only radio/core paths the build mentions are the dev-only deny list; the shipped lazy barrel is never denied
+  // (the full reachability + exclusion checks live in test/build-web.test.mjs)
+  const mentioned = [...build.matchAll(/'(src\/radio\/core\/[^']+)'/g)].map((m) => m[1]).sort();
+  assert.deepEqual(mentioned, ['src/radio/core/dev.js', 'src/radio/core/fake-adapters.js', 'src/radio/core/fixtures.js', 'src/radio/core/sim.js']);
 });
 
 // ── runtime behaviour, using the real radio-player.js wiring (it is importable in node) ──
