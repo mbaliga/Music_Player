@@ -132,11 +132,13 @@ const ALWAYS_OK = new Set(['i', 'ok', 'okay', 'dj', 'rj', 'fm', 'am', 'pm', 'tv'
 
 function properNouns(plain) {
   const out = [];
-  const re = /[A-Za-z][A-Za-z'’]*/g;
+  // Unicode-aware: a library full of "Björk", "Sigur Rós" and "Beyoncé" must not be cut at the first accent
+  // (found by the offline host's hostile-title test; the ASCII-only scan split "Björk" into "Bj" and "rk").
+  const re = /\p{L}[\p{L}'’]*/gu;
   let m;
   while ((m = re.exec(plain))) {
     const w = m[0];
-    if (!/^[A-Z]/.test(w)) continue;
+    if (!/^\p{Lu}/u.test(w)) continue;
     if (SENTENCE_START.test(plain.slice(0, m.index))) continue;
     const base = w.replace(/['’](?:m|ll|ve|d|s|re)$/i, '');
     if (ALWAYS_OK.has(base.toLowerCase())) continue;
