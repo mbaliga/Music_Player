@@ -6,7 +6,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const CSS = `
-.ai-card{display:flex;flex-direction:column;gap:10px;margin:10px 0 4px;padding:12px;border-radius:12px;background:var(--surface);border:1px solid var(--border);color:var(--ink)}
+.ai-card{display:flex;flex-direction:column;gap:10px;margin:10px 12px 8px;padding:12px;border-radius:12px;background:var(--surface);border:1px solid var(--border);color:var(--ink)}
 .ai-card.hidden{display:none}
 .ai-label{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2)}
 .ai-label .ai-dot{width:8px;height:8px;border-radius:50%;background:var(--secondary);flex:0 0 auto}

@@ -41,7 +41,8 @@ const AI_CSS = `.radio-setting{display:flex;gap:10px;align-items:flex-start;padd
 .radio-setting small{display:block;color:var(--ink2);font-size:12px;margin-top:2px;line-height:1.35}
 .radio-setting input{margin-top:3px;width:18px;height:18px;flex:0 0 auto}
 .radio-ai-sec{margin-bottom:12px}
-.ai-panel.hidden{display:none}`;
+.ai-panel.hidden{display:none}
+.radio-now.info .alb-artist{color:var(--ink2);white-space:normal}`;
 
 const h = (tag, props = {}, ...kids) => {
   const e = document.createElement(tag);
@@ -223,7 +224,7 @@ export class RadioUI {
 
   _showNow(station, st) {
     const label = { connecting: 'Connecting…', buffering: 'Buffering…', reconnecting: `Connection lost. Reconnecting (${st.attempt || 1}/${MAX_RECONNECTS})…`, playing: (station.tags || []).includes('ai') ? 'On air' : 'Live', error: 'Error', idle: '' }[st.phase] || '';
-    this.now.className = 'radio-now ' + st.phase;
+    this.now.className = 'radio-now ' + st.phase + (st.error && st.error.kind === 'empty_library' ? ' info' : '');
     this.now.replaceChildren(...[
       h('div', { class: 'radio-now-main' },
         h('div', { class: 'alb-name' }, station.name),

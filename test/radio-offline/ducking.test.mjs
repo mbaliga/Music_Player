@@ -31,8 +31,9 @@ function sample(calls, from, to, initial = 1) {
     while (gi < groups.length && groups[gi].t <= t) {
       const g = groups[gi++];
       const held = val(g.t);
+      const inFlight = ev.some((e) => e.ramp && e.t > g.t);
       ev = ev.filter((e) => e.t < g.t);
-      if (g.hold) ev.push({ t: g.t, v: held, ramp: false });
+      if (g.hold && inFlight) ev.push({ t: g.t, v: held, ramp: false }); // Chromium: hold only freezes a ramp in progress
       for (const o of g.ops) ev.push({ t: o[2], v: o[1], ramp: o[0] === 'ramp' });
     }
     out.push([t, val(t)]);
@@ -138,4 +139,19 @@ test('with cancelAndHoldAtTime (Chromium) an interrupted ramp is frozen, not res
   const s = sample(param.calls, 0, 3);
   assert.ok(maxStep(s) < 0.005, `step ${maxStep(s)}`);
   assert.equal(s[s.length - 1][1], 1);
+});
+
+test('release after a COMPLETED duck does not jump (a ramp interpolates from the previous event, however old)', () => {
+  for (const withHold of [false, true]) {
+    const param = fakeParam(1);
+    if (withHold) param.cancelAndHoldAtTime = (t) => param.calls.push(['hold', t]);
+    clock = 0;
+    const c = createDuckController({ param, now: () => clock });
+    c.hold('a');          // 1 -> 0.2 over 0.22 s, completes long before the release
+    clock = 10; c.release('a');
+    const s = sample(param.calls, 9.9, 11);
+    assert.ok(maxStep(s) < 0.005, `withHold=${withHold}: a ${maxStep(s)} step (the bug was 0.2 -> 0.95)`);
+    assert.ok(Math.abs(s.find(([t]) => t >= 10)[1] - dbToGain(DUCK.depthDb)) < 0.01);
+    assert.equal(s[s.length - 1][1], 1);
+  }
 });

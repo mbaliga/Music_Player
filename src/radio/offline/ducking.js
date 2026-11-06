@@ -41,10 +41,11 @@ export function createDuckController({ param, now, depthDb = DUCK.depthDb, attac
     const span = Math.abs(1 - target) || 1;
     const d = Math.max(0.02, dur * Math.min(1, Math.abs(to - cur) / span));
     try {
-      // cancelAndHoldAtTime freezes an in-flight ramp at its current value (Chromium); elsewhere cancel + pin the value
-      // we computed ourselves. Either way the new ramp starts from where the gain is NOW.
-      if (typeof param.cancelAndHoldAtTime === 'function') param.cancelAndHoldAtTime(t);
-      else { param.cancelScheduledValues(t); param.setValueAtTime(cur, t); }
+      // Clear what is scheduled, then ALWAYS pin the value we computed at `t`: a linear ramp interpolates from the PREVIOUS
+      // EVENT, so after a completed earlier ramp (whose end event is far in the past) a bare ramp would start from that
+      // old event and jump. (Found in real Chromium: cancelAndHoldAtTime alone left a 0.2 -> 0.95 step on release.)
+      if (typeof param.cancelAndHoldAtTime === 'function') param.cancelAndHoldAtTime(t); else param.cancelScheduledValues(t);
+      param.setValueAtTime(cur, t);
       param.linearRampToValueAtTime(to, t + d);
     } catch { /* a dead context must not break the show */ }
     seg = { t0: t, t1: t + d, g0: cur, g1: to };

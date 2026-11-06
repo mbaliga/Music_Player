@@ -41,7 +41,7 @@ add('station_id', '[station]. Nobody picked these songs but you.', E.wry);
 add('station_id', 'This is [station], with [hostA] and [hostB].');
 add('station_id', '[station]. We play it, you pretend you chose it.', E.wry);
 add('station_id', '[station]. Local to your phone.', E.dry);
-add('station_id', 'Still here, still [station].', E.dry);
+add('station_id', 'This is [station], and we are on the air.', E.dry);
 add('station_id', '[station]. Turn it up a notch.', { ...E.hype, tone: 'high' });
 add('station_id', '[station]. Easy does it.', { ...E.soft, tone: 'low' });
 
