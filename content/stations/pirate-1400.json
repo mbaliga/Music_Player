@@ -1,0 +1,5057 @@
+{
+  "v": 1,
+  "station": {
+    "id": "pirate-1400",
+    "name": "Pirate 1400",
+    "tagline": "Unlicensed, unanchored, unbothered.",
+    "dial": "1400",
+    "vibe": "A leaky ship somewhere off the mainland, broadcasting forbidden music to the shore with tremendous confidence and almost no navigation.",
+    "daypart": [
+      "evening",
+      "night",
+      "any"
+    ],
+    "contentRating": "PG-13",
+    "hosts": [
+      {
+        "id": "ros",
+        "name": "Captain Rosalind 'Red Ros' Marrow",
+        "role": "host",
+        "persona": "Captain of the broadcasting vessel Persistent Dolores. Boundlessly brave, wildly theatrical, and the worst navigator to ever hold a wheel; she has never once known where the ship is and regards this as a strategic advantage. Declares everything either a mutiny or a triumph. She loves a dramatic entrance, a stiff wind and the mainland listeners she calls 'my landlubbers.' She hates the Ministry of Quiet, maps that disagree with her and the word 'actually.' Tic: 'By my boots!' and naming the ship in full every time.",
+        "voice": {
+          "genderHint": "female",
+          "ageHint": "adult",
+          "accent": "irish",
+          "style": "booming, theatrical, gleeful",
+          "rate": 1.08,
+          "pitch": 0.98
+        }
+      },
+      {
+        "id": "barnaby",
+        "name": "First Mate Barnaby Clamp",
+        "role": "co-host",
+        "persona": "The Dolores's first mate, record keeper and only crew member who reads the manual. Gets seasick in the bath. Keeps the ship's log as an anxious personal diary and reads entries aloud. He loves tidy cables, a dry sock and the radio serial he writes in secret. He hates waves, which he takes personally. Tic: 'For the log,' and 'I'd like it noted.'",
+        "voice": {
+          "genderHint": "male",
+          "ageHint": "adult",
+          "accent": "neutral-UK",
+          "style": "fretful, precise, nasal",
+          "rate": 1.02,
+          "pitch": 1.06
+        }
+      },
+      {
+        "id": "grumm",
+        "name": "Mother Grumm",
+        "role": "co-host",
+        "persona": "Ship's cook, quartermaster and reader of the nightly Contraband Report. Older than the ship and possibly the sea. Gravelly, unimpressed, terrifyingly competent. Her soup is famous across the waters, mostly as a warning.",
+        "voice": {
+          "genderHint": "female",
+          "ageHint": "older",
+          "accent": "scottish",
+          "style": "gravelly, dry, sardonic",
+          "rate": 0.94,
+          "pitch": 0.86
+        }
+      },
+      {
+        "id": "admiral",
+        "name": "The Admiral",
+        "role": "cast",
+        "persona": "The ship's parrot, voiced by whichever crew member is nearest. Has learned exactly one jingle, and it belongs to the Ministry of Quiet's official station. Squawks it at the worst possible moments.",
+        "voice": {
+          "genderHint": "neutral",
+          "ageHint": "adult",
+          "accent": "neutral-UK",
+          "style": "shrill, squawky, clipped",
+          "rate": 1.2,
+          "pitch": 1.3
+        }
+      },
+      {
+        "id": "duchess",
+        "name": "The Salt Duchess",
+        "role": "cast",
+        "persona": "Heroine of Barnaby's radio serial: a disgraced aristocrat turned smuggler queen, imperious and brilliant, who speaks only in declarations. Also voices assorted grand ladies.",
+        "voice": {
+          "genderHint": "female",
+          "ageHint": "adult",
+          "accent": "neutral-UK",
+          "style": "imperious, crisp, grand",
+          "rate": 0.96,
+          "pitch": 0.96
+        }
+      },
+      {
+        "id": "pettigrew",
+        "name": "Inspector Pettigrew",
+        "role": "cast",
+        "persona": "Villain of the serial: a Harbour Watch inspector obsessed with paperwork, who hunts the Duchess with a clipboard. Also voices stiff officials.",
+        "voice": {
+          "genderHint": "male",
+          "ageHint": "older",
+          "accent": "neutral-UK",
+          "style": "stiff, nasal, pompous",
+          "rate": 0.92,
+          "pitch": 0.9
+        }
+      },
+      {
+        "id": "pip",
+        "name": "Pip",
+        "role": "cast",
+        "persona": "The cabin child in the serial, cheerful and far braver than the adults. Also voices younger crew and callers.",
+        "voice": {
+          "genderHint": "neutral",
+          "ageHint": "young",
+          "accent": "neutral-UK",
+          "style": "bright, eager",
+          "rate": 1.1,
+          "pitch": 1.15
+        }
+      },
+      {
+        "id": "clement",
+        "name": "Clement",
+        "role": "caller",
+        "persona": "A retired man on the mainland who owns a large torch and a balcony facing the sea. Mild, courteous and baffled to be involved in anything.",
+        "voice": {
+          "genderHint": "male",
+          "ageHint": "older",
+          "accent": "neutral-UK",
+          "style": "mild, polite, wobbly",
+          "rate": 0.9,
+          "pitch": 0.95
+        }
+      },
+      {
+        "id": "gwen",
+        "name": "Gwen",
+        "role": "caller",
+        "persona": "A mainland listener who calls in by ship-to-shore set from her allotment shed. Brisk, competitive, has entered every contest the Dolores has ever run.",
+        "voice": {
+          "genderHint": "female",
+          "ageHint": "adult",
+          "accent": "australian",
+          "style": "brisk, cheerful, loud",
+          "rate": 1.06,
+          "pitch": 1.04
+        }
+      },
+      {
+        "id": "commodore",
+        "name": "Commodore Stillwell",
+        "role": "caller",
+        "persona": "Commander of the Ministry of Quiet patrol boat, the Hush. Speaks only through a loudhailer, every word evenly stressed, very politely. Hiding something.",
+        "voice": {
+          "genderHint": "male",
+          "ageHint": "adult",
+          "accent": "neutral-US",
+          "style": "stiff, formal, megaphone flat",
+          "rate": 0.9,
+          "pitch": 0.92
+        }
+      }
+    ]
+  },
+  "segments": [
+    {
+      "id": "p14-sign-on-1",
+      "kind": "sign_on",
+      "hosts": [
+        "ros"
+      ],
+      "lines": [
+        {
+          "host": "ros",
+          "text": "Ahoy, mainland! This is Captain Rosalind Marrow of the broadcasting vessel Persistent Dolores, and you are listening to Pirate fourteen hundred!",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "ros",
+          "text": "We are somewhere off your coast. We do not know where. Neither does the Ministry of Quiet.",
+          "pauseAfterMs": 0,
+          "direction": "huge, gleeful, a proclamation"
+        }
+      ],
+      "estSec": 15,
+      "tags": [
+        "evening",
+        "opener"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-sign-on-2",
+      "kind": "sign_on",
+      "hosts": [
+        "barnaby"
+      ],
+      "lines": [
+        {
+          "host": "barnaby",
+          "text": "Pirate fourteen hundred is now on the air. For the log, the sea is moderate.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "barnaby",
+          "text": "I would like it noted that moderate is still too much.",
+          "pauseAfterMs": 0,
+          "direction": "queasy, dignified"
+        }
+      ],
+      "estSec": 10,
+      "tags": [
+        "night",
+        "opener",
+        "gag:seasick"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-id-1",
+      "kind": "station_id",
+      "hosts": [
+        "ros"
+      ],
+      "lines": [
+        {
+          "host": "ros",
+          "text": "Pirate fourteen hundred! Broadcasting from international waters, or possibly a large puddle! By my boots, we'll find out!",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 7,
+      "tags": [
+        "any"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-id-2",
+      "kind": "station_id",
+      "hosts": [
+        "barnaby",
+        "admiral"
+      ],
+      "lines": [
+        {
+          "host": "barnaby",
+          "text": "You're listening to Pirate fourteen hundred.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "admiral",
+          "text": "Placid F M! The sensible frequency! Placid F M!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "The Admiral has been listening to the enemy again.",
+          "pauseAfterMs": 0,
+          "direction": "the parrot line is squawked, then barnaby sighs"
+        }
+      ],
+      "estSec": 10,
+      "tags": [
+        "any",
+        "gag:parrot"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-id-3",
+      "kind": "station_id",
+      "hosts": [
+        "grumm"
+      ],
+      "lines": [
+        {
+          "host": "grumm",
+          "text": "Pirate fourteen hundred. If ye can hear this, ye're near the water. Step back a wee bit.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 7,
+      "tags": [
+        "any"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-id-4",
+      "kind": "station_id",
+      "hosts": [
+        "ros",
+        "barnaby"
+      ],
+      "lines": [
+        {
+          "host": "ros",
+          "text": "This is Pirate fourteen hundred. Unlicensed! Unanchored! Unbothered!",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "barnaby",
+          "text": "Slightly bothered.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 4,
+      "tags": [
+        "night"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-jingle-1",
+      "kind": "jingle",
+      "hosts": [
+        "ros",
+        "barnaby",
+        "grumm"
+      ],
+      "lines": [
+        {
+          "host": "ros",
+          "text": "Fourteen!",
+          "pauseAfterMs": 200
+        },
+        {
+          "host": "barnaby",
+          "text": "Hundred!",
+          "pauseAfterMs": 200
+        },
+        {
+          "host": "grumm",
+          "text": "Pirate.",
+          "pauseAfterMs": 200
+        },
+        {
+          "host": "ros",
+          "text": "Raaaadio!",
+          "pauseAfterMs": 0,
+          "direction": "chant, like hauling a rope, last word drawn out"
+        }
+      ],
+      "estSec": 2,
+      "tags": [
+        "any"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-jingle-2",
+      "kind": "jingle",
+      "hosts": [
+        "ros"
+      ],
+      "lines": [
+        {
+          "host": "ros",
+          "text": "Yo ho, yo ho, the Ministry says no, but the Dolores says play it again!",
+          "pauseAfterMs": 0,
+          "direction": "sea-shanty lilt, spoken in rhythm"
+        }
+      ],
+      "estSec": 6,
+      "tags": [
+        "any"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-jingle-3",
+      "kind": "jingle",
+      "hosts": [
+        "barnaby"
+      ],
+      "lines": [
+        {
+          "host": "barnaby",
+          "text": "Pirate fourteen hundred, over the waves, and the waves, and oh dear, the waves.",
+          "pauseAfterMs": 0,
+          "direction": "sung-spoken, getting greener with each wave"
+        }
+      ],
+      "estSec": 5,
+      "tags": [
+        "any",
+        "gag:seasick"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-promo-serial",
+      "kind": "promo",
+      "hosts": [
+        "barnaby",
+        "ros"
+      ],
+      "lines": [
+        {
+          "host": "barnaby",
+          "text": "Later on Pirate fourteen hundred, a new episode of The Salt Duchess, a radio serial of smuggling, betrayal and paperwork.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "ros",
+          "text": "Barnaby writes it. Don't tell him it's good. He'll cry on the equipment.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 13,
+      "tags": [
+        "any",
+        "serial:salt-duchess"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-promo-barrel",
+      "kind": "promo",
+      "hosts": [
+        "ros",
+        "grumm"
+      ],
+      "lines": [
+        {
+          "host": "ros",
+          "text": "The What's In The Barrel contest continues on Pirate fourteen hundred! One barrel. One question. No clues. Untold glory!",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "grumm",
+          "text": "There's no prize.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "The glory is the prize, Grumm!",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 11,
+      "tags": [
+        "any",
+        "gag:barrel"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-liner-1",
+      "kind": "liner",
+      "hosts": [
+        "grumm"
+      ],
+      "lines": [
+        {
+          "host": "grumm",
+          "text": "Pirate fourteen hundred. Music the mainland isnae allowed after supper. So have it with yer pudding.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 6,
+      "tags": [
+        "night"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-liner-2",
+      "kind": "liner",
+      "hosts": [
+        "ros"
+      ],
+      "lines": [
+        {
+          "host": "ros",
+          "text": "Pirate fourteen hundred, keeping one eye on the horizon and the other on the Hush.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 6,
+      "tags": [
+        "any",
+        "gag:the-hush"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-sign-off-1",
+      "kind": "sign_off",
+      "hosts": [
+        "ros",
+        "barnaby"
+      ],
+      "lines": [
+        {
+          "host": "ros",
+          "text": "That's the tide turning, landlubbers. Pirate fourteen hundred is weighing anchor.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "barnaby",
+          "text": "We never dropped the anchor. We lost it.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Then we are weighing nothing, which is very light! Fair winds!",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 12,
+      "tags": [
+        "night",
+        "closer"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-sign-off-2",
+      "kind": "sign_off",
+      "hosts": [
+        "barnaby"
+      ],
+      "lines": [
+        {
+          "host": "barnaby",
+          "text": "Final entry in the log. Still afloat. Still damp. Still on the air.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "barnaby",
+          "text": "Goodnight from the Persistent Dolores. Please keep a light on.",
+          "pauseAfterMs": 0,
+          "direction": "quiet, sincere"
+        }
+      ],
+      "estSec": 9,
+      "tags": [
+        "night",
+        "closer",
+        "gag:seasick"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-backsell-smuggled",
+      "kind": "transition",
+      "hosts": [
+        "ros",
+        "barnaby"
+      ],
+      "lines": [
+        {
+          "host": "ros",
+          "text": "That was {prevTitle} by {prevArtist}, smuggled across the waters in a crate marked \"turnips\"!",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "ros",
+          "text": "The Ministry of Quiet checked the crate. They found turnips. We'd put the turnips on top. Oldest trick on the sea!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "It's the only trick we know.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "And it works every time, Barnaby!",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 19,
+      "tags": [
+        "any",
+        "ros"
+      ],
+      "usesSlots": [
+        "prevTitle",
+        "prevArtist"
+      ],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-backsell-smuggled-fb",
+      "kind": "transition",
+      "hosts": [
+        "ros",
+        "barnaby"
+      ],
+      "lines": [
+        {
+          "host": "ros",
+          "text": "That one was smuggled across the waters in a crate marked \"turnips\"!",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "ros",
+          "text": "The Ministry of Quiet checked the crate. They found turnips. We'd put the turnips on top. Oldest trick on the sea!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "It's the only trick we know.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "And it works every time, Barnaby!",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 18,
+      "tags": [
+        "any",
+        "ros"
+      ],
+      "usesSlots": [],
+      "fallbackOf": "p14-backsell-smuggled",
+      "weight": 1
+    },
+    {
+      "id": "p14-intro-cannon",
+      "kind": "transition",
+      "hosts": [
+        "ros",
+        "barnaby"
+      ],
+      "lines": [
+        {
+          "host": "ros",
+          "text": "Load the cannon, Barnaby! We're firing {nextTitle} at the mainland!",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "barnaby",
+          "text": "We don't have a cannon, Captain. We have a transmitter and a very old fan.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Then load the fan! {nextArtist}, broadside, fire!",
+          "pauseAfterMs": 0,
+          "direction": "ros at full volume, barnaby resigned"
+        }
+      ],
+      "estSec": 13,
+      "tags": [
+        "any",
+        "ros"
+      ],
+      "usesSlots": [
+        "nextTitle",
+        "nextArtist"
+      ],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-intro-cannon-fb",
+      "kind": "transition",
+      "hosts": [
+        "ros",
+        "barnaby"
+      ],
+      "lines": [
+        {
+          "host": "ros",
+          "text": "Load the cannon, Barnaby! We're firing the next song at the mainland!",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "barnaby",
+          "text": "We don't have a cannon, Captain. We have a transmitter and a very old fan.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Then load the fan! Broadside, fire!",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 13,
+      "tags": [
+        "any",
+        "ros"
+      ],
+      "usesSlots": [],
+      "fallbackOf": "p14-intro-cannon",
+      "weight": 1
+    },
+    {
+      "id": "p14-log-backsell",
+      "kind": "transition",
+      "hosts": [
+        "barnaby"
+      ],
+      "lines": [
+        {
+          "host": "barnaby",
+          "text": "For the log. During {prevTitle}, the ship rolled eleven times. I counted.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "barnaby",
+          "text": "The song was lovely. I was green for all of it. I'd like it noted that I'm not blaming {prevArtist}. I'm blaming the ocean, which was there first and should know better.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 17,
+      "tags": [
+        "any",
+        "gag:seasick"
+      ],
+      "usesSlots": [
+        "prevTitle",
+        "prevArtist"
+      ],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-log-backsell-fb",
+      "kind": "transition",
+      "hosts": [
+        "barnaby"
+      ],
+      "lines": [
+        {
+          "host": "barnaby",
+          "text": "For the log. During that last song, the ship rolled eleven times. I counted.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "barnaby",
+          "text": "The song was lovely. I was green for all of it. I'd like it noted that I'm not blaming the song. I'm blaming the ocean, which was there first and should know better.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 18,
+      "tags": [
+        "any",
+        "gag:seasick"
+      ],
+      "usesSlots": [],
+      "fallbackOf": "p14-log-backsell",
+      "weight": 1
+    },
+    {
+      "id": "p14-grumm-soup",
+      "kind": "banter",
+      "hosts": [
+        "grumm",
+        "ros",
+        "barnaby"
+      ],
+      "lines": [
+        {
+          "host": "grumm",
+          "text": "I made a soup while {prevTitle} was on.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "What kind, Grumm?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "grumm",
+          "text": "The kind ye make during a song. Ye put in whatever's near, and ye stir till the singing stops.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "grumm",
+          "text": "This one's got carrots, a boot lace and the last of the biscuits. It's called {prevTitle} soup now. That's the rule.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "Is the boot lace intentional?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "grumm",
+          "text": "Everything I do is intentional, Barnaby. That's what frightens ye.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 27,
+      "tags": [
+        "any",
+        "grumm"
+      ],
+      "usesSlots": [
+        "prevTitle"
+      ],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-grumm-soup-fb",
+      "kind": "banter",
+      "hosts": [
+        "grumm",
+        "ros",
+        "barnaby"
+      ],
+      "lines": [
+        {
+          "host": "grumm",
+          "text": "I made a soup while that last song was on.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "What kind, Grumm?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "grumm",
+          "text": "The kind ye make during a song. Ye put in whatever's near, and ye stir till the singing stops.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "grumm",
+          "text": "This one's got carrots, a boot lace and the last of the biscuits. It's named after the song now. That's the rule.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "Is the boot lace intentional?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "grumm",
+          "text": "Everything I do is intentional, Barnaby. That's what frightens ye.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 28,
+      "tags": [
+        "any",
+        "grumm"
+      ],
+      "usesSlots": [],
+      "fallbackOf": "p14-grumm-soup",
+      "weight": 1
+    },
+    {
+      "id": "p14-bottle-message",
+      "kind": "dedication",
+      "hosts": [
+        "ros"
+      ],
+      "lines": [
+        {
+          "host": "ros",
+          "text": "We fished a message in a bottle out of the sea this evening! It reads:",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "ros",
+          "text": "\"To Morwenna, on the cliff with the yellow house. I'm sorry I said your scones were dense. They were dense. But I'm sorry. From Iolo.\"",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "ros",
+          "text": "Morwenna, Iolo is sorry, and also right. This is {nextTitle}, by {nextArtist}, for the two of you. Bake something lighter. Forgive him slower.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 25,
+      "tags": [
+        "any",
+        "dedication"
+      ],
+      "usesSlots": [
+        "nextTitle",
+        "nextArtist"
+      ],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-bottle-message-fb",
+      "kind": "dedication",
+      "hosts": [
+        "ros"
+      ],
+      "lines": [
+        {
+          "host": "ros",
+          "text": "We fished a message in a bottle out of the sea this evening! It reads:",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "ros",
+          "text": "\"To Morwenna, on the cliff with the yellow house. I'm sorry I said your scones were dense. They were dense. But I'm sorry. From Iolo.\"",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "ros",
+          "text": "Morwenna, Iolo is sorry, and also right. This next one's for the two of you. Bake something lighter. Forgive him slower.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 24,
+      "tags": [
+        "any",
+        "dedication"
+      ],
+      "usesSlots": [],
+      "fallbackOf": "p14-bottle-message",
+      "weight": 1
+    },
+    {
+      "id": "p14-hush-sighting",
+      "kind": "transition",
+      "hosts": [
+        "barnaby",
+        "ros"
+      ],
+      "lines": [
+        {
+          "host": "barnaby",
+          "text": "Captain, there's a light on the horizon. It could be the Hush.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "The Ministry of Quiet's patrol boat? Then we'll play something they can't ignore!",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "ros",
+          "text": "Barnaby, quick, {nextTitle}! Full volume! If they're going to catch us, they'll catch us humming!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "Captain, it's gone. It was a fish. A very shiny fish.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Then the fish gets {nextArtist}! Nobody leaves this ship's range unsung!",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 25,
+      "tags": [
+        "any",
+        "gag:the-hush"
+      ],
+      "usesSlots": [
+        "nextTitle",
+        "nextArtist"
+      ],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-hush-sighting-fb",
+      "kind": "transition",
+      "hosts": [
+        "barnaby",
+        "ros"
+      ],
+      "lines": [
+        {
+          "host": "barnaby",
+          "text": "Captain, there's a light on the horizon. It could be the Hush.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "The Ministry of Quiet's patrol boat? Then we'll play something they can't ignore!",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "ros",
+          "text": "Barnaby, quick, the next one! Full volume! If they're going to catch us, they'll catch us humming!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "Captain, it's gone. It was a fish. A very shiny fish.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Then the fish gets a song! Nobody leaves this ship's range unsung!",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 26,
+      "tags": [
+        "any",
+        "gag:the-hush"
+      ],
+      "usesSlots": [],
+      "fallbackOf": "p14-hush-sighting",
+      "weight": 1
+    },
+    {
+      "id": "p14-album-treasure",
+      "kind": "transition",
+      "hosts": [
+        "ros",
+        "barnaby"
+      ],
+      "lines": [
+        {
+          "host": "ros",
+          "text": "That one came from {album}, which I am declaring official treasure of the Persistent Dolores!",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "barnaby",
+          "text": "You can't declare an album treasure.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "I can declare anything, Barnaby. I'm the captain. Last week I declared Tuesday.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "barnaby",
+          "text": "And was it Tuesday?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "It was the best Tuesday anyone ever had, and it was on a Friday!",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 21,
+      "tags": [
+        "any",
+        "ros"
+      ],
+      "usesSlots": [
+        "album"
+      ],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-album-treasure-fb",
+      "kind": "transition",
+      "hosts": [
+        "ros",
+        "barnaby"
+      ],
+      "lines": [
+        {
+          "host": "ros",
+          "text": "That last one, I am declaring official treasure of the Persistent Dolores!",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "barnaby",
+          "text": "You can't declare a song treasure.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "I can declare anything, Barnaby. I'm the captain. Last week I declared Tuesday.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "barnaby",
+          "text": "And was it Tuesday?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "It was the best Tuesday anyone ever had, and it was on a Friday!",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 20,
+      "tags": [
+        "any",
+        "ros"
+      ],
+      "usesSlots": [],
+      "fallbackOf": "p14-album-treasure",
+      "weight": 1
+    },
+    {
+      "id": "p14-parrot-intro",
+      "kind": "transition",
+      "hosts": [
+        "ros",
+        "admiral",
+        "barnaby"
+      ],
+      "lines": [
+        {
+          "host": "ros",
+          "text": "And now, the Admiral will introduce the next song!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "admiral",
+          "text": "Placid F M! Placid F M!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "No, Admiral! Say it! {nextTitle}!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "admiral",
+          "text": "The sensible frequency!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "He's never going to say it, Captain.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Then I'll say it for him. Here's {nextArtist}, despite the parrot!",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 18,
+      "tags": [
+        "any",
+        "gag:parrot"
+      ],
+      "usesSlots": [
+        "nextTitle",
+        "nextArtist"
+      ],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-parrot-intro-fb",
+      "kind": "transition",
+      "hosts": [
+        "ros",
+        "admiral",
+        "barnaby"
+      ],
+      "lines": [
+        {
+          "host": "ros",
+          "text": "And now, the Admiral will introduce the next song!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "admiral",
+          "text": "Placid F M! Placid F M!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "No, Admiral! Say \"Pirate fourteen hundred!\"",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "admiral",
+          "text": "The sensible frequency!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "He's never going to say it, Captain.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Then I'll say it for him. Here's the next one, despite the parrot!",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 19,
+      "tags": [
+        "any",
+        "gag:parrot"
+      ],
+      "usesSlots": [],
+      "fallbackOf": "p14-parrot-intro",
+      "weight": 1
+    },
+    {
+      "id": "p14-mainland-request",
+      "kind": "callin",
+      "hosts": [
+        "ros",
+        "gwen"
+      ],
+      "lines": [
+        {
+          "host": "ros",
+          "text": "Ship-to-shore, ye're on Pirate fourteen hundred!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "gwen",
+          "text": "Hiya, it's Gwen, calling from my allotment shed! I want to request {nextTitle}!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Gwen! Why that one?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "gwen",
+          "text": "My marrows grow better when I play them music. And they've heard everything else. I've played them all your shows. The big marrow's started leaning toward the sea.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Gwen, your marrow is a pirate.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "gwen",
+          "text": "I've always suspected!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "For Gwen's marrow, here's {nextArtist}!",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 27,
+      "tags": [
+        "any",
+        "gwen"
+      ],
+      "usesSlots": [
+        "nextTitle",
+        "nextArtist"
+      ],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-mainland-request-fb",
+      "kind": "callin",
+      "hosts": [
+        "ros",
+        "gwen"
+      ],
+      "lines": [
+        {
+          "host": "ros",
+          "text": "Ship-to-shore, ye're on Pirate fourteen hundred!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "gwen",
+          "text": "Hiya, it's Gwen, calling from my allotment shed! I want to request whatever's next!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Gwen! Why?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "gwen",
+          "text": "My marrows grow better when I play them music. And they've heard everything else. I've played them all your shows. The big marrow's started leaning toward the sea.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Gwen, your marrow is a pirate.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "gwen",
+          "text": "I've always suspected!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "For Gwen's marrow, here it comes!",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 27,
+      "tags": [
+        "any",
+        "gwen"
+      ],
+      "usesSlots": [],
+      "fallbackOf": "p14-mainland-request",
+      "weight": 1
+    },
+    {
+      "id": "p14-grumm-verdict",
+      "kind": "transition",
+      "hosts": [
+        "grumm",
+        "ros"
+      ],
+      "lines": [
+        {
+          "host": "grumm",
+          "text": "{prevArtist}.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "grumm",
+          "text": "Aye.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "grumm",
+          "text": "That'll do.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "That's the highest praise Mother Grumm has ever given anything. She once called a sunset \"adequate.\"",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "grumm",
+          "text": "It was a bit orange.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 11,
+      "tags": [
+        "any",
+        "grumm"
+      ],
+      "usesSlots": [
+        "prevArtist"
+      ],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-grumm-verdict-fb",
+      "kind": "transition",
+      "hosts": [
+        "grumm",
+        "ros"
+      ],
+      "lines": [
+        {
+          "host": "grumm",
+          "text": "That last one.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "grumm",
+          "text": "Aye.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "grumm",
+          "text": "That'll do.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "That's the highest praise Mother Grumm has ever given anything. She once called a sunset \"adequate.\"",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "grumm",
+          "text": "It was a bit orange.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 12,
+      "tags": [
+        "any",
+        "grumm"
+      ],
+      "usesSlots": [],
+      "fallbackOf": "p14-grumm-verdict",
+      "weight": 1
+    },
+    {
+      "id": "p14-lighthouse-steer",
+      "kind": "transition",
+      "hosts": [
+        "ros",
+        "barnaby"
+      ],
+      "lines": [
+        {
+          "host": "ros",
+          "text": "Steer by the lighthouse, Barnaby! Two blinks, then dark!",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "barnaby",
+          "text": "It's blinking three times tonight, Captain.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Then the lighthouse is excited! Something good is coming! I'd wager it's {nextTitle}!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "Lighthouses don't get excited.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "This one does! Here's {nextArtist}, and bear to starboard!",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 17,
+      "tags": [
+        "night",
+        "gag:lighthouse"
+      ],
+      "usesSlots": [
+        "nextTitle",
+        "nextArtist"
+      ],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-lighthouse-steer-fb",
+      "kind": "transition",
+      "hosts": [
+        "ros",
+        "barnaby"
+      ],
+      "lines": [
+        {
+          "host": "ros",
+          "text": "Steer by the lighthouse, Barnaby! Two blinks, then dark!",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "barnaby",
+          "text": "It's blinking three times tonight, Captain.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Then the lighthouse is excited! Something good is coming! I'd wager it's the next song!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "Lighthouses don't get excited.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "This one does! Bear to starboard!",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 17,
+      "tags": [
+        "night",
+        "gag:lighthouse"
+      ],
+      "usesSlots": [],
+      "fallbackOf": "p14-lighthouse-steer",
+      "weight": 1
+    },
+    {
+      "id": "p14-duchess-1",
+      "kind": "skit",
+      "hosts": [
+        "barnaby",
+        "duchess",
+        "pip",
+        "pettigrew",
+        "ros"
+      ],
+      "lines": [
+        {
+          "host": "barnaby",
+          "text": "Pirate fourteen hundred presents: The Salt Duchess. Episode one. \"The Crate That Hummed.\"",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "barnaby",
+          "text": "The harbour town of Gullmouth. Night. Fog. The fastest smuggling cutter on the coast, the Kestrel, slides into the dock without a single light. At her wheel stands a woman who was once a duchess, until she laughed at the Lord Chancellor's hat in front of the entire court.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "duchess",
+          "text": "It was a ridiculous hat. I stand by the laugh.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "Beside her, the cabin child, Pip.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "pip",
+          "text": "Duchess, the Harbour Watch is coming. It's him. It's Inspector Pettigrew.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "duchess",
+          "text": "Of course it is. Fetch the forms.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "pettigrew",
+          "text": "Halt! Harbour Watch! I have reason to believe this vessel is carrying undeclared cargo.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "duchess",
+          "text": "Good evening, Inspector. Our cargo is fully declared. Form Nine-B. Signed, dated, and stamped in three colours.",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "pettigrew",
+          "text": "Three colours.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "pettigrew",
+          "text": "Very well. But I'll be watching you, Duchess. One mistake. One missing signature. One smudge.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "duchess",
+          "text": "I don't smudge, Inspector. I've never smudged in my life.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "barnaby",
+          "text": "The Inspector stalked away down the dock. Pip let out a breath.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "pip",
+          "text": "Duchess. What's actually in the crate?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "duchess",
+          "text": "Put your ear to it.",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "pip",
+          "text": "It's humming. Duchess, the crate is humming.",
+          "pauseAfterMs": 800
+        },
+        {
+          "host": "barnaby",
+          "text": "What is in the crate? Why does it hum? And how many colours of stamp does the Duchess really own? Find out next time, on The Salt Duchess.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "That was magnificent, Barnaby!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "Please don't look at me. I'll cry on the equipment.",
+          "pauseAfterMs": 0,
+          "direction": "barnaby narrates with suppressed pride; duchess cool as ice; pettigrew all clipboard"
+        }
+      ],
+      "estSec": 95,
+      "tags": [
+        "any",
+        "serial:salt-duchess",
+        "seq:1"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-duchess-2",
+      "kind": "skit",
+      "hosts": [
+        "barnaby",
+        "pip",
+        "duchess",
+        "pettigrew",
+        "grumm"
+      ],
+      "lines": [
+        {
+          "host": "barnaby",
+          "text": "The Salt Duchess. Episode two. \"Form Nine-C.\"",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "barnaby",
+          "text": "Previously: a crate. A hum. An inspector with a clipboard and a grudge.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "barnaby",
+          "text": "Below deck on the Kestrel, Pip lifts the lid of the crate. Inside, wrapped in old sailcloth, is a small wooden box with a brass handle.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "pip",
+          "text": "Is it treasure?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "duchess",
+          "text": "Better. It's a music box. The last one in Gullmouth. The Harbour Watch confiscated all the others. They said music made the sailors \"inefficient.\"",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "pip",
+          "text": "Can I turn the handle?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "duchess",
+          "text": "Gently. It's very old, and so am I, and neither of us likes to be rushed.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "barnaby",
+          "text": "Pip turns the handle. A tune spills out, small and bright, like a coin dropped on a stone floor. And above them, on the dock, footsteps stop.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "pettigrew",
+          "text": "Duchess! Form Nine-C! Inspection of below-deck spaces, effective immediately!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "duchess",
+          "text": "Form Nine-C requires twenty-four hours' notice, Inspector.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "pettigrew",
+          "text": "I gave you twenty-four hours' notice.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "duchess",
+          "text": "When?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "pettigrew",
+          "text": "Yesterday. I posted it to you. You live on a boat. The postman cried.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "duchess",
+          "text": "Pip, the hatch. Now.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "The Kestrel slips her ropes and glides into the fog. And on the empty dock, Inspector Pettigrew stands very still, listening. And then, quietly, so quietly no one could ever prove it, he hums the tune.",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "barnaby",
+          "text": "Next time, on The Salt Duchess.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "grumm",
+          "text": "The postman bit was good.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "Thank you, Grumm.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "grumm",
+          "text": "The rest was soup.",
+          "pauseAfterMs": 0,
+          "direction": "the reveal of the humming inspector should be the softest line"
+        }
+      ],
+      "estSec": 91,
+      "tags": [
+        "any",
+        "serial:salt-duchess",
+        "seq:2"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-duchess-3",
+      "kind": "skit",
+      "hosts": [
+        "barnaby",
+        "pip",
+        "duchess",
+        "pettigrew",
+        "ros"
+      ],
+      "lines": [
+        {
+          "host": "barnaby",
+          "text": "The Salt Duchess. Episode three. \"The Fog.\"",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "barnaby",
+          "text": "Out at sea, the fog is so thick you could butter it. The Kestrel runs without lights. Behind her, the Harbour Watch launch, with Inspector Pettigrew at the bow.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "pip",
+          "text": "Duchess, I can't see the cliffs. We'll run aground!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "duchess",
+          "text": "We won't need to see them. Pip, the music box. Turn the handle.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "pip",
+          "text": "Now? They'll hear us!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "duchess",
+          "text": "Precisely.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "barnaby",
+          "text": "Pip turns the handle. The tune rings out into the fog, and comes back. From the left, fast. From the right, slow.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "duchess",
+          "text": "The echo, Pip. Sound comes back sooner from rock that's near. Left is the cliff. Right is open water. Hard to starboard.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "pip",
+          "text": "You're steering by the song.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "duchess",
+          "text": "I've been steering by songs my whole life, child. This is just the first time it's been useful.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "barnaby",
+          "text": "Behind them, the Harbour Watch launch hears the tune too, and follows it, straight toward the sandbar.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "pettigrew",
+          "text": "Helmsman! Steady! I need to log this sandbar. Do we have the form for sandbars?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "pip",
+          "text": "He's stopped to do paperwork!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "pettigrew",
+          "text": "Form Fourteen-A. \"Unexpected Geography.\" Where's my pen?",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "barnaby",
+          "text": "There is a soft, sandy crunch. The launch is stuck fast. And the Kestrel vanishes into the fog, playing a tune nobody is allowed to hear.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "barnaby",
+          "text": "Next time: a stranger. A map. A terrible mistake.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Is the stranger me?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "You asked to be in it, Captain.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "By my boots! I've been cast!",
+          "pauseAfterMs": 0,
+          "direction": "fog-thick, tense, then comic deflation at the sandbar"
+        }
+      ],
+      "estSec": 94,
+      "tags": [
+        "night",
+        "serial:salt-duchess",
+        "seq:3"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-duchess-4",
+      "kind": "skit",
+      "hosts": [
+        "barnaby",
+        "ros",
+        "duchess",
+        "pip",
+        "grumm"
+      ],
+      "lines": [
+        {
+          "host": "barnaby",
+          "text": "The Salt Duchess. Episode four. \"The Mysterious Stranger.\"",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "barnaby",
+          "text": "A tavern on the cliffs. The Duchess and Pip sit in a dark corner. The door bangs open. In strides a tall figure in a long coat, who is played by the captain of this ship, because she insisted.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "ros",
+          "text": "I am a Mysterious Stranger! I have a map!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "duchess",
+          "text": "Keep your voice down.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "I cannot keep my voice down! I'm very mysterious!",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "ros",
+          "text": "This map shows a hidden cove where no Harbour Watch has ever been. Follow the lighthouse. Two blinks, then dark. It will lead you true.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "pip",
+          "text": "How do you know?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "I've used it many times! I've never once arrived anywhere! But I've had a lovely time!",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "barnaby",
+          "text": "That was not the line.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "It's how I'd say it.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "The line is \"Trust me, I know these waters.\"",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "But I don't, Barnaby. Nobody does. That's what makes them waters.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "duchess",
+          "text": "Pip, we'll take the map.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "pip",
+          "text": "But, Duchess, the stranger doesn't seem to know where anything is.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "duchess",
+          "text": "No. But neither does the Harbour Watch. And a person who knows nothing can't lead us into a trap they've planned.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "barnaby",
+          "text": "The Duchess was wrong. Because outside the tavern, in the shadows, Inspector Pettigrew lowered his telescope, and smiled for the first time in eleven years.",
+          "pauseAfterMs": 600
+        },
+        {
+          "host": "barnaby",
+          "text": "Next time: the trap.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Was I good?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "grumm",
+          "text": "Ye were loud.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Thank you, Grumm!",
+          "pauseAfterMs": 0,
+          "direction": "ros wildly over the top; barnaby despairing; duchess unflappable"
+        }
+      ],
+      "estSec": 92,
+      "tags": [
+        "any",
+        "serial:salt-duchess",
+        "seq:4",
+        "gag:lighthouse"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-duchess-5",
+      "kind": "skit",
+      "hosts": [
+        "barnaby",
+        "pettigrew",
+        "duchess",
+        "pip",
+        "grumm"
+      ],
+      "lines": [
+        {
+          "host": "barnaby",
+          "text": "The Salt Duchess. Episode five. \"The Confession.\"",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "barnaby",
+          "text": "The hidden cove. The Kestrel creeps in under moonlight. And waiting on the beach, holding a lantern and a clipboard, is Inspector Pettigrew. Alone.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "pettigrew",
+          "text": "Good evening, Duchess.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "duchess",
+          "text": "Inspector. Where are your men?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "pettigrew",
+          "text": "I didn't bring any. There's no form for what I'm about to do.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "pettigrew",
+          "text": "Bring me the box.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "pip",
+          "text": "Don't, Duchess!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "duchess",
+          "text": "Why do you want it, Inspector? To smash it? To fill out a form in triplicate and lock it in a cellar?",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "pettigrew",
+          "text": "I made it.",
+          "pauseAfterMs": 800
+        },
+        {
+          "host": "pettigrew",
+          "text": "Thirty years ago. Before I joined the Watch. I was a carpenter's apprentice. I made it for my sister, for her wedding. It was the first thing I ever made that anyone loved.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "pettigrew",
+          "text": "When the Watch banned music, they took every box in Gullmouth. I joined the Watch the next day. I thought, if I'm the one who inspects the cellar, at least I'll know it's safe.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "pettigrew",
+          "text": "And then, one night, it was gone. Stolen. And I've chased it up and down this coast for eleven years.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "duchess",
+          "text": "I didn't steal it, Inspector. Your sister gave it to me. She said someone should keep it playing.",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "pettigrew",
+          "text": "She did?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "duchess",
+          "text": "She said her brother would understand eventually. She said he was a slow reader but a thorough one.",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "barnaby",
+          "text": "Next time, on The Salt Duchess. The final episode.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "grumm",
+          "text": "Barnaby.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "Yes, Grumm?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "grumm",
+          "text": "That one wasnae soup.",
+          "pauseAfterMs": 0,
+          "direction": "pettigrew's confession plain and quiet; let the pauses be long"
+        }
+      ],
+      "estSec": 95,
+      "tags": [
+        "night",
+        "serial:salt-duchess",
+        "seq:5"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-duchess-6",
+      "kind": "skit",
+      "hosts": [
+        "barnaby",
+        "pip",
+        "duchess",
+        "pettigrew",
+        "ros"
+      ],
+      "lines": [
+        {
+          "host": "barnaby",
+          "text": "The Salt Duchess. Episode six. The final episode. \"Every Window in Gullmouth.\"",
+          "pauseAfterMs": 800
+        },
+        {
+          "host": "barnaby",
+          "text": "The lighthouse above Gullmouth harbour. Midnight. Three figures climb the spiral stairs. The Duchess. Pip. And Inspector Pettigrew, without his clipboard for the first time in living memory.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "pip",
+          "text": "Will they hear it all the way down in the town?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "duchess",
+          "text": "Sound carries over water, Pip. And this town has been very quiet for a very long time. They'll hear.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "barnaby",
+          "text": "Pettigrew sets the music box on the stone ledge, facing the harbour. He puts his hand on the brass handle. And he stops.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "pettigrew",
+          "text": "There's no form for this either.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "duchess",
+          "text": "I know. Isn't it marvellous?",
+          "pauseAfterMs": 600
+        },
+        {
+          "host": "barnaby",
+          "text": "He turns the handle. The tune goes out across the harbour, over the boats, up the cobbled streets. And one by one, the windows of Gullmouth light up.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "barnaby",
+          "text": "Nobody comes out. Nobody shouts. They just open their windows, and lean on the sills, and listen. And somewhere down by the dock, a sailor who has not whistled in eleven years begins to whistle.",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "pip",
+          "text": "Inspector. Are you crying?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "pettigrew",
+          "text": "Harbour Watch officers do not cry. It's in the regulations.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "pettigrew",
+          "text": "Something is wrong with my eyes. I'll need to fill out a form.",
+          "pauseAfterMs": 900
+        },
+        {
+          "host": "barnaby",
+          "text": "The end.",
+          "pauseAfterMs": 600
+        },
+        {
+          "host": "barnaby",
+          "text": "Thank you for listening to The Salt Duchess. Next season, The Salt Duchess Returns, in which the Duchess has to do her taxes.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Barnaby. That was beautiful. I'm going to stand at the bow for a while and look important.",
+          "pauseAfterMs": 0,
+          "direction": "the fullest, warmest narration of the run; pettigrew's last line breaks a little"
+        }
+      ],
+      "estSec": 98,
+      "tags": [
+        "night",
+        "serial:salt-duchess",
+        "seq:6",
+        "payoff"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-barrel-1",
+      "kind": "banter",
+      "hosts": [
+        "ros",
+        "barnaby",
+        "grumm"
+      ],
+      "lines": [
+        {
+          "host": "ros",
+          "text": "Landlubbers! It's time to announce the greatest contest ever held on the high seas! What's In The Barrel!",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "barnaby",
+          "text": "For the log, it's a barrel. Oak. Iron hoops. It washed up against the hull three nights ago.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "And we have not opened it! Because opening it would ruin the contest!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "grumm",
+          "text": "And because the lid's stuck.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Mostly because of the contest, Grumm!",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "ros",
+          "text": "Here are the rules. Ye call in on the ship-to-shore. Ye tell us what ye think is in the barrel. If ye're right, ye win untold glory and the respect of every sailor on these waters.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "Which is three people and a parrot.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Four, if the parrot's in a good mood!",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "ros",
+          "text": "Clues! The barrel is heavy. It sloshes, but only a bit. And when the ship rolls left, it makes a sound like somebody saying \"oof.\"",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "grumm",
+          "text": "That's me. I'm sitting on it.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Disregard the \"oof\"! Lines are open!",
+          "pauseAfterMs": 0,
+          "direction": "ros announcing a grand tournament; grumm deflating it"
+        }
+      ],
+      "estSec": 60,
+      "tags": [
+        "any",
+        "gag:barrel",
+        "seq:1"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-barrel-2",
+      "kind": "callin",
+      "hosts": [
+        "ros",
+        "gwen",
+        "grumm",
+        "barnaby"
+      ],
+      "lines": [
+        {
+          "host": "ros",
+          "text": "What's In The Barrel! Ye're on Pirate fourteen hundred!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "gwen",
+          "text": "It's Gwen again! I've got three guesses!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "One guess per caller, Gwen!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "gwen",
+          "text": "I've got three phones.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "gwen",
+          "text": "Guess one. Pickled herring.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "grumm",
+          "text": "It doesnae smell of herring.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "gwen",
+          "text": "Guess two. A very small man with a very big secret.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "Captain, we should check.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "No checking!",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "gwen",
+          "text": "Guess three. Another barrel.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Another barrel. A barrel in a barrel. Gwen, that's the most ridiculous thing I've ever heard. I'm putting it on the board.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "What board?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "The board I'm going to make, Barnaby! Out of the lid, once we get it off!",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "gwen",
+          "text": "When do I find out?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "When the sea decides, Gwen! Water yer marrows!",
+          "pauseAfterMs": 0,
+          "direction": "gwen loud and competitive; ros delighted by everything"
+        }
+      ],
+      "estSec": 46,
+      "tags": [
+        "any",
+        "gag:barrel",
+        "seq:2",
+        "gwen"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-barrel-3",
+      "kind": "banter",
+      "hosts": [
+        "barnaby",
+        "ros",
+        "grumm"
+      ],
+      "lines": [
+        {
+          "host": "barnaby",
+          "text": "For the log. The barrel contest has received forty-one guesses. I've written them all down. Would you like to hear some?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Read the best ones, Barnaby!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "\"Soup.\" Several people said soup. I think that's because of Grumm.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "grumm",
+          "text": "They know quality.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "\"A mermaid's handbag.\" \"A ghost that's been very well behaved.\" \"Somebody's grandfather's teeth.\" \"The meaning of life, slightly damp.\"",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "barnaby",
+          "text": "One person guessed \"the anchor you lost,\" which I'd like noted is a very good guess, and is also not possible, because anchors don't fit in barrels and also we would know.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "We would not know. We never know anything. That's our charm.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "barnaby",
+          "text": "And one person just wrote \"please stop the contest, I can't sleep.\" No name. Postmarked from the Ministry of Quiet.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "By my boots! Somebody on the Ministry is playing along!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "I don't think that's playing along, Captain.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "It's a guess, Barnaby. It goes on the board.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 60,
+      "tags": [
+        "any",
+        "gag:barrel",
+        "seq:3"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-barrel-4",
+      "kind": "skit",
+      "hosts": [
+        "ros",
+        "barnaby",
+        "grumm"
+      ],
+      "lines": [
+        {
+          "host": "ros",
+          "text": "Landlubbers! The moment has come! The lid has come loose! What's In The Barrel is about to be answered!",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "barnaby",
+          "text": "For the log, Grumm got up off it and it just popped open.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Grumm, look inside! Tell the mainland what you see!",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "grumm",
+          "text": "It's another barrel.",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "ros",
+          "text": "Another barrel!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "Gwen's guess. Gwen won.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Gwen won! Untold glory to Gwen and her marrows! But wait. Grumm. Open the second barrel.",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "grumm",
+          "text": "It's a smaller barrel.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "And inside that?",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "grumm",
+          "text": "A wee jar.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "ros",
+          "text": "And inside the jar?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "grumm",
+          "text": "A note. It says: \"Nice try.\"",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "ros",
+          "text": "Barnaby. This is the greatest night of my life.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "It's a note that says \"nice try.\"",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Somebody, somewhere, put a note in a jar, in a barrel, in a barrel, and gave it to the sea, knowing that someday, somebody would care enough to open all of it. That person is a genius, Barnaby. And we have their attention.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "ros",
+          "text": "Next week: What's In The Jar.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "We know what's in the jar.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "We know what was in the jar, Barnaby. It's empty now. Anything could be in it.",
+          "pauseAfterMs": 0,
+          "direction": "ros goes from triumph to rapture; grumm reports flatly; barnaby gives up"
+        }
+      ],
+      "estSec": 74,
+      "tags": [
+        "any",
+        "gag:barrel",
+        "seq:4",
+        "payoff"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-lighthouse-1",
+      "kind": "monologue",
+      "hosts": [
+        "ros",
+        "barnaby"
+      ],
+      "lines": [
+        {
+          "host": "ros",
+          "text": "People ask me how the Persistent Dolores navigates.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "ros",
+          "text": "Some ships use stars. Stars are unreliable. They move about. They don't tell you where they're going. Some ships use compasses, but our compass points at Grumm's soup pot, and frankly, so do I.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "ros",
+          "text": "No. The Dolores navigates by a lighthouse. Off the starboard side, every night, on the mainland, there is a light. It blinks twice, then it goes dark. Two blinks, dark. Two blinks, dark.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "ros",
+          "text": "That light has never failed us. When we keep it on the right, we're heading north. When we keep it on the left, we're heading south. When it's behind us, we've done something wrong, and when it's in front of us, Barnaby gets nervous and starts making lists.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "barnaby",
+          "text": "Because that's when we hit things.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "We've only hit things a few times, Barnaby. Mostly other things that were also lost.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "ros",
+          "text": "But here's the strange part. There's no lighthouse on any of our maps. Not one. It's not on the charts. It's not on the Ministry's charts either. It's just there, every night, blinking twice.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "ros",
+          "text": "I like to think it's a lighthouse that wasn't built for ships. It was built for us. Two blinks. \"Still here.\" Dark. \"Still here.\"",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "ros",
+          "text": "Bear to starboard, Barnaby.",
+          "pauseAfterMs": 0,
+          "direction": "ros quieter than usual, almost reverent"
+        }
+      ],
+      "estSec": 82,
+      "tags": [
+        "night",
+        "gag:lighthouse",
+        "seq:1"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-lighthouse-2",
+      "kind": "callin",
+      "hosts": [
+        "barnaby",
+        "ros",
+        "clement"
+      ],
+      "lines": [
+        {
+          "host": "barnaby",
+          "text": "Captain, we have a call on the ship-to-shore. He says he's calling about the lighthouse.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Ye're on Pirate fourteen hundred!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "clement",
+          "text": "Oh. Hello. Yes. My name's Clement. I'm terribly sorry to bother you.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "clement",
+          "text": "I think I'm your lighthouse.",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "ros",
+          "text": "I'm sorry?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "clement",
+          "text": "I live in a little flat with a balcony facing the sea. Every night I go out with my torch, to check on my tomato plants. Click click, on and off, I'm checking the leaves. And then I go back in.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "clement",
+          "text": "My granddaughter showed me how to tune in to your station, and I heard you talking about a light that blinks twice, and I thought, oh dear. Oh, dear me. Have I been steering a ship?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "Captain.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Clement. How long have you been checking your tomatoes?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "clement",
+          "text": "Oh, nine years? Since my wife passed. She did the tomatoes before. I took them over. I'm not very good at them.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "ros",
+          "text": "Clement, you're a magnificent lighthouse.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "clement",
+          "text": "I'm really not. I'm a retired postman with a torch.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Every night for nine years, you've gone out on that balcony, and every night we've seen you, and we've known which way we were going. That's what a lighthouse is, Clement. Somebody who keeps showing up.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "clement",
+          "text": "Well.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "clement",
+          "text": "I'll keep checking the tomatoes, then.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Two blinks, Clement!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "clement",
+          "text": "Two blinks. Oh, this is very strange. Goodnight.",
+          "pauseAfterMs": 0,
+          "direction": "clement mortified and touched; ros the most sincere she ever is"
+        }
+      ],
+      "estSec": 90,
+      "tags": [
+        "night",
+        "gag:lighthouse",
+        "seq:2",
+        "payoff",
+        "clement"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-hush-1",
+      "kind": "banter",
+      "hosts": [
+        "barnaby",
+        "ros",
+        "grumm"
+      ],
+      "lines": [
+        {
+          "host": "barnaby",
+          "text": "For the log. The Hush has been spotted on the eastern horizon. Ministry of Quiet patrol boat. Grey hull. No lights. Very, very quiet engines.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Battle stations!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "We don't have battle stations.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Then everybody stand somewhere dramatic!",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "ros",
+          "text": "Landlubbers, a word about the Hush. The Ministry of Quiet sends it out every night to find us. It glides across the water without a sound. Its crew wear soft slippers. They communicate entirely in sign language and stern looks.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "grumm",
+          "text": "I've heard they put felt on the anchor chain.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Felt on the anchor chain, Grumm! That's how serious they are!",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "ros",
+          "text": "But the Hush will never catch the Persistent Dolores. Because the Hush knows where it's going, and we don't, and you cannot chase someone who doesn't know where they're going. You end up somewhere else entirely.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "It's a fair point, actually.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Never say \"actually\" on my ship, Barnaby. It's the Ministry's favourite word.",
+          "pauseAfterMs": 0,
+          "direction": "ros rallying the troops; barnaby taking minutes"
+        }
+      ],
+      "estSec": 61,
+      "tags": [
+        "any",
+        "gag:the-hush",
+        "seq:1"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-hush-2",
+      "kind": "callin",
+      "hosts": [
+        "barnaby",
+        "commodore",
+        "ros"
+      ],
+      "lines": [
+        {
+          "host": "barnaby",
+          "text": "Captain. The Hush is close. Very close. There's a voice coming over a loudhailer.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "commodore",
+          "text": "Attention, Persistent Dolores. This is Commodore Stillwell of the Ministry of Quiet. Please lower your volume.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Never!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "commodore",
+          "text": "Thank you for your response. Please lower it anyway.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "commodore",
+          "text": "You are broadcasting unapproved music to the mainland after supper. This is causing toe-tapping, humming, and in one reported case, a spontaneous waltz in a fish shop.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "A waltz in a fish shop! By my boots, that's the best review we've ever had!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "commodore",
+          "text": "It was not a review. It was a complaint. From the fish.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "barnaby",
+          "text": "Captain, he's very polite for an enemy.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "commodore",
+          "text": "Thank you, First Mate Clamp.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "He knows my name.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "commodore",
+          "text": "We know all your names. We have a file. It is very quiet in the file room and we read a great deal.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "commodore",
+          "text": "We will now withdraw. Please consider humming more softly.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Commodore! Before you go! Any requests?",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "commodore",
+          "text": "I am not permitted to have requests.",
+          "pauseAfterMs": 600
+        },
+        {
+          "host": "commodore",
+          "text": "The last song was quite good though.",
+          "pauseAfterMs": 0,
+          "direction": "the commodore speaks through a loudhailer: loud, flat, every word evenly stressed, scrupulously polite"
+        }
+      ],
+      "estSec": 68,
+      "tags": [
+        "night",
+        "gag:the-hush",
+        "seq:2",
+        "commodore"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-hush-3",
+      "kind": "callin",
+      "hosts": [
+        "barnaby",
+        "ros",
+        "commodore"
+      ],
+      "lines": [
+        {
+          "host": "barnaby",
+          "text": "Captain, the Hush is alongside again. They've run up a white flag.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Surrender? From the Ministry?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "commodore",
+          "text": "Persistent Dolores. This is Commodore Stillwell. This is not a surrender. This is a request.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "commodore",
+          "text": "The crew of the Hush has been listening to your broadcasts. For monitoring purposes. For several months. Every night. With the lights off.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Commodore! You're fans!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "commodore",
+          "text": "We are monitors.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "commodore",
+          "text": "Tonight is the birthday of Petty Officer Mundy. He has served the Ministry of Quiet for twenty years. He has never once been sung to.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "commodore",
+          "text": "We would like you to play him a song. We cannot sing it ourselves. It is against regulations and also we do not know how.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Commodore. The Persistent Dolores would be honoured.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "commodore",
+          "text": "Thank you. Please keep the volume moderate.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "commodore",
+          "text": "Actually.",
+          "pauseAfterMs": 600
+        },
+        {
+          "host": "commodore",
+          "text": "Please play it loud.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Happy birthday, Petty Officer Mundy! From your enemies, with love! Barnaby, crank the fan!",
+          "pauseAfterMs": 0,
+          "direction": "the commodore cracks, very slightly, on the word loud"
+        }
+      ],
+      "estSec": 60,
+      "tags": [
+        "night",
+        "gag:the-hush",
+        "seq:3",
+        "payoff",
+        "commodore"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-parrot-payoff",
+      "kind": "skit",
+      "hosts": [
+        "barnaby",
+        "ros",
+        "grumm",
+        "admiral"
+      ],
+      "lines": [
+        {
+          "host": "barnaby",
+          "text": "Captain. A Ministry inspection boat is coming alongside. A small one. Two officers with clipboards.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Everybody look innocent! Grumm, hide the soup!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "grumm",
+          "text": "The soup hides itself.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "They're calling over. They want to know if this is the pirate station.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Tell them we're a fishing boat!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "We have an antenna the size of a church.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Tell them we fish for birds!",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "barnaby",
+          "text": "They're asking us to identify the vessel. Captain, what do I say?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "admiral",
+          "text": "Pirate fourteen hundred! Pirate fourteen hundred!",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "ros",
+          "text": "Admiral.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "admiral",
+          "text": "Unlicensed! Unanchored! Unbothered!",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "barnaby",
+          "text": "Captain, he picked now. He learned it now. After all these months.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Admiral, you magnificent traitor.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "barnaby",
+          "text": "The officers are writing something down. They're leaving. One of them waved.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Waved?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "I think he's a listener. I think he was waving at the parrot.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "admiral",
+          "text": "Placid F M! The sensible frequency!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Oh, now he goes back to it!",
+          "pauseAfterMs": 0,
+          "direction": "the parrot is shrill and perfectly timed; ros cycles through horror, pride, and outrage"
+        }
+      ],
+      "estSec": 59,
+      "tags": [
+        "any",
+        "gag:parrot",
+        "payoff",
+        "gag:the-hush"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-contraband-1",
+      "kind": "news",
+      "hosts": [
+        "grumm",
+        "barnaby"
+      ],
+      "lines": [
+        {
+          "host": "grumm",
+          "text": "This is the Contraband Report. I'm Mother Grumm. These are the prices on the black market tonight, as whispered to me by gulls.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "grumm",
+          "text": "Second helpings. Banned on the mainland after supper by order of the Ministry of Quiet. Up four doubloons on the week. Demand is strong. Supply is in my pot.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "grumm",
+          "text": "Loud socks. Stripes, spots, anything with a duck on it. Steady at two doubloons the pair. A Ministry inspector was seen in a sock shop on the harbour front, asking about \"anything in a mustard.\" Prices may rise.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "grumm",
+          "text": "Whistling. Unlicensed whistling is down sharply after a crackdown on the north quay. However, humming is up. Analysts say people have simply closed their mouths and kept going.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "grumm",
+          "text": "Jam with bits in. Officially discouraged by the Ministry as \"too eventful.\" Trading at a premium. A single jar of the chunky apricot went for nine doubloons and a hat.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "grumm",
+          "text": "And puns. Puns remain the most smuggled item on these waters. They cost nothing to make and the Ministry cannot detect them. Barnaby has asked me to stop bringing them aboard.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "barnaby",
+          "text": "Every one of them is terrible.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "grumm",
+          "text": "That's what makes them contraband, son. That's been yer Contraband Report.",
+          "pauseAfterMs": 0,
+          "direction": "grumm reads it like a stock ticker, completely unimpressed"
+        }
+      ],
+      "estSec": 78,
+      "tags": [
+        "any",
+        "news",
+        "grumm"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-contraband-2",
+      "kind": "news",
+      "hosts": [
+        "grumm"
+      ],
+      "lines": [
+        {
+          "host": "grumm",
+          "text": "The Contraband Report.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "grumm",
+          "text": "Laughter in public libraries. Black-market rates at an all-time high. A ring of smugglers was uncovered operating out of the poetry section. They'd been passing jokes inside the bindings of large atlases. The Ministry confiscated three atlases and a limerick. The limerick has not been recovered.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "grumm",
+          "text": "Sunday lie-ins. Rationed by the Ministry to one per month. Forged lie-in permits are circulating. They're very convincing. The forger signs them \"Mum.\"",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "grumm",
+          "text": "Barrels. Demand for barrels has risen sharply since the What's In The Barrel contest. Several mainlanders have been seen putting barrels inside other barrels \"just in case.\" Coopers are delighted.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "grumm",
+          "text": "Shanties. Strongly controlled. A sea shanty with fewer than four verses is considered a warning. More than twelve and ye're looking at an arrest for disorderly chorusing.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "grumm",
+          "text": "And soup. My soup. No price. Not for sale. Not because it's precious. Because nobody's ever offered.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "grumm",
+          "text": "That's the Contraband Report.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 60,
+      "tags": [
+        "any",
+        "news",
+        "grumm",
+        "gag:barrel"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-contraband-3",
+      "kind": "news",
+      "hosts": [
+        "grumm"
+      ],
+      "lines": [
+        {
+          "host": "grumm",
+          "text": "The Contraband Report. Late edition.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "grumm",
+          "text": "Dancing in kitchens. The Ministry of Quiet has issued a new regulation limiting kitchen dancing to \"gentle swaying, no turns.\" Turns are now trading at six doubloons apiece. Dips are priceless. One woman was caught dipping her husband next to a hot stove and was let off with a warning, because the inspector said it was \"very well executed.\"",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "grumm",
+          "text": "Bedtime stories. Story-smuggling is up along the whole coast. Parents are reading the official Ministry bedtime book, \"The Sensible Pebble,\" and then telling the real story in a whisper after the lights go out. In the real story, the pebble becomes a dragon.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "grumm",
+          "text": "Fireworks. Still unavailable. The Ministry says they're \"too much like an opinion.\"",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "grumm",
+          "text": "And music after supper. Prices unchanged. Because it's free, if ye know where to tune.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "grumm",
+          "text": "That's yer report. Now eat something.",
+          "pauseAfterMs": 0,
+          "direction": "grumm, almost tender on the last item, then gruff again"
+        }
+      ],
+      "estSec": 56,
+      "tags": [
+        "night",
+        "news",
+        "grumm"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-ministry-bulletin",
+      "kind": "news",
+      "hosts": [
+        "barnaby",
+        "pettigrew",
+        "ros"
+      ],
+      "lines": [
+        {
+          "host": "barnaby",
+          "text": "We've intercepted an official bulletin from the Ministry of Quiet. I'm going to read it exactly as written, for the log.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "pettigrew",
+          "text": "Bulletin from the Ministry of Quiet. Citizens are reminded that music after supper causes inefficiency, swaying, and in severe cases, joy.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "pettigrew",
+          "text": "The Ministry's official broadcaster, Placid F M, continues to provide wholesome alternatives, including tonight's programme, \"A Man Describes a Fence,\" followed by \"Further Thoughts on the Same Fence.\"",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "pettigrew",
+          "text": "Citizens who encounter a pirate broadcast are instructed to switch off their receivers, place them face down, and think about something beige.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "pettigrew",
+          "text": "Any citizen who finds themselves humming should stop, take a deep breath, and fill out Form Seven, \"Admission of Melody.\"",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "pettigrew",
+          "text": "Remember: a quiet coast is a happy coast. And if it isn't happy, at least it's quiet.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "barnaby",
+          "text": "That last line was official.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "By my boots, that's the saddest thing I've ever heard! Barnaby, play something with trumpets in it!",
+          "pauseAfterMs": 0,
+          "direction": "the bulletin read in pettigrew's stiff voice; ros explodes at the end"
+        }
+      ],
+      "estSec": 61,
+      "tags": [
+        "any",
+        "news",
+        "gag:the-hush"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-ad-peg-polish",
+      "kind": "ad",
+      "hosts": [
+        "ros",
+        "barnaby",
+        "grumm"
+      ],
+      "lines": [
+        {
+          "host": "ros",
+          "text": "Pirate fourteen hundred is brought to you by Gullwing Peg-Leg Polish!",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "ros",
+          "text": "Is yer wooden leg looking dull? Scuffed? Has a woodpecker taken an interest? Then ye need Gullwing!",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "ros",
+          "text": "One coat of Gullwing Peg-Leg Polish and yer peg will shine like the morning sea! Water-resistant! Barnacle-repellent! Smells faintly of lemons and ambition!",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "barnaby",
+          "text": "Captain, nobody on this ship has a wooden leg.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "I use it on the railings!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "The railings are metal.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "And look how shiny they are, Barnaby!",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "ros",
+          "text": "Gullwing Peg-Leg Polish. Also good for tables, oars, and the heads of very patient bald men.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "grumm",
+          "text": "I've seen it used on a cat.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Not recommended for cats!",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 43,
+      "tags": [
+        "any",
+        "ad"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-ad-bottle-post",
+      "kind": "ad",
+      "hosts": [
+        "barnaby"
+      ],
+      "lines": [
+        {
+          "host": "barnaby",
+          "text": "Pirate fourteen hundred is supported by Saltworth's Bottle Post, the slowest mail service on the coast.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "barnaby",
+          "text": "Write your letter. Roll it up. Put it in one of Saltworth's genuine glass bottles. Throw it into the sea. And it will arrive. Eventually. Somewhere. With someone.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "barnaby",
+          "text": "Saltworth's guarantees that every bottle will reach a person who needs to read it. That person may not be the person you wrote to. Saltworth's considers this a feature.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "barnaby",
+          "text": "Last year a man sent a birthday card to his brother and it was found by a woman on an island who had been wondering if anyone remembered her birthday. It was her birthday. Now she and the man write to each other. The brother is still waiting for his card.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "barnaby",
+          "text": "Saltworth's Bottle Post. It gets there when the tide says so.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 53,
+      "tags": [
+        "any",
+        "ad"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-ad-maps",
+      "kind": "ad",
+      "hosts": [
+        "ros",
+        "barnaby"
+      ],
+      "lines": [
+        {
+          "host": "ros",
+          "text": "Lost at sea? Lost on land? Lost in thought? Then visit Lantern Lane Maps, in the crooked shop at the end of Lantern Lane!",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "ros",
+          "text": "Lantern Lane Maps sells maps of places that might be there! Islands that were spotted once, by a sailor with one eye and a fever! Coves that only appear at low tide on a leap year! A whole continent that the owner swears he saw in a puddle!",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "barnaby",
+          "text": "Are any of the maps accurate?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Accuracy is for people who already know where they're going, Barnaby!",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "ros",
+          "text": "I bought the map we use on the Dolores from Lantern Lane. It shows our current position in the middle of a mountain range!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "We're on water, Captain.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Then we're doing better than the map expected! Lantern Lane Maps. Get lost properly!",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 52,
+      "tags": [
+        "any",
+        "ad",
+        "gag:lighthouse"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-ad-hardtack",
+      "kind": "ad",
+      "hosts": [
+        "grumm",
+        "barnaby"
+      ],
+      "lines": [
+        {
+          "host": "grumm",
+          "text": "Mother Grumm's Hardtack.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "grumm",
+          "text": "It's a biscuit. It's been baked so long it's forgotten it was ever dough. It'll last longer than yer ship and possibly longer than ye.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "grumm",
+          "text": "Uses. Ye can eat it, if ye soak it overnight, and have patience, and nothing else to do. Ye can use it as a doorstop. Ye can use it to level a wobbly table. Ye can throw it at a gull, and the gull will respect ye.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "barnaby",
+          "text": "I once used a piece to patch a hole in the hull.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "grumm",
+          "text": "And did it hold?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "It's still holding. I think it's stronger than the hull now.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "grumm",
+          "text": "That's Mother Grumm's Hardtack. Sold by the crate. Do not try to bite it. Dip it.",
+          "pauseAfterMs": 0,
+          "direction": "grumm's ad delivery is utterly without salesmanship"
+        }
+      ],
+      "estSec": 48,
+      "tags": [
+        "any",
+        "ad",
+        "grumm"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-ad-sea-legs",
+      "kind": "ad",
+      "hosts": [
+        "barnaby",
+        "ros",
+        "grumm"
+      ],
+      "lines": [
+        {
+          "host": "barnaby",
+          "text": "Do you suffer from wobbly knees on deck? I do. Which is why I've invented Clamp's Patented Sea-Legs.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "barnaby",
+          "text": "Clamp's Patented Sea-Legs are two planks of wood that you strap to the sides of your knees with string. They don't stop you feeling seasick. But they make you look very determined while you are.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "ros",
+          "text": "Barnaby, I tried them. I fell down the stairs.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "Did you fall determinedly?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "I fell magnificently!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "That's Clamp's Patented Sea-Legs. Not effective. Very dignified.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "grumm",
+          "text": "This advertisement was paid for by Barnaby, with his own biscuits.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "It's an investment.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 37,
+      "tags": [
+        "any",
+        "ad",
+        "gag:seasick"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-log-1",
+      "kind": "monologue",
+      "hosts": [
+        "barnaby"
+      ],
+      "lines": [
+        {
+          "host": "barnaby",
+          "text": "I'm going to read from the ship's log. The Captain says it's good radio. I say it's a diary, and I'd like it noted that I said that.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "barnaby",
+          "text": "Day one hundred and twelve. Sea choppy. Captain says it's \"lively.\" Captain says everything is lively. Captain once said a fog was \"full of possibilities.\" The fog was full of fog.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "barnaby",
+          "text": "Day one hundred and thirteen. Grumm made a soup with something in it that moved. I asked what it was. She said \"dinner.\" I've decided to believe her.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "barnaby",
+          "text": "Day one hundred and fourteen. Lost a sock overboard. My last dry sock. I watched it float away. It looked happier than me. I hope it finds a dry place. I hope it finds a foot that deserves it.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "barnaby",
+          "text": "Day one hundred and fifteen. Calm sea. Nothing happened. Felt sick anyway, out of habit.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "barnaby",
+          "text": "Day one hundred and sixteen. A woman on the mainland wrote to say our programme helps her get to sleep. I'm choosing to take that as a compliment.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "barnaby",
+          "text": "That's the log. Thank you for listening to my private thoughts. I'm going to go lie down in a hammock and think about the sock.",
+          "pauseAfterMs": 0,
+          "direction": "dry, mournful, completely sincere"
+        }
+      ],
+      "estSec": 77,
+      "tags": [
+        "any",
+        "gag:seasick",
+        "barnaby"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-log-2",
+      "kind": "monologue",
+      "hosts": [
+        "barnaby"
+      ],
+      "lines": [
+        {
+          "host": "barnaby",
+          "text": "The ship's log. Night entries.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "barnaby",
+          "text": "Night two hundred and three. Couldn't sleep. The hammock has a rhythm, and it isn't mine. Went up on deck. The Captain was at the wheel, steering by Clement's torch, singing to herself. She doesn't know all the words to anything. She sings the parts she knows very loudly, and hums the rest like it's a secret.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "barnaby",
+          "text": "Night two hundred and four. Grumm was on deck too, sitting on the empty barrel, looking at the sea. I asked her what she was thinking about. She said, \"Nothing, Barnaby. That's the point.\"",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "barnaby",
+          "text": "Night two hundred and five. I wasn't sick today. Not once. I don't know what happened. Maybe my stomach has given up. Maybe I've become a sailor.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "barnaby",
+          "text": "I'd like it noted that I'm worried about that.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "barnaby",
+          "text": "Night two hundred and six. A light on the mainland. Two blinks. Dark. Two blinks. Dark.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "barnaby",
+          "text": "Still here.",
+          "pauseAfterMs": 0,
+          "direction": "the quietest barnaby gets; he has grown fond of the ship and hates admitting it"
+        }
+      ],
+      "estSec": 60,
+      "tags": [
+        "night",
+        "gag:seasick",
+        "barnaby"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-ros-why",
+      "kind": "monologue",
+      "hosts": [
+        "ros"
+      ],
+      "lines": [
+        {
+          "host": "ros",
+          "text": "Landlubbers. Somebody asked me why we do this. Why a ship. Why a radio. Why risk the Hush and the Ministry and Grumm's soup, every single night.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "ros",
+          "text": "I'll tell ye.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "ros",
+          "text": "When I was small, on the mainland, there was a rule. No music after supper. So after supper, the whole town went quiet. And I used to lie in bed and listen to the quiet, and it wasn't peaceful. It was like a held breath.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "ros",
+          "text": "And one night, very faint, out over the water, somebody was playing something. A boat, I think. Just one song. Badly tuned. And I lay there and listened to it like it was the first sound anyone had ever made.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "ros",
+          "text": "I never found out who it was. But I decided, that night, that when I grew up, I'd be that boat.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "ros",
+          "text": "So that's why. Somewhere on that coast, there's a kid lying in bed, listening to the quiet. And tonight, faint, out over the water, there's us.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "ros",
+          "text": "By my boots. Turn it up.",
+          "pauseAfterMs": 0,
+          "direction": "ros drops the bluster completely for this one, then picks it back up for the last line"
+        }
+      ],
+      "estSec": 68,
+      "tags": [
+        "night",
+        "ros"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-pip-calls",
+      "kind": "callin",
+      "hosts": [
+        "ros",
+        "pip"
+      ],
+      "lines": [
+        {
+          "host": "ros",
+          "text": "Ship-to-shore, ye're on Pirate fourteen hundred!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "pip",
+          "text": "Hello! Is this the pirate ship?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "This is the broadcasting vessel Persistent Dolores! Who's this?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "pip",
+          "text": "I'm Pip. Not the one from the story. A different Pip. I'm calling from my nan's kitchen. She's asleep in the chair. I'd like to join the crew.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Pip! How old are ye?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "pip",
+          "text": "Nine and three-quarters.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Then ye're too young for the high seas, but just the right age for the low seas.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "ros",
+          "text": "Here's what ye do. Ye listen every night. Ye learn all the words to everything, which is more than I've ever done. And when ye're grown, if ye still want to, ye find us.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "pip",
+          "text": "How will I find you? You don't know where you are.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "That's the trick, Pip! Neither do we! So we'll find each other by accident! That's how all the best crews meet!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "pip",
+          "text": "Okay. Can I say the station name?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Go on!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "pip",
+          "text": "Pirate fourteen hundred! Unlicensed! Unanchored!",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "pip",
+          "text": "Unbothered!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Welcome aboard, Pip. In spirit. Now go put a blanket on your nan.",
+          "pauseAfterMs": 0,
+          "direction": "pip delighted; ros gentle under the volume"
+        }
+      ],
+      "estSec": 69,
+      "tags": [
+        "any",
+        "pip"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-etiquette",
+      "kind": "skit",
+      "hosts": [
+        "barnaby",
+        "ros",
+        "grumm"
+      ],
+      "lines": [
+        {
+          "host": "barnaby",
+          "text": "Welcome to Pirate Etiquette, a short guide for any mainlanders thinking of joining a life at sea.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "barnaby",
+          "text": "Lesson one. Greetings. A pirate never says \"hello.\" A pirate says \"ahoy.\"",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Ahoy!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "Lesson two. Farewells. A pirate never says \"goodbye.\" A pirate says \"fair winds.\"",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "grumm",
+          "text": "I say \"shut the door.\"",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "Grumm says \"shut the door.\" That's also acceptable.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "barnaby",
+          "text": "Lesson three. Dining. When a pirate is offered soup, a pirate says \"thank you\" and eats the soup. A pirate does not ask what is in the soup.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Never ask!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "grumm",
+          "text": "Ye won't like the answer.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "barnaby",
+          "text": "Lesson four. Disagreements. When two pirates disagree, they settle it with a duel.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "A duel of shanties! Whoever forgets the words first, loses!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "The Captain has never won one.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "I've never lost one either! I just stop singing and look out to sea, mysteriously, until everyone forgets!",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "barnaby",
+          "text": "Lesson five. Apologies. When a pirate is wrong, a pirate says",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Nothing! A pirate is never wrong!",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "grumm",
+          "text": "A pirate makes the other pirate a cup of tea and leaves it next to their hammock without a word.",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "barnaby",
+          "text": "That's actually very nice, Grumm.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "grumm",
+          "text": "Don't tell anyone.",
+          "pauseAfterMs": 0,
+          "direction": "barnaby earnest instructor, ros undermining every lesson, grumm with the real wisdom"
+        }
+      ],
+      "estSec": 76,
+      "tags": [
+        "any",
+        "ros",
+        "barnaby",
+        "grumm"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-bottle-dedications",
+      "kind": "dedication",
+      "hosts": [
+        "ros",
+        "barnaby"
+      ],
+      "lines": [
+        {
+          "host": "ros",
+          "text": "We've hauled up a whole net of messages in bottles tonight! Barnaby, read them out!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "\"To Tamsin, who runs the fish stall. Your hands are always cold. Your heart is always warm. I'm going to buy a haddock every day until you notice. From the man in the green coat.\"",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "ros",
+          "text": "Tamsin, look for the green coat! He's going to run out of room for haddock!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "\"To my brother Ewan, on the far side of the bay. I can see your kitchen light from my window. I turn mine on when I see yours. I don't know if you know. I don't need you to know. From your sister.\"",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "ros",
+          "text": "Ewan, she's watching yer light! Leave it on!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "\"To the crew of the Persistent Dolores. My grandad used to listen to the last pirate station, years ago. He'd be happy you exist. From Ffion.\"",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "ros",
+          "text": "Ffion. Thank yer grandad for us. We'll keep it going.",
+          "pauseAfterMs": 0,
+          "direction": "ros big and warm, then catches on the last one"
+        }
+      ],
+      "estSec": 61,
+      "tags": [
+        "any",
+        "dedication"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-bottle-dedications-2",
+      "kind": "dedication",
+      "hosts": [
+        "barnaby",
+        "ros"
+      ],
+      "lines": [
+        {
+          "host": "barnaby",
+          "text": "More bottles. One of them had a bottle inside it. I've put it aside for the barrel people.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "barnaby",
+          "text": "\"To Gareth, who lives above the bakery. You snore so loudly the bread rises faster. The baker would like to thank you. From the baker.\"",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "barnaby",
+          "text": "\"To Petra and Sol, who got married on the harbour wall last week without permission from the Ministry. We heard the music. We thought it was lovely. Congratulations. From the people who live on the harbour wall.\"",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "barnaby",
+          "text": "And this one is unsigned. \"To the crew of the Hush. We know you listen. It's all right. Everyone needs something to do with the lights off.\"",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "ros",
+          "text": "The Hush! Someone's dedicated a song to the Hush!",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "ros",
+          "text": "Commodore, if ye're out there, this one's for ye and yer slippers! Don't tell the Ministry!",
+          "pauseAfterMs": 0,
+          "direction": "barnaby reads each like a telegram; ros gleeful at the last"
+        }
+      ],
+      "estSec": 53,
+      "tags": [
+        "night",
+        "dedication",
+        "gag:the-hush"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-grumm-storm",
+      "kind": "monologue",
+      "hosts": [
+        "grumm"
+      ],
+      "lines": [
+        {
+          "host": "grumm",
+          "text": "The Captain's asleep. Barnaby's being sick in a bucket. So it's me.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "grumm",
+          "text": "Ye want to know about storms? I've been in forty-one. I've counted. Here's what I know.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "grumm",
+          "text": "A storm isnae angry. Folk always say an angry sea. The sea doesnae know ye. It doesnae know there's a ship. It's just the sea having a big day.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "grumm",
+          "text": "The trick is ye don't take it personally. Ye tie down what ye can. Ye let go of what ye can't. Ye make a soup, because a soup's a promise that there'll be an after.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "grumm",
+          "text": "And then it ends. They always end. And ye go up on deck, and everything's washed, and the sky's that colour it only goes the morning after.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "grumm",
+          "text": "And ye count what's left. And it's usually more than ye thought.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "grumm",
+          "text": "That's the storm. Now somebody go and see to Barnaby.",
+          "pauseAfterMs": 0,
+          "direction": "gravelly and slow; no sentiment in the voice, all of it in the words"
+        }
+      ],
+      "estSec": 57,
+      "tags": [
+        "night",
+        "grumm"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-shanty-duel",
+      "kind": "skit",
+      "hosts": [
+        "ros",
+        "barnaby"
+      ],
+      "lines": [
+        {
+          "host": "ros",
+          "text": "Barnaby! I challenge ye to a shanty duel! Right now! On the air!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "Captain, we've discussed this. You don't know the words to any shanties.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Then I'll make them up as I go, and that's more impressive! I'll go first!",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "ros",
+          "text": "Oh, there once was a ship called the Dolores, and she sailed in the moonlight to, ah, to the forest",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "The forest is inland, Captain.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "She sailed very far!",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "barnaby",
+          "text": "My turn. Oh, there once was a mate on the Dolores, who was sick on the stairs and the floors. And the Captain said, \"Clamp, you're a hero, a champ.\" And the mate said, \"Please open the doors.\"",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "ros",
+          "text": "Barnaby. That rhymed.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "I've been working on it.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "For how long?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "Since the last duel.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "ros",
+          "text": "By my boots. I concede. I've never conceded a duel before.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "You've never finished one before.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "First time for everything, Barnaby! Fair winds, ye magnificent poet!",
+          "pauseAfterMs": 0,
+          "direction": "ros flailing, barnaby quietly lethal"
+        }
+      ],
+      "estSec": 62,
+      "tags": [
+        "any",
+        "ros",
+        "barnaby"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-casting",
+      "kind": "banter",
+      "hosts": [
+        "barnaby",
+        "ros",
+        "grumm"
+      ],
+      "lines": [
+        {
+          "host": "barnaby",
+          "text": "I've been thinking about casting, for when The Salt Duchess becomes a big production.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "It will, Barnaby!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "I think whoever sang {prevTitle} could play the Duchess. There was a moment near the end where they sounded like someone who'd laughed at a Lord Chancellor's hat and would do it again.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "ros",
+          "text": "And who plays Pettigrew?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "Pettigrew is played by me. In my heart. Every time I fill out a form.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "grumm",
+          "text": "And who plays the music box?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "The music box plays itself, Grumm. That's the whole point.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 35,
+      "tags": [
+        "any",
+        "serial:salt-duchess"
+      ],
+      "usesSlots": [
+        "prevTitle"
+      ],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-casting-fb",
+      "kind": "banter",
+      "hosts": [
+        "barnaby",
+        "ros",
+        "grumm"
+      ],
+      "lines": [
+        {
+          "host": "barnaby",
+          "text": "I've been thinking about casting, for when The Salt Duchess becomes a big production.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "It will, Barnaby!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "I think whoever sang that last song could play the Duchess. There was a moment near the end where they sounded like someone who'd laughed at a Lord Chancellor's hat and would do it again.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "ros",
+          "text": "And who plays Pettigrew?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "Pettigrew is played by me. In my heart. Every time I fill out a form.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "grumm",
+          "text": "And who plays the music box?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "The music box plays itself, Grumm. That's the whole point.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 36,
+      "tags": [
+        "any",
+        "serial:salt-duchess"
+      ],
+      "usesSlots": [],
+      "fallbackOf": "p14-casting",
+      "weight": 1
+    },
+    {
+      "id": "p14-anchor",
+      "kind": "banter",
+      "hosts": [
+        "barnaby",
+        "ros"
+      ],
+      "lines": [
+        {
+          "host": "barnaby",
+          "text": "Captain, a listener has asked how we lost the anchor.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Ah. The anchor. A tale of glory.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "It's not, really.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "It was a dark and stormy night",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "It was a Tuesday afternoon and very sunny.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "The Hush was closing in! We had to escape! I gave the order: \"Drop anchor and we'll swing about!\"",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "barnaby",
+          "text": "That's not a manoeuvre.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "It is now! And Barnaby dropped the anchor.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "I did.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "But Barnaby had forgotten one small thing.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "I had not forgotten. Nobody had ever attached the anchor to the ship. It was just sitting on the deck. Since before either of us came aboard.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "ros",
+          "text": "And so the anchor went down, and down, and down, magnificently, with nothing at all holding it back.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "And we drifted off in the sun.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Free, Barnaby! Free of the anchor!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "We were always free of the anchor. That was the problem.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "ros",
+          "text": "And the Hush?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "The Hush wasn't there. It was a seal.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "A very menacing seal!",
+          "pauseAfterMs": 0,
+          "direction": "ros spinning legend, barnaby correcting the record line by line"
+        }
+      ],
+      "estSec": 67,
+      "tags": [
+        "any",
+        "ros",
+        "barnaby"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-gwen-2",
+      "kind": "callin",
+      "hosts": [
+        "ros",
+        "gwen",
+        "barnaby"
+      ],
+      "lines": [
+        {
+          "host": "ros",
+          "text": "Ship-to-shore, ye're on Pirate fourteen hundred!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "gwen",
+          "text": "It's Gwen! Champion of the barrel!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Gwen! The most glorious woman on the coast! How's the glory?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "gwen",
+          "text": "Honestly, it's been a lot. People keep stopping me at the allotments. Someone left a small barrel on my shed doorstep with a note that said \"for the champion.\"",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "ros",
+          "text": "What was in it?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "gwen",
+          "text": "Another note. It said \"nice try.\" I think I've started something.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "For the log, I think it's spreading.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "gwen",
+          "text": "And the big marrow won first prize at the village show! The judge said it was the most \"seaward-leaning\" vegetable she'd ever seen. She said it looked like it wanted to leave.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "ros",
+          "text": "Gwen, that marrow belongs on a ship.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "gwen",
+          "text": "I'm not giving you my marrow.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "I'm not asking for the marrow, Gwen! I'm saying the marrow should know it's welcome!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "gwen",
+          "text": "I'll tell it. I'll lean it toward you tonight.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Fair winds to the marrow!",
+          "pauseAfterMs": 0,
+          "direction": "gwen loud and thrilled; ros treats the marrow as a fellow sailor"
+        }
+      ],
+      "estSec": 61,
+      "tags": [
+        "any",
+        "gwen",
+        "gag:barrel"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-clement-2",
+      "kind": "callin",
+      "hosts": [
+        "barnaby",
+        "clement",
+        "ros"
+      ],
+      "lines": [
+        {
+          "host": "barnaby",
+          "text": "Captain. Clement is on the ship-to-shore again.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "clement",
+          "text": "Hello. Sorry. It's Clement. The lighthouse.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "clement",
+          "text": "I just wanted to say, my granddaughter's taught me some of the old signal code. With the torch. So tonight, before I check the tomatoes, I'm going to send you a message.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Clement! A message from the lighthouse!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "clement",
+          "text": "It's not very long. I'm quite slow. I keep having to look at the card.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "barnaby",
+          "text": "Captain, there it is. On the mainland. Short, short, long.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Read it, Barnaby!",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "barnaby",
+          "text": "It says, \"Tomatoes are coming along.\"",
+          "pauseAfterMs": 600
+        },
+        {
+          "host": "clement",
+          "text": "Did it work?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Clement, it's the best news I've had all week.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "clement",
+          "text": "Oh, good. They really are coming along. I didn't think they would. My wife always said they just needed someone to keep checking.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "ros",
+          "text": "Two blinks, Clement.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "clement",
+          "text": "Two blinks. Goodnight, all.",
+          "pauseAfterMs": 0,
+          "direction": "clement as bashful as before; let the tomato message land as a triumph"
+        }
+      ],
+      "estSec": 54,
+      "tags": [
+        "night",
+        "gag:lighthouse",
+        "clement"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-grumm-soup-night",
+      "kind": "monologue",
+      "hosts": [
+        "grumm",
+        "barnaby",
+        "ros"
+      ],
+      "lines": [
+        {
+          "host": "grumm",
+          "text": "Soup of the night.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "grumm",
+          "text": "Tonight's soup is called \"Whatever Washed Up.\" It contains one potato, found in a crate. Half an onion, found in Barnaby's coat. Seaweed, which is free and plentiful and which I will not be taking questions about.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "grumm",
+          "text": "It also contains a single bay leaf, which I've been using for every soup for three years. I fish it out at the end and dry it on the stove. It's been in more soups than any leaf in history. It's tired. But it's still got something to give.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "barnaby",
+          "text": "Grumm, I didn't know about the onion in my coat.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "grumm",
+          "text": "Nobody ever knows about the onion in their coat, son.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "grumm",
+          "text": "The soup is served at the turn of the tide. Bring yer own bowl. Bring yer own spoon. Bring yer own courage.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "And how is it?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "grumm",
+          "text": "It's soup. It's warm. It's here. That's three more things than the sea's offering.",
+          "pauseAfterMs": 0,
+          "direction": "grumm deadpan; the bay leaf bit read like a war memorial"
+        }
+      ],
+      "estSec": 60,
+      "tags": [
+        "any",
+        "grumm"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-ad-knots",
+      "kind": "ad",
+      "hosts": [
+        "barnaby",
+        "ros"
+      ],
+      "lines": [
+        {
+          "host": "barnaby",
+          "text": "This hour of Pirate fourteen hundred is brought to you by Knotworthy's School of Knots, at the end of the long pier.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "barnaby",
+          "text": "At Knotworthy's, Master Knotworthy will teach you over three hundred knots, including the bowline, the clove hitch, the sheepshank, and the Knotworthy Special, which no one has ever untied, including Master Knotworthy.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "ros",
+          "text": "I took a course at Knotworthy's!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "How did it go?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "I tied myself to a bench. It took two days to get out. I learned so much about the bench.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "barnaby",
+          "text": "Knotworthy's also offers a beginner's class for people who just want to tie their shoes without thinking about the sea.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "barnaby",
+          "text": "Knotworthy's School of Knots. Hold fast.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Hold fast to the bench!",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 47,
+      "tags": [
+        "any",
+        "ad"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-polite-mutiny",
+      "kind": "skit",
+      "hosts": [
+        "barnaby",
+        "ros",
+        "grumm"
+      ],
+      "lines": [
+        {
+          "host": "barnaby",
+          "text": "Captain, I'd like to stage a mutiny.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "A mutiny! On my ship! By my boots! What are yer demands?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "I'd like a drawer.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "A drawer?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "For my socks. I've been keeping them in a teapot.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "ros",
+          "text": "Barnaby, a mutiny is a serious business. Ye're supposed to seize the wheel, lock me in the hold, and declare yerself captain.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "I don't want to be captain. I just want a drawer. A small one. With a handle.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Grumm! Barnaby's mutinying for a drawer!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "grumm",
+          "text": "I heard.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Who's with him?",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "grumm",
+          "text": "I'm with him.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Grumm!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "grumm",
+          "text": "I'd like the teapot back.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "ros",
+          "text": "Very well. The mutiny is a success. Barnaby gets a drawer. Grumm gets the teapot. And I get to say I survived a mutiny, which is going in my memoirs.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "Thank you, Captain.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Ye'll have to build the drawer yerself, Barnaby.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "I already have. It's been in the hold for a week. I was waiting for permission.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "That's the politest mutiny in the history of the sea.",
+          "pauseAfterMs": 0,
+          "direction": "barnaby formal and nervous, ros thrilled to have a mutiny at all"
+        }
+      ],
+      "estSec": 68,
+      "tags": [
+        "any",
+        "barnaby",
+        "ros",
+        "grumm"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-placid-schedule",
+      "kind": "news",
+      "hosts": [
+        "barnaby",
+        "pettigrew",
+        "admiral",
+        "ros"
+      ],
+      "lines": [
+        {
+          "host": "barnaby",
+          "text": "For the log, we've intercepted the evening schedule of Placid F M, the Ministry of Quiet's official station. The one the Admiral keeps quoting. I'll let the announcer read it.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "pettigrew",
+          "text": "Good evening. This is Placid F M, the sensible frequency.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "pettigrew",
+          "text": "After supper, \"Gentle Facts About Gravel.\" Tonight: the smaller pieces.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "pettigrew",
+          "text": "Followed by \"A Reading of the Tide Tables,\" read slowly, with no emphasis on the high tides, so as not to cause excitement.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "pettigrew",
+          "text": "Then, \"Listener Letters,\" in which we read letters from listeners who have nothing to report. Tonight's letter is from a man who has had a normal week.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "pettigrew",
+          "text": "At bedtime, our popular programme, \"Silence, Introduced.\" A distinguished presenter introduces twenty minutes of silence and then thanks it for coming.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "pettigrew",
+          "text": "Placid F M. Nothing to see. Nothing to hear. Nothing to worry about.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "admiral",
+          "text": "Placid F M! The sensible frequency!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Admiral, ye traitor! Ye're humming along!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "To be fair, Captain, the gravel programme was quite interesting.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ros",
+          "text": "Barnaby!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "The smaller pieces have a lot going on.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 68,
+      "tags": [
+        "any",
+        "news",
+        "gag:parrot"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-tour",
+      "kind": "monologue",
+      "hosts": [
+        "ros"
+      ],
+      "lines": [
+        {
+          "host": "ros",
+          "text": "Landlubbers, ye've been listening for so long, ye deserve a tour of the Persistent Dolores! Follow me! In yer imagination! Mind the step!",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "ros",
+          "text": "To the left, the transmitter. It's held together with string, tar, and a single hairpin that belonged to a previous captain. We don't touch the hairpin. Barnaby says the hairpin is load-bearing.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "ros",
+          "text": "Straight ahead, the galley, where Mother Grumm makes the soup. There's a sign on the door that says \"No.\" Just \"No.\" Nobody knows what it's referring to. It applies to everything.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "ros",
+          "text": "Down the ladder, the hold, where we keep the records, the crates marked \"turnips,\" and Barnaby's new drawer, which he won in a mutiny.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "ros",
+          "text": "Up top, the wheel, where I stand every night with the wind in my hair, steering by Clement's torch, completely unsure of where we are, and happier than any captain who ever knew.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "ros",
+          "text": "And at the very front, the bow, where the Admiral sits and squawks at the mainland, mostly the wrong station, sometimes the right one, always with total commitment.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "ros",
+          "text": "That's the tour! It's a small ship. It leaks. It sings. It's ours. And while ye're listening, a bit of it is yours.",
+          "pauseAfterMs": 0,
+          "direction": "ros as tour guide, walking briskly through the imaginary ship"
+        }
+      ],
+      "estSec": 77,
+      "tags": [
+        "any",
+        "ros"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-log-3",
+      "kind": "monologue",
+      "hosts": [
+        "barnaby"
+      ],
+      "lines": [
+        {
+          "host": "barnaby",
+          "text": "The ship's log. Selected entries. I've chosen the ones where I come off well. There are three.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "barnaby",
+          "text": "Day one hundred and forty. Fixed the transmitter in the rain, using only a fork and the hairpin. The Captain called me \"a hero of the sea.\" I was sick immediately afterwards, but the hero part happened first, and that's the part that counts.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "barnaby",
+          "text": "Day one hundred and fifty-two. Wrote the final episode of The Salt Duchess. Grumm read it over my shoulder and didn't say anything. Then she made me a cup of tea and left it by my hammock. I know what that means now.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "barnaby",
+          "text": "Day one hundred and sixty. The barrel was opened. It was another barrel. I'd like it noted that I suspected this from the start, but I didn't say anything, because the Captain was so happy, and I didn't want to be the person who ruins a barrel.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "barnaby",
+          "text": "That's growth. I'm counting it.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "barnaby",
+          "text": "That's the log. All three good entries. The rest are mostly about socks.",
+          "pauseAfterMs": 0,
+          "direction": "quietly proud of himself, trying not to be"
+        }
+      ],
+      "estSec": 67,
+      "tags": [
+        "any",
+        "gag:seasick",
+        "barnaby",
+        "gag:barrel"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "p14-salt-recap",
+      "kind": "promo",
+      "hosts": [
+        "barnaby",
+        "ros"
+      ],
+      "lines": [
+        {
+          "host": "barnaby",
+          "text": "Previously on The Salt Duchess: a crate that hummed, an inspector with a clipboard, and a music box that the whole town of Gullmouth was not allowed to hear.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "ros",
+          "text": "Spoiler: they hear it!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "barnaby",
+          "text": "Captain!",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 14,
+      "tags": [
+        "any",
+        "serial:salt-duchess"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    }
+  ]
+}
