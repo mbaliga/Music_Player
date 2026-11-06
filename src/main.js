@@ -920,6 +920,7 @@ function installLibrary() {
   // muted (a live stream has no spiral to scrub); stopping restores it.
   const radio = new RadioUI({
     onActive: (on) => { state.radioOn = on; state.engine.setPlaying(!on); },
+    aiHost: makeAiHost(library), // You Radio (src/radio/offline) plays your library through this engine
   });
   radio.mount(el('paneRadio'));
 
@@ -1014,6 +1015,47 @@ function installLibrary() {
     chip.classList.add('active');
     grid.setSort(chip.dataset.sort);
   });
+}
+
+// ── You Radio host port (src/radio/offline/station-session.js) ────────────────
+// The offline AI station plays the user's library through THIS engine (gapless prepareNext/joinNext, same as
+// mixtapes) and ducks the music bus under live speech. All logic lives in src/radio/offline; this is glue only.
+function makeAiHost(library) {
+  const eng = () => state.engine;
+  return {
+    getTracks: () => library.tracks,
+    busParam: () => eng().musicBus.gain,
+    audioNow: () => eng().ctx.currentTime,
+    async load(libTrack) {
+      await eng().resume();
+      const track = await loadFile(libTrack.file, eng().ctx);
+      await loadTrack(track);
+      return { durationSec: state.T, envelope: state.envelope, bytes: track.frames * 8 };
+    },
+    async decodeNext(libTrack) {
+      const track = await loadFile(libTrack.file, eng().ctx, { copy: false });
+      const [L, R] = track.channels;
+      const envelope = computeEnvelope((i) => (L[i] + R[i]) * 0.5, track.frames, 1024);
+      return { track, envelope, name: track.name, frames: track.frames, durationSec: track.frames / eng().sampleRate, bytes: track.frames * 8 };
+    },
+    async prepareNext(h) { await eng().prepareNext(h.track.channels, h.track.frames); h.track.channels = null; }, // the engine copied the PCM
+    joinNext: (fadeSec) => eng().joinNext({ fadeSec }),
+    dropNext: () => eng().dropNext(),
+    adopt(h) { // the engine already switched decks; mirror loadTrack()'s non-engine state
+      state.track = { frames: h.frames, name: h.name, channels: null };
+      state.frames = h.frames;
+      state.T = h.frames / eng().sampleRate;
+      state.envelope = h.envelope;
+      state.reachedEnd = false;
+      el('trackName').textContent = h.name;
+      rebake();
+    },
+    position: () => ({ t: eng().position / eng().sampleRate, T: state.T }),
+    async halt() { // stop = the needle rests in the runout groove; the vinyl bus stays alive for the next record
+      eng().dropNext();
+      eng().seek(Math.max(0, state.frames - 2));
+    },
+  };
 }
 
 boot().catch((err) => {

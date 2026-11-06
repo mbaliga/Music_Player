@@ -10,9 +10,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { discoverServers, searchStations, describeStation, streamCandidates, MAX_RECONNECTS } from './radio.js';
-import { registerStationType, registerAiStationTypes, createSessionFor, listStationTypes } from './stations.js';
+import { registerStationType, registerAiStationTypes, unregisterAiStationTypes, createSessionFor, listStationTypes, aiYouStation } from './stations.js';
 import { createStreamSession } from './radio-session.js';
-import { isRadioAiEnabled } from './radio/flag.js';
+import { isRadioAiEnabled, setRadioAiEnabled } from './radio/flag.js';
 import {
   loadModel, saveModel, stationKey, stationFromEntry, isFavourite, toggleFavourite, recordPlayed, clearRecents,
 } from './radio-store.js';
@@ -27,10 +27,21 @@ registerStationType({
 
 // AI stations ('ai-you', 'ai-you-city'): OFF unless the `radio.ai` flag is set; the core is only ever
 // pulled in by this dynamic import when an AI station is actually started (see src/radio/core/README.md).
-registerAiStationTypes({
-  isEnabled: () => { try { return isRadioAiEnabled(window.localStorage); } catch { return false; } },
-  loadCore: () => import('./radio/core/index.js'),
-});
+// The offline host (src/radio/offline/, templated writer + the phone's own speech, no network) is a second lazy door.
+function registerAi() {
+  return registerAiStationTypes({
+    isEnabled: () => { try { return isRadioAiEnabled(window.localStorage); } catch { return false; } },
+    loadCore: () => import('./radio/core/index.js'),
+    loadHost: () => import('./radio/offline/index.js'),
+  });
+}
+registerAi();
+
+const AI_CSS = `.radio-setting{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:10px;background:var(--surface);border:1px solid var(--border);cursor:pointer;font-size:14px}
+.radio-setting small{display:block;color:var(--ink2);font-size:12px;margin-top:2px;line-height:1.35}
+.radio-setting input{margin-top:3px;width:18px;height:18px;flex:0 0 auto}
+.radio-ai-sec{margin-bottom:12px}
+.ai-panel.hidden{display:none}`;
 
 const h = (tag, props = {}, ...kids) => {
   const e = document.createElement(tag);
@@ -75,15 +86,46 @@ export class RadioUI {
     const chips = h('div', { class: 'sort-chips radio-chips' },
       h('button', { class: 'sort-chip', type: 'button', onclick: () => { this.input.value = ''; this.search({}); } }, 'Top'),
       ...GENRES.map((g) => h('button', { class: 'sort-chip', type: 'button', onclick: () => { this.input.value = ''; this.search({ tag: g }); } }, g)));
+    // AI stations (experimental): a visible toggle for the radio.ai flag (default OFF), the You Radio row when on, and the
+    // card the offline host draws its captions and controls into.
+    this.aiSec = h('div', { class: 'radio-ai-sec' });
+    this._aiPanel = h('div', { class: 'ai-panel hidden' });
+    const aiToggle = h('input', { type: 'checkbox', id: 'aiStationsToggle', 'aria-describedby': 'aiStationsHelp' });
+    aiToggle.checked = this._aiOn();
+    aiToggle.addEventListener('change', () => this._setAi(aiToggle.checked));
+    this.settingsEl = h('div', { class: 'radio-sec' },
+      h('div', { class: 'radio-sec-head' }, h('span', {}, 'Settings')),
+      h('label', { class: 'radio-setting' }, aiToggle,
+        h('span', {}, h('b', {}, 'AI stations (experimental)'),
+          h('small', { id: 'aiStationsHelp' }, 'Adds You Radio: automated hosts who talk between your own songs, with lines written and spoken on this phone. Needs no network and no account. Off by default.'))));
+    const css = document.createElement('style'); css.textContent = AI_CSS; document.head.append(css);
     pane.append(h('div', { class: 'lib-toolbar radio-bar' }, form, chips),
-      h('div', { class: 'lib-grid-wrap' }, this.savedEl, this.status, this.listEl),
-      this.now);
+      h('div', { class: 'lib-grid-wrap' }, this.aiSec, this.savedEl, this.status, this.listEl, this.settingsEl),
+      this.now, this._aiPanel);
     // Retry when connectivity returns.
     window.addEventListener('online', () => { if (this._lastFailureOffline) this.search(this._lastParams || {}); });
   }
 
   /** Called when the Radio tab is shown: first visit loads the top stations. */
-  activate() { this._renderSaved(); if (!this.loadedOnce) this.search({}); }
+  activate() { this._renderSaved(); this._renderAi(); if (!this.loadedOnce) this.search({}); }
+
+  _aiOn() { try { return isRadioAiEnabled(window.localStorage); } catch { return false; } }
+
+  /** The settings toggle: flips the radio.ai flag and registers / removes the AI station types without a reload. */
+  _setAi(on) {
+    setRadioAiEnabled(this._storage(), on);
+    if (on) registerAi();
+    else { if (this.station && this.station.type.startsWith('ai-')) this.stop(); unregisterAiStationTypes(); }
+    this._renderAi();
+  }
+
+  _renderAi() {
+    if (!this.aiSec) return;
+    if (!this._aiOn()) { this.aiSec.replaceChildren(); return; }
+    this.aiSec.replaceChildren(h('div', { class: 'radio-sec' },
+      h('div', { class: 'radio-sec-head' }, h('span', {}, 'AI stations')),
+      h('div', { class: 'radio-list' }, this._row(aiYouStation()))));
+  }
 
   /** One list row: tap to play, star to favourite. Works for live results and stored snapshots alike. */
   _row(s) {
@@ -94,7 +136,7 @@ export class RadioUI {
     return h('div', { class: 'radio-row' + (this._isCurrent(s) ? ' on' : ''), 'data-k': stationKey(s) || '', onclick: () => this.play(s) },
       h('div', { class: 'radio-row-main' },
         h('div', { class: 'alb-name' }, s.name),
-        h('div', { class: 'alb-artist' }, describeStation({ country: '', codec: '', bitrate: 0, tags: [], ...s }))),
+        h('div', { class: 'alb-artist' }, s.type === 'ai-you' ? 'Your own songs, with automated hosts · works offline' : describeStation({ country: '', codec: '', bitrate: 0, tags: [], ...s }))),
       star, h('span', { class: 'radio-row-go' }, '▶'));
   }
 
@@ -147,11 +189,15 @@ export class RadioUI {
   }
 
   play(station) {
+    const prevEngine = !!(this.session && this.session.usesEngine);
     this.session?.stop();
-    const session = createSessionFor(station, {});
+    const session = createSessionFor(station, { aiHost: this.d.aiHost });
     if (!session) { this._showNow(station, { phase: 'error', error: { message: 'No player is registered for this station type.' } }); return; }
     this.session = session; this.station = station;
-    this.d.onActive?.(true);
+    // A streamed station mutes the vinyl bus; an engine-backed one (You Radio) plays THROUGH the engine, so it must not.
+    if (session.usesEngine) { if (this.d.onActive && !prevEngine && this._muted) { this.d.onActive(false); this._muted = false; } }
+    else { this.d.onActive?.(true); this._muted = true; }
+    if (session.attachPanel) session.attachPanel(this._aiPanel);
     session.onChange((st) => {
       if (this.session !== session) return;
       if (st.phase === 'playing' && !this._recorded) { this._recorded = true; // remember the URL that actually worked as the preferred one
@@ -166,15 +212,17 @@ export class RadioUI {
   }
 
   stop() {
+    const engineBacked = !!(this.session && this.session.usesEngine);
     this.session?.stop();
     this.session = null; this.station = null;
     this.now.classList.add('hidden'); this._pill.classList.add('hidden');
-    this.d.onActive?.(false);
+    this._aiPanel?.classList.add('hidden');
+    if (!engineBacked) { this.d.onActive?.(false); this._muted = false; }
     this.pane?.querySelectorAll('.radio-row.on').forEach((r) => r.classList.remove('on'));
   }
 
   _showNow(station, st) {
-    const label = { connecting: 'Connecting…', buffering: 'Buffering…', reconnecting: `Connection lost. Reconnecting (${st.attempt || 1}/${MAX_RECONNECTS})…`, playing: 'Live', error: 'Error', idle: '' }[st.phase] || '';
+    const label = { connecting: 'Connecting…', buffering: 'Buffering…', reconnecting: `Connection lost. Reconnecting (${st.attempt || 1}/${MAX_RECONNECTS})…`, playing: (station.tags || []).includes('ai') ? 'On air' : 'Live', error: 'Error', idle: '' }[st.phase] || '';
     this.now.className = 'radio-now ' + st.phase;
     this.now.replaceChildren(...[
       h('div', { class: 'radio-now-main' },

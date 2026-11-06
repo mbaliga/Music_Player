@@ -95,18 +95,74 @@ function createAiStubSession(station, env = {}, loadCore) {
 }
 
 /**
+ * The You Radio Session when a host module is supplied: a thin proxy that lazy-loads the offline host
+ * (`loadHost()` -> module with createOfflineSession) on start() and delegates to the real session it builds.
+ * It stays idle/connecting until then, so nothing under src/radio/ is fetched before the owner starts the station.
+ * Extras (`usesEngine`, skip, attachPanel) let radio-player.js treat it as a station that plays through the app's
+ * own engine instead of an <audio> stream. If the host cannot load, the outcome is the same clear 'error' as the stub.
+ */
+function createAiYouSession(station, env = {}, loadHost, loadCore) {
+  let state = { phase: 'idle', error: null };
+  let cb = () => {};
+  let inner = null, panelEl = null, unmount = null, mod = null;
+  let gen = 0;
+  const set = (s) => { state = s; cb(state); };
+  const mountPanel = () => { try { if (inner && panelEl && mod && mod.mountYouPanel) { unmount && unmount(); unmount = mod.mountYouPanel(panelEl, inner, { onStop: () => api.stop() }); } } catch { /* the panel is optional */ } };
+  const api = {
+    usesEngine: true,
+    onChange(fn) { cb = fn; },
+    get state() { return state; },
+    get inner() { return inner; },
+    async start() {
+      const my = ++gen;
+      set({ phase: 'connecting', error: null });
+      try {
+        mod = await loadHost();
+        if (my !== gen) return;
+        if (!mod || typeof mod.createOfflineSession !== 'function') throw new Error('host module missing');
+        inner = mod.createOfflineSession(station, env);
+      } catch {
+        if (my !== gen) return;
+        try { if (typeof loadCore === 'function') await loadCore(); } catch { /* same outcome */ }
+        if (my !== gen) return;
+        return set({ phase: 'error', error: { kind: 'unavailable', message: 'You Radio could not start on this device.' } });
+      }
+      inner.onChange((s) => { if (my === gen) set(s); });
+      mountPanel();
+      await inner.start();
+    },
+    stop() { gen++; try { inner && inner.stop(); } catch { /* */ } try { unmount && unmount(); } catch { /* */ } unmount = null; inner = null; set({ phase: 'idle', error: null }); },
+    skip() { try { inner && inner.skip(); } catch { /* */ } },
+    /** the host UI hands over an element for the You panel; mounted as soon as the session exists */
+    attachPanel(el) { panelEl = el; mountPanel(); },
+  };
+  return api;
+}
+
+/**
  * Register the AI station types IF the flag is on. Returns whether it did.
  *   isEnabled: () => boolean            (reads the `radio.ai` flag; see src/radio/flag.js)
  *   loadCore:  () => Promise<module>    (a dynamic import of src/radio/core; supplied by the caller
  *                                        so this file never names the core and the boot-path test
  *                                        can prove the core is not statically reachable)
+ *   loadHost:  () => Promise<module>    (optional: a dynamic import of the offline You host,
+ *                                        src/radio/offline/index.js. Without it You Radio is the inert stub.)
  * Off (the default): registers nothing and calls neither argument beyond isEnabled.
  */
-export function registerAiStationTypes({ isEnabled, loadCore } = {}) {
+export function registerAiStationTypes({ isEnabled, loadCore, loadHost } = {}) {
   let on = false;
   try { on = typeof isEnabled === 'function' && isEnabled() === true; } catch { on = false; }
   if (!on) return false;
-  registerStationType({ id: AI_TYPE_YOU, label: 'You Radio', createSession: (station, env) => createAiStubSession(station, env, loadCore) });
+  registerStationType({
+    id: AI_TYPE_YOU, label: 'You Radio',
+    createSession: (station, env) => (typeof loadHost === 'function' && env && env.aiHost ? createAiYouSession(station, env, loadHost, loadCore) : createAiStubSession(station, env, loadCore)),
+  });
   registerStationType({ id: AI_TYPE_YOU_CITY, label: 'You City Radio', createSession: (station, env) => createAiStubSession(station, env, loadCore) });
   return true;
+}
+
+/** Remove the AI station types (the Radio tab toggle turning the experiment off without a reload). */
+export function unregisterAiStationTypes() {
+  registry.delete(AI_TYPE_YOU);
+  registry.delete(AI_TYPE_YOU_CITY);
 }
