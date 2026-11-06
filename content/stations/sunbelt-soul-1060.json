@@ -99,9 +99,9 @@
       },
       {
         "id": "tobias",
-        "name": "Tobias Dorsey",
+        "name": "Tobias Ludlow",
         "role": "caller",
-        "persona": "Young nephew of the late Big Dorsey, now running Dorsey Brothers Ladder Rental and trying very hard to be firm with people his uncle let get away with everything. Polite to a painful degree. Also voices assorted younger male callers.",
+        "persona": "Young nephew of the late Big Ludlow, now running Ludlow Brothers Ladder Rental and trying very hard to be firm with people his uncle let get away with everything. Polite to a painful degree. Also voices assorted younger male callers.",
         "voice": {
           "genderHint": "male",
           "ageHint": "young",
@@ -1534,17 +1534,17 @@
       "lines": [
         {
           "host": "junebug",
-          "text": "Sunbelt Soul is supported by Dorsey Brothers Ladder Rental. When you need to get up there, the Dorsey Brothers will get you up there.",
+          "text": "Sunbelt Soul is supported by Ludlow Brothers Ladder Rental. When you need to get up there, the Ludlow Brothers will get you up there.",
           "pauseAfterMs": 300
         },
         {
           "host": "junebug",
-          "text": "The Dorsey Brothers have step ladders, extension ladders, orchard ladders, and one very tall ladder that Big Dorsey calls \"the cathedral.\" Rent by the day, the week, or the month.",
+          "text": "The Ludlow Brothers have step ladders, extension ladders, orchard ladders, and one very tall ladder that Big Ludlow calls \"the cathedral.\" Rent by the day, the week, or the month.",
           "pauseAfterMs": 300
         },
         {
           "host": "junebug",
-          "text": "And a reminder from the Dorsey Brothers. They have a ladder that's been out on rental under the name \"Loretta\" for a very long time. They're not upset. They'd just like to know it's safe.",
+          "text": "And a reminder from the Ludlow Brothers. They have a ladder that's been out on rental under the name \"Loretta\" for a very long time. They're not upset. They'd just like to know it's safe.",
           "pauseAfterMs": 300
         },
         {
@@ -1564,7 +1564,7 @@
         },
         {
           "host": "junebug",
-          "text": "Dorsey Brothers Ladder Rental. We'll get you up there. Getting down is your business.",
+          "text": "Ludlow Brothers Ladder Rental. We'll get you up there. Getting down is your business.",
           "pauseAfterMs": 0,
           "direction": "junebug brightly; cornelius's \"hm\" is a small guilty sound"
         }
@@ -2564,7 +2564,7 @@
         },
         {
           "host": "loretta",
-          "text": "It's a Dorsey Brothers rental. It's been out under my name for a very long time. They send me a card every year. Big Dorsey's nephew is running the place now and he's very polite about it, and I can't take it anymore.",
+          "text": "It's a Ludlow Brothers rental. It's been out under my name for a very long time. They send me a card every year. Big Ludlow's nephew is running the place now and he's very polite about it, and I can't take it anymore.",
           "pauseAfterMs": 350
         },
         {
@@ -2589,7 +2589,7 @@
         },
         {
           "host": "loretta",
-          "text": "Bring it by Saturday. I'll make coffee. We'll walk it back to the Dorseys together. It's a long walk with a ladder. We'll have time to talk.",
+          "text": "Bring it by Saturday. I'll make coffee. We'll walk it back to the Ludlows together. It's a long walk with a ladder. We'll have time to talk.",
           "pauseAfterMs": 700
         },
         {
@@ -2644,7 +2644,7 @@
         },
         {
           "host": "junebug",
-          "text": "And the Gold Pin Lanes league standings. The Spare Me's are in first. The Gutter Saints are in second. And the Holy Rollers are in last, but say they are \"rolling with intention.\"",
+          "text": "And the Gold Pin Lanes league standings. The Spare Me's are in first. The Gutter Saints are in second. And the Lane Changers are in last, but say they are \"changing with intention.\"",
           "pauseAfterMs": 300
         },
         {
@@ -3208,7 +3208,7 @@
         },
         {
           "host": "tobias",
-          "text": "Hi, Mr. Gentry, this is Tobias Dorsey, from Dorsey Brothers Ladder Rental. Big Dorsey was my uncle.",
+          "text": "Hi, Mr. Gentry, this is Tobias Ludlow, from Ludlow Brothers Ladder Rental. Big Ludlow was my uncle.",
           "pauseAfterMs": 350
         },
         {
