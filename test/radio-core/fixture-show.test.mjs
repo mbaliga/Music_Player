@@ -1,8 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import * as core from '../../src/radio/core/index.js';
+import * as shipped from '../../src/radio/core/index.js';
+import * as dev from '../../src/radio/core/dev.js';
+const core = { ...shipped, ...dev };
 
 const { fixtureShow, repairRundown, planSongs, verifyScript, scheduleShow, findDeadAir, FakeVoice, createVirtualClock, validateScript, rundownProblems, FIXTURE_NOW_MS } = core;
+
+test('shipped barrel carries no dev tooling; dev barrel adds it', () => {
+  for (const n of ['FakeWriter', 'runSimulatedShow', 'fixtureShow', 'makeLibrary']) { assert.equal(n in shipped, false, n); assert.equal(n in dev, true, n); }
+  assert.equal(typeof shipped.extractCuesFromEnvelope, 'function');
+});
 
 test('barrel exports the whole public surface without name clashes', () => {
   for (const name of ['validateContextSnapshot', 'validateRundown', 'validateSegment', 'validateScript', 'validateCallerTurn', 'ShowClock',

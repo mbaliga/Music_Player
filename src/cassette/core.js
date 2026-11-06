@@ -39,7 +39,6 @@
 import { standIn as reelStandIn, tapeLayer, rollerMarks, marker } from './reels-art.js';
 
 const global = typeof window !== 'undefined' ? window : globalThis;
-{
 
   var W = 808, H = 495;
 
@@ -392,9 +391,12 @@ const global = typeof window !== 'undefined' ? window : globalThis;
     return handle;
   }
 
-  const Cassette = {
+export const Cassette = {
     version: '1.0', GEO: GEO, MOUNTS: MOUNTS, PENS: PENS, SLOT_LABELS: SLOT_LABELS, helpers: h,
     registerStyle: registerStyle, styles: styles, mounts: function (k) { var st = REG[k]; return (st && st.mounts) || MOUNTS; }, style: function (k) { return REG[k]; },
     render: render, mount: mount, refit: refitAll
   };
-  Object.assign(api, Cassette);
+
+
+export const { registerStyle, styles, style, render, mount, mounts, refit, GEO, MOUNTS, PENS, SLOT_LABELS, helpers } = Cassette;
+export default Cassette;

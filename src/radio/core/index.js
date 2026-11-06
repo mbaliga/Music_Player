@@ -17,9 +17,8 @@ export * from './scheduler.js';
 export * from './turn-taking.js';
 export * from './latency.js';
 export { mulberry32, hashSeed, normText, clamp } from './util.js';
-// Fakes, fixtures and the simulated show are dev/test tooling; P2 imports them only from tests and the dev harness.
-export * from './fake-adapters.js';
-export * from './fixtures.js';
-export { runSimulatedShow, makeFakeAdapters } from './sim.js';
+export * from './cues.js';
+// Fakes, fixtures and the simulated show are dev/test tooling and are NOT exported here (this barrel is what the
+// lazy import ships to the APK; scripts/build-web.mjs excludes the dev files). Import them from './dev.js'.
 
 export const CORE_VERSION = 1;

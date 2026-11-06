@@ -29,6 +29,8 @@ import {
   FakeContext, FakeDirector, FakeWriter, FakeVoice, FakeDecoder, FakeStt, FakeBrain, createVirtualClock, AdapterError,
 } from './fake-adapters.js';
 import { FIXTURE_NOW_MS, snapshotFixture } from './fixtures.js';
+import { extractCuesFromEnvelope, synthEnvelope, songPlan, toLibraryCues } from './cues.js';
+import { hashSeed } from './util.js';
 
 /** A full set of fakes on one virtual clock. delays are per-call milliseconds (CONFIGURED, not measured). */
 export function makeFakeAdapters({ scenario = 'rainy-commute', seed = 1, startMs = FIXTURE_NOW_MS, delays = {} } = {}) {
@@ -46,11 +48,33 @@ export function makeFakeAdapters({ scenario = 'rainy-commute', seed = 1, startMs
   };
 }
 
+/**
+ * Cues the way the P2 pipeline will produce them: synthesize an envelope whose structure follows the candidate's
+ * hand-set cues (a 'low'-confidence candidate gets a gradual build with no clear step, so the extractor honestly
+ * reports low/null), run extractCuesFromEnvelope, and use the result. `overrides[trackId]` (hand-set, partial)
+ * wins key by key. Pure and deterministic; cached per candidate by the caller.
+ */
+export function extractedCuesFor(cand, overrides = null) {
+  const h = cand.cues || {};
+  const dur = cand.durationSec;
+  const ov = overrides && overrides[cand.trackId];
+  if (!Number.isFinite(dur) || dur < 20 || !Number.isFinite(h.introEndSec) || !Number.isFinite(h.outroStartSec)) return toLibraryCues(null, ov || h);
+  const lead = 0.5 + (hashSeed(cand.trackId) % 3) * 0.5;
+  const gradual = h.confidence === 'low';
+  const plan = songPlan({
+    durationSec: dur, leadSilenceSec: lead, introEndSec: h.introEndSec, outroStartSec: h.outroStartSec,
+    fadeEndSec: dur - 1.5, riseSec: gradual ? Math.max(0.6, h.introEndSec - lead - 0.1) : 0.6,
+  });
+  const r = extractCuesFromEnvelope(synthEnvelope(plan, Math.round(dur * 5)), { durationSec: dur, absolute: true });
+  return toLibraryCues(r, ov);
+}
+
 const COMMIT_LOOKAHEAD_SEC = LEAD.talkCutoffSec; // talk audio must exist by T-8; commit decisions are taken then
 
 export async function runSimulatedShow({
   adapters = makeFakeAdapters(), durationSec = 2700, seed = 1, crossfade = 'album', tickSec = 1,
   scenario = 'rainy-commute', retryDirectorAfterSec = 30,
+  cues = 'extracted', cueOverrides = null, // cues: 'extracted' (default) | 'handset' (fixture values as written)
 } = {}) {
   const { clock, context, director, writer, voice, decoder } = adapters;
   const startMs = clock.now();
@@ -85,7 +109,13 @@ export async function runSimulatedShow({
     }
     return snapshot;
   }
-  const candidates = () => (snapshot || baseSnapshot || snapshotFixture(scenario)).libraryDigest.candidates;
+  const cueCache = new Map();
+  const withCues = (c) => {
+    if (cues === 'handset') return cueOverrides && cueOverrides[c.trackId] ? { ...c, cues: toLibraryCues(null, { ...c.cues, ...cueOverrides[c.trackId] }) } : c;
+    if (!cueCache.has(c.trackId)) cueCache.set(c.trackId, extractedCuesFor(c, cueOverrides));
+    return { ...c, cues: cueCache.get(c.trackId) };
+  };
+  const candidates = () => (snapshot || baseSnapshot || snapshotFixture(scenario)).libraryDigest.candidates.map(withCues);
 
   // ── Director: keep 6–8 slots ahead ─────────────────────────────────────────
   async function extendRundown(at) {
