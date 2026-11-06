@@ -1,0 +1,40 @@
+{
+  "_doc": "Voice assignment for scripts/render-shows.py. hosts: '<station>/<host>' beats '<host>'. speed defaults to the content rate hint; pitch is a resampling tweak (1.0 = none, ~0.9-1.1 usable); gainDb is a per-voice trim before loudness normalisation. treatment names refer to 'treatments' (ffmpeg -af chains; optional deterministic noise bed). roles.<role>.treatment is the default for hosts of that role; stations.<id>.treatment is applied to the whole segment. Models live outside the repo (see docs/VOICES.md). Assignments below are PROVISIONAL: chosen from voice grades and measured pitch, not by ear.",
+  "targets": {
+    "lufs": -19,
+    "truePeakDb": -2,
+    "codec": "opus",
+    "bitrateKbps": 24,
+    "opusApplication": "voip",
+    "defaultPauseMs": 250,
+    "minGapMs": 80
+  },
+  "treatments": {
+    "phone": {
+      "filters": "highpass=f=320,lowpass=f=3300,equalizer=f=1800:t=q:w=1.2:g=3,acompressor=threshold=0.1:ratio=4:attack=5:release=60"
+    },
+    "am-radio": {
+      "filters": "highpass=f=180,lowpass=f=4200,equalizer=f=2500:t=q:w=1:g=3,acompressor=threshold=0.08:ratio=5:attack=3:release=50",
+      "noise": { "color": "pink", "amp": 0.004, "filters": "lowpass=f=4000" }
+    },
+    "lofi-tape": {
+      "filters": "highpass=f=110,lowpass=f=7000,vibrato=f=0.5:d=0.05,acompressor=threshold=0.1:ratio=3:attack=10:release=100",
+      "noise": { "color": "pink", "amp": 0.006, "filters": "highpass=f=2000,lowpass=f=9000" }
+    }
+  },
+  "roles": {
+    "caller": { "treatment": "phone" }
+  },
+  "stations": {
+    "tape-hiss-fm": { "treatment": "lofi-tape" }
+  },
+  "hosts": {
+    "tape-hiss-fm/wren":    { "engine": "kokoro", "voiceId": "af_nicole" },
+    "tape-hiss-fm/dez":     { "engine": "kokoro", "voiceId": "am_puck" },
+    "tape-hiss-fm/thistle": { "engine": "kokoro", "voiceId": "bf_emma" },
+    "tape-hiss-fm/venn":    { "engine": "kokoro", "voiceId": "am_fenrir", "pitch": 0.92 },
+    "tape-hiss-fm/teddy":   { "engine": "kokoro", "voiceId": "am_michael", "pitch": 1.04 },
+    "tape-hiss-fm/ambrose": { "engine": "kokoro", "voiceId": "am_michael:0.5+am_onyx:0.5", "pitch": 0.94 },
+    "tape-hiss-fm/noor":    { "engine": "kokoro", "voiceId": "af_sarah", "pitch": 1.03 }
+  }
+}

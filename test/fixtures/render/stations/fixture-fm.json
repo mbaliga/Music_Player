@@ -1,0 +1,31 @@
+{
+  "v": 1,
+  "station": {
+    "id": "fixture-fm",
+    "name": "Fixture FM",
+    "tagline": "Test only.",
+    "dial": "1.0",
+    "vibe": "Pipeline fixture, not real content.",
+    "daypart": ["any"],
+    "contentRating": "G",
+    "hosts": [
+      { "id": "alex", "name": "Alex", "role": "host", "persona": "x",
+        "voice": { "genderHint": "female", "ageHint": "young", "accent": "neutral-US", "style": "calm", "rate": 0.95, "pitch": 1 } },
+      { "id": "bo", "name": "Bo", "role": "caller", "persona": "x",
+        "voice": { "genderHint": "male", "ageHint": "older", "accent": "neutral-UK", "style": "gruff", "rate": 1.0, "pitch": 0.9 } }
+    ]
+  },
+  "segments": [
+    { "id": "fx-sign-on", "kind": "sign_on", "hosts": ["alex"], "estSec": 6, "tags": [], "usesSlots": [], "fallbackOf": null, "weight": 1,
+      "lines": [ { "host": "alex", "text": "This is Fixture FM, and this is only a test.", "pauseAfterMs": 400 },
+                 { "host": "alex", "text": "Please enjoy the silence.", "pauseAfterMs": 0 } ] },
+    { "id": "fx-callin", "kind": "callin", "hosts": ["alex", "bo"], "estSec": 10, "tags": [], "usesSlots": [], "fallbackOf": null, "weight": 1,
+      "lines": [ { "host": "alex", "text": "We have a caller. Hello, you're on the air.", "pauseAfterMs": 300 },
+                 { "host": "bo", "text": "Yes, hello. I only wanted to say the pipeline works.", "pauseAfterMs": 500 },
+                 { "host": "alex", "text": "Thank you, Bo.", "pauseAfterMs": 0 } ] },
+    { "id": "fx-liner-slot", "kind": "liner", "hosts": ["alex"], "estSec": 5, "tags": [], "usesSlots": ["prevTitle"], "fallbackOf": null, "weight": 1,
+      "lines": [ { "host": "alex", "text": "That was {prevTitle}.", "pauseAfterMs": 0 } ] },
+    { "id": "fx-liner", "kind": "liner", "hosts": ["alex"], "estSec": 5, "tags": [], "usesSlots": [], "fallbackOf": "fx-liner-slot", "weight": 1,
+      "lines": [ { "host": "alex", "text": "That was the last one.", "pauseAfterMs": 0 } ] }
+  ]
+}

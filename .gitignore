@@ -12,3 +12,7 @@ www/
 # Build output
 *.apk
 __pycache__/
+
+# Pre-rendered shows + TTS cache (never commit audio or models)
+/render-out/
+/.render-cache/

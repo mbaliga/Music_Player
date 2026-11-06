@@ -1,0 +1,9 @@
+{
+  "targets": { "lufs": -19, "bitrateKbps": 24 },
+  "treatments": { "phone": { "filters": "highpass=f=320,lowpass=f=3300" } },
+  "roles": { "caller": { "treatment": "phone" } },
+  "hosts": {
+    "fixture-fm/alex": { "engine": "kokoro", "voiceId": "af_heart" },
+    "bo": { "engine": "kokoro", "voiceId": "bm_george", "pitch": 0.95 }
+  }
+}
