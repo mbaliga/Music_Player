@@ -42,7 +42,7 @@
    {
     "id": "pete",
     "name": "Tiny Pete",
-    "role": "traffic",
+    "role": "cast",
     "persona": "The station's traffic reporter, allegedly broadcasting from the Kilo-Copter, a helicopter that nobody has seen, heard, or insured. His reports are breathless, vivid, and describe a city that does not exist. Deeply earnest, easily flustered, loyal to the bit long after it has collapsed under him. Ends every report with \"Back to you in the studio\" even when he is standing in it.",
     "voice": {
      "genderHint": "male",
@@ -56,7 +56,7 @@
    {
     "id": "wes",
     "name": "Wes",
-    "role": "intern",
+    "role": "cast",
     "persona": "The intern. Polite, bewildered, perpetually sent on errands that grow in scope while he is gone. Speaks in short, careful sentences, like a man reading his rights to himself. Takes every instruction literally and then has to live with the results. Secretly the most competent person in the building.",
     "voice": {
      "genderHint": "male",
@@ -353,7 +353,8 @@
    "estSec": 26,
    "tags": [
     "morning",
-    "gag:tank:1"
+    "gag:tank",
+    "seq:1"
    ],
    "usesSlots": [],
    "fallbackOf": null,
@@ -386,7 +387,8 @@
    "estSec": 24,
    "tags": [
     "morning",
-    "gag:thunder:1"
+    "gag:thunder",
+    "seq:1"
    ],
    "usesSlots": [],
    "fallbackOf": null,
@@ -530,7 +532,8 @@
    "estSec": 70,
    "tags": [
     "morning",
-    "gag:lock:1"
+    "gag:lock",
+    "seq:1"
    ],
    "usesSlots": [],
    "fallbackOf": null,
@@ -712,7 +715,8 @@
    "estSec": 64,
    "tags": [
     "morning",
-    "gag:wes:1"
+    "gag:wes",
+    "seq:1"
    ],
    "usesSlots": [],
    "fallbackOf": null,
@@ -942,7 +946,8 @@
    "estSec": 85,
    "tags": [
     "morning",
-    "gag:kilocopter:1"
+    "gag:kilocopter",
+    "seq:1"
    ],
    "usesSlots": [],
    "fallbackOf": null,
@@ -1012,7 +1017,8 @@
    "estSec": 91,
    "tags": [
     "morning",
-    "gag:kilocopter:2"
+    "gag:kilocopter",
+    "seq:2"
    ],
    "usesSlots": [],
    "fallbackOf": null,
@@ -1295,7 +1301,8 @@
    "estSec": 66,
    "tags": [
     "morning",
-    "gag:tank:3"
+    "gag:tank",
+    "seq:3"
    ],
    "usesSlots": [],
    "fallbackOf": null,
@@ -1422,7 +1429,8 @@
    "estSec": 100,
    "tags": [
     "morning",
-    "gag:tank:2"
+    "gag:tank",
+    "seq:2"
    ],
    "usesSlots": [],
    "fallbackOf": null,
@@ -1614,7 +1622,8 @@
    "estSec": 89,
    "tags": [
     "morning",
-    "gag:lock:2"
+    "gag:lock",
+    "seq:2"
    ],
    "usesSlots": [],
    "fallbackOf": null,
@@ -1811,7 +1820,8 @@
    "estSec": 59,
    "tags": [
     "morning",
-    "gag:lock:3"
+    "gag:lock",
+    "seq:3"
    ],
    "usesSlots": [
     "nextTitle"
@@ -1866,7 +1876,8 @@
    "estSec": 60,
    "tags": [
     "morning",
-    "gag:lock:3"
+    "gag:lock",
+    "seq:3"
    ],
    "usesSlots": [],
    "fallbackOf": "kh-banter-lock-song",
@@ -2179,7 +2190,9 @@
    "estSec": 79,
    "tags": [
     "morning",
-    "gag:thunder:3"
+    "gag:thunder",
+    "seq:3",
+    "payoff"
    ],
    "usesSlots": [],
    "fallbackOf": null,
@@ -2267,7 +2280,8 @@
    "estSec": 82,
    "tags": [
     "morning",
-    "gag:thunder:1"
+    "gag:thunder",
+    "seq:1"
    ],
    "usesSlots": [],
    "fallbackOf": null,
@@ -2355,7 +2369,8 @@
    "estSec": 80,
    "tags": [
     "morning",
-    "gag:thunder:2"
+    "gag:thunder",
+    "seq:2"
    ],
    "usesSlots": [],
    "fallbackOf": null,
@@ -2440,7 +2455,8 @@
    "estSec": 98,
    "tags": [
     "morning",
-    "gag:kilocopter:3"
+    "gag:kilocopter",
+    "seq:3"
    ],
    "usesSlots": [],
    "fallbackOf": null,
@@ -2535,7 +2551,9 @@
    "estSec": 105,
    "tags": [
     "morning",
-    "gag:kilocopter:4"
+    "gag:kilocopter",
+    "seq:4",
+    "payoff"
    ],
    "usesSlots": [],
    "fallbackOf": null,
@@ -2599,7 +2617,8 @@
    "estSec": 79,
    "tags": [
     "morning",
-    "gag:kilocopter:5"
+    "gag:kilocopter",
+    "seq:5"
    ],
    "usesSlots": [],
    "fallbackOf": null,
@@ -2693,7 +2712,8 @@
    "estSec": 102,
    "tags": [
     "morning",
-    "gag:wes:2"
+    "gag:wes",
+    "seq:2"
    ],
    "usesSlots": [],
    "fallbackOf": null,
@@ -2777,7 +2797,8 @@
    "estSec": 104,
    "tags": [
     "morning",
-    "gag:wes:3"
+    "gag:wes",
+    "seq:3"
    ],
    "usesSlots": [],
    "fallbackOf": null,
@@ -2902,8 +2923,10 @@
    "estSec": 87,
    "tags": [
     "morning",
-    "gag:wes:4",
-    "gag:lock:4"
+    "gag:wes",
+    "seq:4",
+    "payoff",
+    "gag:lock"
    ],
    "usesSlots": [],
    "fallbackOf": null,
@@ -3007,7 +3030,9 @@
    "estSec": 106,
    "tags": [
     "morning",
-    "gag:tank:4"
+    "gag:tank",
+    "seq:4",
+    "payoff"
    ],
    "usesSlots": [],
    "fallbackOf": null,
@@ -3186,7 +3211,8 @@
    "estSec": 62,
    "tags": [
     "morning",
-    "gag:tank:4"
+    "gag:tank",
+    "seq:5"
    ],
    "usesSlots": [],
    "fallbackOf": null,
@@ -3293,7 +3319,8 @@
    "estSec": 93,
    "tags": [
     "morning",
-    "gag:kilocopter:4"
+    "gag:kilocopter",
+    "seq:4"
    ],
    "usesSlots": [],
    "fallbackOf": null,
@@ -3675,7 +3702,8 @@
    "estSec": 24,
    "tags": [
     "morning",
-    "gag:kilocopter:3"
+    "gag:kilocopter",
+    "seq:3"
    ],
    "usesSlots": [
     "nextTitle",
@@ -3711,7 +3739,8 @@
    "estSec": 21,
    "tags": [
     "morning",
-    "gag:kilocopter:3"
+    "gag:kilocopter",
+    "seq:3"
    ],
    "usesSlots": [],
    "fallbackOf": "kh-liner-pete",
@@ -3754,7 +3783,8 @@
    "estSec": 25,
    "tags": [
     "morning",
-    "gag:tank:4"
+    "gag:tank",
+    "seq:5"
    ],
    "usesSlots": [
     "prevArtist"
@@ -3799,7 +3829,8 @@
    "estSec": 26,
    "tags": [
     "morning",
-    "gag:tank:4"
+    "gag:tank",
+    "seq:5"
    ],
    "usesSlots": [],
    "fallbackOf": "kh-trans-gerald",
@@ -4181,7 +4212,8 @@
    "estSec": 60,
    "tags": [
     "morning",
-    "gag:kilocopter:5"
+    "gag:kilocopter",
+    "seq:5"
    ],
    "usesSlots": [
     "prevTitle",
@@ -4233,7 +4265,8 @@
    "estSec": 60,
    "tags": [
     "morning",
-    "gag:kilocopter:5"
+    "gag:kilocopter",
+    "seq:5"
    ],
    "usesSlots": [],
    "fallbackOf": "kh-skit-traffic-song",
@@ -4296,7 +4329,8 @@
    "estSec": 41,
    "tags": [
     "morning",
-    "gag:lock:3"
+    "gag:lock",
+    "seq:3"
    ],
    "usesSlots": [
     "prevTitle"
@@ -4361,7 +4395,8 @@
    "estSec": 41,
    "tags": [
     "morning",
-    "gag:lock:3"
+    "gag:lock",
+    "seq:3"
    ],
    "usesSlots": [],
    "fallbackOf": "kh-trans-ledger",
@@ -4409,7 +4444,8 @@
    "estSec": 71,
    "tags": [
     "morning",
-    "gag:kilocopter:5"
+    "gag:kilocopter",
+    "seq:5"
    ],
    "usesSlots": [],
    "fallbackOf": null,
@@ -4488,7 +4524,8 @@
    "estSec": 84,
    "tags": [
     "morning",
-    "gag:tank:4"
+    "gag:tank",
+    "seq:5"
    ],
    "usesSlots": [],
    "fallbackOf": null,

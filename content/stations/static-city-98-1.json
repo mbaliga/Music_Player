@@ -28,7 +28,7 @@
    {
     "id": "mags",
     "name": "Marguerite Okafor",
-    "role": "producer",
+    "role": "co-host",
     "persona": "Producer and the show's only load-bearing wall. Speaks rarely and flatly, usually to correct a fact, confirm a sponsor, or end a segment that has gone somewhere. Finishes a crossword every night while Dell unravels, and refers to her cat, Admiral, as a colleague. Her favorite word is \"Noted.\" She is never surprised, and the one time she almost was, she took a sip of tea instead.",
     "voice": {
      "genderHint": "female",
@@ -680,7 +680,8 @@
    "estSec": 86,
    "tags": [
     "night",
-    "gag:department:1"
+    "gag:department",
+    "seq:1"
    ],
    "usesSlots": [],
    "fallbackOf": null,
@@ -733,7 +734,8 @@
    "estSec": 83,
    "tags": [
     "night",
-    "gag:hum:1"
+    "gag:hum",
+    "seq:1"
    ],
    "usesSlots": [],
    "fallbackOf": null,
@@ -970,7 +972,8 @@
    "estSec": 99,
    "tags": [
     "night",
-    "gag:council:1"
+    "gag:council",
+    "seq:1"
    ],
    "usesSlots": [],
    "fallbackOf": null,
@@ -1095,7 +1098,8 @@
    "estSec": 59,
    "tags": [
     "any",
-    "gag:velotti:1"
+    "gag:velotti",
+    "seq:1"
    ],
    "usesSlots": [],
    "fallbackOf": null,
@@ -1274,7 +1278,8 @@
    "estSec": 62,
    "tags": [
     "any",
-    "gag:velotti:2"
+    "gag:velotti",
+    "seq:2"
    ],
    "usesSlots": [],
    "fallbackOf": null,
@@ -1384,7 +1389,8 @@
    "estSec": 74,
    "tags": [
     "night",
-    "gag:council:3"
+    "gag:council",
+    "seq:3"
    ],
    "usesSlots": [],
    "fallbackOf": null,
@@ -2229,7 +2235,8 @@
    "estSec": 100,
    "tags": [
     "night",
-    "gag:department:2"
+    "gag:department",
+    "seq:2"
    ],
    "usesSlots": [],
    "fallbackOf": null,
@@ -2317,7 +2324,8 @@
    "estSec": 68,
    "tags": [
     "night",
-    "gag:council:2"
+    "gag:council",
+    "seq:2"
    ],
    "usesSlots": [],
    "fallbackOf": null,
@@ -2416,7 +2424,8 @@
    "estSec": 85,
    "tags": [
     "night",
-    "gag:council:4"
+    "gag:council",
+    "seq:4"
    ],
    "usesSlots": [],
    "fallbackOf": null,
@@ -2536,7 +2545,8 @@
    "estSec": 79,
    "tags": [
     "night",
-    "gag:hum:2"
+    "gag:hum",
+    "seq:2"
    ],
    "usesSlots": [],
    "fallbackOf": null,
@@ -2584,7 +2594,8 @@
    "estSec": 62,
    "tags": [
     "any",
-    "gag:velotti:3"
+    "gag:velotti",
+    "seq:3"
    ],
    "usesSlots": [],
    "fallbackOf": null,
@@ -2647,7 +2658,9 @@
    "estSec": 71,
    "tags": [
     "any",
-    "gag:velotti:4"
+    "gag:velotti",
+    "seq:4",
+    "payoff"
    ],
    "usesSlots": [],
    "fallbackOf": null,
@@ -2799,7 +2812,9 @@
    "estSec": 80,
    "tags": [
     "night",
-    "gag:department:3"
+    "gag:department",
+    "seq:3",
+    "payoff"
    ],
    "usesSlots": [],
    "fallbackOf": null,
@@ -2957,7 +2972,8 @@
    "estSec": 112,
    "tags": [
     "night",
-    "gag:department:2"
+    "gag:department",
+    "seq:2"
    ],
    "usesSlots": [],
    "fallbackOf": null,
@@ -3124,7 +3140,8 @@
    "estSec": 71,
    "tags": [
     "night",
-    "gag:linefour:1"
+    "gag:linefour",
+    "seq:1"
    ],
    "usesSlots": [],
    "fallbackOf": null,
@@ -3202,7 +3219,8 @@
    "estSec": 70,
    "tags": [
     "night",
-    "gag:linefour:2"
+    "gag:linefour",
+    "seq:2"
    ],
    "usesSlots": [],
    "fallbackOf": null,
@@ -3332,8 +3350,10 @@
    "tags": [
     "night",
     "late",
-    "gag:linefour:3",
-    "gag:hum:3"
+    "gag:linefour",
+    "seq:3",
+    "payoff",
+    "gag:hum"
    ],
    "usesSlots": [],
    "fallbackOf": null,
@@ -4414,8 +4434,10 @@
    "tags": [
     "night",
     "late",
-    "gag:council:5",
-    "gag:hum:4"
+    "gag:council",
+    "seq:5",
+    "payoff",
+    "gag:hum"
    ],
    "usesSlots": [
     "prevTitle"
@@ -4496,8 +4518,10 @@
    "tags": [
     "night",
     "late",
-    "gag:council:5",
-    "gag:hum:4"
+    "gag:council",
+    "seq:5",
+    "payoff",
+    "gag:hum"
    ],
    "usesSlots": [],
    "fallbackOf": "sc-trans-deputy",
@@ -4618,7 +4642,8 @@
    "tags": [
     "night",
     "late",
-    "gag:department:3"
+    "gag:department",
+    "seq:4"
    ],
    "usesSlots": [
     "nextTitle",
@@ -4675,7 +4700,8 @@
    "tags": [
     "night",
     "late",
-    "gag:department:3"
+    "gag:department",
+    "seq:4"
    ],
    "usesSlots": [],
    "fallbackOf": "sc-dedic-dept",
