@@ -1,0 +1,3772 @@
+{
+ "v": 1,
+ "station": {
+  "id": "meridian-91-5",
+  "name": "Meridian 91.5",
+  "tagline": "The art of listening, after dark.",
+  "dial": "91.5",
+  "vibe": "A calm late-evening jazz-and-ambient station: two warm hosts, unhurried liner notes, lessons in listening, and gently absurd public-service messages from an Office of Quiet.",
+  "daypart": [
+   "evening",
+   "night"
+  ],
+  "contentRating": "PG-13",
+  "hosts": [
+   {
+    "id": "odette",
+    "name": "Odette Marsh",
+    "role": "host",
+    "persona": "Evening host and former mapmaker, which she says explains everything: she likes to know where a thing is before she says what it is. Speaks in low, finished sentences with long rests between them, as if setting each one on a table. Loves rain on a window, a fountain pen that has been properly filled, and the word \"consider.\" Dislikes being hurried and the word \"content,\" which she says is what a bucket has. Her refrain is \"We are, after all, only listening.\"",
+    "voice": {
+     "genderHint": "female",
+     "ageHint": "older",
+     "accent": "neutral-UK",
+     "style": "warm, low, unhurried, slightly amused",
+     "rate": 0.88,
+     "pitch": 0.95
+    }
+   },
+   {
+    "id": "teodor",
+    "name": "Teodor Linn",
+    "role": "co-host",
+    "persona": "Co-host, dry and gentle, who left architecture school one term short and has been finishing the building in his head ever since. Names inanimate objects and then refers to them by name without explanation; the studio kettle is Barnaby. Runs the Art of Listening segments and believes the sound of a cup set down is a complete piece of music. Begins his best thoughts with \"Here is a small thing.\" Laughs quietly through his nose, usually at himself.",
+    "voice": {
+     "genderHint": "male",
+     "ageHint": "adult",
+     "accent": "neutral-US",
+     "style": "velvet, dry, close to the microphone, gentle humor",
+     "rate": 0.9,
+     "pitch": 0.9
+    }
+   },
+   {
+    "id": "caller-a",
+    "name": "Marisol",
+    "role": "caller",
+    "persona": "Calls from a bakery where she works the overnight shift, usually with flour on the phone. Practical, affectionate, slightly out of breath from kneading. Talks about dough the way other people talk about weather. Dedicates songs to whatever is rising at the moment.",
+    "voice": {
+     "genderHint": "female",
+     "ageHint": "adult",
+     "accent": "neutral-US",
+     "style": "warm, busy, soft-spoken, a little breathless",
+     "rate": 1,
+     "pitch": 1
+    }
+   },
+   {
+    "id": "caller-b",
+    "name": "Fen",
+    "role": "caller",
+    "persona": "The ferryman. A man of very few words, each one chosen like a stone for a wall. Patient to the point of geology. Calls in only to correct something, kindly, and then stays on the line in a comfortable silence that the hosts have learned not to fill. Believes most questions answer themselves if you wait at the dock long enough.",
+    "voice": {
+     "genderHint": "male",
+     "ageHint": "older",
+     "accent": "scottish",
+     "style": "gravelly, slow, spare, wind behind him",
+     "rate": 0.85,
+     "pitch": 0.85
+    }
+   },
+   {
+    "id": "caller-c",
+    "name": "Dottie",
+    "role": "caller",
+    "persona": "A shy older woman who calls to dedicate songs to her dog, Biscuit, and apologizes for calling every time. Speaks softly and quickly and then stops, worried she has taken too long. Deeply observant; notices things about the show the hosts have not. Biscuit is, by her account, an excellent listener.",
+    "voice": {
+     "genderHint": "female",
+     "ageHint": "older",
+     "accent": "neutral-US",
+     "style": "soft, hesitant, sweet, a smile in it",
+     "rate": 0.95,
+     "pitch": 1.05
+    }
+   },
+   {
+    "id": "caller-d",
+    "name": "Conall",
+    "role": "caller",
+    "persona": "The listener who writes to the station every week, on paper, signing \"Yours, in the slow lane.\" Thoughtful, unhurried, slightly formal, writes the way people used to talk. When he finally calls, he speaks in the same careful paragraphs he writes in. Travels a great deal by water for reasons that become clear.",
+    "voice": {
+     "genderHint": "male",
+     "ageHint": "adult",
+     "accent": "irish",
+     "style": "measured, warm, slightly formal, thinking as he goes",
+     "rate": 0.9,
+     "pitch": 0.95
+    }
+   }
+  ]
+ },
+ "segments": [
+  {
+   "id": "md-signon-1",
+   "kind": "sign_on",
+   "hosts": [
+    "odette",
+    "teodor"
+   ],
+   "lines": [
+    {
+     "host": "odette",
+     "text": "Good evening. This is Meridian, ninety-one point five. The lamp is on. The kettle is on. I'm Odette Marsh, and Teodor is beside me, and we have nowhere else to be.",
+     "pauseAfterMs": 600
+    },
+    {
+     "host": "teodor",
+     "text": "Barnaby's nearly boiled.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "Then we'll begin when he's ready. We are, after all, only listening.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 19,
+   "tags": [
+    "evening",
+    "open"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-signon-2",
+   "kind": "sign_on",
+   "hosts": [
+    "teodor",
+    "odette"
+   ],
+   "lines": [
+    {
+     "host": "teodor",
+     "text": "Here is a small thing to start the evening. The room you are in has a sound. Not a noise. A sound. Listen for it before the first record and you'll hear it under everything else tonight. This is Meridian, ninety-one point five. Teodor Linn. Odette Marsh.",
+     "pauseAfterMs": 500
+    },
+    {
+     "host": "odette",
+     "text": "Good evening. Take your coat off. Or don't. Some evenings want the coat.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 24,
+   "tags": [
+    "evening",
+    "open"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-id-1",
+   "kind": "station_id",
+   "hosts": [
+    "odette"
+   ],
+   "lines": [
+    {
+     "host": "odette",
+     "text": "Meridian. Ninety-one point five. The line that runs through the middle of the evening.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 6,
+   "tags": [
+    "any"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-id-2",
+   "kind": "station_id",
+   "hosts": [
+    "teodor"
+   ],
+   "lines": [
+    {
+     "host": "teodor",
+     "text": "You're listening to Meridian, ninety-one point five. The lamp is a little dimmer than it was. We've decided that's all right.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 8,
+   "tags": [
+    "any"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-id-3",
+   "kind": "station_id",
+   "hosts": [
+    "odette",
+    "teodor"
+   ],
+   "lines": [
+    {
+     "host": "odette",
+     "text": "This is Meridian, ninety-one point five.",
+     "pauseAfterMs": 800
+    },
+    {
+     "host": "teodor",
+     "text": "That pause was ours. You may have it.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 6,
+   "tags": [
+    "any"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-jingle-1",
+   "kind": "jingle",
+   "hosts": [
+    "teodor"
+   ],
+   "lines": [
+    {
+     "host": "teodor",
+     "text": "Meridian. Ninety-one point five. Lower the lights, not the volume.",
+     "direction": "spoken on a slow, even cadence, almost sung on the last phrase",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 4,
+   "tags": [
+    "any"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-jingle-2",
+   "kind": "jingle",
+   "hosts": [
+    "odette"
+   ],
+   "lines": [
+    {
+     "host": "odette",
+     "text": "Ninety-one, point five. Meridian. Where the evening keeps its hands warm.",
+     "direction": "gentle lilt, a half-smile",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 5,
+   "tags": [
+    "any"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-jingle-3",
+   "kind": "jingle",
+   "hosts": [
+    "teodor",
+    "odette"
+   ],
+   "lines": [
+    {
+     "host": "teodor",
+     "text": "Meridian.",
+     "pauseAfterMs": 700
+    },
+    {
+     "host": "odette",
+     "text": "Ninety-one point five.",
+     "pauseAfterMs": 700
+    },
+    {
+     "host": "teodor",
+     "text": "That's the whole jingle. We cut the rest. It was getting excited.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 8,
+   "tags": [
+    "any"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-promo-art",
+   "kind": "promo",
+   "hosts": [
+    "teodor",
+    "odette"
+   ],
+   "lines": [
+    {
+     "host": "teodor",
+     "text": "Later this evening, the Art of Listening. Tonight's subject is the sound a cup makes when it's set down on a saucer, and why it is different every time, and why that should comfort you. Bring a cup. A saucer is optional. Attention is not.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "He has been practicing on my saucer all week.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "Research.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 22,
+   "tags": [
+    "evening"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-promo-letters",
+   "kind": "promo",
+   "hosts": [
+    "odette",
+    "teodor"
+   ],
+   "lines": [
+    {
+     "host": "odette",
+     "text": "We have received another letter, on paper, in an envelope with a stamp that has been placed with great care slightly off the corner. It is signed, as they all are, Yours, in the slow lane. We'll read it later this hour. Whoever you are: we have kept them all. They are in a tin.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "The tin is called Harriet.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "The tin does not need a name, Teodor.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "The tin has one now.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 29,
+   "tags": [
+    "evening",
+    "gag:slowlane",
+    "seq:1"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-signoff-1",
+   "kind": "sign_off",
+   "hosts": [
+    "odette",
+    "teodor"
+   ],
+   "lines": [
+    {
+     "host": "odette",
+     "text": "That is the evening. We've reached the edge of it, where it becomes the night proper, and the night has its own station, and its own people, and we'll leave it to them.",
+     "pauseAfterMs": 500
+    },
+    {
+     "host": "teodor",
+     "text": "Barnaby's gone cold. The lamp's held. Thank you for listening with us.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "Sleep when you can. We are, after all, only listening. Meridian. Good night.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 23,
+   "tags": [
+    "night",
+    "close"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-signoff-2",
+   "kind": "sign_off",
+   "hosts": [
+    "teodor",
+    "odette"
+   ],
+   "lines": [
+    {
+     "host": "teodor",
+     "text": "Here is the last small thing. When we go quiet, in a moment, the room you are in will go on making its sound. It did before we started. It will after. We were only ever in the middle of it.",
+     "pauseAfterMs": 500
+    },
+    {
+     "host": "odette",
+     "text": "Meridian, ninety-one point five. Good night, Teodor.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "Good night, Odette. Good night, Vespers.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "The second microphone does not need",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "Good night.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 26,
+   "tags": [
+    "night",
+    "close"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-mono-cup",
+   "kind": "monologue",
+   "hosts": [
+    "teodor",
+    "odette"
+   ],
+   "lines": [
+    {
+     "host": "teodor",
+     "text": "The Art of Listening. Here is a small thing. A cup, set down on a saucer. You've heard it ten thousand times and you've never heard it once, because you were waiting for the tea. Listen now. I'm going to set this cup down.",
+     "pauseAfterMs": 1200
+    },
+    {
+     "host": "teodor",
+     "text": "There. Did you hear that it had two parts? There's the touch, which is a tick, and then there's the settle, which is a smaller tick, because a cup never lands all at once. It lands, and then it agrees to have landed. The second part is where the music is. It's the part nobody plays on purpose.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "Now, the thing about this sound is it's never the same. The cup is the same, the saucer is the same, my hand is nearly the same. But the air in the room has moved. The tea is a different weight. I'm in a different mood and my wrist knows it before I do. So every time you set a cup down, you're making a recording of exactly that moment that can never be made again, and then you're not listening to it, because you're reaching for the biscuit.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "Reach for the biscuit, Teodor. People have lives.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "They do. Here's the end of the small thing. Tonight, once, set a cup down and listen to the second tick. Just once. You won't become a better person. You'll just have heard it. That's enough. That's the Art of Listening.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 95,
+   "tags": [
+    "evening",
+    "art-of-listening"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-mono-room",
+   "kind": "monologue",
+   "hosts": [
+    "teodor",
+    "odette"
+   ],
+   "lines": [
+    {
+     "host": "teodor",
+     "text": "The Art of Listening. Tonight: a room settling. Every room does it. You come in, you turn the lights on, you put something down, you sit, and for the next few minutes the room gets used to you. The floor finishes a thought. A pipe somewhere says something. The chair moves half a degree under you and decides it's fine.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "In architecture school, they talked about rooms as if they were finished when the builders left. They're not. A room is finished when it stops reacting to you. Which it never fully does. That's the small thing. You are being listened to, by the room, all the time, and the room is politely not mentioning it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "This is why I like him. He makes a draft sound like a courtesy.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "It is a courtesy. The draft is the room letting you know where the outside is. Here's what to do with this. The next time you come into a room, don't fill it right away. Don't turn on the radio. Well. Turn on this radio. But keep it low. Stand there for the length of a breath, and let the room finish settling before you ask anything of it. You'll find it's more willing. Rooms are like anyone else. That's the Art of Listening.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 84,
+   "tags": [
+    "evening",
+    "art-of-listening"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-mono-rain",
+   "kind": "monologue",
+   "hosts": [
+    "teodor",
+    "odette"
+   ],
+   "lines": [
+    {
+     "host": "teodor",
+     "text": "The Art of Listening. Rain, by category. Not whether it's raining. I don't know whether it's raining where you are, and I'm not going to pretend. But if it ever does, here's what to listen for. Rain has a vocabulary and almost nobody learns it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "There's rain on a window, which is the one everyone knows, the one that sounds like someone drumming their fingers while they decide whether to come in. There's rain on a car roof, which is louder than it has any right to be and makes the inside of the car feel like a secret. There's rain in a gutter, which is the rain having a conversation with itself. And there's rain on leaves, which is the quietest and the most complicated, because every leaf has a different opinion.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "And rain on a tent.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "Rain on a tent is a separate lecture. Rain on a tent is the sound of being very small and entirely safe at the same time, and I don't have the training to discuss it. Here's the small thing. Next time, pick one. Just one category. Follow it for a minute, the way you'd follow one instrument in a quartet. The rest will still be there when you come back. It always is. That's the Art of Listening.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 84,
+   "tags": [
+    "evening",
+    "art-of-listening"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-mono-maps",
+   "kind": "monologue",
+   "hosts": [
+    "odette"
+   ],
+   "lines": [
+    {
+     "host": "odette",
+     "text": "I made maps for a living, before this. People find that charming, and then they ask what I mapped, and I tell them, and they stop finding it charming, because I mapped sewer lines. Twenty years. The city underneath the city. I knew where every pipe turned. I could stand on a corner and tell you what was running beneath your feet and in which direction. I was, in a very narrow sense, the most informed person in the room.",
+     "pauseAfterMs": 400
+    },
+    {
+     "host": "odette",
+     "text": "Here is what mapmaking teaches you. Everything is somewhere. That sounds obvious. It is not. Most of the trouble in a life comes from treating a thing as if it were nowhere in particular, a feeling, a debt, a person you've been meaning to ring. A mapmaker's instinct is to ask: where is it, exactly. And once you know where it is, it gets smaller. Not easier. Smaller. You can draw a line to it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "I don't make maps any more. I do this, which is a different kind of knowing where things are. I know where the records are. I know where Teodor is, which is to my left, naming the kettle. And I know, roughly, where you are, which is somewhere a radio can reach, and that is as precise as I need to be. Consider, this evening, one thing you've been treating as nowhere. Find out where it is. Then put a record on. We are, after all, only listening.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 94,
+   "tags": [
+    "evening"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-mono-evening",
+   "kind": "monologue",
+   "hosts": [
+    "odette",
+    "teodor"
+   ],
+   "lines": [
+    {
+     "host": "odette",
+     "text": "A word about the word evening. It's a verb pretending to be a noun. To even. To make level. The evening is the part of the day when the light stops taking sides. In the morning the light comes from one direction and makes everything long and dramatic and sure of itself. By evening it comes from everywhere and nowhere, and the shadows give up, and a wall is just a wall.",
+     "pauseAfterMs": 400
+    },
+    {
+     "host": "odette",
+     "text": "I think that's why people confess in the evening. Not big things. Small ones. I didn't like the film. I've never finished that book. I'm tired in a way sleep doesn't fix. The light has stopped judging, so people stop too. For an hour or so. Then the night comes, which is a different animal, with its own appetites, and we hand you over to it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "We don't hand them over. We set them down.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "We set them down. Gently. On the saucer. With the second tick. Consider what you'd like to even out this evening. Then let the record do it for you. That's what they're for.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 71,
+   "tags": [
+    "evening"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-mono-needle",
+   "kind": "monologue",
+   "hosts": [
+    "teodor",
+    "odette"
+   ],
+   "lines": [
+    {
+     "host": "teodor",
+     "text": "The Art of Listening. The pause before. Here is a small thing. Before any piece of music starts, there's a moment where it hasn't. The player has lifted the arm. The file has loaded. The band has breathed in. Nothing is happening and everything is about to. And that moment, which is mostly silence, is already part of the piece. The best musicians know it. They let it go a hair longer than you're comfortable with.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "In a building, it's the vestibule. The little room between the door and the room. Architects fight about vestibules. Some say they waste space. The ones I liked said a vestibule is where you stop being outside. You need a place to do that. It takes a second.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "Teodor has designed, in his head, a concert hall that is entirely vestibule.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "It's very calm in there. Nobody has ever been late. Here's the end of the small thing. Tonight, when a record is about to start, don't speak. Don't reach for anything. Give it the vestibule. Let it stop being outside. Then it can come in properly. That's the Art of Listening.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 74,
+   "tags": [
+    "evening",
+    "art-of-listening"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-banter-lamp-1",
+   "kind": "banter",
+   "hosts": [
+    "odette",
+    "teodor"
+   ],
+   "lines": [
+    {
+     "host": "odette",
+     "text": "The lamp is dimmer.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "It is.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "It has been getting dimmer for about three weeks. Very slowly. If you came in off the street you'd say it was fine. We've been here every evening, so we know. It's lost perhaps a third of itself.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "There's a bulb in the drawer.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "There is a bulb in the drawer.",
+     "pauseAfterMs": 600
+    },
+    {
+     "host": "teodor",
+     "text": "We're not going to change it, are we.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "I don't think we are, no. It seems rude. It's doing its best. It's not flickering. It's not making a fuss. It's simply becoming, each evening, a slightly smaller amount of light, with great dignity. I don't think you interrupt that. I think you sit with it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "When it goes out.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "When it goes out we'll have the bulb. Until then, we have the lamp. Those are two different evenings, and this is the first one. Listeners, if the studio sounds a little darker tonight, that's why. We've decided that's all right.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 63,
+   "tags": [
+    "evening",
+    "gag:lamp",
+    "seq:1"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-banter-barnaby",
+   "kind": "banter",
+   "hosts": [
+    "teodor",
+    "odette"
+   ],
+   "lines": [
+    {
+     "host": "teodor",
+     "text": "Barnaby's boiled.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "For the newer listeners, who may be wondering: there is nobody in this studio called Barnaby. There is a kettle. Teodor named the kettle some years ago, and has referred to it by name ever since, without explanation, on air, as if we had a colleague who was very good at one thing.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "He is very good at one thing.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "Why Barnaby.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "He has a Barnaby quality. He's round. He takes a while to get going and then he's very insistent. He clicks off at exactly the right moment, every time, and he doesn't want credit for it. I've met several Barnabys and they were all like that.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "You've met one Barnaby.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "He was very representative. Here is the small thing about naming a kettle. Once it has a name, you listen to it. You notice when it's slow. You notice when the water was already warm and it finishes early and sounds a bit pleased. You wouldn't notice any of that about a kettle. You notice it about Barnaby.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "Then I suppose the question is what else you've named in here without telling me.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "Tea first.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "Teodor.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "Tea first.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 77,
+   "tags": [
+    "evening",
+    "gag:names",
+    "seq:1"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-banter-vespers",
+   "kind": "banter",
+   "hosts": [
+    "odette",
+    "teodor"
+   ],
+   "lines": [
+    {
+     "host": "odette",
+     "text": "You said good night to the second microphone last week.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "I did.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "You called it Vespers.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "It's an evening microphone. It only gets used after dark, when a guest comes in, which is rarely. Most of the time it stands there with its little cover on, waiting, like a candle that hasn't been asked. Vespers seemed right. Evening prayers. Something said quietly at the end of the day.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "It's a microphone.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "Barnaby's a kettle. You've accepted Barnaby.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "I've tolerated Barnaby. Barnaby makes tea. What does Vespers do.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "Vespers listens. All evening. Switched off, but pointed at the room. There's a small thing in that, if you'll let me. Most of what's in this studio is for talking. One thing is only for listening, and it's the thing that never gets used, and I thought it should at least have a name.",
+     "pauseAfterMs": 500
+    },
+    {
+     "host": "odette",
+     "text": "That's unfair. That's a perfectly good reason and you've made me agree with it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "Good evening, Vespers.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "I will not be saying good evening to the microphone.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "She means it kindly, Vespers.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 70,
+   "tags": [
+    "evening",
+    "gag:names",
+    "seq:2"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-banter-ferry-1",
+   "kind": "banter",
+   "hosts": [
+    "odette",
+    "teodor"
+   ],
+   "lines": [
+    {
+     "host": "odette",
+     "text": "Teodor, you keep telling the listeners to catch the last ferry.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "I do.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "I'm not sure there is one. I've lived in this city a long time, and I've mapped most of it, below ground, and I'm not aware of a ferry that runs after dark across the sound.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "There's a dock. I've seen the dock. At the bottom of Lantern Street, past the reading room. There's a bench, and a light, and a sign that says Ferry, and under it, in smaller letters, Last Crossing, and then nothing. No time. Just the words.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "So you've seen a sign.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "I've seen a sign, and I've seen the bench, and once I saw a man sitting on the bench with a thermos, looking out at the water, in no hurry at all, and I thought: that is a man waiting for a ferry. You don't sit like that for anything else.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "You might sit like that for a great many reasons.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "Name one that isn't a ferry.",
+     "pauseAfterMs": 600
+    },
+    {
+     "host": "odette",
+     "text": "Fine. The last ferry. But I'd like it noted that we've been sending people to a bench.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "It's a very good bench. Listeners, if you're near the water, the last ferry is down at the end of Lantern Street. I don't know when it leaves. I suspect when you arrive.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 86,
+   "tags": [
+    "evening",
+    "gag:ferry",
+    "seq:1"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-psa-silence",
+   "kind": "ad",
+   "hosts": [
+    "odette",
+    "teodor"
+   ],
+   "lines": [
+    {
+     "host": "odette",
+     "text": "A message from the Municipal Office of Quiet.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "The Municipal Office of Quiet reminds residents that silence borrowed from public spaces should be returned at the end of the evening. If you took a quiet moment from the park, the library steps, or the long corridor at the swimming baths, please bring it back when you've finished with it. Silence left in private homes overnight tends to settle and is difficult to remove from upholstery.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "The Office would also like to thank the resident who returned a very large quiet to the esplanade last week. It has been reinstalled near the benches, where it is being used responsibly.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "This has been a message from the Municipal Office of Quiet. The Office is open during hours nobody can confirm.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 50,
+   "tags": [
+    "evening",
+    "psa",
+    "gag:quiet",
+    "seq:1"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-psa-moths",
+   "kind": "ad",
+   "hosts": [
+    "teodor",
+    "odette"
+   ],
+   "lines": [
+    {
+     "host": "teodor",
+     "text": "A message from the Municipal Office of Quiet, on behalf of the city's moths.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "The moths request that residents leaving a light on in the evening make it a modest one. A single lamp, low, is sufficient. The moths understand the appeal of a bright porch, but note that it raises expectations across the whole street, and that several of their number have recently travelled a long way for what turned out to be a bathroom.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "The moths further note that a lamp which is slowly dimming is, in their view, the ideal lamp, and they have asked whether this studio's lamp is available for viewing.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "It is not.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "It is not. This has been a message from the Municipal Office of Quiet. Lower the lights. Not the volume.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 51,
+   "tags": [
+    "evening",
+    "psa",
+    "gag:quiet",
+    "seq:2"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-ad-readingroom",
+   "kind": "ad",
+   "hosts": [
+    "odette",
+    "teodor"
+   ],
+   "lines": [
+    {
+     "host": "odette",
+     "text": "Support for Meridian comes from the Lantern Street Reading Room. A room, with chairs, and books, and a rule that nobody may ask what you're reading. Open late. The chairs are the kind you sink into and then have to be helped out of, and there is a woman called Agnes whose job is to help you out of them, and who will not ask what you were reading either.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "The Reading Room has a fire. It is not always lit. When it is not lit, the room is described as having a fire anyway.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "The Lantern Street Reading Room. Bottom of Lantern Street, before the dock. Bring a book or take one. Agnes keeps count but doesn't mind.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 47,
+   "tags": [
+    "evening"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-ad-clocks",
+   "kind": "ad",
+   "hosts": [
+    "teodor",
+    "odette"
+   ],
+   "lines": [
+    {
+     "host": "teodor",
+     "text": "Support for Meridian comes from Hollowell and Daughters, Repairers of Clocks. Hollowell and Daughters will repair your clock. They will not tell you the time. They have found that people who bring clocks in are rarely asking about the time, and they don't like to presume.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "The shop is full of clocks, none of which agree, and the daughters say this is on purpose, so that there is always one that's right for you.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "Hollowell and Daughters have asked us to say that Mr. Hollowell himself has retired, that he is well, and that he sits in the back of the shop winding things, and that this is not a service but he enjoys it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "Hollowell and Daughters. Ask for a daughter. Any of them.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 49,
+   "tags": [
+    "evening"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-ad-tea",
+   "kind": "ad",
+   "hosts": [
+    "odette",
+    "teodor"
+   ],
+   "lines": [
+    {
+     "host": "odette",
+     "text": "Support for Meridian comes from Pale Harbor Tea Merchants, who have asked us to describe their tea and then declined to tell us anything about it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "We've tried it. Barnaby has tried it. It's tea. It is, I'd say, a very confident tea, a tea that knows what it's for. It comes in a tin with a drawing of a harbor on it in which nothing is happening. No boats. No people. Just a harbor, in the evening, waiting.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "The merchants say this is deliberate. They say the tea is for the part of the evening when nothing is happening, and they wanted the tin to be honest about that.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "Pale Harbor Tea. The tin is called Marguerite.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "You've named the tin.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "The tin came with a name. It's on the bottom. I checked.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "Pale Harbor Tea Merchants. Available where you'd expect, and one place you wouldn't.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 59,
+   "tags": [
+    "evening"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-news-1",
+   "kind": "news",
+   "hosts": [
+    "odette",
+    "teodor"
+   ],
+   "lines": [
+    {
+     "host": "odette",
+     "text": "The Evening Dispatch. Three items, read slowly.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "The city's fountains have been turned to their lower setting for the season. Officials describe the lower setting as, quote, more of a suggestion. Residents near the esplanade fountain report that they can now hear each other, and that several have discovered they had nothing to say, and have found this restful.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "Item two. The keeper of the harbor light has retired after many years and has been replaced, on an interim basis, by an owl. The owl was already living in the lamp room and was, the harbor board notes, the only candidate with relevant experience. Ships have been asked to proceed as before. The owl has made no changes.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "And finally. A bench on the esplanade has been designated a landmark on the grounds that, according to the parks department, everyone in the city has sat on it at least once. The department could not say how it knows this. A small plaque has been installed. It says: You've been here. The bench remains available.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "That's the Evening Dispatch.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 70,
+   "tags": [
+    "evening"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-news-2",
+   "kind": "news",
+   "hosts": [
+    "teodor",
+    "odette"
+   ],
+   "lines": [
+    {
+     "host": "teodor",
+     "text": "The Evening Dispatch.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "The Municipal Office of Quiet has announced it is moving its hours. The new hours are described in the notice as, quote, later. No further detail was given. A resident who went to the Office to ask found the door closed and a sign reading, We're in, please don't knock, and reports that she stood there for some time and found it very peaceful.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "Item two. The interim harbor owl has been confirmed in the position. The harbor board said the owl's performance review consisted of looking at the owl for a while, and that the owl looked back, and that everyone present agreed this was sufficient.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "And a note from the Lantern Street dock. The bench has been repainted. The sign that says Ferry, Last Crossing, has been repainted too. It still gives no time. A man with a thermos was observed on the bench during the repainting and was painted around.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "That's the Evening Dispatch. We've no idea what any of it means, and it's very soothing.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 68,
+   "tags": [
+    "evening",
+    "gag:quiet",
+    "seq:3"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-callin-marisol-1",
+   "kind": "callin",
+   "hosts": [
+    "odette",
+    "caller-a",
+    "teodor"
+   ],
+   "lines": [
+    {
+     "host": "odette",
+     "text": "We have a caller. Marisol, from the bakery.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-a",
+     "text": "Hi. Hi, sorry, I've got flour on the phone, if it sounds muffled that's why. I'm on the overnight. I've got forty loaves proving and about an hour before I have to do anything about it, and I wanted to say thank you for the thing about the room settling.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "You listened to the room.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-a",
+     "text": "I listened to the bakery. I've worked here six years and I never did. I turned everything off except you two, and I just stood in it. And it's loud! It's really loud! The proving cabinet hums, the big fridge clicks, there's a drip somewhere I've never found, and the dough, you can hear the dough, Teodor, it ticks. Tiny little ticks. Like it's thinking.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "That's the gas escaping. The bubbles. It's rising.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-a",
+     "text": "I know what it is! I just never heard it as a sound before. I heard it as a job. Anyway. The loaves are nearly ready to shape, and I'd like a record for them, something slow, because they've been very patient and I'm about to be quite rough with them.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "We'll find something for the loaves.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-a",
+     "text": "Thank you. Okay. Back to it. Tell Barnaby hi.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "She said hi to Barnaby.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "I heard.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "Unprompted.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "Play the record, Teodor.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 86,
+   "tags": [
+    "evening"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-callin-dottie-1",
+   "kind": "callin",
+   "hosts": [
+    "teodor",
+    "caller-c",
+    "odette"
+   ],
+   "lines": [
+    {
+     "host": "teodor",
+     "text": "Dottie's on the line. Hello, Dottie.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-c",
+     "text": "Oh, hello, I'm sorry, I know I call too much. I'll be quick. It's for Biscuit again.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "You don't call too much. How is Biscuit.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-c",
+     "text": "He's well. He's on the rug. He likes the rug when you two are on, I don't know why, he lies with his ear flat to it, I think he's listening through the floor. He doesn't do it for anything else. He doesn't do it for the television. Just you.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "He's listening to the room.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-c",
+     "text": "That's what I thought when you said it! I thought, Biscuit's known that for years. Anyway. I'd like something gentle for him, with not too much drums, drums worry him, he thinks something's being knocked over. And I'm sorry, I noticed something, and I don't want to be a bother.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "Go on.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-c",
+     "text": "Your lamp. You said it's going dim. I can hear it. Not the lamp. You. You've both got quieter. Over the weeks. You've gone down with it. I don't think you've noticed. I just thought someone should say. It's lovely. It's just a thing I noticed. I'll go now. Thank you for having Biscuit.",
+     "pauseAfterMs": 800
+    },
+    {
+     "host": "teodor",
+     "text": "We've gone down with it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "Have we.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "I think we have.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "Then we'll let it. Something gentle for Biscuit. No drums.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 86,
+   "tags": [
+    "evening"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-liner-consider",
+   "kind": "liner",
+   "hosts": [
+    "odette",
+    "teodor"
+   ],
+   "lines": [
+    {
+     "host": "odette",
+     "text": "Consider the title. {nextTitle}. Say it once, to yourself, before it begins, the way you'd read the name on a door before you knock. It's by {nextArtist}. That's all I'll tell you. The rest is theirs, and then it's yours.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "Give it the vestibule.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "Give it the vestibule.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 20,
+   "tags": [
+    "evening"
+   ],
+   "usesSlots": [
+    "nextTitle",
+    "nextArtist"
+   ],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-liner-consider-nf",
+   "kind": "liner",
+   "hosts": [
+    "odette",
+    "teodor"
+   ],
+   "lines": [
+    {
+     "host": "odette",
+     "text": "Consider the title of the next one. Say it once, to yourself, before it begins, the way you'd read the name on a door before you knock. That's all I'll tell you. The rest is theirs, and then it's yours.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "Give it the vestibule.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "Give it the vestibule.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 19,
+   "tags": [
+    "evening"
+   ],
+   "usesSlots": [],
+   "fallbackOf": "md-liner-consider",
+   "weight": 1
+  },
+  {
+   "id": "md-trans-after",
+   "kind": "transition",
+   "hosts": [
+    "teodor",
+    "odette"
+   ],
+   "lines": [
+    {
+     "host": "teodor",
+     "text": "That was {prevArtist}. {prevTitle}. We let it finish. We always let it finish. The last note had a second tick in it, if you were listening, a small agreement to have ended.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "The lamp held through it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "The lamp held. Another in a moment. Don't get up.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 20,
+   "tags": [
+    "evening"
+   ],
+   "usesSlots": [
+    "prevArtist",
+    "prevTitle"
+   ],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-trans-after-nf",
+   "kind": "transition",
+   "hosts": [
+    "teodor",
+    "odette"
+   ],
+   "lines": [
+    {
+     "host": "teodor",
+     "text": "We let that one finish. We always let it finish. The last note had a second tick in it, if you were listening, a small agreement to have ended.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "The lamp held through it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "The lamp held. Another in a moment. Don't get up.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 18,
+   "tags": [
+    "evening"
+   ],
+   "usesSlots": [],
+   "fallbackOf": "md-trans-after",
+   "weight": 1
+  },
+  {
+   "id": "md-liner-loaves",
+   "kind": "liner",
+   "hosts": [
+    "odette",
+    "teodor"
+   ],
+   "lines": [
+    {
+     "host": "odette",
+     "text": "For Marisol, and forty loaves, and the hour before the shaping. {nextTitle}. {nextArtist}. Slow, as requested. Be rough with them kindly.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "Barnaby says hello back.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 11,
+   "tags": [
+    "evening"
+   ],
+   "usesSlots": [
+    "nextTitle",
+    "nextArtist"
+   ],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-liner-loaves-nf",
+   "kind": "liner",
+   "hosts": [
+    "odette",
+    "teodor"
+   ],
+   "lines": [
+    {
+     "host": "odette",
+     "text": "For Marisol, and forty loaves, and the hour before the shaping. Something slow, as requested. Be rough with them kindly.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "Barnaby says hello back.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 10,
+   "tags": [
+    "evening"
+   ],
+   "usesSlots": [],
+   "fallbackOf": "md-liner-loaves",
+   "weight": 1
+  },
+  {
+   "id": "md-dedic-biscuit",
+   "kind": "dedication",
+   "hosts": [
+    "teodor",
+    "odette"
+   ],
+   "lines": [
+    {
+     "host": "teodor",
+     "text": "For Biscuit, on the rug, with his ear to the floor.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "{nextTitle}, by {nextArtist}. We've checked. There are drums, but they're the kind that sound like someone setting down a cup in the next room. Nothing is being knocked over, Biscuit. Everything is where it was.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "And Dottie. Thank you for telling us about the lamp.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 23,
+   "tags": [
+    "evening"
+   ],
+   "usesSlots": [
+    "nextTitle",
+    "nextArtist"
+   ],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-dedic-biscuit-nf",
+   "kind": "dedication",
+   "hosts": [
+    "teodor",
+    "odette"
+   ],
+   "lines": [
+    {
+     "host": "teodor",
+     "text": "For Biscuit, on the rug, with his ear to the floor.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "We've checked the next one. There are drums, but they're the kind that sound like someone setting down a cup in the next room. Nothing is being knocked over, Biscuit. Everything is where it was.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "And Dottie. Thank you for telling us about the lamp.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 22,
+   "tags": [
+    "evening"
+   ],
+   "usesSlots": [],
+   "fallbackOf": "md-dedic-biscuit",
+   "weight": 1
+  },
+  {
+   "id": "md-mono-pen",
+   "kind": "monologue",
+   "hosts": [
+    "odette"
+   ],
+   "lines": [
+    {
+     "host": "odette",
+     "text": "I write with a fountain pen. People take this as an affectation and I let them, because explaining it takes longer than the affectation does. But since we have the evening, here is the explanation. A fountain pen has to be filled. You have to stop, and open it, and put it to the ink, and wait, and wipe it, and close it. It takes about a minute. During that minute you cannot write. You can only think about what you were going to write. That minute is the whole point.",
+     "pauseAfterMs": 400
+    },
+    {
+     "host": "odette",
+     "text": "Most of what I've written that was worth anything, I thought of while filling the pen. The pen made me wait and the waiting did the work. When I used other pens, the kind you don't have to fill, I wrote more and said less. I was never made to stop. Nothing asked me to consider.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "So. A small practice, if you'd like one. Before the next thing you do this evening, build in a filling. A minute where you can't start yet. Rinse the cup. Fold the blanket. Stand at the window with nothing in your hands. Then begin. You'll find you know what you meant. We are, after all, only listening, and listening is mostly waiting with your attention on.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 83,
+   "tags": [
+    "evening"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-mono-stairs",
+   "kind": "monologue",
+   "hosts": [
+    "teodor",
+    "odette"
+   ],
+   "lines": [
+    {
+     "host": "teodor",
+     "text": "Here is a small thing about staircases, since I never got to finish the course. Every staircase has a rhythm, and you learn it in about three steps, and then you stop thinking about it. Your feet know. That's why a bad staircase is so upsetting. One step slightly taller than the rest and the whole body files a complaint. You feel betrayed by a building.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "The ones I loved, in school, were the old ones with a landing halfway. Not because anyone needed a rest. Because the landing is where the staircase changes its mind. You turn. You see where you've come from, briefly, and then you see where you're going, and for one step you're looking at neither. The landing is the staircase's pause. Its vestibule. Its second tick.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "He has a theory that an evening is a staircase.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "An evening is a staircase with the landing about now. You've come up from the day. You can see it back there, if you turn. The night's up ahead, and you can't see it yet. And you're standing on the flat bit, and the light is low, and there is a radio on. That's the landing. Stay on it a while. Nobody's behind you. That's the small thing.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 82,
+   "tags": [
+    "evening"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-mono-letter-1",
+   "kind": "monologue",
+   "hosts": [
+    "odette",
+    "teodor"
+   ],
+   "lines": [
+    {
+     "host": "odette",
+     "text": "The letter. From the slow lane. I'll read it as written, with the pauses where the paragraphs are.",
+     "pauseAfterMs": 500
+    },
+    {
+     "host": "odette",
+     "text": "Dear Meridian. I've been meaning to write about the lamp, and then I thought, no, they know about the lamp. So I'll write about something else. I have a long commute. I won't say how long, or by what, because you'd ask why, and the answer is that it's the only part of the day where nobody can reach me, and I've arranged my whole life around keeping it. I listen to you on it. You and the water. I have a flask. I sit where I always sit.",
+     "pauseAfterMs": 500
+    },
+    {
+     "host": "odette",
+     "text": "Here is what I wanted to say. You once said, Odette, that everything is somewhere. I've thought about that for some weeks now. I think the reason I like the commute is that for its length, I am nowhere in particular. Not at home, not at work, not anywhere a map could draw a line to. And it occurs to me that this might be the one place a mapmaker can't follow me, and that I don't mind that at all, and that I hope you don't either.",
+     "pauseAfterMs": 500
+    },
+    {
+     "host": "odette",
+     "text": "Yours, in the slow lane.",
+     "pauseAfterMs": 800
+    },
+    {
+     "host": "teodor",
+     "text": "And the water.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "And the water. Yes. I heard it too. Whoever you are, you're right. I can't follow you there. I wouldn't want to. Here's a record for the crossing.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 92,
+   "tags": [
+    "evening",
+    "gag:slowlane",
+    "seq:2"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-skit-fieldguide",
+   "kind": "skit",
+   "hosts": [
+    "teodor",
+    "odette"
+   ],
+   "lines": [
+    {
+     "host": "teodor",
+     "text": "A Field Guide to the Evening Listener. Odette has the guide. I'll do the calls.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "The Kitchen Listener. Found near sinks, after a meal. Identified by the radio on the windowsill and the hands in the water. Does not sit. Listens with the back. Will deny having listened, but can later quote the segment.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "Common. Very common. We see them a great deal.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "The Car Listener. Stationary. Has arrived at the destination and not gone in. Sits in the dark with the engine off and the radio on. Will go in when the record ends, and not before. Family inside has learned not to ask.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "A noble bird.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "The Bath Listener. Rare. Listens with the ears just above the waterline, so that everything sounds as if it's coming from another house. Very still. Startles at drums. Related, we believe, to Biscuit.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "And the last one.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "The Lying-Down Listener. Flat. Lights off. Not asleep, and would like it on the record that they are not asleep. Hears everything. Remembers nothing. Reports the next day that it was a lovely show, without being able to say why. Our most numerous species, and the one we're speaking to right now.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "If that's you: you're not asleep. We know. Stay as you are. The next record is for the flat.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 86,
+   "tags": [
+    "evening"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-skit-tour",
+   "kind": "skit",
+   "hosts": [
+    "odette",
+    "teodor"
+   ],
+   "lines": [
+    {
+     "host": "odette",
+     "text": "Teodor is going to give an audio tour of the studio. I've agreed to this because he asked twice.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "Welcome. You've entered through the door, which is to the east, and which sticks, and which I have not named, because it's not that kind of door. To your left, on the low cabinet, is Barnaby. He is a kettle. He's between boils. Give him a moment.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "He's a kettle.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "Ahead of you, at the desk, two microphones. The near one is Odette's. The far one is mine. The third, on the stand by the wall, with its cover on, is Vespers. Please don't touch Vespers. Vespers is working.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "It's switched off.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "That's how it works. Below the microphones, the board, with its row of faders. The one on the left, that brings my voice up and down, has recently become Ambrose.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "Since when.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "Since Tuesday. He's a little stiff in the lower third. He's earned a name. Behind us, the lamp. The lamp is dimmer than when we began the tour. The lamp doesn't have a name.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "Good.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "Not yet. And that's the studio. Please exit through the door that sticks. Mind Barnaby. Say nothing to Vespers; it already knows.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "It's a microphone.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "End of tour.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 83,
+   "tags": [
+    "evening",
+    "gag:names",
+    "seq:3"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-skit-timetable",
+   "kind": "skit",
+   "hosts": [
+    "teodor",
+    "odette"
+   ],
+   "lines": [
+    {
+     "host": "teodor",
+     "text": "The ferry timetable, from the sign at the bottom of Lantern Street, read in full. Odette has agreed to be the sign.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "I have agreed to be the sign.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "Begin.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "Ferry.",
+     "pauseAfterMs": 1000
+    },
+    {
+     "host": "odette",
+     "text": "Last crossing.",
+     "pauseAfterMs": 1500
+    },
+    {
+     "host": "teodor",
+     "text": "That's the timetable.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "That's the timetable. There's no time. There's a space where the time would go, and someone has painted it the same color as the sign, carefully, more than once.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "Here is the small thing. A timetable with no time on it is still a timetable. It still promises a crossing. It just declines to promise when. And I find that I trust it more, not less. Anyone can print a time. Keeping to it is the hard part. This sign has never once been late.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "Because it says nothing.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "Because it says enough. If you're down there tonight, on the bench, with a flask: it's coming. The sign says so. It's only a question of what you do with the meantime, and we'd suggest this station.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "We've no idea if it's coming, Teodor.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "No. But I'd like to find out from the bench, not from here.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 76,
+   "tags": [
+    "evening",
+    "gag:ferry",
+    "seq:2"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-banter-lamp-2",
+   "kind": "banter",
+   "hosts": [
+    "teodor",
+    "odette"
+   ],
+   "lines": [
+    {
+     "host": "teodor",
+     "text": "The lamp.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "I know.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "It's less than half now. I held my hand up to it during the last record and I could barely see the back of it. It's gone a sort of amber. A low amber. The color of a tea you've forgotten about.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "It's rather beautiful.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "It is rather beautiful. That's the difficulty. If it were ugly we'd have changed it weeks ago. Here is the small thing. Everything that fades slowly enough becomes beautiful at some point in the fading, and then you can't bring yourself to stop it, and then it's gone, and you have the bulb in the drawer and a feeling you can't name.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "We could name it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "You'd let me name a feeling but not a microphone.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "The feeling isn't in the room with us.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "It is a bit.",
+     "pauseAfterMs": 600
+    },
+    {
+     "host": "odette",
+     "text": "Listeners. The lamp is at half. We're going to keep going. If the studio sounds like a room at the end of a long dinner, where no one has got up to turn on the big light because that would mean the dinner was over: that's exactly what it sounds like, and that's exactly where we are.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 78,
+   "tags": [
+    "evening",
+    "gag:lamp",
+    "seq:2"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-banter-lamp-3",
+   "kind": "banter",
+   "hosts": [
+    "odette",
+    "teodor"
+   ],
+   "lines": [
+    {
+     "host": "odette",
+     "text": "Teodor. Look at the lamp.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "I'm looking.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "Describe it for the listeners. I don't trust myself to.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "It's a coal. It's the last coal in a grate. There's a shape of light on the wall behind it that's about the size of a hand, and the rest of the room is the radio's little lights and nothing else. I can see your pen. I can see Barnaby's edge. I can't see Vespers at all.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "Vespers is fine.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "Vespers is fine. We should decide something, I think. Before it goes. Not the bulb. We've decided about the bulb.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "What, then.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "What we do when it goes. Whether we say something. Whether we go to a record. Whether we just sit. I don't want it to happen in the middle of an advertisement for tea.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "No. Nor do I.",
+     "pauseAfterMs": 800
+    },
+    {
+     "host": "odette",
+     "text": "We sit. If it goes while we're talking, we stop talking. We don't fill it. We let the room have it. Then one of us says something, and it won't matter which, and it won't matter what. Agreed.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "Agreed. Here's a record. A long one. In case.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 75,
+   "tags": [
+    "night",
+    "gag:lamp",
+    "seq:3"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-banter-lamp-4",
+   "kind": "banter",
+   "hosts": [
+    "teodor",
+    "odette"
+   ],
+   "lines": [
+    {
+     "host": "teodor",
+     "text": "Here is a small thing about the end of a",
+     "pauseAfterMs": 2500
+    },
+    {
+     "host": "odette",
+     "text": "It's gone.",
+     "pauseAfterMs": 2000
+    },
+    {
+     "host": "teodor",
+     "text": "Yes.",
+     "pauseAfterMs": 2000
+    },
+    {
+     "host": "odette",
+     "text": "The room's still here.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "The room's still here. I can hear it. It's doing the thing it does. You can hear the board. You can hear Barnaby cooling. He ticks when he cools. I never told you that.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "You did. Several times.",
+     "pauseAfterMs": 800
+    },
+    {
+     "host": "odette",
+     "text": "Constance.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "What?",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "The lamp. Her name was Constance. I've been thinking it for about a week and not saying it, because I've spent years telling you not to name things, and now the only thing in this room I wanted to name has gone out. So. Constance. She was constant. That was the whole of her. That's a good name for a thing that only ever did one thing and did it less and less and never once stopped on purpose.",
+     "pauseAfterMs": 1000
+    },
+    {
+     "host": "teodor",
+     "text": "Good night, Constance.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "Good night, Constance. Teodor, the bulb is in the drawer.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "It is.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "Leave it there a while longer. We can see well enough. Play something.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 74,
+   "tags": [
+    "night",
+    "gag:lamp",
+    "seq:4",
+    "payoff",
+    "gag:names"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-psa-closing",
+   "kind": "ad",
+   "hosts": [
+    "teodor",
+    "odette"
+   ],
+   "lines": [
+    {
+     "host": "teodor",
+     "text": "A final message from the Municipal Office of Quiet.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "The Municipal Office of Quiet announces that it is closing. Permanently. The Office has concluded, after a long review conducted in silence, that the most useful thing it can do for the quiet of the city is to stop issuing messages about it. All borrowed silences may be kept. The moths have been informed and have asked that the porch light be left on, low, in the Office's memory. The Office thanks the public for not knocking.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "The Office's final statement follows, in full.",
+     "pauseAfterMs": 3000
+    },
+    {
+     "host": "odette",
+     "text": "That was the statement.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "We've never had a sponsor leave so well.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 45,
+   "tags": [
+    "night",
+    "psa",
+    "gag:quiet",
+    "seq:4",
+    "payoff"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-callin-fen",
+   "kind": "callin",
+   "hosts": [
+    "odette",
+    "caller-b",
+    "teodor"
+   ],
+   "lines": [
+    {
+     "host": "odette",
+     "text": "We've a caller who says it's about the ferry. Hello. You're on Meridian.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-b",
+     "text": "Aye. Fen. I run it.",
+     "pauseAfterMs": 600
+    },
+    {
+     "host": "teodor",
+     "text": "You run the ferry.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-b",
+     "text": "I do.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "There is a ferry.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-b",
+     "text": "There's a boat. I take people over. Been doing it a long while.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "Fen, we've been telling people for weeks to catch the last crossing, and I confess I had my doubts. When does it leave.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-b",
+     "text": "It doesn't.",
+     "pauseAfterMs": 600
+    },
+    {
+     "host": "teodor",
+     "text": "It doesn't leave?",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-b",
+     "text": "Not at a time. Sign used to have a time. Painted it out. Folk would run for it. Fall on the dock. Shout. Couldn't have that. Now it leaves when the last one's aboard. Whoever's on the bench. I wait. They come down the step. We go.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "How do you know they're the last one.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-b",
+     "text": "They sit different. Last one always does. Like they've nowhere to be. That's the one.",
+     "pauseAfterMs": 800
+    },
+    {
+     "host": "teodor",
+     "text": "Fen, there's a man with a thermos who sits on that bench.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-b",
+     "text": "Aye. Takes him over most nights. Writes on the way. Has a flask, not a thermos. He'd want that right.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "He writes.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-b",
+     "text": "Letters. Posts them other side. Says he's got a radio station he writes to. Said he'd call them one night. Said not yet.",
+     "pauseAfterMs": 800
+    },
+    {
+     "host": "odette",
+     "text": "Thank you, Fen.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-b",
+     "text": "Aye. He's on the bench now. I'll go.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "Fen, before you",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-b",
+     "text": "Nowhere to be. That's the one.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "He's gone.",
+     "pauseAfterMs": 500
+    },
+    {
+     "host": "odette",
+     "text": "There is a ferry.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "I'd like it noted that I never doubted the bench.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 98,
+   "tags": [
+    "night",
+    "gag:ferry",
+    "seq:3",
+    "payoff"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-callin-conall",
+   "kind": "callin",
+   "hosts": [
+    "teodor",
+    "caller-d",
+    "odette"
+   ],
+   "lines": [
+    {
+     "host": "teodor",
+     "text": "We have a caller, and he's asked that we not say his name, and then he said we could, so. Conall. On the water, I believe.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-d",
+     "text": "On the water. Yes. Good evening to you both. I'm on the deck, so if there's wind, it's the wind. Fen said he'd rung you. He wasn't going to, and then he did, and I thought, well, that's the time painted out, then. I'd better call.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "Yours, in the slow lane.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-d",
+     "text": "Yours, in the slow lane. That's me. I'm sorry about the paper. I know it's slow. That was rather the idea. I wanted the letters to take as long to reach you as the thinking took, and the post was the only thing I could find that was honest about that.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "We've kept them all. They're in a tin.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-d",
+     "text": "I'd heard. Harriet.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "He's named the tin, yes.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-d",
+     "text": "I think that's right. I think a tin with that many evenings in it should have a name. I wanted to say one thing, and then I'll let the boat finish. You said tonight, Odette, that you can't follow me out here, and that you wouldn't want to. I've been thinking about that since you said it, which was about an hour ago, which is fast for me.",
+     "pauseAfterMs": 500
+    },
+    {
+     "host": "caller-d",
+     "text": "You do follow me. That's the thing. The radio comes over the water. It's the only thing from the shore that does. I sit where I always sit, and Fen says nothing, and you two are in my coat pocket, talking about a lamp. So I'm not nowhere, after all. I'm wherever you can be heard. Which is a place. I just hadn't got round to drawing it.",
+     "pauseAfterMs": 800
+    },
+    {
+     "host": "odette",
+     "text": "Conall.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-d",
+     "text": "We're coming in to the far side. Fen's doing the rope. I'll write properly. Thank you for reading them out. Good night to you both. Good night, Vespers, I suppose.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "He said good night to Vespers.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "I heard what he said.",
+     "pauseAfterMs": 600
+    },
+    {
+     "host": "odette",
+     "text": "Good night, Conall. Yours, on the shore.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 132,
+   "tags": [
+    "night",
+    "gag:slowlane",
+    "seq:3",
+    "payoff"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-ad-pens",
+   "kind": "ad",
+   "hosts": [
+    "teodor",
+    "odette"
+   ],
+   "lines": [
+    {
+     "host": "teodor",
+     "text": "Support for Meridian comes from Ashgrove Pens, makers of fountain pens that have to be filled. Ashgrove would like you to know that this is a feature. Each pen takes about a minute to fill. Ashgrove has calculated that their customers spend, collectively, a very great deal of time filling pens, and that during this time a very great deal of good thinking has occurred, and that they are prepared to take partial credit.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "I have one. I didn't know they were a sponsor when I bought it. I'm not sure they were. I think they heard me talking about the pen and decided to become one.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "Ashgrove Pens. They come in a box that is harder to open than it needs to be, so that you've already started waiting before you've seen the pen.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "Ashgrove. Fill it. Think. Then write.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 55,
+   "tags": [
+    "evening"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-ad-staircase",
+   "kind": "ad",
+   "hosts": [
+    "odette",
+    "teodor"
+   ],
+   "lines": [
+    {
+     "host": "odette",
+     "text": "Support for Meridian comes from the Society for the Preservation of Unfinished Staircases, which Teodor did not found, and would like it stated that he did not found.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "I did not found it. I'm a member. The Society maintains a register of staircases in the city that stop before they reach anything. There are more than you'd think. A flight up the side of a building that ends in a wall. Three steps down from a pavement into a locked door. A spiral in a courtyard that goes up to a small platform and a view of a drainpipe. The Society does not finish them. The Society sits on them.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "The Society meets on a different unfinished staircase each month, and its minutes consist largely of what everyone could see from there.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "We have a motto. It's: As Far As It Goes. The Society for the Preservation of Unfinished Staircases. Membership is a staircase you've found and haven't told anyone about. Then tell us.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 64,
+   "tags": [
+    "evening"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-news-3",
+   "kind": "news",
+   "hosts": [
+    "odette",
+    "teodor"
+   ],
+   "lines": [
+    {
+     "host": "odette",
+     "text": "The Evening Dispatch. Late edition. Two items.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "The harbor owl has been seen leaving the lamp room for the first time since its appointment, flying a slow circuit of the harbor and returning. The harbor board described this as an inspection. The owl has not commented. The light stayed on throughout, which the board says it cannot explain and has decided not to.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "And from the bottom of Lantern Street. The ferry has been confirmed to exist. A man named Fen operates it. It leaves when the last person is aboard. The sign will not be changed. The bench has been joined by a second bench, placed by an anonymous resident, with a small brass plate reading: for the one who isn't last yet.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "That's the Evening Dispatch. We'll be here until we're not.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 53,
+   "tags": [
+    "night",
+    "gag:ferry",
+    "seq:3"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-callin-marisol-2",
+   "kind": "callin",
+   "hosts": [
+    "teodor",
+    "caller-a",
+    "odette"
+   ],
+   "lines": [
+    {
+     "host": "teodor",
+     "text": "Marisol, at the bakery. The loaves.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-a",
+     "text": "They're in. They're in the oven. I'm sitting on an upturned crate with my back to the door and I've got maybe twenty minutes where I'm not allowed to touch anything, which is the only time all night I'm allowed to not touch anything, and I've put you on.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "How did the shaping go.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-a",
+     "text": "Rough but kind, like you said. I was thinking about the lamp while I did it. Odette, I know it's gone. I heard it go. I was flouring the bench and the two of you stopped talking and I stopped too, with my hands in the air, and I stood there with flour coming off my fingers in the quiet, and I thought, this is the most I've ever paid attention to anything that wasn't bread.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "Thank you for stopping with us.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-a",
+     "text": "I didn't mean to. It just happened. Anyway. Something for the oven, please. Something that goes on for a while, because I can't open the door for twenty minutes and I'd like company for all of it. And Odette, Constance was a good name. The big oven here is called Mother. Nobody named her. She just is.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "Mother. Of course she is.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-a",
+     "text": "Okay. Twenty minutes. Starting now. Thank you.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "Something long, for Mother, and the crate, and the twenty minutes.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 88,
+   "tags": [
+    "night"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-callin-dottie-2",
+   "kind": "callin",
+   "hosts": [
+    "odette",
+    "caller-c",
+    "teodor"
+   ],
+   "lines": [
+    {
+     "host": "odette",
+     "text": "Dottie. You don't need to apologize.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-c",
+     "text": "I was going to. All right. I won't. It's Biscuit. He's asleep. On the rug. With his ear flat. He didn't move when the lamp went. I thought he would. He usually lifts his head when you two go quiet for long. He didn't tonight. He just breathed out, long, the way he does when the fire's right.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "He knew it was all right.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-c",
+     "text": "I think he did. I think he knew before you did. He's like that. I'm not calling for a record tonight. I'm calling to say the thing I noticed, since you let me last time. You've both come back up a bit. Since it went. Your voices. Not loud. Just up. Like you'd been holding something and you've set it down.",
+     "pauseAfterMs": 800
+    },
+    {
+     "host": "odette",
+     "text": "Have we.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-c",
+     "text": "A little. It's nice. I'll go now. Say good night to Vespers from Biscuit. He likes that one. He doesn't know why either.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "Good night, Dottie. Good night, Biscuit.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "Good night, Dottie.",
+     "pauseAfterMs": 500
+    },
+    {
+     "host": "odette",
+     "text": "Good night, Vespers. From Biscuit.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "I didn't say anything.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "See that you don't.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 72,
+   "tags": [
+    "night"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-dedic-benches",
+   "kind": "dedication",
+   "hosts": [
+    "teodor",
+    "odette"
+   ],
+   "lines": [
+    {
+     "host": "teodor",
+     "text": "A dedication of our own, if the listeners will allow it. To whoever put the second bench at the bottom of Lantern Street. For the one who isn't last yet.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "We've thought about that plate all evening. A bench for the person who's there early. Who isn't ready. Who has somewhere to be, still, and came down anyway to sit near the water and not go. The first bench was always for the last one. Nobody had thought about the rest of us.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "This one's for the second bench. For sitting near the crossing without crossing. For the flask you don't open yet. For the radio in the coat pocket.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "Whoever you are. We hope you're warm. The next record's a long one. There's no hurry. There never was. That was the whole point of the sign.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 54,
+   "tags": [
+    "night",
+    "gag:ferry",
+    "seq:3"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-dedic-slowlane",
+   "kind": "dedication",
+   "hosts": [
+    "odette",
+    "teodor"
+   ],
+   "lines": [
+    {
+     "host": "odette",
+     "text": "For the slow lane. Whoever's in it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "{nextTitle}. By {nextArtist}. I don't know if it'll reach you where you are. I suspect it will, slowly, which is how you'd want it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "For the flask, and the bench, and the long way round.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "Yours, on the shore.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 20,
+   "tags": [
+    "evening",
+    "gag:slowlane",
+    "seq:2"
+   ],
+   "usesSlots": [
+    "nextTitle",
+    "nextArtist"
+   ],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-dedic-slowlane-nf",
+   "kind": "dedication",
+   "hosts": [
+    "odette",
+    "teodor"
+   ],
+   "lines": [
+    {
+     "host": "odette",
+     "text": "For the slow lane. Whoever's in it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "The next one. I don't know if it'll reach you where you are. I suspect it will, slowly, which is how you'd want it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "For the flask, and the bench, and the long way round.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "Yours, on the shore.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 19,
+   "tags": [
+    "evening",
+    "gag:slowlane",
+    "seq:2"
+   ],
+   "usesSlots": [],
+   "fallbackOf": "md-dedic-slowlane",
+   "weight": 1
+  },
+  {
+   "id": "md-liner-door",
+   "kind": "liner",
+   "hosts": [
+    "teodor",
+    "odette"
+   ],
+   "lines": [
+    {
+     "host": "teodor",
+     "text": "Here is a small thing. The next piece is called {nextTitle}. A title is a door. You don't have to know what's behind it. You only have to be willing to open it. {nextArtist} built the room. We'll just go in.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "Mind the step.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 18,
+   "tags": [
+    "evening"
+   ],
+   "usesSlots": [
+    "nextTitle",
+    "nextArtist"
+   ],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-liner-door-nf",
+   "kind": "liner",
+   "hosts": [
+    "teodor",
+    "odette"
+   ],
+   "lines": [
+    {
+     "host": "teodor",
+     "text": "Here is a small thing. The next piece has a title, and a title is a door. You don't have to know what's behind it. You only have to be willing to open it. Someone built the room. We'll just go in.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "Mind the step.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 18,
+   "tags": [
+    "evening"
+   ],
+   "usesSlots": [],
+   "fallbackOf": "md-liner-door",
+   "weight": 1
+  },
+  {
+   "id": "md-liner-low",
+   "kind": "liner",
+   "hosts": [
+    "odette",
+    "teodor"
+   ],
+   "lines": [
+    {
+     "host": "odette",
+     "text": "It's late, for an evening. {nextArtist}, now. {nextTitle}. Low, if you can manage it. It's the kind of thing that sounds better when you have to lean toward it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "Lower the lights, not the volume. Well. A little of both, tonight.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 17,
+   "tags": [
+    "night"
+   ],
+   "usesSlots": [
+    "nextArtist",
+    "nextTitle"
+   ],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-liner-low-nf",
+   "kind": "liner",
+   "hosts": [
+    "odette",
+    "teodor"
+   ],
+   "lines": [
+    {
+     "host": "odette",
+     "text": "It's late, for an evening. This next one, low, if you can manage it. It's the kind of thing that sounds better when you have to lean toward it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "Lower the lights, not the volume. Well. A little of both, tonight.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 16,
+   "tags": [
+    "night"
+   ],
+   "usesSlots": [],
+   "fallbackOf": "md-liner-low",
+   "weight": 1
+  },
+  {
+   "id": "md-trans-silence",
+   "kind": "transition",
+   "hosts": [
+    "teodor",
+    "odette"
+   ],
+   "lines": [
+    {
+     "host": "teodor",
+     "text": "The Art of Listening, very briefly. The silence after.",
+     "pauseAfterMs": 1500
+    },
+    {
+     "host": "teodor",
+     "text": "That was the silence after {prevTitle}. It's a different silence from the one before it. It has the record in it. You can't hear the record, but the room can, the way a cup is warm after the tea. {prevArtist} made that silence as surely as they made the music. It's just the part nobody signs.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "We'll leave a little of it. Then the next.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 31,
+   "tags": [
+    "evening",
+    "art-of-listening"
+   ],
+   "usesSlots": [
+    "prevTitle",
+    "prevArtist"
+   ],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-trans-silence-nf",
+   "kind": "transition",
+   "hosts": [
+    "teodor",
+    "odette"
+   ],
+   "lines": [
+    {
+     "host": "teodor",
+     "text": "The Art of Listening, very briefly. The silence after.",
+     "pauseAfterMs": 1500
+    },
+    {
+     "host": "teodor",
+     "text": "That was the silence after the record. It's a different silence from the one before it. It has the record in it. You can't hear the record, but the room can, the way a cup is warm after the tea. Whoever made the music made that silence too. It's just the part nobody signs.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "We'll leave a little of it. Then the next.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 30,
+   "tags": [
+    "evening",
+    "art-of-listening"
+   ],
+   "usesSlots": [],
+   "fallbackOf": "md-trans-silence",
+   "weight": 1
+  },
+  {
+   "id": "md-trans-pen",
+   "kind": "transition",
+   "hosts": [
+    "odette",
+    "teodor"
+   ],
+   "lines": [
+    {
+     "host": "odette",
+     "text": "{prevArtist}. I wrote the title down while it played. {prevTitle}. Just to have it in ink. I do that with the ones I want to keep. There's a page at the back of the book that's only titles, no notes, and I never read it, and I'd never be without it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "What's the page called.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "It isn't called anything, Teodor.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "It will be by Tuesday.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "Next record.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 28,
+   "tags": [
+    "evening"
+   ],
+   "usesSlots": [
+    "prevArtist",
+    "prevTitle"
+   ],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-trans-pen-nf",
+   "kind": "transition",
+   "hosts": [
+    "odette",
+    "teodor"
+   ],
+   "lines": [
+    {
+     "host": "odette",
+     "text": "I wrote that one's title down while it played. Just to have it in ink. I do that with the ones I want to keep. There's a page at the back of the book that's only titles, no notes, and I never read it, and I'd never be without it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "What's the page called.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "It isn't called anything, Teodor.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "It will be by Tuesday.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "Next record.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 27,
+   "tags": [
+    "evening"
+   ],
+   "usesSlots": [],
+   "fallbackOf": "md-trans-pen",
+   "weight": 1
+  },
+  {
+   "id": "md-banter-album",
+   "kind": "banter",
+   "hosts": [
+    "teodor",
+    "odette"
+   ],
+   "lines": [
+    {
+     "host": "teodor",
+     "text": "Odette has the album in front of her. Not the record. The whole album. She's reading the title the way she reads a map.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "{album}. Consider it. Somebody put a dozen pieces in a particular order and gave the order a name. That's a map. It says: start here. Go this way. This is what you'll see from the middle. This is where it ends and you'll know why when you get there. People think an album is a container. It isn't. It's a route.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "And we're taking one turning off it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "We're taking one turning. It's allowed. A route is still there when you leave it. That's what makes it a route and not a corridor. Here's the next turning.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 48,
+   "tags": [
+    "evening"
+   ],
+   "usesSlots": [
+    "album"
+   ],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-banter-album-nf",
+   "kind": "banter",
+   "hosts": [
+    "teodor",
+    "odette"
+   ],
+   "lines": [
+    {
+     "host": "teodor",
+     "text": "Odette has the album in front of her. Not the record. The whole album. She's reading the title the way she reads a map.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "Consider the album this came from. Somebody put a dozen pieces in a particular order and gave the order a name. That's a map. It says: start here. Go this way. This is what you'll see from the middle. This is where it ends and you'll know why when you get there. People think an album is a container. It isn't. It's a route.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "And we're taking one turning off it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "We're taking one turning. It's allowed. A route is still there when you leave it. That's what makes it a route and not a corridor. Here's the next turning.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 49,
+   "tags": [
+    "evening"
+   ],
+   "usesSlots": [],
+   "fallbackOf": "md-banter-album",
+   "weight": 1
+  },
+  {
+   "id": "md-mono-afterglow",
+   "kind": "monologue",
+   "hosts": [
+    "teodor",
+    "odette"
+   ],
+   "lines": [
+    {
+     "host": "teodor",
+     "text": "The Art of Listening. Here is a small thing about what just happened. {prevTitle} ended about a minute ago. You've been listening to me since. But some part of you is still in it. You're carrying it, the way you carry the cold in from outside for a minute after you've shut the door.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "There's no word for that, for the minute after a piece of music when you're not listening to it and it's still going. In a building it's the afterglow of a lit window after the lamp's off. Your eye keeps it a second. I think the ear keeps it longer. I think we spend most of our lives in the afterglow of something, and the trick isn't to shake it off. It's to notice you're in it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "You're in it now.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "We all are. That's the small thing. You don't have to do anything about it. Let the next one come in while this one's still leaving. They'll pass each other in the vestibule. They always do.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 67,
+   "tags": [
+    "night",
+    "art-of-listening"
+   ],
+   "usesSlots": [
+    "prevTitle"
+   ],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-mono-afterglow-nf",
+   "kind": "monologue",
+   "hosts": [
+    "teodor",
+    "odette"
+   ],
+   "lines": [
+    {
+     "host": "teodor",
+     "text": "The Art of Listening. Here is a small thing about what just happened. The last record ended about a minute ago. You've been listening to me since. But some part of you is still in it. You're carrying it, the way you carry the cold in from outside for a minute after you've shut the door.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "There's no word for that, for the minute after a piece of music when you're not listening to it and it's still going. In a building it's the afterglow of a lit window after the lamp's off. Your eye keeps it a second. I think the ear keeps it longer. I think we spend most of our lives in the afterglow of something, and the trick isn't to shake it off. It's to notice you're in it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "You're in it now.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "We all are. That's the small thing. You don't have to do anything about it. Let the next one come in while this one's still leaving. They'll pass each other in the vestibule. They always do.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 68,
+   "tags": [
+    "night",
+    "art-of-listening"
+   ],
+   "usesSlots": [],
+   "fallbackOf": "md-mono-afterglow",
+   "weight": 1
+  },
+  {
+   "id": "md-callin-fen-song",
+   "kind": "callin",
+   "hosts": [
+    "odette",
+    "caller-b",
+    "teodor"
+   ],
+   "lines": [
+    {
+     "host": "odette",
+     "text": "Fen. Again. Is everything all right at the dock.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-b",
+     "text": "Aye.",
+     "pauseAfterMs": 800
+    },
+    {
+     "host": "caller-b",
+     "text": "That last one.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "The record?",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-b",
+     "text": "Aye. Had it on the boat. Going over. Water was flat. Fitted.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "That was {prevTitle}, Fen. By {prevArtist}.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-b",
+     "text": "Right.",
+     "pauseAfterMs": 800
+    },
+    {
+     "host": "caller-b",
+     "text": "Play it again some night. When it's flat.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "We will.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-b",
+     "text": "Right.",
+     "pauseAfterMs": 1000
+    },
+    {
+     "host": "teodor",
+     "text": "He's still there.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "He's still there. Leave him. He's very good at it.",
+     "pauseAfterMs": 800
+    },
+    {
+     "host": "caller-b",
+     "text": "Aye. Away now.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "Good night, Fen.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "The most words he's ever said to us, and most of them were aye. I think that's the review of the year.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 41,
+   "tags": [
+    "night",
+    "gag:ferry",
+    "seq:3"
+   ],
+   "usesSlots": [
+    "prevTitle",
+    "prevArtist"
+   ],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-callin-fen-song-nf",
+   "kind": "callin",
+   "hosts": [
+    "odette",
+    "caller-b",
+    "teodor"
+   ],
+   "lines": [
+    {
+     "host": "odette",
+     "text": "Fen. Again. Is everything all right at the dock.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-b",
+     "text": "Aye.",
+     "pauseAfterMs": 800
+    },
+    {
+     "host": "caller-b",
+     "text": "That last one.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "The record?",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-b",
+     "text": "Aye. Had it on the boat. Going over. Water was flat. Fitted.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "Teodor will tell you the name of it, Fen, if you'll stay on the line a moment after.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-b",
+     "text": "Right.",
+     "pauseAfterMs": 800
+    },
+    {
+     "host": "caller-b",
+     "text": "Play it again some night. When it's flat.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "We will.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-b",
+     "text": "Right.",
+     "pauseAfterMs": 1000
+    },
+    {
+     "host": "teodor",
+     "text": "He's still there.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "He's still there. Leave him. He's very good at it.",
+     "pauseAfterMs": 800
+    },
+    {
+     "host": "caller-b",
+     "text": "Aye. Away now.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "Good night, Fen.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "The most words he's ever said to us, and most of them were aye. I think that's the review of the year.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 44,
+   "tags": [
+    "night",
+    "gag:ferry",
+    "seq:3"
+   ],
+   "usesSlots": [],
+   "fallbackOf": "md-callin-fen-song",
+   "weight": 1
+  },
+  {
+   "id": "md-skit-fieldguide-2",
+   "kind": "skit",
+   "hosts": [
+    "odette",
+    "teodor"
+   ],
+   "lines": [
+    {
+     "host": "odette",
+     "text": "A Field Guide to the Evening Listener. A late addendum.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "The Deck Listener. Found on the water, in a coat, with the radio in the pocket and the flask not yet open. Was observed during {prevTitle} to look at nothing in particular for its full length. Writes afterward. Takes the long way round by choice. Not lost. Never was.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "And the Dock Listener. Found on the second bench. Not last yet. Has somewhere to be, and is being here instead, for one more record. Easily mistaken for someone waiting. Is, in fact, arriving.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "The Guide notes that both species can be heard breathing out at the same moment, on opposite sides of the water, when a piece ends well.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "Next, for both of them: {nextTitle}. {nextArtist}. Flat water, we hope. Here it is.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 54,
+   "tags": [
+    "night"
+   ],
+   "usesSlots": [
+    "prevTitle",
+    "nextTitle",
+    "nextArtist"
+   ],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-skit-fieldguide-2-nf",
+   "kind": "skit",
+   "hosts": [
+    "odette",
+    "teodor"
+   ],
+   "lines": [
+    {
+     "host": "odette",
+     "text": "A Field Guide to the Evening Listener. A late addendum.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "The Deck Listener. Found on the water, in a coat, with the radio in the pocket and the flask not yet open. Was observed during the last record to look at nothing in particular for its full length. Writes afterward. Takes the long way round by choice. Not lost. Never was.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "And the Dock Listener. Found on the second bench. Not last yet. Has somewhere to be, and is being here instead, for one more record. Easily mistaken for someone waiting. Is, in fact, arriving.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "The Guide notes that both species can be heard breathing out at the same moment, on opposite sides of the water, when a piece ends well.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "Next, for both of them. Flat water, we hope. Here it is.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 53,
+   "tags": [
+    "night"
+   ],
+   "usesSlots": [],
+   "fallbackOf": "md-skit-fieldguide-2",
+   "weight": 1
+  },
+  {
+   "id": "md-mono-footsteps",
+   "kind": "monologue",
+   "hosts": [
+    "teodor",
+    "odette"
+   ],
+   "lines": [
+    {
+     "host": "teodor",
+     "text": "The Art of Listening. Footsteps in a corridor. Here is a small thing. You can tell more about a person from their footsteps in a corridor than from their face in a room, because nobody arranges their footsteps. Faces are managed. Feet are honest.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "Listen for three things. The weight, which is not about size; some very large people walk like they're apologizing to the floor, and some small people walk like they own the building and are checking on it. The interval, which is the mood. Even intervals mean the person has somewhere to be and is content about it. Uneven intervals mean they're thinking, or looking for a room number, or have remembered something on the stairs. And the stop. How a person stops at a door tells you whether they want to go in.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "How do I stop.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "You stop a full step early and then take a small one. Like a sentence with a comma before the last word. You've always done it. I noticed it the first week.",
+     "pauseAfterMs": 500
+    },
+    {
+     "host": "odette",
+     "text": "I had no idea I did that.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "Nobody does. That's the small thing. Tonight, if someone comes down your corridor, don't look up. Listen to them arrive. You'll know who it is and how they are before they knock. And if it's you, in your own corridor, going to your own door: listen to that, too. You'll learn something you didn't arrange. That's the Art of Listening.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 94,
+   "tags": [
+    "evening",
+    "art-of-listening"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-banter-content",
+   "kind": "banter",
+   "hosts": [
+    "teodor",
+    "odette"
+   ],
+   "lines": [
+    {
+     "host": "teodor",
+     "text": "Someone wrote in to ask why Odette won't say the word content.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "I'll say it. I'd rather not, but I'll say it. Content. There. It's what a bucket has. It's what a tin has. It's the noun you use when you don't care what's inside, only that something is. A bucket of content. A tin of content. Nobody has ever said, I was moved by the content.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "They have, a bit.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "They were lying to a form. Here's what we have instead, on this station, and I'll be precise, because I'm a mapmaker and precision is the only manners I've got. We have records. We have the pieces of music people made in rooms, with their hands, on particular evenings they'll never get back. We have the odd thing I say between them, and the small things you say, and a kettle. None of that is content. Content doesn't tick when it cools.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "Barnaby would be hurt.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "Barnaby has never been content in his life. He's a kettle. He's a kettle with a job. That's the end of the matter. Next record. Not content. A record.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "She feels strongly about it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "I feel precisely about it. That's different, and that's the point.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 80,
+   "tags": [
+    "evening"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-ad-benches",
+   "kind": "ad",
+   "hosts": [
+    "odette",
+    "teodor"
+   ],
+   "lines": [
+    {
+     "host": "odette",
+     "text": "Support for Meridian comes from the Esplanade Bench Committee, which would like you to sit down.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "The Esplanade Bench Committee maintains the benches along the water. It would like you to know that the benches are for sitting, not for the brisk sort of perching people do while they check something, and that a bench sat on properly for the length of one record is a bench doing its job.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "The Committee has placed a small plate on each bench with a single word. The words, read from the harbor light to the ferry dock, in order, form a sentence. The Committee will not say what the sentence is. It says you'd have to sit on all of them, in order, and that this is rather the idea.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "We've done four. So far it says: You have been. We're going back for the rest.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "The Esplanade Bench Committee. Sit down. It's allowed.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 60,
+   "tags": [
+    "evening"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "md-mono-tin",
+   "kind": "monologue",
+   "hosts": [
+    "odette",
+    "teodor"
+   ],
+   "lines": [
+    {
+     "host": "odette",
+     "text": "A word about keeping things, since the letters came up. I'm not sentimental. I threw out twenty years of sewer maps without a backward glance, because the pipes are still there and the maps were only ever a way of pointing at them. But I've kept every letter from the slow lane, in a tin, and I've been asking myself why, and this evening I think I know.",
+     "pauseAfterMs": 500
+    },
+    {
+     "host": "odette",
+     "text": "The pipes don't need the map. The letters are the thing itself. There's nothing underneath them to point at. Someone sat on a bench, or a boat, with a flask, and thought for the length of a crossing, and wrote it down, and posted it, and it took days to reach us, and when I open the envelope I'm holding exactly the amount of evening they spent. You can't throw that out. It isn't a copy of anything.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "teodor",
+     "text": "Harriet's nearly full.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "odette",
+     "text": "Then we'll get a second tin, and you can name that one too, and I won't say a word. Consider what you keep that isn't a copy of anything. Keep that. Let the rest go. We are, after all, only listening, and listening leaves nothing behind but what you choose to write down.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 79,
+   "tags": [
+    "evening",
+    "gag:slowlane",
+    "seq:2"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  }
+ ]
+}
