@@ -27,7 +27,7 @@
 @media (prefers-reduced-motion:reduce){.cp .cp-cass{transition:none}}
 
 /* ── shelf: stack + spines ────────────────────────────────────────────────── */
-.cs-stack{position:relative;margin:6px 12px 24px}
+.cs-stack{position:relative;margin:10px 26px 24px 8px}
 .cs-card{position:absolute;left:0;right:0;border:0;background:none;padding:0;cursor:pointer;transition:transform .45s cubic-bezier(.25,.8,.25,1),filter .3s;text-align:left;display:block}
 .cs-card svg{display:block;width:100%;height:auto;filter:drop-shadow(0 14px 14px rgba(0,0,0,.28))}
 .cs-card:focus-visible{outline:2px solid #6C9CFF;outline-offset:4px;border-radius:14px}
@@ -81,7 +81,7 @@
 .bk-list button:hover::after { opacity:.7; }
 .bk-side { position:absolute; right:10.5cqw; top:36cqw; bottom:3cqw; width:9cqw; writing-mode:vertical-rl; transform:rotate(180deg); font-size:3.9cqw; line-height:1.15; white-space:nowrap; }
 .bk-bar { position:absolute; right:4cqw; bottom:4cqw; width:4.6cqw; height:52cqw; }
-.bk-foot { position:absolute; left:5.4cqw; right:11cqw; bottom:4cqw; font-size:4.3cqw; line-height:1.14; }
+.bk-foot { position:absolute; left:5.4cqw; right:21cqw; bottom:4cqw; font-size:4.3cqw; line-height:1.14; }
 .bk-foot .id { display:block; margin-bottom:1.2cqw; }
 .bk-foot p { margin:0 0 3.2cqw; hyphens:auto; -webkit-hyphens:auto; }
 .bk-foot small { display:block; font-size:2.4cqw; letter-spacing:.01em; }

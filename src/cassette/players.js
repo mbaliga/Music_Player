@@ -121,12 +121,12 @@ function deckSkin(X) {
       const on = i < n ? i : -2;
       if (lit[i] !== on) { lit[i] = on; vuSegs[i].setAttribute('fill', i < n ? vuColor(i) : '#3a3b40'); }
     }
-    const key = (st.loaded ? st.title : 'NO TAPE') + '|' + st.side;
+    const key = (st.loaded ? st.title : 'NO TAPE');
     if (key !== lastTitle) {
       lastTitle = key;
       const t = (st.loaded ? (st.title || 'Untitled mixtape') : 'NO TAPE').toUpperCase();
       title.textContent = t; title.setAttribute('font-size', Math.max(30, Math.min(92, 1080 / (t.length * 0.62))).toFixed(1));
-      sub.textContent = st.loaded ? 'SIDE ' + (st.side || 'A') : 'INSERT A CASSETTE';
+      sub.textContent = st.loaded ? '' : 'INSERT A CASSETTE';   // name only: nothing but the mixtape title while a tape is in
     }
   }
   paint(true);
