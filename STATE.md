@@ -2,7 +2,7 @@
 
 ## Current state
 v0 pre-release, gated on a hardware feel-test on the RedMagic 11 Pro.
-Beyond the v0 instrument, the library overlay now has **Albums** (Vinyl vs CD, by `CD1`/`Disc 2` labels), **Mixtapes** (custom cassette playlists, localStorage) and **Radio** (real Radio Browser stations). Desktop-Chromium verified only; see HANDOFF.md "Albums, Mixtapes, Radio".
+Beyond the v0 instrument, the library overlay now has **Albums** (Vinyl vs CD, by `CD1`/`Disc 2` labels), **Mixtapes** (custom playlists as the owner's 37-style cassettes with a label editor, two player skins and reel physics driven by real playback; localStorage) and **Radio** (real Radio Browser stations). Desktop-Chromium verified only; see HANDOFF.md "Albums, Mixtapes, Radio".
 
 ## Next
 Run the v0 feel-gate; if web audio fails latency, swap `audio-engine.js` for native.
@@ -22,3 +22,5 @@ Radio spike P1 done as far as a sandbox allows; verdicts are NEEDS-DEVICE (echo,
 ## AI radio
 P0 (contracts and skeleton) done: pure core in `src/radio/core/`, flag `radio.ai` default OFF, not on the boot path, inert `ai-you`/`ai-you-city` station stub. Cue extraction (`cues.js`) done and wired into the sim (synthetic signals only, not validated on real music); web/APK build excludes dev-only core files. P1 device spikes pending (owner). P2 gated on the v0 feel gate and the owner's device results. See HANDOFF.md "AI radio".
 
+## Mixtapes (Workstream C)
+The owner's cassette/mixtape design system is ported (`src/cassette/`, model v3 in `src/mixtape.js`): 37 styles, label editor, shelf, back-of-case, deck + player skins, reels driven by the real gapless queue, wind keys that seek. Desktop-Chromium verified only; on-device checklist in HANDOFF.md "Cassette mixtapes". Left out: flip-depth studio, synthesized audio, Google Fonts (see HANDOFF.md).

@@ -116,7 +116,7 @@ let uid = 0;
     var root = document.createElement('div');
     root.className = 'cs-lib';
     var list = document.createElement('div'); list.className = 'lib-list';
-    list.style.cssText = 'display:grid;gap:5px;align-content:start;padding:14px 0 24px';
+    list.style.cssText = 'display:grid;gap:5px;align-content:start;padding:14px 16px 24px 0';
     root.appendChild(list); el.textContent = ''; el.appendChild(root);
     var btns = {};
     function find(id) { return items.filter(function (i) { return i.id === id; })[0]; }
