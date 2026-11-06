@@ -2,76 +2,83 @@
 // mixtape.js — pure mixtape model: custom playlists with a cassette look.
 //
 // No DOM / browser globals (portable like model.js; tested in
-// test/mixtape.test.mjs). Drawing lives in cassette.js, UI + persistence glue
-// in mixtape-ui.js.
+// test/mixtape.test.mjs and test/mixtape-v3.test.mjs). Drawing lives in
+// src/cassette/*, UI + persistence glue in mixtape-ui.js.
 //
-// A mixtape = name + ordered track REFS + style variant id + font id + font
-// colour. Refs are metadata ({title, artist, album}), not file handles: a
-// browser can't persist a File across sessions, so a ref is matched back to
-// the library at play time (resolveTracks): stable track id first (libindex.js:
-// hash of tags + size/duration), then exact (artist, album, title), then loose
-// (artist, title). The library itself is persisted as metadata, so a ref
-// usually resolves to a "needs re-link" track (no File yet) rather than to
-// nothing; unmatched refs stay in the tape, shown as unavailable.
+// A mixtape = name + author + ordered track REFS + a cassette `cfg` (style
+// id, pen, wear, gloss, optional ink colour, label text). Refs are metadata
+// ({title, artist, album, id?}), not file handles: a browser can't persist a
+// File across sessions, so a ref is matched back to the library at play time
+// (resolveTracks): stable track id first (libindex.js: hash of tags +
+// size/duration), then exact (artist, album, title), then loose (artist,
+// title). The library itself is persisted as metadata, so a ref usually
+// resolves to a "needs re-link" track (no File yet) rather than to nothing;
+// unmatched refs stay in the tape, shown as unavailable.
+//
+// Versions
+//   v1  refs {title, artist, album}; style/font/fontColor from the 8 original
+//       procedural placeholder shells.
+//   v2  refs may carry `id`. Same placeholder style/font/fontColor.
+//   v3  the owner's cassette system: `cfg` {style (one of 37), pen, wear,
+//       gloss, slots{ink}, text{subtitle,note,side}} + `author`. The mixtape
+//       name is cfg.text.title in the renderer (single source: `name`).
+// Writers emit v3; readers accept v1, v2 and v3. v1/v2 style/font/colour ids
+// migrate to the nearest new style / pen (LEGACY_* tables below). Anything
+// newer than v3 is refused/ignored, never guessed (the UI backs the blob up).
 //
 // JSON follows theme.js conventions: { version, ... }, never-throwing parser
-// that names the exact failure, colours as "#RRGGBB"/"#AARRGGBB" validated by
+// that names the exact failure, colours "#RRGGBB"/"#AARRGGBB" validated by
 // theme.js's validateHexColor; the UI shows the pasted text verbatim before
 // anything is imported (plain-text preview).
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { validateHexColor } from './theme.js';
+import { Cassette } from './cassette/index.js';
 
-// v1: refs {title, artist, album}. v2: refs may also carry `id` (stable track
-// id from libindex.js). Writers emit v2; readers accept v1 and v2 (a v1 doc is
-// a valid v2 doc with no ids). Anything newer is refused/ignored, never guessed.
-export const MIXTAPE_VERSION = 2;
+export const MIXTAPE_VERSION = 3;
 export const MIN_MIXTAPE_VERSION = 1;
 const versionOk = (v) => Number.isInteger(v) && v >= MIN_MIXTAPE_VERSION && v <= MIXTAPE_VERSION;
 export const MAX_NAME = 40;
+export const MAX_TAGLINE = 48;
+export const MAX_NOTE = 48;
+export const MAX_AUTHOR = 28;
 
-// ── Procedural cassette shell styles (drawn in cassette.js; no image assets) ─
-// `pattern` picks a drawing routine; the colours feed it. Add a style by adding
-// a row here (and, for a new pattern, a case in cassette.js).
-export const CASSETTE_STYLES = Object.freeze([
-  { id: 'clear-chrome', name: 'Clear Chrome',   pattern: 'clear',   shell: '#2a2d33', shell2: '#4a4f58', label: '#ece6d3', stripe: '#c0392b', accent: '#b9c2cf' },
-  { id: 'ferric-red',   name: 'Ferric Red',     pattern: 'solid',   shell: '#8e1f1f', shell2: '#c0392b', label: '#f4efe2', stripe: '#1b1b1b', accent: '#e8c9a0' },
-  { id: 'noir',         name: 'Noir Matte',     pattern: 'solid',   shell: '#151517', shell2: '#2a2a2e', label: '#d9d9d2', stripe: '#8E7BFF', accent: '#777777' },
-  { id: 'sunburst',     name: 'Sunburst',       pattern: 'rays',    shell: '#e8a02e', shell2: '#d2542c', label: '#fff4d6', stripe: '#6b2a14', accent: '#ffd98a' },
-  { id: 'neon-grid',    name: 'Neon Grid',      pattern: 'grid',    shell: '#140a2e', shell2: '#3c1470', label: '#1d1038', stripe: '#ff3cac', accent: '#2de2e6' },
-  { id: 'checker',      name: 'Checker',        pattern: 'checker', shell: '#1b3a5c', shell2: '#f0f0f0', label: '#fafafa', stripe: '#1b3a5c', accent: '#e63946' },
-  { id: 'waves',        name: 'Seafoam Waves',  pattern: 'waves',   shell: '#1f7a8c', shell2: '#bfdbf7', label: '#f6fbfb', stripe: '#022b3a', accent: '#e1e5f2' },
-  { id: 'pastel-dots',  name: 'Pastel Dots',    pattern: 'dots',    shell: '#f7c8d8', shell2: '#fff1f5', label: '#ffffff', stripe: '#a2678a', accent: '#cfe8ef' },
-]);
+// ── Cassette catalogue: the 37 styles live in src/cassette (single source) ───
+export const cassetteStyles = () => Cassette.styles();
+export const hasStyle = (id) => typeof id === 'string' && !!Cassette.style(id);
+export const PEN_IDS = Object.freeze(Object.keys(Cassette.PENS));
+export const hasPen = (id) => PEN_IDS.includes(id);
+export const DEFAULT_STYLE_ID = 'clear';
+export const DEFAULT_PEN = 'marker';
+export const DEFAULT_WEAR = 0.15;
+export const DEFAULT_GLOSS = 0.6;
 
-// ── Fonts: system stacks only (no downloads, works offline in the WebView) ──
-export const FONTS = Object.freeze([
-  { id: 'marker',     name: 'Marker',     css: '"Marker Felt","Segoe Print","Comic Sans MS","Comic Neue",cursive', weight: 700, style: 'normal' },
-  { id: 'typewriter', name: 'Typewriter', css: '"American Typewriter","Courier New",Courier,monospace', weight: 400, style: 'normal' },
-  { id: 'serif',      name: 'Serif',      css: 'Georgia,"Times New Roman",serif', weight: 700, style: 'italic' },
-  { id: 'sans',       name: 'Sans',       css: 'system-ui,-apple-system,"Segoe UI",Roboto,sans-serif', weight: 800, style: 'normal' },
-  { id: 'condensed',  name: 'Condensed',  css: '"Arial Narrow","Roboto Condensed","Helvetica Neue",Arial,sans-serif', weight: 700, style: 'normal' },
-  { id: 'mono',       name: 'Mono',       css: 'ui-monospace,"SF Mono",Menlo,Consolas,monospace', weight: 700, style: 'normal' },
-]);
-
-// ── Font colours: plain hex, so a user can also paste their own in JSON ─────
+/** Ink colours offered by the label editor (plain hex, so JSON can carry any). */
 export const FONT_COLOURS = Object.freeze([
-  { id: 'ink',     name: 'Ink',     hex: '#1a1a1f' },
-  { id: 'red',     name: 'Red',     hex: '#c0392b' },
-  { id: 'blue',    name: 'Blue',    hex: '#1f4fd8' },
-  { id: 'green',   name: 'Green',   hex: '#1e7a4a' },
-  { id: 'violet',  name: 'Violet',  hex: '#6d4cff' },
-  { id: 'orange',  name: 'Orange',  hex: '#e07a1f' },
-  { id: 'paper',   name: 'Paper',   hex: '#f4efe2' },
-  { id: 'neon',    name: 'Neon',    hex: '#2de2e6' },
+  { id: 'ink',    name: 'Ink',    hex: '#1a1a1f' },
+  { id: 'red',    name: 'Red',    hex: '#c0392b' },
+  { id: 'blue',   name: 'Blue',   hex: '#1f4fd8' },
+  { id: 'green',  name: 'Green',  hex: '#1e7a4a' },
+  { id: 'violet', name: 'Violet', hex: '#6d4cff' },
+  { id: 'orange', name: 'Orange', hex: '#e07a1f' },
+  { id: 'paper',  name: 'Paper',  hex: '#f4efe2' },
+  { id: 'white',  name: 'White',  hex: '#ffffff' },
 ]);
 
-export const DEFAULT_STYLE_ID = CASSETTE_STYLES[0].id;
-export const DEFAULT_FONT_ID = FONTS[0].id;
-export const DEFAULT_FONT_COLOUR = FONT_COLOURS[0].hex;
-
-export const styleById = (id) => CASSETTE_STYLES.find((s) => s.id === id) || CASSETTE_STYLES[0];
-export const fontById = (id) => FONTS.find((f) => f.id === id) || FONTS[0];
+// ── v1/v2 -> v3 migration tables (the old 8 placeholder shells / 6 fonts) ────
+// Nearest new style by palette: clear-chrome (smoked clear, red stripe) -> Smoke,
+// ferric-red -> Crimson, noir -> Noir, sunburst (amber/orange rays) -> Tangerine,
+// neon-grid (deep purple, pink+cyan) -> Lilac, checker -> Checker, waves
+// (seafoam) -> Aqua, pastel-dots (pink) -> Bubblegum.
+export const LEGACY_STYLE_MAP = Object.freeze({
+  'clear-chrome': 'smoke', 'ferric-red': 'crimson', 'noir': 'noir', 'sunburst': 'tangerine',
+  'neon-grid': 'lilac', 'checker': 'checker', 'waves': 'aqua', 'pastel-dots': 'bubblegum',
+});
+// Old font ids -> nearest pen (marker/script/type/bold).
+export const LEGACY_FONT_MAP = Object.freeze({
+  marker: 'marker', typewriter: 'type', serif: 'script', sans: 'bold', condensed: 'bold', mono: 'type',
+});
+const LEGACY_DEFAULT_INK = '#1a1a1f'; // the old default font colour: "no override"
 
 // ── Track refs ───────────────────────────────────────────────────────────────
 const norm = (s) => String(s || '').trim().toLowerCase().replace(/\s+/g, ' ');
@@ -119,28 +126,68 @@ export function resolveTracks(mixtape, libraryTracks) {
 
 // ── Construction + pure edits (all return NEW mixtapes) ──────────────────────
 
-/** `id` is a parameter (not generated here) so the model stays deterministic. */
-export function createMixtape({ id, name, tracks = [], styleId, fontId, fontColor } = {}) {
-  return {
-    id: id || 'mt-0',
-    name: cleanName(name),
-    tracks: tracks.map(makeTrackRef),
-    styleId: styleById(styleId).id,
-    fontId: fontById(fontId).id,
-    fontColor: validateHexColor(fontColor, 'fontColor') === null ? fontColor : DEFAULT_FONT_COLOUR,
-  };
-}
+const clamp01 = (v, d) => (typeof v === 'number' && isFinite(v) ? (v < 0 ? 0 : v > 1 ? 1 : v) : d);
+const str = (v, max) => String(v == null ? '' : v).replace(/\s+/g, ' ').trim().slice(0, max);
 
 export function cleanName(name) {
-  const n = String(name == null ? '' : name).replace(/\s+/g, ' ').trim().slice(0, MAX_NAME);
+  const n = str(name, MAX_NAME);
   return n || 'Untitled Mixtape';
 }
 
+/** Valid hex or null ("use the style's own ink"). */
+const inkOf = (hex) => (typeof hex === 'string' && validateHexColor(hex, 'ink') === null ? hex : null);
+
+function cleanCfg(c = {}, legacy = {}) {
+  const style = hasStyle(c.style) ? c.style
+    : (legacy.styleId && LEGACY_STYLE_MAP[legacy.styleId]) || (hasStyle(legacy.styleId) ? legacy.styleId : DEFAULT_STYLE_ID);
+  const pen = hasPen(c.pen) ? c.pen : (legacy.fontId && LEGACY_FONT_MAP[legacy.fontId]) || DEFAULT_PEN;
+  let ink = inkOf(c.slots && c.slots.ink);
+  if (!ink && legacy.fontColor) {
+    const lc = inkOf(legacy.fontColor);
+    ink = lc && lc.toLowerCase() !== LEGACY_DEFAULT_INK ? lc : null;
+  }
+  const t = c.text || {};
+  const cfg = {
+    style, pen,
+    wear: clamp01(c.wear, DEFAULT_WEAR),
+    gloss: clamp01(c.gloss, DEFAULT_GLOSS),
+    text: { subtitle: str(t.subtitle, MAX_TAGLINE), note: str(t.note, MAX_NOTE), side: (str(t.side, 2) || 'A').toUpperCase() },
+  };
+  if (ink) cfg.slots = { ink };
+  return cfg;
+}
+
+/**
+ * `id` is a parameter (not generated here) so the model stays deterministic.
+ * Accepts the v3 shape ({name, author, cfg, tracks}) and, for migration, the
+ * v1/v2 fields {styleId, fontId, fontColor}.
+ */
+export function createMixtape({ id, name, author, tracks = [], cfg, styleId, fontId, fontColor } = {}) {
+  return {
+    id: id || 'mt-0',
+    name: cleanName(name),
+    author: str(author, MAX_AUTHOR),
+    tracks: tracks.map(makeTrackRef),
+    cfg: cleanCfg(cfg, { styleId, fontId, fontColor }),
+  };
+}
+
 export const withName = (m, name) => ({ ...m, name: cleanName(name) });
-export const withStyle = (m, styleId) => ({ ...m, styleId: styleById(styleId).id });
-export const withFont = (m, fontId) => ({ ...m, fontId: fontById(fontId).id });
-export const withFontColor = (m, hex) =>
-  validateHexColor(hex, 'fontColor') === null ? { ...m, fontColor: hex } : m;
+export const withAuthor = (m, a) => ({ ...m, author: str(a, MAX_AUTHOR) });
+export const withStyle = (m, styleId) => (hasStyle(styleId) ? { ...m, cfg: { ...m.cfg, style: styleId } } : m);
+export const withPen = (m, pen) => (hasPen(pen) ? { ...m, cfg: { ...m.cfg, pen } } : m);
+export const withWear = (m, v) => ({ ...m, cfg: { ...m.cfg, wear: clamp01(v, m.cfg.wear) } });
+export const withGloss = (m, v) => ({ ...m, cfg: { ...m.cfg, gloss: clamp01(v, m.cfg.gloss) } });
+/** hex -> ink override; null/'' -> back to the style's own ink; bad hex -> unchanged. */
+export function withInk(m, hex) {
+  if (hex == null || hex === '') { const { slots, ...rest } = m.cfg; return { ...m, cfg: rest }; }
+  return inkOf(hex) ? { ...m, cfg: { ...m.cfg, slots: { ...(m.cfg.slots || {}), ink: hex } } } : m;
+}
+/** patch any of {subtitle, note, side}. */
+export function withText(m, patch) {
+  return { ...m, cfg: { ...m.cfg, text: cleanCfg({ text: { ...m.cfg.text, ...patch } }).text } };
+}
+export const inkHex = (m) => (m.cfg.slots && m.cfg.slots.ink) || null;
 export const addTrack = (m, t) => ({ ...m, tracks: [...m.tracks, makeTrackRef(t)] });
 export const removeTrack = (m, i) =>
   (i >= 0 && i < m.tracks.length ? { ...m, tracks: m.tracks.filter((_, j) => j !== i) } : m);
@@ -155,6 +202,24 @@ export function moveTrack(m, from, to) {
   const [t] = tracks.splice(from, 1);
   tracks.splice(dest, 0, t);
   return { ...m, tracks };
+}
+
+/** The label note the cassette prints when the user left it blank. */
+export function autoNote(m) {
+  const n = m.tracks.length;
+  return `Side ${m.cfg.text.side || 'A'} · ${n} ${n === 1 ? 'song' : 'songs'}`;
+}
+
+/** Mixtape -> the cfg the Cassette renderer takes (title = name, blank note = auto). */
+export function cassetteCfg(m, extra = {}) {
+  const t = m.cfg.text;
+  return {
+    style: m.cfg.style, pen: m.cfg.pen, wear: m.cfg.wear, gloss: m.cfg.gloss,
+    ...(m.cfg.slots ? { slots: { ...m.cfg.slots } } : {}),
+    seed: m.id,
+    text: { title: m.name, subtitle: t.subtitle, note: t.note || autoNote(m), side: t.side || 'A' },
+    ...extra,
+  };
 }
 
 // ── Tape reels: radius is a pure function of progress ────────────────────────
@@ -193,52 +258,113 @@ export function tapeProgress(index, n, frac, durations) {
   return (i + f) / n;
 }
 
+
+/** Estimated total tape length in seconds (unknown durations -> mean of the known, else 4 min). */
+export function estimateTapeSeconds(durations, n) {
+  const ok = (durations || []).filter((d) => d > 0 && isFinite(d));
+  const mean = ok.length ? ok.reduce((a, b) => a + b, 0) / ok.length : 240;
+  let total = 0;
+  for (let i = 0; i < n; i++) total += durations && durations[i] > 0 && isFinite(durations[i]) ? durations[i] : mean;
+  return total;
+}
+
+/**
+ * Inverse of tapeProgress: whole-tape progress -> { index, frac }. Uses the same
+ * weighting (time-weighted when every duration is known, else equal).
+ */
+export function locateTape(p, n, durations) {
+  if (!(n > 0)) return { index: 0, frac: 0 };
+  const q = p > 0 ? (p < 1 ? p : 1) : 0;
+  const timed = durations && durations.length === n && durations.every((d) => d > 0 && isFinite(d));
+  if (!timed) {
+    const x = q * n, i = Math.min(n - 1, Math.floor(x));
+    return { index: i, frac: x - i };
+  }
+  const total = durations.reduce((a, b) => a + b, 0);
+  let acc = 0, x = q * total;
+  for (let i = 0; i < n; i++) {
+    if (x <= acc + durations[i] || i === n - 1) return { index: i, frac: Math.max(0, Math.min(1, (x - acc) / durations[i])) };
+    acc += durations[i];
+  }
+  return { index: n - 1, frac: 1 };
+}
+
 // ── JSON (theme.js conventions) ──────────────────────────────────────────────
 
 function isPlainObject(v) {
   return typeof v === 'object' && v !== null && !Array.isArray(v);
 }
 
+const refOut = (t) => (t.id
+  ? { title: t.title, artist: t.artist, album: t.album, id: t.id }
+  : { title: t.title, artist: t.artist, album: t.album });
+
+const cfgOut = (m) => ({
+  style: m.cfg.style, pen: m.cfg.pen, wear: m.cfg.wear, gloss: m.cfg.gloss,
+  ...(m.cfg.slots ? { slots: { ...m.cfg.slots } } : {}),
+  text: { subtitle: m.cfg.text.subtitle, note: m.cfg.text.note, side: m.cfg.text.side },
+});
+
 /** One mixtape -> pretty JSON text (what the UI previews verbatim). */
 export function serializeMixtape(m) {
   return JSON.stringify({
     version: MIXTAPE_VERSION,
     name: m.name,
-    style: m.styleId,
-    font: m.fontId,
-    fontColor: m.fontColor,
-    tracks: m.tracks.map((t) => (t.id
-      ? { title: t.title, artist: t.artist, album: t.album, id: t.id }
-      : { title: t.title, artist: t.artist, album: t.album })),
+    author: m.author,
+    cfg: cfgOut(m),
+    tracks: m.tracks.map(refOut),
   }, null, 2);
 }
 
 /**
- * Parse + validate one mixtape document. Never throws; returns
+ * Parse + validate one mixtape document (v1, v2 or v3). Never throws; returns
  * { ok: true, mixtape } or { ok: false, error } naming the exact problem.
- * Unknown style/font ids are an error (like a bad hex in theme.js) rather than
- * silently substituted, so a pasted tape never changes under the user.
+ * Unknown style/pen ids are an error (like a bad hex in theme.js) rather than
+ * silently substituted, so a pasted tape never changes under the user. v1/v2
+ * documents carry the old placeholder style/font ids and migrate through
+ * LEGACY_*_MAP (an id in neither table is an error).
  */
 export function parseMixtape(text, { id } = {}) {
   let raw;
   try { raw = JSON.parse(text); }
   catch (e) { return { ok: false, error: `Not valid JSON: ${e.message}` }; }
+  return parseMixtapeObject(raw, { id });
+}
+
+function parseMixtapeObject(raw, { id } = {}) {
   if (!isPlainObject(raw)) {
     return { ok: false, error: 'Mixtape must be a JSON object (got ' + (Array.isArray(raw) ? 'an array' : typeof raw) + ').' };
   }
-  if (!('version' in raw)) return { ok: false, error: `Missing "version" field (expected ${MIN_MIXTAPE_VERSION} or ${MIXTAPE_VERSION}).` };
+  if (!('version' in raw)) return { ok: false, error: `Missing "version" field (expected ${MIN_MIXTAPE_VERSION}..${MIXTAPE_VERSION}).` };
   if (!versionOk(raw.version)) {
-    return { ok: false, error: `Unsupported "version": ${JSON.stringify(raw.version)} (expected ${MIN_MIXTAPE_VERSION} or ${MIXTAPE_VERSION}).` };
+    return { ok: false, error: `Unsupported "version": ${JSON.stringify(raw.version)} (expected ${MIN_MIXTAPE_VERSION}..${MIXTAPE_VERSION}).` };
   }
   if (typeof raw.name !== 'string' || !raw.name.trim()) return { ok: false, error: 'Missing "name" (a non-empty string).' };
-  if (!CASSETTE_STYLES.some((s) => s.id === raw.style)) {
-    return { ok: false, error: `Unknown "style": ${JSON.stringify(raw.style)} (one of ${CASSETTE_STYLES.map((s) => s.id).join(', ')}).` };
+  let cfg, legacy = {};
+  if (raw.version >= 3) {
+    if (!isPlainObject(raw.cfg)) return { ok: false, error: 'Missing "cfg" object.' };
+    cfg = raw.cfg;
+    if (!hasStyle(cfg.style)) {
+      return { ok: false, error: `Unknown "cfg.style": ${JSON.stringify(cfg.style)} (one of ${cassetteStyles().map((s) => s.id).join(', ')}).` };
+    }
+    if (!hasPen(cfg.pen)) {
+      return { ok: false, error: `Unknown "cfg.pen": ${JSON.stringify(cfg.pen)} (one of ${PEN_IDS.join(', ')}).` };
+    }
+    if (cfg.slots && isPlainObject(cfg.slots) && cfg.slots.ink != null) {
+      const colErr = validateHexColor(cfg.slots.ink, 'cfg.slots.ink');
+      if (colErr) return { ok: false, error: colErr };
+    }
+  } else {
+    if (!(raw.style in LEGACY_STYLE_MAP)) {
+      return { ok: false, error: `Unknown "style": ${JSON.stringify(raw.style)} (one of ${Object.keys(LEGACY_STYLE_MAP).join(', ')}).` };
+    }
+    if (!(raw.font in LEGACY_FONT_MAP)) {
+      return { ok: false, error: `Unknown "font": ${JSON.stringify(raw.font)} (one of ${Object.keys(LEGACY_FONT_MAP).join(', ')}).` };
+    }
+    const colErr = validateHexColor(raw.fontColor, 'fontColor');
+    if (colErr) return { ok: false, error: colErr };
+    legacy = { styleId: raw.style, fontId: raw.font, fontColor: raw.fontColor };
   }
-  if (!FONTS.some((f) => f.id === raw.font)) {
-    return { ok: false, error: `Unknown "font": ${JSON.stringify(raw.font)} (one of ${FONTS.map((f) => f.id).join(', ')}).` };
-  }
-  const colErr = validateHexColor(raw.fontColor, 'fontColor');
-  if (colErr) return { ok: false, error: colErr };
   if (!Array.isArray(raw.tracks)) return { ok: false, error: 'Missing "tracks" array.' };
   for (let i = 0; i < raw.tracks.length; i++) {
     const t = raw.tracks[i];
@@ -246,12 +372,52 @@ export function parseMixtape(text, { id } = {}) {
       return { ok: false, error: `Invalid "tracks[${i}]": needs a non-empty "title".` };
     }
   }
-  return {
-    ok: true,
-    mixtape: createMixtape({
-      id, name: raw.name, tracks: raw.tracks, styleId: raw.style, fontId: raw.font, fontColor: raw.fontColor,
-    }),
-  };
+  return { ok: true, mixtape: createMixtape({ id, name: raw.name, author: raw.author, tracks: raw.tracks, cfg, ...legacy }) };
+}
+
+// ── One-way import of the owner's standalone Mixtape Deck data ───────────────
+// The handoff app kept {items:[{id, cfg:{style,pen,wear,gloss,text{title,...}},
+// tracks:[{title,artist,album}], author}]} under localStorage 'mixtape-deck:v1'.
+// Runout does NOT adopt that shape or key; this reads it once, tolerantly.
+
+/** One handoff item -> mixtape (title becomes the name), or null if unusable. */
+export function fromDeckItem(it, { id } = {}) {
+  if (!isPlainObject(it) || !isPlainObject(it.cfg)) return null;
+  const c = it.cfg, t = isPlainObject(c.text) ? c.text : {};
+  const tracks = (Array.isArray(it.tracks) ? it.tracks : [])
+    .map((x) => (typeof x === 'string' ? { title: x } : x))
+    .filter((x) => isPlainObject(x) && typeof x.title === 'string' && x.title.trim());
+  return createMixtape({
+    id: id || (typeof it.id === 'string' ? it.id : undefined),
+    name: t.title, author: it.author, tracks,
+    cfg: { style: c.style, pen: c.pen, wear: c.wear, gloss: c.gloss, slots: c.slots, text: { subtitle: t.subtitle, note: t.note, side: t.side } },
+  });
+}
+
+/**
+ * Import text in any supported shape: one Runout mixtape (v1-v3), a Runout
+ * collection, a handoff deck blob ({items}) or a single handoff item.
+ * Returns { ok, mixtapes[] } | { ok:false, error }. `newId()` supplies ids.
+ */
+export function parseImport(text, { newId } = {}) {
+  let raw;
+  try { raw = JSON.parse(text); }
+  catch (e) { return { ok: false, error: `Not valid JSON: ${e.message}` }; }
+  const mk = (() => { let n = 0; return () => (newId ? newId(n++) : `imp-${n++}`); })();
+  if (isPlainObject(raw) && Array.isArray(raw.items)) {
+    const list = raw.items.map((it) => fromDeckItem(it, { id: mk() })).filter(Boolean);
+    return list.length ? { ok: true, mixtapes: list, source: 'deck' } : { ok: false, error: 'No usable mixtapes in "items".' };
+  }
+  if (isPlainObject(raw) && !('version' in raw) && isPlainObject(raw.cfg)) {
+    const m = fromDeckItem(raw, { id: mk() });
+    return m ? { ok: true, mixtapes: [m], source: 'deck' } : { ok: false, error: 'Not a mixtape.' };
+  }
+  if (isPlainObject(raw) && Array.isArray(raw.mixtapes)) {
+    const list = parseCollection(text).map((m) => ({ ...m, id: mk() }));
+    return list.length ? { ok: true, mixtapes: list, source: 'collection' } : { ok: false, error: 'No usable mixtapes in "mixtapes".' };
+  }
+  const r = parseMixtapeObject(raw, { id: mk() });
+  return r.ok ? { ok: true, mixtapes: [r.mixtape], source: 'mixtape' } : r;
 }
 
 // ── Persistence payload (localStorage 'runout.mixtapes') ─────────────────────
@@ -262,17 +428,17 @@ export function serializeCollection(list) {
   return JSON.stringify({
     version: MIXTAPE_VERSION,
     mixtapes: list.map((m) => ({
-      id: m.id, name: m.name, style: m.styleId, font: m.fontId, fontColor: m.fontColor,
-      tracks: m.tracks,
+      id: m.id, name: m.name, author: m.author, cfg: cfgOut(m), tracks: m.tracks.map(refOut),
     })),
   });
 }
 
 /**
  * Tolerant: a corrupt blob reads as empty; bad entries are dropped, good ones kept.
- * v1 blobs migrate in place (refs just have no id); the next save writes v2.
- * A blob from a NEWER version reads as empty here; callers that would
- * overwrite it should check isFutureCollection first (mixtape-ui.js keeps a backup).
+ * v1/v2 blobs migrate in place (style/font/colour -> nearest new style/pen; refs
+ * keep their ids); the next save writes v3. A blob from a NEWER version reads as
+ * empty here; callers that would overwrite it should check isFutureCollection
+ * first (mixtape-ui.js keeps a backup, and also keeps one of a pre-v3 blob).
  */
 export function parseCollection(text) {
   if (!text) return [];
@@ -283,17 +449,25 @@ export function parseCollection(text) {
   for (const e of raw.mixtapes) {
     if (!isPlainObject(e) || typeof e.id !== 'string' || !Array.isArray(e.tracks)) continue;
     out.push(createMixtape({
-      id: e.id, name: e.name, tracks: e.tracks.filter((t) => isPlainObject(t)),
-      styleId: e.style, fontId: e.font, fontColor: e.fontColor,
+      id: e.id, name: e.name, author: e.author, tracks: e.tracks.filter((t) => isPlainObject(t)),
+      ...(raw.version >= 3
+        ? { cfg: isPlainObject(e.cfg) ? e.cfg : {} }
+        : { styleId: e.style, fontId: e.font, fontColor: e.fontColor }),
     }));
   }
   return out;
 }
 
+/** Version number of a well-formed collection blob, else null. */
+export function collectionVersion(text) {
+  try { const r = JSON.parse(text); return isPlainObject(r) && Number.isInteger(r.version) ? r.version : null; }
+  catch { return null; }
+}
+
 /** True when `text` is a well-formed collection written by a newer app version. */
 export function isFutureCollection(text) {
-  try { const r = JSON.parse(text); return isPlainObject(r) && Number.isInteger(r.version) && r.version > MIXTAPE_VERSION; }
-  catch { return false; }
+  const v = collectionVersion(text);
+  return v !== null && v > MIXTAPE_VERSION;
 }
 
 /** Collision-free id from a clock + a random draw (both injected by the caller). */

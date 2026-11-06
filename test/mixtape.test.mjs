@@ -2,8 +2,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  CASSETTE_STYLES, FONTS, FONT_COLOURS, createMixtape, cleanName, makeTrackRef, trackKey,
-  resolveTracks, addTrack, removeTrack, moveTrack, withName, withStyle, withFont, withFontColor,
+  cassetteStyles, PEN_IDS, FONT_COLOURS, createMixtape, cleanName, makeTrackRef, trackKey,
+  resolveTracks, addTrack, removeTrack, moveTrack, withName, withStyle, withPen, withInk,
   reelRadii, tapeProgress, serializeMixtape, parseMixtape, serializeCollection, parseCollection,
   newMixtapeId, MAX_NAME,
 } from '../src/mixtape.js';
@@ -12,21 +12,20 @@ import { validateHexColor } from '../src/theme.js';
 import { isFutureCollection, MIXTAPE_VERSION } from '../src/mixtape.js';
 const tr = (title, artist = 'A', album = 'X') => ({ title, artist, album });
 
-test('catalogue: at least 6 styles with unique ids; fonts and colours are valid', () => {
-  assert.ok(CASSETTE_STYLES.length >= 6);
-  assert.equal(new Set(CASSETTE_STYLES.map((s) => s.id)).size, CASSETTE_STYLES.length);
-  assert.ok(FONTS.length >= 4 && FONT_COLOURS.length >= 6);
+test('catalogue: 37 styles with unique ids; pens and ink colours are valid', () => {
+  const styles = cassetteStyles();
+  assert.equal(styles.length, 37);
+  assert.equal(new Set(styles.map((s) => s.id)).size, styles.length);
+  assert.ok(PEN_IDS.length >= 4 && FONT_COLOURS.length >= 6);
   for (const c of FONT_COLOURS) assert.equal(validateHexColor(c.hex, c.id), null);
-  for (const s of CASSETTE_STYLES) for (const k of ['shell', 'shell2', 'label', 'stripe', 'accent'])
-    assert.equal(validateHexColor(s[k], `${s.id}.${k}`), null);
 });
 
-test('createMixtape normalises name, style, font, colour', () => {
+test('createMixtape normalises name, style, pen, ink (legacy v1/v2 inputs migrate)', () => {
   const m = createMixtape({ id: 'a', name: '  Road   Trip  ', styleId: 'nope', fontId: 'nope', fontColor: 'red' });
   assert.equal(m.name, 'Road Trip');
-  assert.equal(m.styleId, CASSETTE_STYLES[0].id);
-  assert.equal(m.fontId, FONTS[0].id);
-  assert.equal(m.fontColor, FONT_COLOURS[0].hex); // bad colour -> default
+  assert.equal(m.cfg.style, 'clear');   // unknown -> default
+  assert.equal(m.cfg.pen, 'marker');
+  assert.equal(m.cfg.slots, undefined); // bad colour -> no ink override
   assert.equal(cleanName(''), 'Untitled Mixtape');
   assert.equal(cleanName('x'.repeat(100)).length, MAX_NAME);
 });
@@ -41,10 +40,11 @@ test('edits are pure (inputs untouched) and validated', () => {
   assert.deepEqual(moveTrack(m, 2, -5).tracks.map((t) => t.title), ['3', '1', '2']);
   assert.equal(moveTrack(m, 5, 0), m);
   assert.equal(withName(m, '  ').name, 'Untitled Mixtape');
-  assert.equal(withStyle(m, 'noir').styleId, 'noir');
-  assert.equal(withFont(m, 'mono').fontId, 'mono');
-  assert.equal(withFontColor(m, '#112233').fontColor, '#112233');
-  assert.equal(withFontColor(m, 'nope'), m);
+  assert.equal(withStyle(m, 'noir').cfg.style, 'noir');
+  assert.equal(withStyle(m, 'nope'), m);
+  assert.equal(withPen(m, 'type').cfg.pen, 'type');
+  assert.equal(withInk(m, '#112233').cfg.slots.ink, '#112233');
+  assert.equal(withInk(m, 'nope'), m);
 });
 
 test('resolveTracks: exact, loose fallback, missing -> null', () => {
@@ -88,7 +88,7 @@ test('tapeProgress: equal-weighted by default, time-weighted when durations know
 
 const sample = () => createMixtape({
   id: 'a', name: 'Road Trip', tracks: [tr('One'), tr('Two', 'B', 'Y')],
-  styleId: 'noir', fontId: 'mono', fontColor: '#1F4FD8',
+  cfg: { style: 'noir', pen: 'type', slots: { ink: '#1F4FD8' } },
 });
 
 test('serialize -> parse round-trips', () => {
@@ -110,16 +110,17 @@ test('parseMixtape names every malformed case and never throws', () => {
   assert.match(parseMixtape('[]').error, /an array/);
   assert.match(parseMixtape('3').error, /number/);
   bad((o) => delete o.version, /Missing "version"/);
-  bad((o) => { o.version = 3; }, /Unsupported "version"/);
+  bad((o) => { o.version = 4; }, /Unsupported "version"/);
   bad((o) => { o.version = 0; }, /Unsupported "version"/);
   bad((o) => { o.name = ' '; }, /Missing "name"/);
-  bad((o) => { o.style = 'zzz'; }, /Unknown "style"/);
-  bad((o) => { o.font = 'zzz'; }, /Unknown "font"/);
-  bad((o) => { o.fontColor = 'red'; }, /fontColor.*missing leading/);
-  bad((o) => { o.fontColor = '#12'; }, /fontColor/);
+  bad((o) => { o.cfg.style = 'zzz'; }, /Unknown "cfg.style"/);
+  bad((o) => { o.cfg.pen = 'zzz'; }, /Unknown "cfg.pen"/);
+  bad((o) => { delete o.cfg; }, /Missing "cfg"/);
+  bad((o) => { o.cfg.slots.ink = 'red'; }, /ink.*missing leading/);
+  bad((o) => { o.cfg.slots.ink = '#12'; }, /ink/);
   bad((o) => { o.tracks = 'x'; }, /Missing "tracks"/);
   bad((o) => { o.tracks[1] = { artist: 'q' }; }, /tracks\[1\]/);
-  assert.ok(parseMixtape(JSON.stringify({ ...good, fontColor: '#80112233' })).ok); // 8-digit hex accepted
+  assert.ok(parseMixtape(JSON.stringify({ ...good, cfg: { ...good.cfg, slots: { ink: '#80112233' } } })).ok); // 8-digit hex accepted
 });
 
 test('collection storage: round-trip, corrupt -> [], bad entries dropped', () => {
@@ -164,6 +165,7 @@ test('v1 documents migrate: single parse and collection, ids round-trip in v2', 
   const v1 = JSON.stringify({ version: 1, name: 'Old', style: 'noir', font: 'mono', fontColor: '#112233', tracks: [{ title: 'a', artist: 'b', album: 'c' }] });
   const p = parseMixtape(v1);
   assert.ok(p.ok); assert.equal(p.mixtape.tracks[0].id, undefined);
+  assert.equal(p.mixtape.cfg.style, 'noir'); assert.equal(p.mixtape.cfg.pen, 'type'); assert.equal(p.mixtape.cfg.slots.ink, '#112233');
   const out = JSON.parse(serializeMixtape({ ...p.mixtape, tracks: [{ title: 'a', artist: 'b', album: 'c', id: 'tid' }] }));
   assert.equal(out.version, MIXTAPE_VERSION);
   assert.equal(parseMixtape(JSON.stringify(out)).mixtape.tracks[0].id, 'tid');
