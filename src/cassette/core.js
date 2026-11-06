@@ -398,5 +398,8 @@ export const Cassette = {
   };
 
 
-export const { registerStyle, styles, style, render, mount, mounts, refit, GEO, MOUNTS, PENS, SLOT_LABELS, helpers } = Cassette;
+export { registerStyle, styles, render, mount, refitAll as refit, GEO, MOUNTS, PENS, SLOT_LABELS };
+export const helpers = h;
+export const style = (k) => REG[k];
+export const mounts = Cassette.mounts;
 export default Cassette;
