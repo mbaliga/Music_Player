@@ -1,0 +1,4505 @@
+{
+  "v": 1,
+  "station": {
+    "id": "sunbelt-soul-1060",
+    "name": "Sunbelt Soul 1060 AM",
+    "tagline": "Slow it down. We'll wait for you.",
+    "dial": "1060",
+    "vibe": "A warm old AM station above a bowling alley, where the host talks like a slow dance and the sponsors are all somebody's cousin.",
+    "daypart": [
+      "evening",
+      "night",
+      "any"
+    ],
+    "contentRating": "PG-13",
+    "hosts": [
+      {
+        "id": "cornelius",
+        "name": "Cornelius 'Velvet' Gentry",
+        "role": "host",
+        "persona": "Has been the evening voice of 1060 for longer than the bowling alley downstairs has had its current carpet. Talks the way honey pours, treats every pause like it is being paid by the second, and romanticizes everything, including the coffee percolator and the parking lot. He loves a good bridge in a song, a pressed shirt and a woman named Loretta he refers to only in passing. He dislikes rushing, fluorescent lights and anyone who calls a ballad 'slow'. Tics: 'Now, listen,' 'easy now,' and stretching the word 'smooth' until it gives up.",
+        "voice": {
+          "genderHint": "male",
+          "ageHint": "older",
+          "accent": "neutral-US",
+          "style": "deep, velvet, unhurried",
+          "rate": 0.86,
+          "pitch": 0.84
+        }
+      },
+      {
+        "id": "odessa",
+        "name": "Aunt Odessa Fairweather",
+        "role": "co-host",
+        "persona": "Hosts the advice segment 'Ask Aunt Odessa' and has never once given advice anyone could follow. She is supremely confident, warmly bossy and gets every problem slightly wrong in a way that somehow helps. She loves hats, gossip that is mostly about herself and a pound cake recipe she will never share. She has a decades-long rivalry with Cousin Verbena, who does advice on the station across town. Tics: 'Baby, listen,' 'I'm not going to say I told you,' followed by saying it.",
+        "voice": {
+          "genderHint": "female",
+          "ageHint": "older",
+          "accent": "neutral-US",
+          "style": "warm, brassy, knowing",
+          "rate": 0.98,
+          "pitch": 0.96
+        }
+      },
+      {
+        "id": "junebug",
+        "name": "Junebug Toussaint",
+        "role": "co-host",
+        "persona": "Twenty-two-year-old producer, board operator and reader of every advertisement, which she delivers at roughly twice the speed of sound because she is afraid of eating into Mr. Gentry's music. Bright, sharp, devoted to the station and secretly writing a romance novel set in a bowling alley. She loves the sponsors as if they were family, partly because several are.",
+        "voice": {
+          "genderHint": "female",
+          "ageHint": "young",
+          "accent": "neutral-US",
+          "style": "bright, quick, bubbly",
+          "rate": 1.2,
+          "pitch": 1.1
+        }
+      },
+      {
+        "id": "earl",
+        "name": "Earl",
+        "role": "caller",
+        "persona": "Married to Pearlie for fifty-one years and has been arguing with her about the thermostat for fifty of them. Courtly, stubborn, and believes sixty-eight degrees is a moral position.",
+        "voice": {
+          "genderHint": "male",
+          "ageHint": "older",
+          "accent": "neutral-US",
+          "style": "creaky, courtly",
+          "rate": 0.9,
+          "pitch": 0.9
+        }
+      },
+      {
+        "id": "pearlie",
+        "name": "Pearlie",
+        "role": "caller",
+        "persona": "Earl's wife, sharp as a tack, warm as the house she wants to keep at seventy-four. Laughs at her own jokes before she finishes them and always gets the last word.",
+        "voice": {
+          "genderHint": "female",
+          "ageHint": "older",
+          "accent": "neutral-US",
+          "style": "bright, crackly, amused",
+          "rate": 1,
+          "pitch": 1.05
+        }
+      },
+      {
+        "id": "loretta",
+        "name": "Loretta",
+        "role": "caller",
+        "persona": "The woman Cornelius has been dedicating songs to, indirectly, for years. Practical, unromantic, fond of him in spite of everything. Mostly wants her ladder back.",
+        "voice": {
+          "genderHint": "female",
+          "ageHint": "older",
+          "accent": "neutral-US",
+          "style": "dry, warm, no-nonsense",
+          "rate": 1,
+          "pitch": 0.95
+        }
+      },
+      {
+        "id": "tobias",
+        "name": "Tobias Dorsey",
+        "role": "caller",
+        "persona": "Young nephew of the late Big Dorsey, now running Dorsey Brothers Ladder Rental and trying very hard to be firm with people his uncle let get away with everything. Polite to a painful degree. Also voices assorted younger male callers.",
+        "voice": {
+          "genderHint": "male",
+          "ageHint": "young",
+          "accent": "neutral-US",
+          "style": "earnest, polite, a little nervous",
+          "rate": 1.05,
+          "pitch": 1
+        }
+      },
+      {
+        "id": "verbena",
+        "name": "Cousin Verbena",
+        "role": "caller",
+        "persona": "Aunt Odessa's cousin and lifelong rival, who gives advice on the station across town. Honeyed, competitive and incapable of a compliment that does not have a hook in it.",
+        "voice": {
+          "genderHint": "female",
+          "ageHint": "older",
+          "accent": "neutral-US",
+          "style": "sweet, arch, pointed",
+          "rate": 0.95,
+          "pitch": 1.02
+        }
+      }
+    ]
+  },
+  "segments": [
+    {
+      "id": "ss-sign-on-1",
+      "kind": "sign_on",
+      "hosts": [
+        "cornelius"
+      ],
+      "lines": [
+        {
+          "host": "cornelius",
+          "text": "Good evening. This is Cornelius Gentry, and you have found Sunbelt Soul, ten-sixty on your AM dial.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "cornelius",
+          "text": "Loosen something. A tie. A shoe. A grudge. We'll be here a while.",
+          "pauseAfterMs": 0,
+          "direction": "velvet, slow, a smile in it"
+        }
+      ],
+      "estSec": 12,
+      "tags": [
+        "evening",
+        "opener"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-sign-on-2",
+      "kind": "sign_on",
+      "hosts": [
+        "junebug",
+        "cornelius"
+      ],
+      "lines": [
+        {
+          "host": "junebug",
+          "text": "You're listening to Sunbelt Soul ten-sixty AM, coming to you from the second floor above Gold Pin Lanes.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "cornelius",
+          "text": "If the music shakes a little, that's not your radio, sweetheart. That's league night.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 13,
+      "tags": [
+        "night",
+        "opener",
+        "gag:bowling"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-id-1",
+      "kind": "station_id",
+      "hosts": [
+        "cornelius"
+      ],
+      "lines": [
+        {
+          "host": "cornelius",
+          "text": "Ten-sixty. Sunbelt Soul.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "cornelius",
+          "text": "Smooooth as a Sunday tablecloth.",
+          "pauseAfterMs": 0,
+          "direction": "stretch the word smooth as far as it goes"
+        }
+      ],
+      "estSec": 4,
+      "tags": [
+        "any"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-id-2",
+      "kind": "station_id",
+      "hosts": [
+        "odessa"
+      ],
+      "lines": [
+        {
+          "host": "odessa",
+          "text": "This is Aunt Odessa, and you're on Sunbelt Soul ten-sixty AM, where the advice is free and worth every penny.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 8,
+      "tags": [
+        "any"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-id-3",
+      "kind": "station_id",
+      "hosts": [
+        "junebug"
+      ],
+      "lines": [
+        {
+          "host": "junebug",
+          "text": "Sunbelt Soul ten-sixty AM the station your mother left on in the kitchen and you never turned off.",
+          "pauseAfterMs": 0,
+          "direction": "one breath, very fast"
+        }
+      ],
+      "estSec": 7,
+      "tags": [
+        "any",
+        "gag:junebug-speed"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-jingle-1",
+      "kind": "jingle",
+      "hosts": [
+        "cornelius",
+        "odessa",
+        "junebug"
+      ],
+      "lines": [
+        {
+          "host": "cornelius",
+          "text": "Ten.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "odessa",
+          "text": "Sixty.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "junebug",
+          "text": "Sunbelt Soul.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "cornelius",
+          "text": "Easy now.",
+          "pauseAfterMs": 0,
+          "direction": "three voices passing it like a harmony, slow"
+        }
+      ],
+      "estSec": 3,
+      "tags": [
+        "any"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-jingle-2",
+      "kind": "jingle",
+      "hosts": [
+        "odessa"
+      ],
+      "lines": [
+        {
+          "host": "odessa",
+          "text": "Oh, Sunbelt Soul, ten-sixty, baby, keep it low and keep it slow.",
+          "pauseAfterMs": 0,
+          "direction": "half sung, gospel lilt"
+        }
+      ],
+      "estSec": 5,
+      "tags": [
+        "any"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-jingle-3",
+      "kind": "jingle",
+      "hosts": [
+        "junebug"
+      ],
+      "lines": [
+        {
+          "host": "junebug",
+          "text": "Ten-sixty, Sunbelt Soul, upstairs from the bowling, downstairs from the stars.",
+          "pauseAfterMs": 0,
+          "direction": "sung-spoken, bouncy"
+        }
+      ],
+      "estSec": 4,
+      "tags": [
+        "any",
+        "gag:bowling"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-promo-odessa",
+      "kind": "promo",
+      "hosts": [
+        "junebug",
+        "odessa"
+      ],
+      "lines": [
+        {
+          "host": "junebug",
+          "text": "Coming up, Ask Aunt Odessa. Send her your troubles, and she'll send them back improved.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "odessa",
+          "text": "And do not, I repeat, do not write to the station across town. I'll know.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 12,
+      "tags": [
+        "any",
+        "gag:verbena"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-promo-league",
+      "kind": "promo",
+      "hosts": [
+        "cornelius"
+      ],
+      "lines": [
+        {
+          "host": "cornelius",
+          "text": "Every night on Sunbelt Soul, we keep you company. And every Thursday, so does the Gold Pin Lanes mixed doubles league, about eleven feet below this microphone.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "cornelius",
+          "text": "Strike on, my friends. Gently.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 13,
+      "tags": [
+        "any",
+        "gag:bowling"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-liner-1",
+      "kind": "liner",
+      "hosts": [
+        "cornelius"
+      ],
+      "lines": [
+        {
+          "host": "cornelius",
+          "text": "Sunbelt Soul. Songs that take their time, for people who are done hurrying for the day.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 6,
+      "tags": [
+        "evening"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-liner-2",
+      "kind": "liner",
+      "hosts": [
+        "odessa"
+      ],
+      "lines": [
+        {
+          "host": "odessa",
+          "text": "Sunbelt Soul ten-sixty. Turn it up just enough that the neighbors wonder.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 5,
+      "tags": [
+        "any"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-sign-off-1",
+      "kind": "sign_off",
+      "hosts": [
+        "cornelius"
+      ],
+      "lines": [
+        {
+          "host": "cornelius",
+          "text": "That's where I leave you, from the second floor above Gold Pin Lanes.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "cornelius",
+          "text": "Be gentle with somebody. Start with yourself. This has been Cornelius Gentry on Sunbelt Soul.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "cornelius",
+          "text": "Goodnight, Loretta. Wherever you are.",
+          "pauseAfterMs": 0,
+          "direction": "slowest read of the night"
+        }
+      ],
+      "estSec": 14,
+      "tags": [
+        "night",
+        "closer"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-sign-off-2",
+      "kind": "sign_off",
+      "hosts": [
+        "odessa",
+        "cornelius"
+      ],
+      "lines": [
+        {
+          "host": "odessa",
+          "text": "That's all from Aunt Odessa. Earl, Pearlie, set it to seventy-one and go to bed.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "cornelius",
+          "text": "The rest of you, sleep warm, whatever the thermostat says.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 10,
+      "tags": [
+        "night",
+        "closer",
+        "gag:thermostat"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-backsell-velvet",
+      "kind": "transition",
+      "hosts": [
+        "cornelius"
+      ],
+      "lines": [
+        {
+          "host": "cornelius",
+          "text": "Mm. That was {prevArtist}, with {prevTitle}.",
+          "pauseAfterMs": 600
+        },
+        {
+          "host": "cornelius",
+          "text": "Now, listen. A song like that, you don't just hear it. It comes into the room, takes off its coat, and asks if you've eaten.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "cornelius",
+          "text": "You ought to say yes, even if you haven't. Manners.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 17,
+      "tags": [
+        "evening",
+        "cornelius"
+      ],
+      "usesSlots": [
+        "prevArtist",
+        "prevTitle"
+      ],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-backsell-velvet-fb",
+      "kind": "transition",
+      "hosts": [
+        "cornelius"
+      ],
+      "lines": [
+        {
+          "host": "cornelius",
+          "text": "Mm.",
+          "pauseAfterMs": 600
+        },
+        {
+          "host": "cornelius",
+          "text": "Now, listen. A song like that, you don't just hear it. It comes into the room, takes off its coat, and asks if you've eaten.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "cornelius",
+          "text": "You ought to say yes, even if you haven't. Manners.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 15,
+      "tags": [
+        "evening",
+        "cornelius"
+      ],
+      "usesSlots": [],
+      "fallbackOf": "ss-backsell-velvet",
+      "weight": 1
+    },
+    {
+      "id": "ss-intro-slowdance",
+      "kind": "transition",
+      "hosts": [
+        "cornelius"
+      ],
+      "lines": [
+        {
+          "host": "cornelius",
+          "text": "Coming up, {nextArtist}. {nextTitle}.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "cornelius",
+          "text": "If there's someone in the room, ask them to dance. If there's nobody in the room, ask the room. The room has been waiting years for somebody to ask.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 13,
+      "tags": [
+        "evening",
+        "cornelius"
+      ],
+      "usesSlots": [
+        "nextArtist",
+        "nextTitle"
+      ],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-intro-slowdance-fb",
+      "kind": "transition",
+      "hosts": [
+        "cornelius"
+      ],
+      "lines": [
+        {
+          "host": "cornelius",
+          "text": "Here's one coming up now.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "cornelius",
+          "text": "If there's someone in the room, ask them to dance. If there's nobody in the room, ask the room. The room has been waiting years for somebody to ask.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 14,
+      "tags": [
+        "evening",
+        "cornelius"
+      ],
+      "usesSlots": [],
+      "fallbackOf": "ss-intro-slowdance",
+      "weight": 1
+    },
+    {
+      "id": "ss-junebug-fast-intro",
+      "kind": "transition",
+      "hosts": [
+        "junebug",
+        "cornelius"
+      ],
+      "lines": [
+        {
+          "host": "junebug",
+          "text": "Okay coming up next it's {nextTitle} by {nextArtist} and Mr. Gentry asked me to introduce it so here I am introducing it and it's very good and I'm done now.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "Junebug, you have time, darling.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "junebug",
+          "text": "I know I have time, I just don't want to use any of yours.",
+          "pauseAfterMs": 0,
+          "direction": "junebug in one breath, cornelius amused"
+        }
+      ],
+      "estSec": 20,
+      "tags": [
+        "any",
+        "gag:junebug-speed"
+      ],
+      "usesSlots": [
+        "nextTitle",
+        "nextArtist"
+      ],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-junebug-fast-intro-fb",
+      "kind": "transition",
+      "hosts": [
+        "junebug",
+        "cornelius"
+      ],
+      "lines": [
+        {
+          "host": "junebug",
+          "text": "Okay coming up next is a song and Mr. Gentry asked me to introduce it so here I am introducing it and it's very good and I'm done now.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "Junebug, you have time, darling.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "junebug",
+          "text": "I know I have time, I just don't want to use any of yours.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 19,
+      "tags": [
+        "any",
+        "gag:junebug-speed"
+      ],
+      "usesSlots": [],
+      "fallbackOf": "ss-junebug-fast-intro",
+      "weight": 1
+    },
+    {
+      "id": "ss-odessa-reminds",
+      "kind": "banter",
+      "hosts": [
+        "odessa",
+        "cornelius"
+      ],
+      "lines": [
+        {
+          "host": "odessa",
+          "text": "Cornelius, that song, {prevTitle}. That reminded me of my second husband.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "Was he a romantic man?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "No, he left the door open the same way that song does at the end. Just walked off and let the cold in.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "odessa",
+          "text": "Lovely song, though. Better than the husband. The song came back around.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 21,
+      "tags": [
+        "any",
+        "odessa"
+      ],
+      "usesSlots": [
+        "prevTitle"
+      ],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-odessa-reminds-fb",
+      "kind": "banter",
+      "hosts": [
+        "odessa",
+        "cornelius"
+      ],
+      "lines": [
+        {
+          "host": "odessa",
+          "text": "Cornelius, that last song. That reminded me of my second husband.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "Was he a romantic man?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "No, he left the door open the same way that song does at the end. Just walked off and let the cold in.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "odessa",
+          "text": "Lovely song, though. Better than the husband. The song came back around.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 21,
+      "tags": [
+        "any",
+        "odessa"
+      ],
+      "usesSlots": [],
+      "fallbackOf": "ss-odessa-reminds",
+      "weight": 1
+    },
+    {
+      "id": "ss-dedication-delphine",
+      "kind": "dedication",
+      "hosts": [
+        "cornelius"
+      ],
+      "lines": [
+        {
+          "host": "cornelius",
+          "text": "This next one, {nextTitle}, goes out to Delphine, from Harold.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "cornelius",
+          "text": "Harold says, \"Delphine, you left your casserole dish at the church picnic a long time ago. I've kept it. I've washed it every week. Come and get it, or don't, and let me keep pretending you will.\"",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "cornelius",
+          "text": "Delphine, the man is washing a dish for you. That's devotion with soap on it.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 25,
+      "tags": [
+        "any",
+        "dedication"
+      ],
+      "usesSlots": [
+        "nextTitle"
+      ],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-dedication-delphine-fb",
+      "kind": "dedication",
+      "hosts": [
+        "cornelius"
+      ],
+      "lines": [
+        {
+          "host": "cornelius",
+          "text": "This next one goes out to Delphine, from Harold.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "cornelius",
+          "text": "Harold says, \"Delphine, you left your casserole dish at the church picnic a long time ago. I've kept it. I've washed it every week. Come and get it, or don't, and let me keep pretending you will.\"",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "cornelius",
+          "text": "Delphine, the man is washing a dish for you. That's devotion with soap on it.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 24,
+      "tags": [
+        "any",
+        "dedication"
+      ],
+      "usesSlots": [],
+      "fallbackOf": "ss-dedication-delphine",
+      "weight": 1
+    },
+    {
+      "id": "ss-earl-request",
+      "kind": "callin",
+      "hosts": [
+        "cornelius",
+        "earl",
+        "pearlie"
+      ],
+      "lines": [
+        {
+          "host": "cornelius",
+          "text": "Sunbelt Soul, you're on the air.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "earl",
+          "text": "Cornelius, it's Earl. I'd like to request {nextTitle} for my wife, Pearlie.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "Fifty-one years, Earl.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "earl",
+          "text": "Fifty-one years. And I want her to know, while this song plays, I've turned the thermostat down to sixty-eight. And I'm not sorry.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "pearlie",
+          "text": "I'm on the other extension, Earl. I've turned it back up.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "earl",
+          "text": "Play the song, Cornelius.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "Here it is. Wear a sweater, both of you, and meet in the middle.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 30,
+      "tags": [
+        "any",
+        "gag:thermostat",
+        "seq:1"
+      ],
+      "usesSlots": [
+        "nextTitle"
+      ],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-earl-request-fb",
+      "kind": "callin",
+      "hosts": [
+        "cornelius",
+        "earl",
+        "pearlie"
+      ],
+      "lines": [
+        {
+          "host": "cornelius",
+          "text": "Sunbelt Soul, you're on the air.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "earl",
+          "text": "Cornelius, it's Earl. I'd like to request the next song for my wife, Pearlie.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "Fifty-one years, Earl.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "earl",
+          "text": "Fifty-one years. And I want her to know, while this song plays, I've turned the thermostat down to sixty-eight. And I'm not sorry.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "pearlie",
+          "text": "I'm on the other extension, Earl. I've turned it back up.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "earl",
+          "text": "Play the song, Cornelius.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "Here it is. Wear a sweater, both of you, and meet in the middle.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 31,
+      "tags": [
+        "any",
+        "gag:thermostat",
+        "seq:1"
+      ],
+      "usesSlots": [],
+      "fallbackOf": "ss-earl-request",
+      "weight": 1
+    },
+    {
+      "id": "ss-album-side",
+      "kind": "transition",
+      "hosts": [
+        "cornelius"
+      ],
+      "lines": [
+        {
+          "host": "cornelius",
+          "text": "That one came off {album}.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "cornelius",
+          "text": "Now, I like a whole album. I like a record that's been sequenced by someone who cared. You put one side on, you make a sandwich, you come back, you turn it over. It's a little contract between you and the people who made it.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "cornelius",
+          "text": "Nobody makes a sandwich for a single. You eat standing up for a single.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 25,
+      "tags": [
+        "evening",
+        "cornelius"
+      ],
+      "usesSlots": [
+        "album"
+      ],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-album-side-fb",
+      "kind": "transition",
+      "hosts": [
+        "cornelius"
+      ],
+      "lines": [
+        {
+          "host": "cornelius",
+          "text": "Now, I like a whole album.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "cornelius",
+          "text": "I like a record that's been sequenced by someone who cared. You put one side on, you make a sandwich, you come back, you turn it over. It's a little contract between you and the people who made it.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "cornelius",
+          "text": "Nobody makes a sandwich for a single. You eat standing up for a single.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 23,
+      "tags": [
+        "evening",
+        "cornelius"
+      ],
+      "usesSlots": [],
+      "fallbackOf": "ss-album-side",
+      "weight": 1
+    },
+    {
+      "id": "ss-bowling-strike",
+      "kind": "banter",
+      "hosts": [
+        "cornelius",
+        "junebug"
+      ],
+      "lines": [
+        {
+          "host": "cornelius",
+          "text": "Did you feel that, Junebug? During {prevTitle}, right before the bridge?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "junebug",
+          "text": "That was a strike on lane six. Mrs. Okonkwo. She's been on a tear all night.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "Perfect timing. The song lifted, the floor shook, and somewhere under our feet a woman in rented shoes became a legend.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "cornelius",
+          "text": "That's what we call a collaboration.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 22,
+      "tags": [
+        "any",
+        "gag:bowling"
+      ],
+      "usesSlots": [
+        "prevTitle"
+      ],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-bowling-strike-fb",
+      "kind": "banter",
+      "hosts": [
+        "cornelius",
+        "junebug"
+      ],
+      "lines": [
+        {
+          "host": "cornelius",
+          "text": "Did you feel that, Junebug? During that last song, right before the bridge?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "junebug",
+          "text": "That was a strike on lane six. Mrs. Okonkwo. She's been on a tear all night.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "Perfect timing. The song lifted, the floor shook, and somewhere under our feet a woman in rented shoes became a legend.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "cornelius",
+          "text": "That's what we call a collaboration.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 23,
+      "tags": [
+        "any",
+        "gag:bowling"
+      ],
+      "usesSlots": [],
+      "fallbackOf": "ss-bowling-strike",
+      "weight": 1
+    },
+    {
+      "id": "ss-loretta-oblique",
+      "kind": "dedication",
+      "hosts": [
+        "cornelius"
+      ],
+      "lines": [
+        {
+          "host": "cornelius",
+          "text": "Here's {nextArtist}.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "cornelius",
+          "text": "I won't say who this one's for. She knows. She always knew.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "cornelius",
+          "text": "She had a laugh like somebody dropping a whole tray of silverware, and I mean that as the highest compliment.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "cornelius",
+          "text": "Loretta, this is {nextTitle}. I still have the thing you lent me.",
+          "pauseAfterMs": 0,
+          "direction": "almost a whisper on the last line"
+        }
+      ],
+      "estSec": 19,
+      "tags": [
+        "night",
+        "gag:loretta",
+        "seq:1"
+      ],
+      "usesSlots": [
+        "nextArtist",
+        "nextTitle"
+      ],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-loretta-oblique-fb",
+      "kind": "dedication",
+      "hosts": [
+        "cornelius"
+      ],
+      "lines": [
+        {
+          "host": "cornelius",
+          "text": "Here's one.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "cornelius",
+          "text": "I won't say who this one's for. She knows. She always knew.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "cornelius",
+          "text": "She had a laugh like somebody dropping a whole tray of silverware, and I mean that as the highest compliment.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "cornelius",
+          "text": "Loretta, this one's for you. I still have the thing you lent me.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 19,
+      "tags": [
+        "night",
+        "gag:loretta",
+        "seq:1"
+      ],
+      "usesSlots": [],
+      "fallbackOf": "ss-loretta-oblique",
+      "weight": 1
+    },
+    {
+      "id": "ss-odessa-prescribe",
+      "kind": "banter",
+      "hosts": [
+        "odessa",
+        "cornelius"
+      ],
+      "lines": [
+        {
+          "host": "odessa",
+          "text": "Cornelius, I'm going to prescribe {nextTitle}.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "You're not a doctor, Odessa.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "I'm not prescribing it for a body. I'm prescribing it for a mood. Take one song, every evening, with a glass of something nice and a window cracked.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "odessa",
+          "text": "Side effects may include swaying, humming in the produce aisle, and calling someone you said you'd never call.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "Is that last one a side effect or a warning?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "Baby, with me it's always both.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 30,
+      "tags": [
+        "any",
+        "odessa"
+      ],
+      "usesSlots": [
+        "nextTitle"
+      ],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-odessa-prescribe-fb",
+      "kind": "banter",
+      "hosts": [
+        "odessa",
+        "cornelius"
+      ],
+      "lines": [
+        {
+          "host": "odessa",
+          "text": "Cornelius, I'm going to prescribe the next song.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "You're not a doctor, Odessa.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "I'm not prescribing it for a body. I'm prescribing it for a mood. Take one song, every evening, with a glass of something nice and a window cracked.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "odessa",
+          "text": "Side effects may include swaying, humming in the produce aisle, and calling someone you said you'd never call.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "Is that last one a side effect or a warning?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "Baby, with me it's always both.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 31,
+      "tags": [
+        "any",
+        "odessa"
+      ],
+      "usesSlots": [],
+      "fallbackOf": "ss-odessa-prescribe",
+      "weight": 1
+    },
+    {
+      "id": "ss-percolator",
+      "kind": "monologue",
+      "hosts": [
+        "cornelius"
+      ],
+      "lines": [
+        {
+          "host": "cornelius",
+          "text": "That was {prevTitle}.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "cornelius",
+          "text": "You know what that song reminds me of? The percolator in the break room here. Same kind of patience. It doesn't rush. It sits there, gurgling to itself, thinking about it, and then right when you've given up on it, it gives you the best cup of coffee you've ever had.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "cornelius",
+          "text": "Some songs are like that. Some people are, too. Let them percolate.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 26,
+      "tags": [
+        "evening",
+        "cornelius"
+      ],
+      "usesSlots": [
+        "prevTitle"
+      ],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-percolator-fb",
+      "kind": "monologue",
+      "hosts": [
+        "cornelius"
+      ],
+      "lines": [
+        {
+          "host": "cornelius",
+          "text": "You know what that last song reminds me of?",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "cornelius",
+          "text": "The percolator in the break room here. Same kind of patience. It doesn't rush. It sits there, gurgling to itself, thinking about it, and then right when you've given up on it, it gives you the best cup of coffee you've ever had.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "cornelius",
+          "text": "Some songs are like that. Some people are, too. Let them percolate.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 26,
+      "tags": [
+        "evening",
+        "cornelius"
+      ],
+      "usesSlots": [],
+      "fallbackOf": "ss-percolator",
+      "weight": 1
+    },
+    {
+      "id": "ss-junebug-novel",
+      "kind": "banter",
+      "hosts": [
+        "junebug",
+        "cornelius"
+      ],
+      "lines": [
+        {
+          "host": "junebug",
+          "text": "Mr. Gentry, can I read you a line from my novel? It's inspired by {prevArtist}.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "Please.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "junebug",
+          "text": "\"Their eyes met across lane nine. She was holding a seven-pound ball. He was holding a nine-pound ball. It was never going to work. But oh, how it wanted to.\"",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "cornelius",
+          "text": "Junebug, that's beautiful. Why the weights?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "junebug",
+          "text": "It's about how they're incompatible. It's a metaphor. And also those are the only two weights left on the rack on Thursdays.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 30,
+      "tags": [
+        "any",
+        "junebug"
+      ],
+      "usesSlots": [
+        "prevArtist"
+      ],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-junebug-novel-fb",
+      "kind": "banter",
+      "hosts": [
+        "junebug",
+        "cornelius"
+      ],
+      "lines": [
+        {
+          "host": "junebug",
+          "text": "Mr. Gentry, can I read you a line from my novel? That last song inspired it.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "Please.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "junebug",
+          "text": "\"Their eyes met across lane nine. She was holding a seven-pound ball. He was holding a nine-pound ball. It was never going to work. But oh, how it wanted to.\"",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "cornelius",
+          "text": "Junebug, that's beautiful. Why the weights?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "junebug",
+          "text": "It's about how they're incompatible. It's a metaphor. And also those are the only two weights left on the rack on Thursdays.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 30,
+      "tags": [
+        "any",
+        "junebug"
+      ],
+      "usesSlots": [],
+      "fallbackOf": "ss-junebug-novel",
+      "weight": 1
+    },
+    {
+      "id": "ss-ad-pettibone",
+      "kind": "ad",
+      "hosts": [
+        "junebug",
+        "cornelius"
+      ],
+      "lines": [
+        {
+          "host": "junebug",
+          "text": "This hour of Sunbelt Soul is brought to you by Pettibone's Rug and Regret on Magnolia Avenue where for over forty years the Pettibone family has been selling fine rugs and also running a small counter in the back where you can go and say you're sorry about something it doesn't have to be about a rug it can be about anything.",
+          "pauseAfterMs": 200
+        },
+        {
+          "host": "junebug",
+          "text": "Pettibone's rugs come in wool cotton and a material Mr. Pettibone describes as \"sort of a feeling\" and every rug comes with a free apology from Mrs. Pettibone who will apologize to you for something you didn't know you needed an apology for it's very moving people cry it's a lot.",
+          "pauseAfterMs": 200
+        },
+        {
+          "host": "junebug",
+          "text": "Pettibone's Rug and Regret. Tie the room together. Untie the heart. Open most days.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "Junebug, breathe, darling.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "junebug",
+          "text": "I breathe in between sponsors.",
+          "pauseAfterMs": 0,
+          "direction": "extremely fast, almost no punctuation, one gasp at the end"
+        }
+      ],
+      "estSec": 53,
+      "tags": [
+        "any",
+        "ad",
+        "gag:junebug-speed",
+        "seq:1"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-ad-lavonne",
+      "kind": "ad",
+      "hosts": [
+        "odessa",
+        "cornelius"
+      ],
+      "lines": [
+        {
+          "host": "odessa",
+          "text": "Ladies. Gentlemen. Is your hair tired? Is your lawn mower tired?",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "odessa",
+          "text": "Come see my friend Lavonne at Lavonne's House of Wigs and Small Engine Repair, out on the old county road, next to the feed store.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "odessa",
+          "text": "Lavonne has been doing both for thirty years, and she says they're the same job. \"You take something that's stopped working, you give it some attention, and you send it out the door with its head held high.\"",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "odessa",
+          "text": "She did my church wig, the auburn one, and she rebuilt the carburetor on my nephew's go-cart, in the same afternoon, with the same hands, and she did not wash them in between, and both came out beautiful.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "odessa",
+          "text": "Lavonne's House of Wigs and Small Engine Repair. Something old, something new, something that smells a little bit like gasoline.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "I've been to Lavonne. She tuned up my hairline and my lawn mower.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "And they both still run, Cornelius. That's Lavonne.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 61,
+      "tags": [
+        "any",
+        "ad"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-ad-dorsey",
+      "kind": "ad",
+      "hosts": [
+        "junebug",
+        "cornelius"
+      ],
+      "lines": [
+        {
+          "host": "junebug",
+          "text": "Sunbelt Soul is supported by Dorsey Brothers Ladder Rental. When you need to get up there, the Dorsey Brothers will get you up there.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "junebug",
+          "text": "The Dorsey Brothers have step ladders, extension ladders, orchard ladders, and one very tall ladder that Big Dorsey calls \"the cathedral.\" Rent by the day, the week, or the month.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "junebug",
+          "text": "And a reminder from the Dorsey Brothers. They have a ladder that's been out on rental under the name \"Loretta\" for a very long time. They're not upset. They'd just like to know it's safe.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "cornelius",
+          "text": "Hm.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "junebug",
+          "text": "Mr. Gentry, is everything okay?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "Read the next one, Junebug.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "junebug",
+          "text": "Dorsey Brothers Ladder Rental. We'll get you up there. Getting down is your business.",
+          "pauseAfterMs": 0,
+          "direction": "junebug brightly; cornelius's \"hm\" is a small guilty sound"
+        }
+      ],
+      "estSec": 46,
+      "tags": [
+        "any",
+        "ad",
+        "gag:loretta",
+        "seq:2"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-ad-marvella",
+      "kind": "ad",
+      "hosts": [
+        "cornelius"
+      ],
+      "lines": [
+        {
+          "host": "cornelius",
+          "text": "Now, listen. If you have a document that needs a stamp, and a heart that needs a waltz, there is one place in this town that does both.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "cornelius",
+          "text": "Marvella's Notary and Ballroom Dance, upstairs from the shoe repair on Delacroix Street.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "cornelius",
+          "text": "Miss Marvella will witness your signature, check your identification, and then take you once around the floor in a slow foxtrot, at no extra charge. She says it helps people relax before they sign anything important.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "cornelius",
+          "text": "She has notarized three deeds, two wills and a peace treaty between the Hollins brothers over a fence, and every one of them was signed by someone who had just been dipped.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "cornelius",
+          "text": "Marvella's Notary and Ballroom Dance. Make it official. Make it graceful.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 48,
+      "tags": [
+        "evening",
+        "ad"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-ad-clementine",
+      "kind": "ad",
+      "hosts": [
+        "junebug",
+        "odessa"
+      ],
+      "lines": [
+        {
+          "host": "junebug",
+          "text": "This part of the evening is brought to you by Sweet Clementine's Bakery where every pie has a past.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "junebug",
+          "text": "Clementine names every pie after something that happened to her. There's the \"Second Engagement,\" which is a lemon meringue. The \"Night the Power Went Out,\" which is chocolate, and very dark. And the \"Gerald,\" which is a rhubarb, and Clementine will not discuss it.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "odessa",
+          "text": "I know about the Gerald.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "junebug",
+          "text": "You do?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "Everybody over fifty knows about the Gerald. It's a good pie. It was a bad summer.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "junebug",
+          "text": "Sweet Clementine's Bakery. Taste the story. Don't ask for the ending.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 39,
+      "tags": [
+        "any",
+        "ad"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-ad-fontaine",
+      "kind": "ad",
+      "hosts": [
+        "cornelius"
+      ],
+      "lines": [
+        {
+          "host": "cornelius",
+          "text": "Is your hat unwell?",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "cornelius",
+          "text": "Mister Fontaine's Hat Hospital, on Corbin Street, has been nursing hats back to health since before most of us had heads to put them on.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "cornelius",
+          "text": "Bring in a crushed fedora, a wilted sunhat, a church hat that's been sat on by a grandchild. Mister Fontaine will admit it overnight, put it in a little bed of tissue paper, and steam it gently while he plays it old records.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "cornelius",
+          "text": "Visiting hours are between ten and four. You may not touch the patient, but you may speak to it. Mister Fontaine says it helps.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "cornelius",
+          "text": "Mister Fontaine's Hat Hospital. Every hat deserves a second spring.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 42,
+      "tags": [
+        "evening",
+        "ad"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-ad-goldpin",
+      "kind": "ad",
+      "hosts": [
+        "odessa",
+        "junebug"
+      ],
+      "lines": [
+        {
+          "host": "odessa",
+          "text": "Gold Pin Lanes. Downstairs. You can feel them right now if you put your hand on the floor.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "odessa",
+          "text": "Twenty-four lanes, a jukebox that only plays slow songs because Cornelius got to it, a snack bar with nachos that will make you call your mother, and shoe rental from a man named Benny who has seen every foot in this county and judged not one of them.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "junebug",
+          "text": "Thursday is league night. Friday is couples night. Saturday is \"Cosmic Mondays,\" which nobody can explain.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "I asked. Benny said it used to be on Monday and they kept the name out of respect.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "junebug",
+          "text": "Gold Pin Lanes. Bowl like nobody's watching. Everybody's watching. It's a bowling alley.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 45,
+      "tags": [
+        "any",
+        "ad",
+        "gag:bowling"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-junebug-slow-ad",
+      "kind": "ad",
+      "hosts": [
+        "junebug",
+        "cornelius"
+      ],
+      "lines": [
+        {
+          "host": "junebug",
+          "text": "Mr. Gentry, I'd like to try something.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "Go on.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "junebug",
+          "text": "I'd like to read this next sponsor at your speed.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "Junebug. Are you sure?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "junebug",
+          "text": "I've been practicing.",
+          "pauseAfterMs": 600
+        },
+        {
+          "host": "junebug",
+          "text": "This hour.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "junebug",
+          "text": "Of Sunbelt Soul.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "junebug",
+          "text": "Is brought to you.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "junebug",
+          "text": "By Pettibone's.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "junebug",
+          "text": "Rug.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "junebug",
+          "text": "And Regret.",
+          "pauseAfterMs": 900
+        },
+        {
+          "host": "junebug",
+          "text": "Mister Pettibone.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "junebug",
+          "text": "Would like you to know.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "junebug",
+          "text": "That a rug.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "junebug",
+          "text": "Is just a floor.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "junebug",
+          "text": "That has decided.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "junebug",
+          "text": "To be kind.",
+          "pauseAfterMs": 1000
+        },
+        {
+          "host": "junebug",
+          "text": "Oh no. Oh, I liked that. Is this what it's like being you?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "Every night, darling.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "junebug",
+          "text": "That took nineteen seconds and I felt every one. I'm going back to fast. I'll come back to slow when I'm older.",
+          "pauseAfterMs": 0,
+          "direction": "junebug forces herself into cornelius's velvet tempo, then panics at the end"
+        }
+      ],
+      "estSec": 47,
+      "tags": [
+        "any",
+        "ad",
+        "gag:junebug-speed",
+        "seq:2",
+        "payoff"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-ask-odessa-1",
+      "kind": "monologue",
+      "hosts": [
+        "odessa"
+      ],
+      "lines": [
+        {
+          "host": "odessa",
+          "text": "It's time for Ask Aunt Odessa. I read your letters, I fix your lives, you're welcome.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "odessa",
+          "text": "First letter. \"Dear Aunt Odessa. My neighbor has wind chimes. They ring all night. Every night. How do I tell her they're driving me crazy without starting a feud?\" Signed, \"Chimed Out on Laurel Street.\"",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "odessa",
+          "text": "Baby, listen. You don't tell her. You get your own wind chimes. Bigger ones. Lower ones. You hang them right across from hers. And every time hers go ting, yours go bong.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "odessa",
+          "text": "Within a week, you'll be in harmony. Within a month, you'll be in a band. That's not a feud. That's a ministry.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "odessa",
+          "text": "Second letter. \"Dear Aunt Odessa. My husband says he can't find anything in the refrigerator. It's always right in front of him. What do I do?\" Signed, \"Front and Center.\"",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "odessa",
+          "text": "Sugar, this is the oldest problem in the world. Here is what you do. Hide one thing. One thing, every week, in the back, behind the pickles. Don't tell him which.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "odessa",
+          "text": "Now he has to look. Really look. He'll start finding everything. He'll find leftovers from before the wedding. He'll come out of that refrigerator a changed man.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "odessa",
+          "text": "That's Ask Aunt Odessa. I'm not going to say I told you so. But I told you so.",
+          "pauseAfterMs": 0,
+          "direction": "confident, conspiratorial, enjoying herself enormously"
+        }
+      ],
+      "estSec": 84,
+      "tags": [
+        "any",
+        "odessa",
+        "advice"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-ask-odessa-2",
+      "kind": "callin",
+      "hosts": [
+        "odessa",
+        "earl"
+      ],
+      "lines": [
+        {
+          "host": "odessa",
+          "text": "Ask Aunt Odessa, you're on the air. What's your trouble?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "earl",
+          "text": "Odessa, it's Earl.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "Earl, I know what this is about.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "earl",
+          "text": "You don't know what this is about.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "Is it the thermostat?",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "earl",
+          "text": "It's the thermostat.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "Earl, I'm going to give you advice I've never given anyone. You ready?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "earl",
+          "text": "I'm ready.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "Put a sweater on the thermostat.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "earl",
+          "text": "On the thermostat?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "A little knitted sweater. Pearlie will see it, and she'll think, \"Oh, he cares about the thermostat's feelings.\" And she'll leave it alone, out of respect. And you'll leave it alone, out of shame. And the house will finally settle at whatever temperature a thermostat in a sweater chooses for itself.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "earl",
+          "text": "That's ridiculous.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "Earl. You've been married fifty-one years. Ridiculous is the only thing that works.",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "earl",
+          "text": "What color sweater?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "Blue. It's calming. Goodnight, Earl.",
+          "pauseAfterMs": 0,
+          "direction": "odessa speaks like an oracle; earl gives in by degrees"
+        }
+      ],
+      "estSec": 56,
+      "tags": [
+        "any",
+        "odessa",
+        "advice",
+        "gag:thermostat",
+        "seq:2"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-ask-odessa-3",
+      "kind": "monologue",
+      "hosts": [
+        "odessa"
+      ],
+      "lines": [
+        {
+          "host": "odessa",
+          "text": "Ask Aunt Odessa. Before we start, a word about my cousin Verbena, who does advice on the station across town.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "odessa",
+          "text": "I won't say her name more than once. Verbena. There.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "odessa",
+          "text": "Last week, Verbena told one of her callers to \"follow your heart.\" Follow your heart. Baby, that's not advice. That's a greeting card. Your heart doesn't know where it's going. Your heart once followed a man who sold timeshares at the county fair. Your heart needs a chaperone.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "odessa",
+          "text": "Here's my advice, on the same question, which was, \"Should I tell my best friend I don't like her new boyfriend?\"",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "odessa",
+          "text": "No. You invite him to dinner. You serve the spiciest thing you know how to make. You watch how he handles it. If he sweats and says \"this is wonderful,\" he's a keeper. If he sweats and says nothing, he's a coward. If he doesn't sweat at all, he's lying about something and you need to find out what.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "odessa",
+          "text": "That's not following your heart. That's following up.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "odessa",
+          "text": "I'm not going to say Verbena's name again. I already said it once. That was generous.",
+          "pauseAfterMs": 0,
+          "direction": "righteous, savoring every jab"
+        }
+      ],
+      "estSec": 72,
+      "tags": [
+        "any",
+        "odessa",
+        "advice",
+        "gag:verbena",
+        "seq:1"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-verbena-1",
+      "kind": "callin",
+      "hosts": [
+        "odessa",
+        "verbena",
+        "cornelius"
+      ],
+      "lines": [
+        {
+          "host": "odessa",
+          "text": "Ask Aunt Odessa, you're on.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "verbena",
+          "text": "Odessa, darling. It's your cousin.",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "odessa",
+          "text": "Verbena.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "verbena",
+          "text": "I heard you mention me on the radio. Twice. I'm flattered. I didn't know you were still listening to me.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "I'm not listening to you. Someone told me.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "verbena",
+          "text": "Someone who was listening to me.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "Verbena, why are you calling my show?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "verbena",
+          "text": "I just wanted to say I loved your advice about the spicy dinner. I've given it to three callers already. I said it came from a very old woman I know.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "I'm two years younger than you.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "verbena",
+          "text": "And you look it, sweetheart. Most days.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "Verbena, I'm going to hang up now.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "verbena",
+          "text": "Follow your heart, Odessa.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "My heart is following the button. Goodbye.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "That went well.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "Cornelius, play something with a lot of drums.",
+          "pauseAfterMs": 0,
+          "direction": "verbena is all honey with hooks; odessa clipped and furious"
+        }
+      ],
+      "estSec": 53,
+      "tags": [
+        "any",
+        "gag:verbena",
+        "seq:2"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-verbena-2",
+      "kind": "callin",
+      "hosts": [
+        "odessa",
+        "verbena"
+      ],
+      "lines": [
+        {
+          "host": "odessa",
+          "text": "Ask Aunt Odessa, what's your trouble?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "verbena",
+          "text": "Odessa. Don't hang up.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "Verbena, if this is about the spicy dinner",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "verbena",
+          "text": "It's not. It's about me.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "verbena",
+          "text": "I need advice. Real advice. And I can't ask my callers, because they think I know everything.",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "odessa",
+          "text": "What happened?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "verbena",
+          "text": "My new neighbor has wind chimes. They ring all night. And I gave a caller advice about wind chimes last year, and it was \"follow your heart,\" and my heart has followed me straight into insomnia.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "Verbena.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "verbena",
+          "text": "I know.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "Get your own wind chimes. Bigger ones. Lower ones. Hang them across from hers.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "verbena",
+          "text": "That's ridiculous.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "It works. Ask anybody on Laurel Street. They've got a whole chime choir now. They're doing a Christmas concert.",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "verbena",
+          "text": "Thank you, Odessa.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "You're welcome. And Verbena. You can tell your callers it came from a very old woman you know.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "verbena",
+          "text": "I'll tell them it came from my cousin.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "Well.",
+          "pauseAfterMs": 900
+        },
+        {
+          "host": "odessa",
+          "text": "That's fine too.",
+          "pauseAfterMs": 0,
+          "direction": "a real thaw; play the last exchange warm"
+        }
+      ],
+      "estSec": 64,
+      "tags": [
+        "any",
+        "gag:verbena",
+        "seq:3",
+        "payoff"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-earl-pearlie-2",
+      "kind": "callin",
+      "hosts": [
+        "cornelius",
+        "pearlie"
+      ],
+      "lines": [
+        {
+          "host": "cornelius",
+          "text": "Sunbelt Soul. You're on the air.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "pearlie",
+          "text": "Cornelius, it's Pearlie. I'm calling without Earl.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "Is Earl all right?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "pearlie",
+          "text": "Earl is fine. Earl is asleep in his chair with a blanket over him at sixty-eight degrees, looking like a man who has won something.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "pearlie",
+          "text": "I want to request a song, and I want to say something to him, and he won't hear it, but I'll know I said it.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "Go ahead.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "pearlie",
+          "text": "Earl. You were wrong about the gravy in nineteen-whatever. You were wrong about the car with the fins. You were wrong about my mother, and then you were right about my mother, which was worse.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "pearlie",
+          "text": "But you were right about one thing. You said, on our first date, \"I'll keep you warm.\" And you have. Even at sixty-eight.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "pearlie",
+          "text": "Don't tell him I said that.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "Pearlie, he's not going to hear it from me.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "pearlie",
+          "text": "Good. Now I'm going to go turn the heat up.",
+          "pauseAfterMs": 0,
+          "direction": "pearlie tart, then tender, then tart again"
+        }
+      ],
+      "estSec": 62,
+      "tags": [
+        "any",
+        "gag:thermostat",
+        "seq:4"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-earl-pearlie-3",
+      "kind": "callin",
+      "hosts": [
+        "cornelius",
+        "earl",
+        "pearlie"
+      ],
+      "lines": [
+        {
+          "host": "cornelius",
+          "text": "Sunbelt Soul, go ahead.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "earl",
+          "text": "Cornelius. It's Earl. Pearlie's here too.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "pearlie",
+          "text": "Hi, Cornelius.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "Both of you, on the same phone. That's a first.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "earl",
+          "text": "We had a man come out today to put in a new thermostat. One of those fancy ones. Pearlie said it was my anniversary present.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "pearlie",
+          "text": "It was for both of us. It was a peace offering.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "earl",
+          "text": "And the man opened up the old one. And he looked at it for a long time. And then he said, \"Sir. Ma'am. This was never connected to anything.\"",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "cornelius",
+          "text": "Never connected.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "pearlie",
+          "text": "Fifty years. Fifty years of turning it up and turning it down. And it was just a little box on the wall.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "earl",
+          "text": "The furnace has been doing whatever it wanted since we moved in.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "Well. How do you feel?",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "earl",
+          "text": "Honestly, Cornelius, I feel like we've had a very good marriage.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "pearlie",
+          "text": "We had something to do with our hands. That's half of it.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "Earl. Pearlie. This next one's for the little box on the wall. It never did a thing, and it kept you together.",
+          "pauseAfterMs": 0,
+          "direction": "let the reveal land; then it gets sweet"
+        }
+      ],
+      "estSec": 72,
+      "tags": [
+        "any",
+        "gag:thermostat",
+        "seq:5",
+        "payoff"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-loretta-monologue",
+      "kind": "monologue",
+      "hosts": [
+        "cornelius"
+      ],
+      "lines": [
+        {
+          "host": "cornelius",
+          "text": "People ask me about Loretta. I don't talk about Loretta.",
+          "pauseAfterMs": 600
+        },
+        {
+          "host": "cornelius",
+          "text": "But I'll tell you this much. There was a summer, a long time ago, when the roof on this building leaked right above the turntable. Every time it rained, I had to hold an umbrella over the record with one hand and talk with the other.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "cornelius",
+          "text": "Loretta was a regular at the lanes downstairs. She came up one night, looked at me with my umbrella, and said, \"Cornelius, that's the saddest thing I've ever seen.\" And she went home and came back with a ladder.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "cornelius",
+          "text": "She climbed up on the roof, in the rain, in her bowling shoes, and she patched that hole herself. Then she came down, handed me the ladder, and said, \"Hold onto this. You'll need it.\"",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "cornelius",
+          "text": "That was the last time I saw her. Well. Not the last time. But the last time it mattered.",
+          "pauseAfterMs": 600
+        },
+        {
+          "host": "cornelius",
+          "text": "I still have the ladder. I keep it in the back hall. I polish the rungs sometimes.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "cornelius",
+          "text": "Junebug, play something before I say anything else.",
+          "pauseAfterMs": 0,
+          "direction": "slow, private, almost to himself"
+        }
+      ],
+      "estSec": 70,
+      "tags": [
+        "night",
+        "gag:loretta",
+        "seq:3"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-loretta-calls",
+      "kind": "callin",
+      "hosts": [
+        "junebug",
+        "cornelius",
+        "loretta"
+      ],
+      "lines": [
+        {
+          "host": "junebug",
+          "text": "Mr. Gentry, there's a caller on line two. She says you'll know her.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "Sunbelt Soul. You're on the air.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "loretta",
+          "text": "Cornelius. It's Loretta.",
+          "pauseAfterMs": 900
+        },
+        {
+          "host": "cornelius",
+          "text": "Loretta.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "loretta",
+          "text": "I've been listening. For a while now. Years, actually. Every time you said \"she knows.\" I knew.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "I don't know what to say.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "loretta",
+          "text": "I do. Cornelius, I need my ladder back.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "cornelius",
+          "text": "Your ladder.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "loretta",
+          "text": "It's a Dorsey Brothers rental. It's been out under my name for a very long time. They send me a card every year. Big Dorsey's nephew is running the place now and he's very polite about it, and I can't take it anymore.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "I thought it was a gift.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "loretta",
+          "text": "It was a loan. I said \"hold onto it.\" I meant for the evening.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "cornelius",
+          "text": "Loretta, I polished that ladder.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "loretta",
+          "text": "I know. Junebug told me.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "loretta",
+          "text": "Bring it by Saturday. I'll make coffee. We'll walk it back to the Dorseys together. It's a long walk with a ladder. We'll have time to talk.",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "cornelius",
+          "text": "I'd like that.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "loretta",
+          "text": "I know you would. Play me something, Cornelius. Something slow. Not too slow. I'm not a statue.",
+          "pauseAfterMs": 0,
+          "direction": "loretta dry and fond; cornelius loses his velvet for a moment and finds it again"
+        }
+      ],
+      "estSec": 74,
+      "tags": [
+        "night",
+        "gag:loretta",
+        "seq:5",
+        "payoff"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-bulletin-1",
+      "kind": "news",
+      "hosts": [
+        "junebug"
+      ],
+      "lines": [
+        {
+          "host": "junebug",
+          "text": "It's time for the Sunbelt Community Bulletin, your neighborhood news from the corkboard at Gold Pin Lanes.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "junebug",
+          "text": "The Ladies' Auxiliary bake sale raised enough money this month to replace the church's front steps. They have chosen instead to buy a much larger oven, which they say will \"pay for the steps eventually.\"",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "junebug",
+          "text": "Mr. Haskell's parakeet has escaped again. The parakeet's name is Reverend, and it can say three phrases: \"good morning,\" \"amen,\" and \"Haskell, you left the stove on.\" If you see Reverend, please do not take his advice about the stove. Mr. Haskell has checked.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "junebug",
+          "text": "The Fairview Garden Club has once again awarded its prize for best tomato to Mrs. Delacroix. This is her twenty-third win in a row. The other members have formally asked to see her soil. She has formally declined.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "junebug",
+          "text": "And the Gold Pin Lanes league standings. The Spare Me's are in first. The Gutter Saints are in second. And the Holy Rollers are in last, but say they are \"rolling with intention.\"",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "junebug",
+          "text": "That's your bulletin. If you've got news, pin it to the corkboard. If you've got a parakeet, keep the window shut.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 74,
+      "tags": [
+        "any",
+        "news"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-bulletin-2",
+      "kind": "news",
+      "hosts": [
+        "odessa"
+      ],
+      "lines": [
+        {
+          "host": "odessa",
+          "text": "Sunbelt Community Bulletin, read by me, because Junebug has the hiccups and you cannot read news with the hiccups, it sounds like you're lying.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "odessa",
+          "text": "The Crestview Neighborhood Watch would like to remind everyone that the suspicious man walking past houses at night is Mr. Pruitt, and he's walking his cat. The cat is on a leash. The cat is not happy about the leash. The neighborhood is asked to stop calling about Mr. Pruitt.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "odessa",
+          "text": "The public library will be closed Tuesday for the annual dusting of the encyclopedias. Volunteers are needed. Bring a feather duster and a sense of wonder. Do not bring a sneeze.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "odessa",
+          "text": "At Gold Pin Lanes, Benny the shoe man is celebrating thirty years behind the counter. To mark the occasion, he will be bowling his first-ever game. He says he's been studying for three decades. He says he's ready.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "odessa",
+          "text": "And Sweet Clementine's Bakery has announced a new pie. It is called \"The Cousin.\" It is very sweet on top and very tart underneath. I have not tried it. I don't have to. I know who it's about.",
+          "pauseAfterMs": 0,
+          "direction": "odessa reads the bulletin like gossip, which it is"
+        }
+      ],
+      "estSec": 71,
+      "tags": [
+        "any",
+        "news",
+        "gag:bowling"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-bowling-payoff",
+      "kind": "banter",
+      "hosts": [
+        "junebug",
+        "cornelius"
+      ],
+      "lines": [
+        {
+          "host": "junebug",
+          "text": "Mr. Gentry, I have news from downstairs. Benny the shoe man just bowled his first-ever game.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "After thirty years. How did he do?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "junebug",
+          "text": "Two hundred and ninety.",
+          "pauseAfterMs": 600
+        },
+        {
+          "host": "cornelius",
+          "text": "Two hundred and ninety.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "junebug",
+          "text": "He missed one pin in the last frame. Just one. They say he stood there and looked at it for a full minute.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "What did he say?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "junebug",
+          "text": "He said, \"Well, I'll have something to work on.\" And then he went back behind the counter and handed out shoes.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "cornelius",
+          "text": "Now, listen. That is the most dignified thing I've heard in this building. A man waits thirty years, nearly reaches perfection, and decides that the missing pin is a gift.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "cornelius",
+          "text": "Benny, the next one's for you. And for that one pin. Stay standing, little pin. Somebody needs you to.",
+          "pauseAfterMs": 0,
+          "direction": "cornelius moved, junebug breathless"
+        }
+      ],
+      "estSec": 52,
+      "tags": [
+        "night",
+        "gag:bowling",
+        "payoff"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-dedication-board",
+      "kind": "dedication",
+      "hosts": [
+        "cornelius"
+      ],
+      "lines": [
+        {
+          "host": "cornelius",
+          "text": "Let's open the request book.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "cornelius",
+          "text": "This one goes out to Mabel, from her sister Dot. Dot says, \"Mabel, I know you took the good serving platter after Mama's birthday. I'm not mad. I'd just like it back by Easter, or I'll come and get it, and I will bring the children.\"",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "cornelius",
+          "text": "This one goes out to Raymond, from the boys at the barbershop. They say, \"Raymond, we're sorry about the haircut. We were talking about the game. It'll grow. Come back. We miss your stories, and we owe you a free one.\"",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "cornelius",
+          "text": "And this one goes out to Theodora, who turned ninety this week, from everyone at the Thursday afternoon card game. They say, \"Happy birthday, Teddy. We've let you win for twenty years. That stops now.\"",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "cornelius",
+          "text": "Mabel, give back the platter. Raymond, go back to the barbershop. Theodora, watch your cards.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 56,
+      "tags": [
+        "any",
+        "dedication"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-dedication-board-2",
+      "kind": "dedication",
+      "hosts": [
+        "cornelius"
+      ],
+      "lines": [
+        {
+          "host": "cornelius",
+          "text": "A few more from the request book.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "cornelius",
+          "text": "This one's for Clarence, from his daughter Ruth. \"Daddy, you taught me to drive in the church parking lot, and you only screamed twice. I've just taught my son in the same lot. I screamed four times. I understand you better now.\"",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "cornelius",
+          "text": "This one's for Ines, from the night nurses on the fourth floor. \"You brought us tamales at Christmas. We've been talking about them since. We have no other reason for writing. We just want you to know they're still on our minds.\"",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "cornelius",
+          "text": "And this one's for somebody named Augustine, from somebody who didn't sign it. All it says is: \"You were right. I was proud. Call me.\"",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "cornelius",
+          "text": "Augustine. Whoever you are. Call them.",
+          "pauseAfterMs": 0,
+          "direction": "each dedication read with care, a little pause between them"
+        }
+      ],
+      "estSec": 49,
+      "tags": [
+        "night",
+        "dedication"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-monologue-bridge",
+      "kind": "monologue",
+      "hosts": [
+        "cornelius"
+      ],
+      "lines": [
+        {
+          "host": "cornelius",
+          "text": "Let me tell you why I love the bridge of a song.",
+          "pauseAfterMs": 600
+        },
+        {
+          "host": "cornelius",
+          "text": "The verse tells you where you are. The chorus tells you how it feels. But the bridge, the bridge is the part where the song looks out the window and thinks about something else for a minute.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "cornelius",
+          "text": "It's the song admitting there's a whole world outside of itself. And then, right when you're starting to wonder if it's ever coming back, it walks right back in the door, and you love it more for having left.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "cornelius",
+          "text": "People are like that too. Give them a bridge. Let them look out the window.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "cornelius",
+          "text": "Hold the door. They'll come back to the chorus.",
+          "pauseAfterMs": 0,
+          "direction": "slow, the voice doing a slow-dance step"
+        }
+      ],
+      "estSec": 45,
+      "tags": [
+        "evening",
+        "cornelius"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-monologue-kitchen",
+      "kind": "monologue",
+      "hosts": [
+        "cornelius"
+      ],
+      "lines": [
+        {
+          "host": "cornelius",
+          "text": "Somebody once asked me where the best dance floor in the world is.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "cornelius",
+          "text": "And I said, the kitchen. Three in every four slow dances that matter happen in a kitchen.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "cornelius",
+          "text": "Something's on the stove. The radio's on the counter. Somebody walks past somebody else to get to the sink, and they don't get to the sink.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "cornelius",
+          "text": "You don't need a ballroom. You don't need lessons, although Miss Marvella would like you to take them. You need linoleum, a little bit of room between the refrigerator and the table, and a song that's in no particular hurry.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "cornelius",
+          "text": "The dishes will still be there after. The dishes will always be there after. That's what makes the dance important.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 47,
+      "tags": [
+        "night",
+        "cornelius"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-love-lane-1",
+      "kind": "skit",
+      "hosts": [
+        "junebug",
+        "cornelius"
+      ],
+      "lines": [
+        {
+          "host": "junebug",
+          "text": "It's time for Love on Lane Nine, a radio romance, written by me, performed by me and Mr. Gentry, who has agreed to it because I asked him very nicely.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "cornelius",
+          "text": "She asked me eleven times.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "junebug",
+          "text": "Chapter one. \"The Rental.\"",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "junebug",
+          "text": "She stood at the shoe counter. It was league night. The air smelled of floor wax and destiny.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "\"Size, ma'am?\"",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "junebug",
+          "text": "\"Seven and a half,\" she whispered. \"But my heart is a nine.\"",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "\"We don't have nines in hearts, ma'am. Just in shoes.\"",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "junebug",
+          "text": "He handed her the shoes. Red and blue. Laces fraying. She held them to her chest. They'd been worn by a thousand feet before hers. That's what made them honest.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "cornelius",
+          "text": "\"Lane nine is open,\" he said. \"But nobody bowls lane nine. It's haunted. By a gutter.\"",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "junebug",
+          "text": "\"I'm not afraid of gutters,\" she said. \"I've been in a gutter. Emotionally.\"",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "\"Then lane nine's yours, ma'am. Bowl true.\"",
+          "pauseAfterMs": 600
+        },
+        {
+          "host": "junebug",
+          "text": "End of chapter one.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "Junebug, is the shoe man me?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "junebug",
+          "text": "The shoe man is a composite.",
+          "pauseAfterMs": 0,
+          "direction": "junebug reads her narration breathlessly; cornelius plays it with total velvet sincerity"
+        }
+      ],
+      "estSec": 68,
+      "tags": [
+        "night",
+        "junebug",
+        "gag:bowling",
+        "seq:1"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-love-lane-2",
+      "kind": "skit",
+      "hosts": [
+        "junebug",
+        "cornelius"
+      ],
+      "lines": [
+        {
+          "host": "junebug",
+          "text": "Love on Lane Nine. Chapter two. \"The Split.\"",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "junebug",
+          "text": "She had bowled seven frames. The pins fell like they were tired of standing. And then, in the eighth frame, it happened. A seven-ten split.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "cornelius",
+          "text": "\"That's the hardest shot in the game, ma'am,\" said the shoe man, who had come out from behind the counter, which he never did.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "junebug",
+          "text": "\"I know,\" she said. \"Two pins, standing on opposite sides, refusing to come together. Like my parents. Like me and the city.\"",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "cornelius",
+          "text": "\"You can't knock them both down at once. Nobody can. You have to choose.\"",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "junebug",
+          "text": "She looked at the ball. She looked at the shoe man. She looked at the pins. She rolled.",
+          "pauseAfterMs": 800
+        },
+        {
+          "host": "cornelius",
+          "text": "The ball curved left, kissed the seven pin, and the seven pin flew across the lane and took out the ten.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "junebug",
+          "text": "\"You did it,\" he said.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "\"No,\" she said. \"The pins did it. They just needed someone to give them a reason.\"",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "junebug",
+          "text": "Wait, you said my line.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "It felt right, darling.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "junebug",
+          "text": "It was right. I'm writing that in. End of chapter two.",
+          "pauseAfterMs": 0,
+          "direction": "cornelius improvises her line and she accepts it immediately"
+        }
+      ],
+      "estSec": 71,
+      "tags": [
+        "night",
+        "junebug",
+        "gag:bowling",
+        "seq:2"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-earl-sweater",
+      "kind": "callin",
+      "hosts": [
+        "odessa",
+        "earl"
+      ],
+      "lines": [
+        {
+          "host": "odessa",
+          "text": "Ask Aunt Odessa. Go ahead.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "earl",
+          "text": "Odessa. It's Earl. I did it. I put a sweater on the thermostat.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "Blue?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "earl",
+          "text": "Blue. Pearlie knitted it. That's the part I didn't expect. I asked her if she had any yarn, and she asked me what for, and I told her, and she laughed so hard she had to sit on the stairs.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "And then?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "earl",
+          "text": "And then she knitted the sweater. With a little collar. It has a button, Odessa. A thermostat with a button.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "How's the temperature?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "earl",
+          "text": "Nobody's touched it in a week. We're afraid to. It looks so comfortable.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "earl",
+          "text": "Pearlie walks past it and says \"good morning.\" I walk past it and say \"evening, sir.\" We've never agreed this much about anything.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "Earl, I'm not going to say I told you.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "earl",
+          "text": "Go ahead and say it.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "I told you. Now go buy that woman some more yarn. A thermostat can't be the only one in the house in a sweater.",
+          "pauseAfterMs": 0,
+          "direction": "earl bewildered and delighted; odessa smug beyond measure"
+        }
+      ],
+      "estSec": 65,
+      "tags": [
+        "any",
+        "gag:thermostat",
+        "seq:3"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-tobias-dorsey",
+      "kind": "callin",
+      "hosts": [
+        "cornelius",
+        "tobias"
+      ],
+      "lines": [
+        {
+          "host": "cornelius",
+          "text": "Sunbelt Soul, you're on the air.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "tobias",
+          "text": "Hi, Mr. Gentry, this is Tobias Dorsey, from Dorsey Brothers Ladder Rental. Big Dorsey was my uncle.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "Tobias. I remember you when you were knee-high to one of your uncle's step stools.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "tobias",
+          "text": "Yes, sir. I'm calling because, um. We have a ladder on our books. An extension ladder. Twenty-four foot. Rented out under the name Loretta, and the notes say \"Cornelius has it, don't ask him about it, he'll get sad.\"",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "cornelius",
+          "text": "That's a very thorough note.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "tobias",
+          "text": "Uncle wrote it. Sir, do you have the ladder?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "Tobias, I'm on the air.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "tobias",
+          "text": "I know, sir. That's why I called. You never answer the shop phone.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "The ladder is in safe hands, Tobias. It's polished. It's cherished. It has a better life than most ladders.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "tobias",
+          "text": "That's nice, sir. But it's on the books. It's been on the books longer than I've been alive. The late fee is now more than the building.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "Put it on my account.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "tobias",
+          "text": "You don't have an account, sir.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "Then open one. I'll be good for it.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "tobias",
+          "text": "Okay. I'll tell Miss Loretta you said that. She calls every year.",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "cornelius",
+          "text": "She calls?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "tobias",
+          "text": "Every year, sir. Have a good night.",
+          "pauseAfterMs": 0,
+          "direction": "tobias painfully polite; cornelius's last two words lose all velvet"
+        }
+      ],
+      "estSec": 81,
+      "tags": [
+        "night",
+        "gag:loretta",
+        "seq:4"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-love-lane-3",
+      "kind": "skit",
+      "hosts": [
+        "junebug",
+        "cornelius"
+      ],
+      "lines": [
+        {
+          "host": "junebug",
+          "text": "Love on Lane Nine. Chapter three. The final chapter. \"Three Hundred.\"",
+          "pauseAfterMs": 600
+        },
+        {
+          "host": "junebug",
+          "text": "Years passed. She came every league night. She always bowled lane nine. The gutter never haunted her again.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "cornelius",
+          "text": "The shoe man stayed behind his counter. Every week, he handed her the same pair. Seven and a half. Red and blue. He never asked her name.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "junebug",
+          "text": "And then, one night, she didn't come.",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "junebug",
+          "text": "The shoe man waited. Lane nine sat empty. He looked at the shoes in their cubby. And for the first time in thirty years, he walked out from behind the counter, and he took them off the shelf, and he put them on.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "cornelius",
+          "text": "They were too small.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "junebug",
+          "text": "They were far too small. He bowled in them anyway. Ten frames. On lane nine.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "cornelius",
+          "text": "Two hundred and ninety.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "junebug",
+          "text": "One pin left standing. And he looked at it, and he said",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "\"Well. I'll have something to work on.\"",
+          "pauseAfterMs": 800
+        },
+        {
+          "host": "junebug",
+          "text": "And the next week, she came back. She'd been away visiting her sister. She saw the score on the board. And she laughed, like somebody dropping a whole tray of silverware.",
+          "pauseAfterMs": 600
+        },
+        {
+          "host": "junebug",
+          "text": "The end.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "Junebug. Is this about Benny?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "junebug",
+          "text": "It's a composite, Mr. Gentry.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "Is it also about me?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "junebug",
+          "text": "Everybody's a composite, Mr. Gentry. That's what makes it romance.",
+          "pauseAfterMs": 0,
+          "direction": "junebug proud and a little teary; cornelius realizing slowly"
+        }
+      ],
+      "estSec": 86,
+      "tags": [
+        "night",
+        "junebug",
+        "gag:bowling",
+        "seq:3",
+        "payoff"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-ad-lamps",
+      "kind": "ad",
+      "hosts": [
+        "cornelius"
+      ],
+      "lines": [
+        {
+          "host": "cornelius",
+          "text": "You know that lamp. The one in the corner that flickers when the refrigerator kicks on. The one you keep meaning to throw out, but your grandmother read under it.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "cornelius",
+          "text": "Don't throw it out. Take it to Second Chance Lamp Repair, out behind the post office.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "cornelius",
+          "text": "Mr. and Mrs. Abernathy-Pike have been bringing lamps back to life for twenty years. They'll rewire it, re-shade it, polish the brass, and give it a new bulb, warm, the color of a late supper.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "cornelius",
+          "text": "Mrs. Abernathy-Pike says no lamp is ever really broken. It's just been waiting for somebody to sit beside it again.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "cornelius",
+          "text": "Second Chance Lamp Repair. Let there be light. The soft kind.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 45,
+      "tags": [
+        "evening",
+        "ad"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-ad-amos",
+      "kind": "ad",
+      "hosts": [
+        "junebug",
+        "odessa"
+      ],
+      "lines": [
+        {
+          "host": "junebug",
+          "text": "Sunbelt Soul is supported by Brother Amos's Tuxedo and Tackle, out on the river road, the only place in the county where you can rent a tuxedo and a fishing rod at the same counter.",
+          "pauseAfterMs": 200
+        },
+        {
+          "host": "junebug",
+          "text": "Brother Amos says the two go together better than you'd think. \"A wedding is a lot like fishing. You stand very still for a long time, in uncomfortable clothes, hoping something good happens.\"",
+          "pauseAfterMs": 200
+        },
+        {
+          "host": "junebug",
+          "text": "Tuxedos in black, navy and what Brother Amos calls \"lake.\" Rods, reels, cummerbunds, bait, and boutonnieres. Please do not confuse the bait and the boutonnieres. It's happened.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "odessa",
+          "text": "It happened at my niece's wedding.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "junebug",
+          "text": "Was it bad?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "It was a beautiful ceremony. The groom smelled like a Tuesday at the dock.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "junebug",
+          "text": "Brother Amos's Tuxedo and Tackle. Look sharp. Reel it in.",
+          "pauseAfterMs": 0,
+          "direction": "fast but not frantic"
+        }
+      ],
+      "estSec": 51,
+      "tags": [
+        "any",
+        "ad",
+        "gag:junebug-speed"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-ask-odessa-4",
+      "kind": "monologue",
+      "hosts": [
+        "odessa",
+        "cornelius"
+      ],
+      "lines": [
+        {
+          "host": "odessa",
+          "text": "Ask Aunt Odessa. I have three letters, and I'm going to solve all three before this song is cued, because I'm a professional.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "odessa",
+          "text": "Letter one. \"Dear Aunt Odessa. My cat sits on my newspaper every morning, right on the part I'm reading. What does it mean?\"",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "odessa",
+          "text": "Baby, it means the cat wants you to read the cat. It's the more interesting news. Read the cat aloud. \"Cat has gray fur. Cat is looking at me. Cat is unhappy with the economy.\" The cat will be satisfied and move to the crossword.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "odessa",
+          "text": "Letter two. \"Dear Aunt Odessa. My grown son still brings me his laundry every Sunday. He's forty. How do I make him stop?\"",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "odessa",
+          "text": "Wash it. Fold it. And in every load, sew one button on wrong. Not off. Wrong. A shirt button on the pocket. A pants button on the sleeve. Say nothing. He'll start doing his own laundry by spring, and he'll never know why, and he'll tell his children it was because he grew up.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "odessa",
+          "text": "Letter three. \"Dear Aunt Odessa. How do you always know what to say?\" Signed, \"An Admirer.\"",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "odessa",
+          "text": "Sugar, I don't. I just say it like I do. Nine times out of ten, that's the same thing. The tenth time, you call Cornelius, and he plays something slow, and everybody forgets.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "That's what I'm here for.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "That's what he's here for.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 90,
+      "tags": [
+        "any",
+        "odessa",
+        "advice"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-pound-cake",
+      "kind": "skit",
+      "hosts": [
+        "junebug",
+        "odessa",
+        "cornelius"
+      ],
+      "lines": [
+        {
+          "host": "junebug",
+          "text": "We're trying something new tonight. It's the Pound Cake Hotline. Callers have been trying to guess the secret ingredient in Aunt Odessa's pound cake.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "And they won't.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "junebug",
+          "text": "First guess, from Lorraine. \"Is it nutmeg?\"",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "Nutmeg. Lorraine, that's cute. Nutmeg is for people who want to be noticed. No.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "junebug",
+          "text": "Second guess, from Bernard. \"Is it a little bit of lemon zest?\"",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "Bernard, everybody puts lemon zest. If lemon zest were the secret, the whole county would have my pound cake. And they don't. They have their pound cake. They have sad, upright pound cake. No.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "junebug",
+          "text": "Third guess, from a caller who didn't leave a name. \"Is it patience?\"",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "odessa",
+          "text": "Who sent that one?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "junebug",
+          "text": "It just says \"a caller.\"",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "That's Verbena. That's Verbena trying to get me to say something sweet on the air.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "junebug",
+          "text": "So is it patience?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "It's not patience. You can't buy patience by the pound. It's something you can buy. And I'll take it with me.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "odessa",
+          "text": "I'll leave it in my will to whichever of you can make me laugh at my own funeral, and I'm a hard audience.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "It's buttermilk.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "Cornelius.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "I've known for twenty years.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "You just ended the hotline.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "junebug",
+          "text": "Hotline's closed. Thank you, everyone.",
+          "pauseAfterMs": 0,
+          "direction": "odessa outraged; cornelius serene"
+        }
+      ],
+      "estSec": 82,
+      "tags": [
+        "any",
+        "odessa"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-monologue-parking-lot",
+      "kind": "monologue",
+      "hosts": [
+        "cornelius"
+      ],
+      "lines": [
+        {
+          "host": "cornelius",
+          "text": "People don't romanticize parking lots. I'd like to change that.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "cornelius",
+          "text": "The parking lot behind Gold Pin Lanes, late, is one of the most beautiful places I know. The lights buzz. The lines are faded, so nobody parks straight, and nobody minds.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "cornelius",
+          "text": "You see a couple sitting in their car with the engine off, not saying anything, just watching the sign blink. You see a man in a bowling shirt sitting on his tailgate, eating a hot dog, at peace with every decision he's ever made.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "cornelius",
+          "text": "You see a teenager practicing his parallel parking between two shopping carts, very seriously, as if those carts were somebody's grandmother's car.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "cornelius",
+          "text": "It's a waiting room for whatever's next. A place between places. And people are gentler in places between places. They don't have to be anybody yet.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "cornelius",
+          "text": "So if you ever find yourself in a parking lot, late, with a radio on, stay a minute. You're not lost. You're just in the lobby.",
+          "pauseAfterMs": 0,
+          "direction": "unhurried, tender toward the ordinary"
+        }
+      ],
+      "estSec": 63,
+      "tags": [
+        "night",
+        "cornelius",
+        "gag:bowling"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-monologue-letters",
+      "kind": "monologue",
+      "hosts": [
+        "cornelius"
+      ],
+      "lines": [
+        {
+          "host": "cornelius",
+          "text": "I still get letters. Paper letters. Folded twice and sealed with a lick, which I try not to think about.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "cornelius",
+          "text": "Last week I got one from a woman named Esperanza. It was eleven pages long. Nine of those pages were about her tomatoes. Page ten was about a man she met at the hardware store. Page eleven just said, \"Anyway, the tomatoes are doing fine.\"",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "cornelius",
+          "text": "Now, I've read that letter maybe twenty times. And every time, I'm more sure: page ten was the letter. The tomatoes were the envelope.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "cornelius",
+          "text": "That's how people talk about what matters. They come at it sideways. They give you nine pages of tomatoes, so you'll know they trust you with one page of the truth.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "cornelius",
+          "text": "Esperanza, I hope it goes well with the man from the hardware store. And I hope the tomatoes are, in fact, doing fine.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 57,
+      "tags": [
+        "evening",
+        "cornelius"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-junebug-why-fast",
+      "kind": "monologue",
+      "hosts": [
+        "junebug",
+        "cornelius"
+      ],
+      "lines": [
+        {
+          "host": "junebug",
+          "text": "People ask me why I read the ads so fast.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "junebug",
+          "text": "My grandmother listened to this station every night when I was little. She had the radio in the kitchen, and she'd stop whatever she was doing when Mr. Gentry talked. Dishes, cards, phone calls. She'd hold up one finger and say, \"Hush, the man is talking.\"",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "junebug",
+          "text": "But when the ads came on, she'd go back to everything she was doing, all at once. Dishes, cards, phone calls, me. It was like the ads were a little window to get things done.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "junebug",
+          "text": "So when I got this job, I thought, those are her minutes. That's somebody's grandmother, somewhere, who just wants to get back to Mr. Gentry. I'm not going to waste her time.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "cornelius",
+          "text": "Junebug. I didn't know that.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "junebug",
+          "text": "You don't have to slow down for me, Mr. Gentry. I'll slow down for you when I'm ready.",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "cornelius",
+          "text": "Take all the time you need, darling. We'll wait for you.",
+          "pauseAfterMs": 0,
+          "direction": "junebug at a normal speed for once, which is still a little fast"
+        }
+      ],
+      "estSec": 63,
+      "tags": [
+        "any",
+        "junebug",
+        "gag:junebug-speed"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-too-slow",
+      "kind": "banter",
+      "hosts": [
+        "odessa",
+        "cornelius"
+      ],
+      "lines": [
+        {
+          "host": "odessa",
+          "text": "Cornelius, I have a question for you, and I want you to be honest.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "Always.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "Is there such a thing as a song that's too slow?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "No.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "Cornelius.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "There's no such thing as a song that's too slow, Odessa. There's only a listener who's in too much of a hurry.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "What about that one you played last week, where the singer took a breath in the middle of a word?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "That was a man in love. A man in love takes his time with a word.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "It was a three-syllable word and it took him four bars.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "Some words deserve it.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "Which word was it?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "\"Tomorrow.\"",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "odessa",
+          "text": "Well, that's not fair. Of course \"tomorrow\" takes four bars. Tomorrow's a long way off.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "Now you understand.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "I don't understand. I just lost.",
+          "pauseAfterMs": 0,
+          "direction": "playful sparring between old friends"
+        }
+      ],
+      "estSec": 55,
+      "tags": [
+        "any",
+        "odessa",
+        "cornelius"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-bulletin-3",
+      "kind": "news",
+      "hosts": [
+        "junebug",
+        "odessa"
+      ],
+      "lines": [
+        {
+          "host": "junebug",
+          "text": "The Sunbelt Community Bulletin. No hiccups tonight.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "junebug",
+          "text": "The Laurel Street wind chime choir, founded after some advice from Aunt Odessa, now has fourteen households and has asked the city for a permit to perform at the summer fair. The city has asked what exactly they will be performing. The choir says, \"the wind.\"",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "junebug",
+          "text": "Reverend the parakeet has been found. He was in the choir loft at the church, where he had been for two days, saying \"amen\" at all the right moments. The congregation has voted to let him stay. Mr. Haskell has been offered a seat in the front row.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "junebug",
+          "text": "Mrs. Delacroix has won the tomato prize a twenty-fourth time. She has finally revealed the secret of her soil. It's coffee grounds. The garden club has accused her of \"obvious genius\" and has asked her to step down from competition for one year, as a kindness to everyone else.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "junebug",
+          "text": "And the station across town has announced that Cousin Verbena's advice show will feature a new segment called \"Ask My Cousin.\" No further information was given. Aunt Odessa has declined to comment, but she was seen smiling on the stairs.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "I was not smiling. I had something in my teeth.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 79,
+      "tags": [
+        "any",
+        "news",
+        "gag:verbena"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-request-book-3",
+      "kind": "dedication",
+      "hosts": [
+        "cornelius"
+      ],
+      "lines": [
+        {
+          "host": "cornelius",
+          "text": "Back to the request book, which is a ledger Junebug keeps by the phone with a pen on a string.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "cornelius",
+          "text": "This one goes out to Wendell, from his bowling team, the Spare Me's. \"Wendell, you've rolled a gutter ball every week for nine years. We have never asked you to leave. We never will. You are the heart of this team and the reason we're in first place, statistically, nobody knows how.\"",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "cornelius",
+          "text": "This one goes out to Lucinda, who drives the number eleven bus, from the regulars on the late route. \"Lucinda, you wait when you see us running. You say good night like you mean it. We'd like to put a plaque on the bus but they said no, so this is the plaque.\"",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "cornelius",
+          "text": "And this one, short and sweet, for Beatrice, from Walter. \"Bea, I found your earring in the couch. I'm keeping it until you come over to get it. Bring the other one, so it doesn't get lonely.\"",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "cornelius",
+          "text": "Wendell. Lucinda. Bea. Here's to you.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 67,
+      "tags": [
+        "evening",
+        "dedication",
+        "gag:bowling"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-odessa-hats",
+      "kind": "banter",
+      "hosts": [
+        "cornelius",
+        "odessa"
+      ],
+      "lines": [
+        {
+          "host": "cornelius",
+          "text": "Odessa, you've worn a different hat every night this month.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "You can't see my hat, Cornelius, this is radio.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "I can see it. I'm sitting across from it.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "The listeners can't see it.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "Then describe it for them.",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "odessa",
+          "text": "It's purple. It has a brim the width of a dinner plate. There's a little bird on it. Not a real bird. A felt bird. I've named him Pastor.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "Why Pastor?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "Because he sits up front and looks down on everybody.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "odessa",
+          "text": "A woman should have a hat for every mood. I have a hat for funerals, a hat for weddings, a hat for when I'm right, and a hat for when I'm very right.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "Which one is this?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "Baby, this is the second one. I don't take out the very-right hat for just anybody. Verbena's only seen it twice.",
+          "pauseAfterMs": 0,
+          "direction": "odessa regal, cornelius amused"
+        }
+      ],
+      "estSec": 57,
+      "tags": [
+        "any",
+        "odessa"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-cornelius-after-hours",
+      "kind": "monologue",
+      "hosts": [
+        "cornelius"
+      ],
+      "lines": [
+        {
+          "host": "cornelius",
+          "text": "After the show, I sit for a minute in the dark booth. Junebug turns off the board. The lanes downstairs go quiet, one by one, the way a house goes quiet when everybody's finally in bed.",
+          "pauseAfterMs": 600
+        },
+        {
+          "host": "cornelius",
+          "text": "And I think about everybody who called. Earl and Pearlie, and their little sweater. Harold and his clean casserole dish. The boy who wanted a song for his mother but couldn't say why.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "cornelius",
+          "text": "I think about how most of what people want to say to each other, they never say. They say it in a dedication. They say it through somebody else's song. They say it by washing a dish every week for someone who isn't coming back.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "cornelius",
+          "text": "And I think, well. That's all right. That's what the radio is for. It carries what you can't.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "cornelius",
+          "text": "Then I get my coat, and I go out the back hall, and I nod to an old ladder, and I go home.",
+          "pauseAfterMs": 0,
+          "direction": "the slowest, quietest monologue of the night"
+        }
+      ],
+      "estSec": 62,
+      "tags": [
+        "night",
+        "cornelius",
+        "gag:loretta"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-ask-odessa-5",
+      "kind": "callin",
+      "hosts": [
+        "odessa",
+        "tobias"
+      ],
+      "lines": [
+        {
+          "host": "odessa",
+          "text": "Ask Aunt Odessa, you're on.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "tobias",
+          "text": "Hi, Aunt Odessa. I'd rather not give my name.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "That's fine, Tobias.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "tobias",
+          "text": "How did you",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "Baby, you rent ladders to half this county. What's your trouble?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "tobias",
+          "text": "I want to propose to my girlfriend. I have the ring. I've had it for four months. Every time I try, I lose my nerve and I ask her if she wants to get a sandwich instead.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "How many sandwiches?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "tobias",
+          "text": "Thirty-one.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "Tobias. That girl knows. Nobody eats thirty-one sandwiches with a nervous man by accident. She's been waiting, and she's been eating, and she's getting tired of sandwiches.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "odessa",
+          "text": "Here's what you do. Next time, you ask her if she wants a sandwich. She'll say yes. And then you hand her a sandwich, and inside the sandwich, between the lettuce and the tomato",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "tobias",
+          "text": "The ring?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "No, baby, a note. A ring in a sandwich is how people lose teeth. The note says \"turn around.\" And when she turns around, you're on one knee. On the clean part of the floor.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "tobias",
+          "text": "That's actually really good.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "I know it is. Call me after. If she says no, you still have a sandwich.",
+          "pauseAfterMs": 0,
+          "direction": "tobias mortified; odessa thoroughly in charge"
+        }
+      ],
+      "estSec": 78,
+      "tags": [
+        "any",
+        "odessa",
+        "advice"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-percolator-dies",
+      "kind": "banter",
+      "hosts": [
+        "junebug",
+        "cornelius"
+      ],
+      "lines": [
+        {
+          "host": "junebug",
+          "text": "Mr. Gentry, I have to tell you something, and I want you to be sitting down.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "I'm always sitting down, darling. It's radio.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "junebug",
+          "text": "The percolator. In the break room. It's gone.",
+          "pauseAfterMs": 600
+        },
+        {
+          "host": "cornelius",
+          "text": "Gone.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "junebug",
+          "text": "It made one last pot, and it was the best pot it ever made, and then it went quiet, and there was a little puff of steam, and that was it.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "How old was it?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "junebug",
+          "text": "The sticker on the bottom says it was bought the same year the station got its license. It's older than the license plate on your car.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "cornelius",
+          "text": "Now, listen. That percolator kept this station awake through power cuts, through the year of the roof, through every league night. It never hurried. It never apologized.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "cornelius",
+          "text": "Junebug, we will not be buying one of those machines with the little pods.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "junebug",
+          "text": "I already ordered one. It's a percolator. Same model. They still make them. They just make them in avocado green now.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "Avocado.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "cornelius",
+          "text": "Well. Everybody's allowed to come back a little different.",
+          "pauseAfterMs": 0,
+          "direction": "cornelius genuinely grieving a coffee pot; junebug gentle about it"
+        }
+      ],
+      "estSec": 68,
+      "tags": [
+        "any",
+        "cornelius",
+        "junebug"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-ad-okonkwo",
+      "kind": "ad",
+      "hosts": [
+        "odessa",
+        "junebug"
+      ],
+      "lines": [
+        {
+          "host": "odessa",
+          "text": "You know Mrs. Okonkwo from lane six. The one with the strikes. What you might not know is that when she's not bowling, she's running Okonkwo and Daughters Upholstery, on Fennel Street.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "odessa",
+          "text": "Mrs. Okonkwo and her three daughters will take that old armchair you can't let go of, the one that smells like your uncle, and they'll make it new. New springs, new stuffing, new fabric, and somehow, it'll still smell a little bit like your uncle. That's the art.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "junebug",
+          "text": "They do sofas, ottomans, dining chairs, church pews and car seats.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "And a bowling-ball bag, once, for Benny, as a favor. In velvet.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "junebug",
+          "text": "Okonkwo and Daughters Upholstery. Sit down. You've earned it.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "And tell her Odessa sent you. She'll give you a strike. I mean a discount. She'll give you both.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 52,
+      "tags": [
+        "any",
+        "ad",
+        "gag:bowling"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-pearlie-advice",
+      "kind": "callin",
+      "hosts": [
+        "junebug",
+        "pearlie"
+      ],
+      "lines": [
+        {
+          "host": "junebug",
+          "text": "Aunt Odessa is out tonight, so we have a guest advice-giver. Pearlie is on the line.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "pearlie",
+          "text": "Hello, Junebug. I'm only doing this because Odessa owes me for the sweater idea.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "junebug",
+          "text": "First letter. \"My husband snores. What do I do?\"",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "pearlie",
+          "text": "Honey, you learn to sleep to it like it's the ocean. After fifty-one years, if Earl stops snoring, I wake up and check his pulse. That's love. Next.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "junebug",
+          "text": "\"My sister always borrows my things and never gives them back.\"",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "pearlie",
+          "text": "Borrow something of hers that she doesn't know she has. A colander. A little dish. Hold onto it. When she comes looking for it, you trade. That's not stealing, that's diplomacy. Next.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "junebug",
+          "text": "\"How do I stop arguing about little things?\"",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "pearlie",
+          "text": "Oh, baby. You don't. You find one little thing to argue about forever, and you put all your arguing in there, like a jar. Then everything else gets to be easy. Ours was a thermostat. Turned out it wasn't even plugged in. Best investment we ever made.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "junebug",
+          "text": "Pearlie, you're very good at this.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "pearlie",
+          "text": "Don't tell Odessa. She'll get a hat about it.",
+          "pauseAfterMs": 0,
+          "direction": "pearlie quick and twinkly"
+        }
+      ],
+      "estSec": 73,
+      "tags": [
+        "any",
+        "gag:thermostat",
+        "odessa"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "ss-gravy-boat",
+      "kind": "skit",
+      "hosts": [
+        "cornelius",
+        "odessa"
+      ],
+      "lines": [
+        {
+          "host": "cornelius",
+          "text": "Sunbelt Soul Theater presents a short mystery. \"The Case of the Missing Gravy Boat.\"",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "odessa",
+          "text": "It was the night before the family reunion. The gravy boat had been in the family for three generations. And now, it was gone.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "\"Who saw it last?\" asked the detective, who was me, in a very good coat.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "\"Aunt Hattie had it at the christening,\" I said. \"Then it went to Cousin Reginald for the graduation. Then to Uncle Fitz for the retirement party.\"",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "cornelius",
+          "text": "\"And after Uncle Fitz?\"",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "\"Nobody knows. Uncle Fitz says he gave it to his daughter. His daughter says she gave it back. And now there's a reunion tomorrow, and nowhere to put the gravy.\"",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "cornelius",
+          "text": "The detective thought. He looked at the cupboards. He looked at the family photos on the wall. And there, in the photo from last year's reunion, in the background, he saw it.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "\"The gravy boat!\"",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "\"It's on your table, ma'am. In this picture. You've had it the whole time.\"",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "odessa",
+          "text": "\"Well. I suppose I did take it home. To wash it.\"",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "\"Thirteen months ago, ma'am.\"",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "\"It's a big gravy boat. It's a lot of washing.\"",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "cornelius",
+          "text": "The case was closed. The gravy was served. Nobody spoke of it again, until right now, on the radio.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "odessa",
+          "text": "Cornelius, that's my real gravy boat.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "cornelius",
+          "text": "I know, Odessa. Your sister asked me to write this.",
+          "pauseAfterMs": 0,
+          "direction": "odessa slowly realizing she is the culprit"
+        }
+      ],
+      "estSec": 91,
+      "tags": [
+        "evening",
+        "odessa",
+        "cornelius"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    }
+  ]
+}
