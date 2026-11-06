@@ -944,6 +944,18 @@ function installLibrary() {
       return track;
     },
     relink: () => library.relink(),
+    // Cassette player hooks (src/mixtape-ui.js): real seek / pause / wind-mute / level meter.
+    seekFrac: (frac) => {
+      if (!(state.T > 0)) return;
+      state.engine.seek(clamp(frac, 0, 0.99) * state.T * state.engine.sampleRate);
+      state.reachedEnd = false;
+    },
+    setPaused: (on) => { state.braking = on; el('brakePad').classList.toggle('active', on); },
+    muteBus: (on) => state.engine.setPlaying(!on && !state.radioOn),
+    levelAt: (t, T) => {
+      const e = state.envelope;
+      return e && T > 0 ? e[Math.max(0, Math.min(e.length - 1, Math.floor((t / T) * e.length)))] : 0;
+    },
     // Gapless hooks (queue.js model; AudioEngine.prepareNext/joinNext).
     decodeNext: async (file) => {
       const track = await loadFile(file, state.engine.ctx, { copy: false });
