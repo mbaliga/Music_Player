@@ -1,0 +1,4685 @@
+{
+ "v": 1,
+ "station": {
+  "id": "static-city-98-1",
+  "name": "Static City 98.1",
+  "tagline": "The frequency between the frequencies.",
+  "dial": "98.1",
+  "vibe": "Late-night talk radio for the people who are up anyway: a paranoid, tender host, a producer made of granite, and callers who should not be awake.",
+  "daypart": [
+   "night"
+  ],
+  "contentRating": "PG-13",
+  "hosts": [
+   {
+    "id": "dell",
+    "name": "Dell Varga",
+    "role": "host",
+    "persona": "Overnight host who has decided the city is a conspiracy with a dress code. He adores his listeners, whom he calls the awake, and distrusts nearly everything else, especially fluorescent lighting, round numbers, and pigeons. He leans into the microphone like it is the only one on his side, and his sentences start big and end in a whisper. Tics: \"Now listen to me,\" and \"I'm not saying, I'm only noticing.\" He loves lukewarm coffee, library due-date stamps, and his producer, in that order, though he would deny the third.",
+    "voice": {
+     "genderHint": "male",
+     "ageHint": "adult",
+     "accent": "neutral-US",
+     "style": "gravelly, confiding, builds to urgency then drops to a hush",
+     "rate": 0.95,
+     "pitch": 0.9
+    }
+   },
+   {
+    "id": "mags",
+    "name": "Marguerite Okafor",
+    "role": "producer",
+    "persona": "Producer and the show's only load-bearing wall. Speaks rarely and flatly, usually to correct a fact, confirm a sponsor, or end a segment that has gone somewhere. Finishes a crossword every night while Dell unravels, and refers to her cat, Admiral, as a colleague. Her favorite word is \"Noted.\" She is never surprised, and the one time she almost was, she took a sip of tea instead.",
+    "voice": {
+     "genderHint": "female",
+     "ageHint": "adult",
+     "accent": "neutral-US",
+     "style": "deadpan, dry, unhurried, slightly bored",
+     "rate": 0.95,
+     "pitch": 0.95
+    }
+   },
+   {
+    "id": "caller-a",
+    "name": "Rudy",
+    "role": "caller",
+    "persona": "Retired man who calls every night about the fence between his yard and his neighbor's, which he believes moves a few inches after dark. Gruff, suspicious, secretly lonely, and loyal to Dell to a fault. Keeps a notebook of fence measurements he reads from with great ceremony. Ends every call with \"You're the only one who listens.\"",
+    "voice": {
+     "genderHint": "male",
+     "ageHint": "older",
+     "accent": "neutral-US",
+     "style": "gravelly, grumbling, phone-distant",
+     "rate": 0.9,
+     "pitch": 0.85
+    }
+   },
+   {
+    "id": "caller-b",
+    "name": "Lorna",
+    "role": "caller",
+    "persona": "Whispers every call because she believes her kitchen appliances are listening and she does not want to be rude to them. Deeply polite, mildly cosmic, gives excellent practical advice between the strange parts. Owns a toaster she describes as \"going through something.\" Thinks Dell is too tense and tells him so, kindly.",
+    "voice": {
+     "genderHint": "female",
+     "ageHint": "adult",
+     "accent": "neutral-US",
+     "style": "hushed, breathy, warm, conspiratorial",
+     "rate": 0.9,
+     "pitch": 1.05
+    }
+   },
+   {
+    "id": "caller-c",
+    "name": "Benji",
+    "role": "caller",
+    "persona": "Teenager who has mistaken the show for an educational program and calls for homework help at an hour he should not be awake. Earnest, fast-talking, takes everything Dell says as fact and writes it down, which worries Mags. Has a hamster named Professor who he consults mid-call. Signs off with \"Okay cool, thanks, bye,\" all as one word.",
+    "voice": {
+     "genderHint": "male",
+     "ageHint": "young",
+     "accent": "neutral-US",
+     "style": "bright, rushed, slightly nasal",
+     "rate": 1.15,
+     "pitch": 1.1
+    }
+   },
+   {
+    "id": "caller-d",
+    "name": "Hollis",
+    "role": "caller",
+    "persona": "Night-shift supervisor at the Harbor Bollard Works who reports alarming events in the mildest possible terms. Describes everything as \"not necessarily a problem.\" Formal, apologetic, enormously calm, the kind of man who would announce a flood by clearing his throat. Admires Mags and is terrified of her.",
+    "voice": {
+     "genderHint": "male",
+     "ageHint": "adult",
+     "accent": "neutral-UK",
+     "style": "soft, precise, over-polite, measured",
+     "rate": 0.92,
+     "pitch": 0.95
+    }
+   }
+  ]
+ },
+ "segments": [
+  {
+   "id": "sc-signon-1",
+   "kind": "sign_on",
+   "hosts": [
+    "dell",
+    "mags"
+   ],
+   "lines": [
+    {
+     "host": "dell",
+     "text": "If you can hear this, you're awake. If you're awake, you've got questions. Static City, ninety-eight point one. I'm Dell Varga, and I'm not going anywhere, because the doors to this studio lock from the outside.",
+     "pauseAfterMs": 500
+    },
+    {
+     "host": "mags",
+     "text": "They don't.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "She doesn't know that. Let's begin.",
+     "direction": "quiet, as if sharing a secret",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 18,
+   "tags": [
+    "night",
+    "open"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-signon-2",
+   "kind": "sign_on",
+   "hosts": [
+    "dell",
+    "mags"
+   ],
+   "lines": [
+    {
+     "host": "dell",
+     "text": "Lights down. Coffee lukewarm, the way the body prefers it. Somewhere out there a refrigerator is humming a note it was never taught. This is Static City. I'm Dell. Mags is here.",
+     "pauseAfterMs": 400
+    },
+    {
+     "host": "mags",
+     "text": "Present.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "We are the awake. Everyone else is just rehearsing.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 17,
+   "tags": [
+    "night",
+    "open"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-id-1",
+   "kind": "station_id",
+   "hosts": [
+    "mags"
+   ],
+   "lines": [
+    {
+     "host": "mags",
+     "text": "Static City. Ninety-eight point one. You're listening. That's your business.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 4,
+   "tags": [
+    "any"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-id-2",
+   "kind": "station_id",
+   "hosts": [
+    "dell"
+   ],
+   "lines": [
+    {
+     "host": "dell",
+     "text": "This is Static City, ninety-eight point one. The frequency between the frequencies. Don't adjust your dial. Don't adjust anything. Sit very still and let the dial adjust you.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 11,
+   "tags": [
+    "any"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-id-3",
+   "kind": "station_id",
+   "hosts": [
+    "dell",
+    "mags"
+   ],
+   "lines": [
+    {
+     "host": "dell",
+     "text": "Ninety-eight point one. Static City. Broadcasting from a room with one window, and the window has been painted over, and I did not paint it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "You did.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Allegedly.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 12,
+   "tags": [
+    "any"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-jingle-1",
+   "kind": "jingle",
+   "hosts": [
+    "dell"
+   ],
+   "lines": [
+    {
+     "host": "dell",
+     "text": "Static City, ninety-eight point one. The night is long, the coffee's gone, the lights are on, and so are you.",
+     "direction": "half-sung, lilting like an old commercial",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 8,
+   "tags": [
+    "any"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-jingle-2",
+   "kind": "jingle",
+   "hosts": [
+    "mags",
+    "dell"
+   ],
+   "lines": [
+    {
+     "host": "mags",
+     "text": "Static City. Where the signal goes when it gets tired.",
+     "direction": "flat, deliberately un-sung",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "She was supposed to sing that.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 7,
+   "tags": [
+    "any"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-jingle-3",
+   "kind": "jingle",
+   "hosts": [
+    "dell"
+   ],
+   "lines": [
+    {
+     "host": "dell",
+     "text": "Ninety-eight. Point. One. We can't sleep either.",
+     "direction": "singsong on the numbers, dead serious on the last line",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 3,
+   "tags": [
+    "any"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-promo-1",
+   "kind": "promo",
+   "hosts": [
+    "dell",
+    "mags"
+   ],
+   "lines": [
+    {
+     "host": "dell",
+     "text": "Coming up later on Static City: Open Line. You call, I listen, Mags decides whether either of us gets to keep talking. Have your fence measurements ready. Have your theories ready. Have a glass of water ready, because talking to me is dehydrating, I've been told.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "By a doctor.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "By a man in a white coat, which is not the same thing, and we both know it.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 27,
+   "tags": [
+    "any"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-promo-2",
+   "kind": "promo",
+   "hosts": [
+    "mags",
+    "dell"
+   ],
+   "lines": [
+    {
+     "host": "mags",
+     "text": "Every night, near the end of the show, I read one word from the dictionary. One word. No commentary. Tonight's word is being kept in a sealed envelope so Dell can't build a theory around it in advance.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "It's going to be a verb. I can feel it. The verbs have been circling.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Stay tuned for the word.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 23,
+   "tags": [
+    "any"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-signoff-1",
+   "kind": "sign_off",
+   "hosts": [
+    "dell",
+    "mags"
+   ],
+   "lines": [
+    {
+     "host": "dell",
+     "text": "That's the shift. If you're still up, you're not alone, you're just unsupervised. Drink some water. Check the locks, then check them again, then stop, because three is when it becomes a ritual and rituals get noticed.",
+     "pauseAfterMs": 400
+    },
+    {
+     "host": "mags",
+     "text": "Good night.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "She means it. I mean it too. Static City.",
+     "direction": "soft, almost tender",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 19,
+   "tags": [
+    "night",
+    "close"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-signoff-2",
+   "kind": "sign_off",
+   "hosts": [
+    "dell",
+    "mags"
+   ],
+   "lines": [
+    {
+     "host": "dell",
+     "text": "We're done. Mags has her coat on. She's been wearing her coat since the second hour, which I chose not to take personally. To the awake: the sun is a rumor until proven otherwise. Keep your receipts.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Mic's off in three.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "You can't count down on me, I'm the one who",
+     "direction": "cut off mid-word",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Static City. Ninety-eight point one.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 23,
+   "tags": [
+    "night",
+    "close"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-mono-awake",
+   "kind": "monologue",
+   "hosts": [
+    "dell",
+    "mags"
+   ],
+   "lines": [
+    {
+     "host": "dell",
+     "text": "Now listen to me. There are two kinds of people in this city after midnight. There are the asleep, and I don't begrudge them, they have jobs, they have futons, they have a sort of innocence. And then there are the awake. You. Me. The man at the all-night key-cutting place who has never once cut a key, I've watched him, he just stands there with the blank keys like he's waiting for them to tell him who they belong to.",
+     "pauseAfterMs": 400
+    },
+    {
+     "host": "dell",
+     "text": "The awake notice things. That's our curse and it's also our subscription. We notice that the streetlight on the corner blinks in a pattern. We notice that the pattern is not random. I'm not saying it's a message. I'm only noticing it has the rhythm of a message. Long, long, short, long. Mags, what is that in the code?",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "It's a loose bulb.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "It spells a loose bulb? That's what the city wants you to think. The thing about the awake is nobody thanks us. Nobody puts us on a stamp. We just sit up with the city like it's a sick friend, and we hold its hand, and the hand is a radio, and the radio is this one. So. Welcome. Not welcome back. You never left. None of us ever leave. I checked the doors.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "They open.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Outward. Which is suspicious.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 88,
+   "tags": [
+    "night",
+    "open"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-mono-eleven",
+   "kind": "monologue",
+   "hosts": [
+    "dell",
+    "mags"
+   ],
+   "lines": [
+    {
+     "host": "dell",
+     "text": "I want to talk about the number eleven. Not for long. I don't want to give it the attention it craves. Ten is a nice round number. Twelve, you've got eggs, you've got months, you've got a jury. But eleven. Eleven is two ones standing next to each other pretending not to know each other. Eleven is what you get when ten is not done with you.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Have you ever counted the stairs in your building? I have. In mine, there are eleven steps between floors, except between the third and fourth floor, where there are twelve, and nobody will discuss it. I asked the superintendent. He said, Dell, go to bed. That's not an answer, that's a lullaby. I'm not saying there's an extra step. I'm only noticing there's an extra step, and I'm noticing that the extra step is slightly warmer than the others.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "You should not be touching the stairs.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "I was wearing a glove. One glove. I'm not a maniac. Anyway. If you have eleven of anything in your home tonight, I'm not saying get rid of one. I'm saying buy a twelfth, and let them sort it out among themselves.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 76,
+   "tags": [
+    "night"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-mono-vending",
+   "kind": "monologue",
+   "hosts": [
+    "dell",
+    "mags"
+   ],
+   "lines": [
+    {
+     "host": "dell",
+     "text": "There's a vending machine on the third floor of this building. I've mentioned it. I'm going to mention it again, because tonight, on my way up, it said my name. Not out loud. It said it with the lights. Row D was lit. Column E was lit. Then two L's, blinking in sequence. D, E, L, L. Now, Mags is going to tell you that those are the only rows that still have product in them.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Those are the only rows that still have product in them.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "And I'm going to tell you that I have been buying from rows D, E, and L for nine years for precisely this reason, and the machine knows that, and has arranged itself around me, the way a river arranges itself around a stone. I'm not saying the vending machine loves me. I'm only noticing that the pretzels in row L are always slightly warm.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "I asked building management about it. They sent me a form. The form had eleven questions. I'm not going to get into that again. I filled it out. Question seven was, Does the machine take your money. And I wrote, It takes everything. And they have not followed up. Which tells me the form went somewhere. Forms always go somewhere. Nobody ever says where.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "It went to me. I have it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Then where did you send it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Nowhere. It's under Admiral's food bowl.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "So the cat has it. Fine. The cat has it. That's where we are now.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 99,
+   "tags": [
+    "night"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-mono-ocean",
+   "kind": "monologue",
+   "hosts": [
+    "dell",
+    "mags"
+   ],
+   "lines": [
+    {
+     "host": "dell",
+     "text": "Here's one for the late hours, when the sensible people have gone and it's just the real ones. I believe the ocean is the sky's basement. Hear me out. The sky is up there, vast, blue in the day, dark at night, full of stuff nobody can reach. The ocean is down there, vast, blue in the day, dark at night, full of stuff nobody can reach. Same contractor. Same paint.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "You ever been to a basement that was finished? It's always a little damp. It's always got one light that doesn't quite reach the corners. There are things living down there that the upstairs doesn't talk about. That's the ocean, friend. That's exactly the ocean. The whales are the water heater. They groan at night. Nobody knows what they want.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "This is not science.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "It's not not science. Science is just noticing with a budget. I notice for free. Now, if the ocean is the basement, what's the attic? I'll tell you what I think and then I'll leave it alone. I think the attic is the inside of the pillow. You go there every night. You don't remember what's up there. You come down in the morning with a crick in your neck and a feeling you've forgotten something. That's an attic. That's precisely an attic.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Good night, listeners who have children with questions tomorrow.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Tell them Dell said the whales are fine. The whales are doing their job.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 94,
+   "tags": [
+    "night",
+    "late"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-mono-department",
+   "kind": "monologue",
+   "hosts": [
+    "dell",
+    "mags"
+   ],
+   "lines": [
+    {
+     "host": "dell",
+     "text": "I received another letter from the Department. I'm not going to say which Department. I've said too much about the Department already, and Mags gets a look. The envelope was the color of an envelope. It had the little window in it, where your name shows through. I don't like the window. I didn't ask for a window. Nobody sends me a window on purpose.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "The letter said, and I'm paraphrasing because I'm not allowed to read it on air for reasons that are themselves suspicious: Mister Varga, we require clarification regarding the item on line fourteen. Line fourteen! There is no line fourteen in my life. I don't have fourteen of anything. I have made sure of that.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "You have fourteen of something.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "I'm going to put the letter in the drawer with the other letters from the Department, and I'm going to tape the drawer, and I'm going to put a glass of water on top of the tape so I can tell if anyone opens it, because the water will have moved. Or evaporated. Either way, the water will tell me. The water always tells me.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "It's the fourth letter.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "The fourth. Which means they're building to something. Departments don't send four letters unless there's a fifth. Stay awake with me. We'll find out together.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 86,
+   "tags": [
+    "night",
+    "gag:department:1"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-mono-hum",
+   "kind": "monologue",
+   "hosts": [
+    "dell",
+    "mags"
+   ],
+   "lines": [
+    {
+     "host": "dell",
+     "text": "Can you hear that? Mags, can you hear that. There's a hum. It's low. It's under the floor, or it's in the floor, or the floor is the hum. It started maybe twenty minutes ago and it has a pitch, and the pitch is slightly flat, and that bothers me more than it being there at all.",
+     "pauseAfterMs": 500
+    },
+    {
+     "host": "mags",
+     "text": "It's the fridge.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "The fridge is in the break room. The break room is down the hall. This is coming from under my chair. I'm not saying it's a hum with intent. I'm only noticing that when I lean left, it gets louder, and when I lean right, it gets louder, and when I sit perfectly still it does a thing that I can only describe as waiting.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Fridge.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "To the awake: if you hear a hum tonight, don't hum back. That's how it starts. My uncle hummed back once in a parking garage and he was never the same, he became very into boats, suddenly, with no explanation. I'm going to put a glass of water on the floor by my chair. If the surface ripples, it's real. If it doesn't ripple, it's clever.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "It's a fridge.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Then the fridge has come to see me, and I'd like to know why.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 83,
+   "tags": [
+    "night",
+    "gag:hum:1"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-banter-crossword",
+   "kind": "banter",
+   "hosts": [
+    "dell",
+    "mags"
+   ],
+   "lines": [
+    {
+     "host": "dell",
+     "text": "Mags is doing the crossword. She does it every night. She finishes it every night, which I find frankly alarming, because the people who write these things are not on our side.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Seven letters. Keeps watch at night.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Vigilant. No, that's eight. Sentinel? Eight. Dell Varga? That's nine with the space, I counted.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "There's no space in a crossword.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "There's no space anywhere, Mags, that's the whole problem. Everything's touching everything. Give me another one.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Five letters. Overreacts.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "I don't like the tone of this puzzle. Who publishes it? Who's the editor? Have you met him? Does he know I do a show?",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Panic. Five letters. Panic.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "See, that's what I mean. That's a word planted for me to find. You know what they call that? Bait. I'm not going to say who's fishing. I'm only noticing the hook. Do another.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Three letters. Feline colleague.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Admiral has three letters? Admiral has seven letters.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Cat, Dell. The answer is cat.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Then why did you say colleague.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Because he is one.",
+     "pauseAfterMs": 400
+    },
+    {
+     "host": "dell",
+     "text": "Fine. I'll allow it. He does have a lanyard.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 73,
+   "tags": [
+    "night"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-banter-coffee",
+   "kind": "banter",
+   "hosts": [
+    "dell",
+    "mags"
+   ],
+   "lines": [
+    {
+     "host": "dell",
+     "text": "Mags, the coffee machine has made the coffee hot again.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "That's what it does.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Not for me. For nine years that machine has delivered my coffee at the temperature of a handshake. We had an understanding. And tonight, I pour, and it's steaming. Steaming, Mags. Like it's angry. Like it's been talked to.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Maintenance came by.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Who called maintenance.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "I did. It was leaking.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Leaking is a form of communication! It was telling us something and you had it silenced. Now I have to wait for the coffee to cool, which is time I could have spent noticing things, and in that time anything could happen. A pigeon could get in. A letter could arrive. A number could change.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Blow on it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "I'm not going to blow on my coffee like some kind of amateur. I'm going to set it on the windowsill and let the night take the heat out of it honestly. Nature's way. The night is good at taking the heat out of things. Ask anyone who's been divorced.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "The windowsill is painted shut.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Then I'll set it on the ledge of the painted shut window, and we'll all learn something.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 78,
+   "tags": [
+    "night"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-banter-council",
+   "kind": "banter",
+   "hosts": [
+    "dell",
+    "mags"
+   ],
+   "lines": [
+    {
+     "host": "dell",
+     "text": "I want to put something on the record. Pigeons. Not all pigeons. I'm not a bigot. The pigeons on this block, specifically, the ones on the ledge of the bank across the street. They sit in a row. Every night. Same order. The grey one, the grey one, the one with the white patch, the grey one. They don't eat. They don't fly. They sit, facing the studio, and they're clearly voting on something.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "They're sleeping.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Birds sleep standing up, Mags, so you can't tell, that's the beauty of it from their perspective. I call them the Council. I've been calling them the Council for about a month and I think they know. Tonight when I came in, the one with the white patch turned its head to follow me, and that is not a sleeping bird, that is a bird with a portfolio.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Which portfolio.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Zoning, if I had to guess. They've got the whole block in view. Now listen. I'm not saying the pigeons run the neighborhood. I'm only noticing that the bank got a new awning last week, and the awning is exactly the width of four pigeons. Measure it yourself. I did. From across the street, with my thumb, which I'm told is not a unit.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "It's not a unit.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "It is in the Council's eyes. Everything's a unit in the Council's eyes.",
+     "pauseAfterMs": 400
+    },
+    {
+     "host": "mags",
+     "text": "One of them just moved.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Which one.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "White patch.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Don't make eye contact. Go to the music. Go to the music now.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 99,
+   "tags": [
+    "night",
+    "gag:council:1"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-banter-glove",
+   "kind": "banter",
+   "hosts": [
+    "mags",
+    "dell"
+   ],
+   "lines": [
+    {
+     "host": "mags",
+     "text": "You're wearing one glove.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "I'm aware.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Why.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "The left hand touches things. The right hand holds the coffee. The left hand needs protection. The right hand needs grip. This is a system, Mags, it's not a fashion choice, I don't make fashion choices, I make survival choices that happen to be visible.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Where's the other glove.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "I don't know, and I don't like that you asked, because now I have to think about where the other glove is, and I had successfully not been thinking about that for six days. It's in a cab, probably. Riding around. Touching things on my behalf. Building a reputation I'll have to answer for.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "I have it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "You have my glove.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "You left it on the board. I put it in the drawer. The drawer with the tape and the water glass on top.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "You opened the drawer.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "The water didn't move.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Of course it didn't move, Mags, you're a professional. The water only tells on amateurs. I'm going to need a new system. The glove stays on. The glove has seen things now.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 73,
+   "tags": [
+    "night"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-ad-velotti-1",
+   "kind": "ad",
+   "hosts": [
+    "mags",
+    "dell"
+   ],
+   "lines": [
+    {
+     "host": "mags",
+     "text": "Static City is brought to you tonight by Grandma Velotti's Protective Foil.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Grandma Velotti's. The foil you trust, because Grandma trusted it first. Are you tired of your thoughts arriving pre-owned? Do you ever get the feeling that somebody else finished your sentence before you got there? Grandma Velotti's Protective Foil comes in sheets, rolls, and a generous family hat. Lines the drawer. Lines the hat. Lines the drawer the hat is in.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Grandma Velotti's Protective Foil is a kitchen product and makes no claims regarding thoughts.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "She has to say that. The foil doesn't make claims, it makes a crinkling sound, and the crinkling sound is a claim in itself. Grandma Velotti's. Look for the lady on the box with the kind eyes and the hat. It's a lot of hat. It's all hat.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Available wherever foil is sold, which is everywhere.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Which is itself worth thinking about.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 59,
+   "tags": [
+    "any",
+    "gag:velotti:1"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-ad-nocturne",
+   "kind": "ad",
+   "hosts": [
+    "dell",
+    "mags"
+   ],
+   "lines": [
+    {
+     "host": "dell",
+     "text": "Let's hear from a sponsor. Nocturne Bedding Hall. Mags, you want to do this one? It's got numbers in it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Nocturne Bedding Hall. Open all night, because sleep is a rumor. Over forty models on the floor, none of them yours yet. Lie down on one in the showroom. Lie down on all of them. Nobody will stop you. Nobody is there. The lights are on and the doors are open, and somewhere in the back a man named Gil is arranging pillows by softness, a task he has described as never-ending.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "I've met Gil. Gil is the real deal. Gil looked me in the eye and said, Dell, you don't need a new mattress, you need a new relationship with lying down. And I said, Gil, what does that cost. And he said, Everything. And then he gave me a pillow for free. A free pillow, Mags. From a man who said everything.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Nocturne Bedding Hall. We'll be here. We're always here. Please come get us.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "That last part was in the copy?",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Handwritten at the bottom.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Gil.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 71,
+   "tags": [
+    "night"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-ad-hoyt",
+   "kind": "ad",
+   "hosts": [
+    "dell",
+    "mags"
+   ],
+   "lines": [
+    {
+     "host": "dell",
+     "text": "Have you been wronged? Not legally, I don't mean legally, I mean have you been wronged in a way you can't explain to a daytime person. Has a vending machine learned your name? Has a stairway added a step? Has a number followed you home? Then you need Hoyt and Hoyt, Attorneys at Twilight.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Hoyt and Hoyt are not licensed to practice law.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "They're licensed to practice listening, which is better, and I've got the certificate on the wall to prove it, it's a very nice certificate, it's got a seal on it, the seal is a drawing of an ear. Hoyt and Hoyt will sit with you in a wood-paneled room and nod. They will take notes. They will say, That does sound like a lot. And they will bill you nothing, because the elder Hoyt believes money is a form of surveillance.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "The younger Hoyt accepts baked goods.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "The younger Hoyt accepts baked goods. Hoyt and Hoyt. Second floor above the all-night key-cutting place. Knock twice. Not three times. Three times is for the other business up there, and we don't talk about the other business.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 74,
+   "tags": [
+    "night"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-ad-pelican",
+   "kind": "ad",
+   "hosts": [
+    "mags",
+    "dell"
+   ],
+   "lines": [
+    {
+     "host": "mags",
+     "text": "This portion of the night is sponsored by Gannet Brand Canned Air.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Gannet Brand. It's air. It's in a can. That's the whole product and they're not going to pretend otherwise. You open the can, you breathe in, and for about one second you're breathing air that somebody else sealed up on a Thursday, somewhere with better air than here. Mountain air. Meadow air. There's a new one, Library Air, which smells like a book you forgot to return, which I found very moving.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Gannet Brand Canned Air is not a medical product and contains ordinary air.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Ordinary! She says ordinary. Mags, there's nothing ordinary about air that's been somewhere you haven't. I've got a case of the Library under my desk. When the hum gets to be too much, I crack one, and for one second, I'm in a reading room, and the hum is just somebody turning a page. Gannet Brand. The can has a gannet on it. The gannet looks tired. I think that's on purpose.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 66,
+   "tags": [
+    "any"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-ad-velotti-2",
+   "kind": "ad",
+   "hosts": [
+    "mags",
+    "dell"
+   ],
+   "lines": [
+    {
+     "host": "mags",
+     "text": "Grandma Velotti's Protective Foil would like you to know about a new product.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Rose gold. Grandma Velotti's Protective Foil, now in rose gold. Because why should protection be ugly? Why should the awake have to choose between a clear head and a warm palette? The rose gold line comes in the classic roll, the sheet pack, and, for the first time, a formal cummerbund.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "A cummerbund.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "For weddings, Mags. Galas. Court appearances. You wrap the midsection in a flattering band of rose gold foil, and whatever is being broadcast at your midsection has to go around. Grandma Velotti's tested it. On who, I don't know. On Grandma, I assume. Grandma's been through a lot.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Grandma Velotti's is a kitchen product and should not be worn to court.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Or to a wedding, apparently, I checked, I asked, I was asked to leave. Grandma Velotti's Protective Foil. Rose gold. The look of the season, and the season is always.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 62,
+   "tags": [
+    "any",
+    "gag:velotti:2"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-news-1",
+   "kind": "news",
+   "hosts": [
+    "mags",
+    "dell"
+   ],
+   "lines": [
+    {
+     "host": "mags",
+     "text": "The Static City Night Desk. Three items.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Item one. The city council has voted, by a narrow margin, to give the moon a local name. The winning entry, submitted anonymously, is Carl. The moon will be referred to as Carl in all municipal documents, effective at the next full one. The council noted that the moon's actual name remains the moon everywhere else, and that Carl is for us.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "I'd like it noted that I did not submit that.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Item two. A library book has been returned to the Eastside branch so overdue that the branch no longer exists. The book was found on the step of the laundromat that is there now. A librarian from another branch was dispatched to collect it and reportedly stood for some time holding it, saying nothing. The title of the book has not been released. The fine has been waived on compassionate grounds, for the book.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Item three. The roundabout at the bottom of Tanner Hill has begun to rotate on its own. It turns very slowly, clockwise, at roughly the pace of a minute hand. Drivers report that they now exit at the correct street regardless of where they entered. Officials say they're monitoring it, by which they mean one man in a folding chair, and he says it's fine, and he says he likes it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "That's the man I want in charge of everything.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "That's the Night Desk.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 93,
+   "tags": [
+    "night"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-news-2",
+   "kind": "news",
+   "hosts": [
+    "mags",
+    "dell"
+   ],
+   "lines": [
+    {
+     "host": "mags",
+     "text": "The Static City Night Desk.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "First. The Harbor Bollard Works has produced its ten thousandth bollard, a milestone marked by a brief ceremony in which the bollard was placed next to the nine thousand nine hundred ninety-ninth and the two were compared. Workers say they are indistinguishable. The night supervisor called it, quote, not necessarily a problem.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "That's Hollis. Hollis listens to the show.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Second. A man on Dunmore Street has reported that his neighbor's fence has moved roughly the width of a thumb since last night. Police attended, measured, and found the fence where fences are. The man has asked that it be noted that police measured during daylight, which he describes as the fence's home turf.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Rudy. That's Rudy.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Third. The pigeons on the ledge of the Ledger and Loan bank across from this studio have been observed, by one witness, to be sitting one pigeon further to the left than usual. The witness, who asked not to be named, is named Dell Varga.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "You can't just say that.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "The bank has no comment. The pigeons have no comment. That's the Night Desk.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 74,
+   "tags": [
+    "night",
+    "gag:council:3"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-callin-rudy-1",
+   "kind": "callin",
+   "hosts": [
+    "dell",
+    "mags",
+    "caller-a"
+   ],
+   "lines": [
+    {
+     "host": "dell",
+     "text": "Open Line. Let's go to the phones. Who's on.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Rudy.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Rudy. Of course it's Rudy. Rudy, you're on Static City. How's the fence.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-a",
+     "text": "Dell. It moved.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "How much.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-a",
+     "text": "I got the notebook here. Last night, post to the sidewalk crack, eleven and a quarter inches. Tonight, post to the sidewalk crack, eleven and a half. That's a quarter inch, Dell. In one night. That's not settling. That's intent.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Did you say eleven.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-a",
+     "text": "Eleven and a quarter.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "I don't like that it's eleven, Rudy, you know how I feel about eleven. Mags, did you hear that number.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Fences expand with humidity.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-a",
+     "text": "Humidity doesn't pick a direction! It's coming toward the house. It's always toward the house. If it was humidity it'd go both ways, and it doesn't, it comes to me, like it wants to be let in.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Rudy, I'm going to ask you something and I want you to be honest. Have you talked to the neighbor.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-a",
+     "text": "Not in nine years.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Why not.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-a",
+     "text": "Because then it'd be about the neighbor and it's not about the neighbor. It's about the fence. The neighbor's fine. The neighbor brought me soup once. Good soup. It's the fence, Dell.",
+     "pauseAfterMs": 400
+    },
+    {
+     "host": "dell",
+     "text": "Okay. Here's what you do. Put the notebook down. Not away, down. Go out in the morning when it's light and the fence thinks it's safe, and measure then. Catch it relaxed.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-a",
+     "text": "Catch it relaxed. Okay. Okay, I can do that. You're the only one who listens, Dell.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "I know, Rudy. That's the whole show.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 102,
+   "tags": [
+    "night"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-callin-lorna-1",
+   "kind": "callin",
+   "hosts": [
+    "mags",
+    "dell",
+    "caller-b"
+   ],
+   "lines": [
+    {
+     "host": "mags",
+     "text": "Lorna's on two.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Lorna. You're on Static City. You're going to have to speak up.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-b",
+     "text": "I can't, Dell. I'm in the kitchen.",
+     "direction": "whispering throughout",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Why does the kitchen mean you can't speak up.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-b",
+     "text": "Because they're all in here. The toaster, the kettle, the little clock on the stove that nobody set. They're not listening, exactly. They're present. You wouldn't shout in front of guests.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "I see. And how is the toaster.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-b",
+     "text": "Going through something. It only does one side now. I think it's a statement. I've been eating the toast anyway, as a show of support. One side at a time.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "The heating element is broken.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-b",
+     "text": "Oh, hello Marguerite. That's one way to see it. Dell, I called because you sound tense tonight. You sound like a man who's been counting stairs again.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "I have been counting stairs again.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-b",
+     "text": "I know. Listen. Here's what I do. Before bed, I put one hand flat on the counter and I say, out loud, Thank you all for today. The toaster, the kettle, the clock. And then I go to bed. And I sleep, Dell. I sleep like a dropped coat.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "You thank the appliances.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-b",
+     "text": "I thank the room. The appliances are just who's in it. Try it with the studio. Thank the board, thank the chair, thank Marguerite.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "I'm not thanking Mags on air.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Noted.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-b",
+     "text": "Then thank the hum. I'll bet nobody's ever thanked it. I'll bet that's why it's humming. Good night, Dell.",
+     "pauseAfterMs": 400
+    },
+    {
+     "host": "dell",
+     "text": "She hung up. Mags, did the hum just",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "No.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "It did something.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 103,
+   "tags": [
+    "night"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-callin-benji-1",
+   "kind": "callin",
+   "hosts": [
+    "mags",
+    "dell",
+    "caller-c"
+   ],
+   "lines": [
+    {
+     "host": "mags",
+     "text": "Benji on three. He has a question about school.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Benji. Buddy. It's the middle of the night.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-c",
+     "text": "I know, I know, I'm sorry, I've got a thing due and I figured you'd know. It's for social studies. I have to explain how a city gets its water.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Benji, before I answer, I want to be very clear. This is not an educational program.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-c",
+     "text": "Right, right, but like, you know stuff.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "I notice stuff. That's different. Noticing is upstream of knowing. Okay. How a city gets its water. Officially? Reservoirs, pipes, a treatment plant, a man with a clipboard. Unofficially, Benji, and this is where it gets interesting",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Say reservoirs.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "I'm saying reservoirs. I said reservoirs. Benji, write down reservoirs. Then write down pipes. Then, in the margin, small, write down: ask who owns the clouds.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-c",
+     "text": "Ask who owns the clouds. Got it. Professor says that's a good one.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Who's Professor.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-c",
+     "text": "My hamster. He's on the desk. He gets a vote.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Everyone's getting a vote tonight. Okay. Also write: the water remembers where it's been. That's just true. You can't be marked down for something true.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "You can.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-c",
+     "text": "Okay cool thanks bye.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "He's going to get a C on that, Mags. A good C. A C with character.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 84,
+   "tags": [
+    "night"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-callin-hollis-1",
+   "kind": "callin",
+   "hosts": [
+    "mags",
+    "dell",
+    "caller-d"
+   ],
+   "lines": [
+    {
+     "host": "mags",
+     "text": "Hollis from the Bollard Works, line one.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Hollis. You're on. Everything all right at the plant.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-d",
+     "text": "Good evening, Dell. Good evening, Marguerite. Yes. Broadly. I wanted to mention, and I'm sure it's nothing, that one of the bollards has begun to warm.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Warm.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-d",
+     "text": "Slightly. To the touch. It's one of the finished ones, out on the yard, with the others. They are all identical, as you know, that's rather the point of a bollard. And this one is, how to put it, agreeable to the hand. In a way the others are not.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Hollis, that's not nothing.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-d",
+     "text": "No, I agree, it's not necessarily nothing. But it's not necessarily a problem. I've put a cone on it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "A cone.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-d",
+     "text": "A traffic cone, Marguerite, yes. So that nobody leans on it unawares and gets a surprise. A pleasant surprise, I should say. It's a very reasonable warmth. Like a stone that's been in the sun. But there has been no sun. That's the only wrinkle.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Hollis, I have a stair in my building that's warm. One stair. The extra one.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-d",
+     "text": "Oh dear. Well. Then perhaps it's going around.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Perhaps it's going around! Mags, write that down.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "I'm not writing that down.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-d",
+     "text": "I shan't take more of your time. I just felt the awake should know. If it gets any warmer I'll put a second cone on it, and if it comes to a third cone, well, I'll ring back. Good night, both.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Three cones, Hollis. Three is when it becomes a ritual.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-d",
+     "text": "Noted, Dell. Noted.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "He said noted. He's been listening to you, Mags.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Everyone has.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 107,
+   "tags": [
+    "night"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-liner-evidence",
+   "kind": "liner",
+   "hosts": [
+    "dell",
+    "mags"
+   ],
+   "lines": [
+    {
+     "host": "dell",
+     "text": "The next record is called {nextTitle}. It's by {nextArtist}. I'm not saying that's a message. I'm only noticing that it's in the pile tonight, and the pile is not random, the pile is never random, Mags makes the pile.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "I make the pile alphabetically.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Which is a system, and systems can be read. Here it is. Listen for what's underneath.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 25,
+   "tags": [
+    "night"
+   ],
+   "usesSlots": [
+    "nextTitle",
+    "nextArtist"
+   ],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-liner-evidence-nf",
+   "kind": "liner",
+   "hosts": [
+    "dell",
+    "mags"
+   ],
+   "lines": [
+    {
+     "host": "dell",
+     "text": "The next record has a title, and I've read it, and I'm not going to say it out loud, because I don't know who's listening besides you. I'm not saying the title's a message. I'm only noticing it's in the pile tonight, and Mags makes the pile.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "I make the pile alphabetically.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Which is a system, and systems can be read. Here it is. Listen for what's underneath.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 27,
+   "tags": [
+    "night"
+   ],
+   "usesSlots": [],
+   "fallbackOf": "sc-liner-evidence",
+   "weight": 1
+  },
+  {
+   "id": "sc-trans-prev",
+   "kind": "transition",
+   "hosts": [
+    "dell",
+    "mags"
+   ],
+   "lines": [
+    {
+     "host": "dell",
+     "text": "That was {prevTitle}, by {prevArtist}. I sat very still for the whole thing. Mags sat very still too, but that's her resting state, so it doesn't count.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "I was doing the crossword.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Stillness takes many forms. If you felt something during that record, a draft, a presence, a memory you don't recognize as yours, that's normal. That's just the night getting into the room. More in a moment.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 28,
+   "tags": [
+    "night"
+   ],
+   "usesSlots": [
+    "prevTitle",
+    "prevArtist"
+   ],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-trans-prev-nf",
+   "kind": "transition",
+   "hosts": [
+    "dell",
+    "mags"
+   ],
+   "lines": [
+    {
+     "host": "dell",
+     "text": "That was the last one. I sat very still for the whole thing. Mags sat very still too, but that's her resting state, so it doesn't count.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "I was doing the crossword.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Stillness takes many forms. If you felt something during that record, a draft, a presence, a memory you don't recognize as yours, that's normal. That's just the night getting into the room. More in a moment.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 27,
+   "tags": [
+    "night"
+   ],
+   "usesSlots": [],
+   "fallbackOf": "sc-trans-prev",
+   "weight": 1
+  },
+  {
+   "id": "sc-banter-album",
+   "kind": "banter",
+   "hosts": [
+    "dell",
+    "mags"
+   ],
+   "lines": [
+    {
+     "host": "dell",
+     "text": "Mags. Hand me the sleeve.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "There's no sleeve. It's a file.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Then hand me the file. {album}. That's the album this one's from. Look at the title. Say it slowly. Say it backwards. I did, in the car, and I had to pull over.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Why were you saying it backwards.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Because forwards it was fine! Fine is how they get you. Nothing dangerous has ever been dangerous forwards. Anyway. I'm not saying there's something hidden in this album. I'm only noticing that it's been in the library the whole time and nobody mentioned it to me.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "You have the library.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "That's what they want me to think. Here's the next one.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 45,
+   "tags": [
+    "night"
+   ],
+   "usesSlots": [
+    "album"
+   ],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-banter-album-nf",
+   "kind": "banter",
+   "hosts": [
+    "dell",
+    "mags"
+   ],
+   "lines": [
+    {
+     "host": "dell",
+     "text": "Mags. Hand me the sleeve.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "There's no sleeve. It's a file.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Then hand me the file. This record came off an album, and the album has a name, and I said the name backwards in the car on the way in, and I had to pull over.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Why were you saying it backwards.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Because forwards it was fine! Fine is how they get you. Nothing dangerous has ever been dangerous forwards. Anyway. I'm not saying there's something hidden in this album. I'm only noticing that it's been in the library the whole time and nobody mentioned it to me.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "You have the library.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "That's what they want me to think. Here's the next one.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 46,
+   "tags": [
+    "night"
+   ],
+   "usesSlots": [],
+   "fallbackOf": "sc-banter-album",
+   "weight": 1
+  },
+  {
+   "id": "sc-dedic-awake",
+   "kind": "dedication",
+   "hosts": [
+    "dell",
+    "mags"
+   ],
+   "lines": [
+    {
+     "host": "dell",
+     "text": "A dedication. Mags has a slip of paper. Read the slip.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "It says, for whoever is up at this hour with the lights off and the radio on, from someone who is also doing that, three streets over.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Three streets over. Three streets which way? Doesn't say. It never says. That's the beauty of the awake, we don't give directions, we give coordinates and let you work it out.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "So this one goes out three streets over, in every direction at once. It's called {nextTitle}. By {nextArtist}. Whoever you are. Lights off. Radio on. We see you. Not literally. The window's painted.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Here it comes.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 43,
+   "tags": [
+    "night"
+   ],
+   "usesSlots": [
+    "nextTitle",
+    "nextArtist"
+   ],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-dedic-awake-nf",
+   "kind": "dedication",
+   "hosts": [
+    "dell",
+    "mags"
+   ],
+   "lines": [
+    {
+     "host": "dell",
+     "text": "A dedication. Mags has a slip of paper. Read the slip.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "It says, for whoever is up at this hour with the lights off and the radio on, from someone who is also doing that, three streets over.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Three streets over. Three streets which way? Doesn't say. It never says. That's the beauty of the awake, we don't give directions, we give coordinates and let you work it out.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "So the next one goes out three streets over, in every direction at once. Whoever you are. Lights off. Radio on. We see you. Not literally. The window's painted.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Here it comes.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 40,
+   "tags": [
+    "night"
+   ],
+   "usesSlots": [],
+   "fallbackOf": "sc-dedic-awake",
+   "weight": 1
+  },
+  {
+   "id": "sc-mono-keys",
+   "kind": "monologue",
+   "hosts": [
+    "dell",
+    "mags"
+   ],
+   "lines": [
+    {
+     "host": "dell",
+     "text": "Let me tell you about the all-night key-cutting place, because I walked past it again tonight and he was there again, the man, standing behind the counter with the blank keys fanned out in front of him like a hand of cards he's afraid to play.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Nine years I've walked past that window. I've never seen a customer. I've never heard the grinder. I've never seen the man sit down. One time, one time, I saw him pick up a blank and hold it to the light, and turn it, and put it back in a different spot. That's it. That's the whole event. I thought about it for a week.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Now, a daytime person says: slow business. A daytime person says: he's the owner's cousin, he gets paid to stand there, nobody cuts keys at night. Fine. Then why does the sign say Open. Not Open All Night. Not Open Late. Just Open. Like a condition. Like a wound. Like a door.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "It's a sign.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "It's a sign, Mags, you've said it yourself. I'm not saying he's waiting for a specific key. I'm only noticing that every blank in that window is the same shape as the key to this building. I checked. I held mine up to the glass. He looked at it. He looked at me. He nodded, once, very small, like a man who has finally seen the card he was waiting for.",
+     "pauseAfterMs": 400
+    },
+    {
+     "host": "dell",
+     "text": "I went in the other door. The side one. Just in case. More music. Lock up.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 99,
+   "tags": [
+    "night"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-mono-forms",
+   "kind": "monologue",
+   "hosts": [
+    "dell",
+    "mags"
+   ],
+   "lines": [
+    {
+     "host": "dell",
+     "text": "The fifth letter came. From the Department. Mags has it. I haven't opened it. I'm looking at it. It's on the board between us like a small flat animal that's pretending to be asleep.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Open it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Not on air. Now listen to me. Here is what I know about forms. A form is a question somebody else gets to ask you forever. You fill it out once and it goes in a drawer, and the drawer is in a building, and the building is in a system, and the system doesn't sleep, Mags, the system is the only thing in this city more awake than us.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "The first letter asked who I was. Fine. The second asked what I did. Fine, I notice things, I wrote that. The third asked me to clarify. Clarify what? Clarify noticing? The fourth asked about line fourteen, which I've discussed, and now the fifth, which is thicker. Thicker, Mags. It has heft. Something's been added. A photograph, maybe. A map. A smaller envelope, which is the worst case, because then it's envelopes all the way down.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "It's a form. You can feel the staple.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "I can feel the staple. The staple is the first honest thing the Department has ever sent me. I'm going to put it in the drawer with the others. The water glass is going on top. If anyone from the Department is listening, and I know you are, because your envelopes have windows: I have the glove on. The glove has seen things. We'll talk.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 100,
+   "tags": [
+    "night",
+    "gag:department:2"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-banter-sill",
+   "kind": "banter",
+   "hosts": [
+    "dell",
+    "mags"
+   ],
+   "lines": [
+    {
+     "host": "dell",
+     "text": "Mags. There's something at the window.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "The window's painted.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "From the inside! From the inside, Mags, the paint is on our side, the glass is still glass on their side, and there's something on the ledge, and it's tapping. Listen.",
+     "pauseAfterMs": 800
+    },
+    {
+     "host": "mags",
+     "text": "That's a pigeon.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Which one.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "I can't see it, Dell. The window's painted.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "It's the white patch. I know it's the white patch. The Council sent a delegate. They do that. First a delegate, then a delegation, then one day you wake up and the awning's the width of twelve birds. Tap back.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "No.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Tap back twice. Twice is neutral. Once is yes. Three is a ritual. Twice, Mags.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "I'm not tapping at a pigeon.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Then I'll do it. With the glove.",
+     "pauseAfterMs": 600
+    },
+    {
+     "host": "mags",
+     "text": "It stopped.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Of course it stopped, it got what it came for. It knows there's two of us. It knows the glove. Mags, I want it on the record that I offered peace. I tapped peace. Whatever happens next, I tapped peace.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Noted.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 68,
+   "tags": [
+    "night",
+    "gag:council:2"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-banter-deputy",
+   "kind": "banter",
+   "hosts": [
+    "mags",
+    "dell"
+   ],
+   "lines": [
+    {
+     "host": "mags",
+     "text": "Dell.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "I see it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "It's on the board.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "I see it, Mags, it's a pigeon, it's standing on the fader for my microphone, and it's looking at me, and don't move, because if the Council wanted me quiet, this is exactly how they'd do it, slowly, with a bird.",
+     "direction": "barely moving his mouth",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "The door was open. It walked in. It's the white patch one.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Of course it's the white patch one. Did it come alone.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "It came alone.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Then it's not a delegation. It's a defector. Or a spy. Those are the only two options when something from a council comes alone, and I'd like to believe defector, I would, I have a soft heart under the glove.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "It's eating the pretzel.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "My pretzel. From row L. The warm pretzel. Mags, write down that it chose row L. Everyone chooses row L. That's not nothing.",
+     "pauseAfterMs": 400
+    },
+    {
+     "host": "mags",
+     "text": "I'm calling it Deputy.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "You're naming it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "It's on staff now. It's sitting on the board. Deputy.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Fine. Deputy. Deputy, if you can understand me, and I think you can, blink once for defector.",
+     "pauseAfterMs": 800
+    },
+    {
+     "host": "mags",
+     "text": "Pigeons don't blink like that.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "It did something with its neck. I'm taking it as a yes. Welcome to the show, Deputy. Don't touch the fader. Nobody touches the fader.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 85,
+   "tags": [
+    "night",
+    "gag:council:4"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-banter-fridge",
+   "kind": "banter",
+   "hosts": [
+    "dell",
+    "mags"
+   ],
+   "lines": [
+    {
+     "host": "dell",
+     "text": "Update on the hum. It's moved.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "It can't move.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "It was under my chair. Now it's in the wall behind you. Close your eyes. No, don't close your eyes, somebody has to run the board. Just listen with your eyes open.",
+     "pauseAfterMs": 600
+    },
+    {
+     "host": "mags",
+     "text": "That's the fridge through the wall.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "The break room is on the other side of that wall?",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Yes.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Since when.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Since the building.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Okay. Okay. So you're saying the fridge is right there, through the drywall, and the hum is the fridge, and I've been accusing the floor. I can accept that. I can be wrong. The awake are wrong constantly, it's how we stay humble. Mags, go put your hand on the fridge. Tell me if it's humming.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "I'm not leaving the board.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Then I'll go.",
+     "pauseAfterMs": 1200
+    },
+    {
+     "host": "mags",
+     "text": "He's gone. For the listeners: he's walking down the hall. He's wearing one glove. He's opened the break room door.",
+     "direction": "flat play-by-play",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Mags.",
+     "direction": "distant, from down the hall",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Yes.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "It's not humming.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Come back.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "It's not humming, Mags. It's cold, but it's not humming. It's just sitting here. Keeping things. Quietly.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Come back to the board, Dell.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Then what's humming.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Music. We're going to music.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 79,
+   "tags": [
+    "night",
+    "gag:hum:2"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-ad-velotti-3",
+   "kind": "ad",
+   "hosts": [
+    "mags",
+    "dell"
+   ],
+   "lines": [
+    {
+     "host": "mags",
+     "text": "Grandma Velotti's Protective Foil has an announcement.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "You've lined the drawer. You've lined the hat. You've worn the cummerbund to an event you were asked to leave. And you've asked yourself: who is protecting the foil? Nobody. Until now. Introducing Grandma Velotti's Foil for Your Foil. A second, finer sheet, designed to wrap the first sheet, so the first sheet can finally relax and do its job.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Foil for your foil.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Foil for your foil, Mags. Think about the last time you were protected and also felt protected. It's different. The hat does the work. The second hat lets the hat know it's appreciated. Grandma Velotti's Foil for Your Foil. Available in classic, rose gold, and a new matte finish called Discreet, which is the same as classic but the box doesn't say foil on it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "The box says Grandma.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Just Grandma. In small letters. Grandma Velotti's. She's thought of everything, and then she's wrapped it.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 62,
+   "tags": [
+    "any",
+    "gag:velotti:3"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-ad-velotti-4",
+   "kind": "ad",
+   "hosts": [
+    "mags",
+    "dell"
+   ],
+   "lines": [
+    {
+     "host": "mags",
+     "text": "Grandma Velotti's Protective Foil is required to read the following statement.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Oh, here we go.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Grandma Velotti is a registered trademark of Velotti Household Products and is not a grandmother. Grandma Velotti is not a person. The woman on the box is a stock illustration. The hat was added later. Velotti Household Products is operated out of a single unit in an industrial park by a man named Doug, who is in his forties, and who wishes to clarify that the foil is ordinary foil, that it has always been ordinary foil, and that he is very sorry.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Doug.",
+     "pauseAfterMs": 800
+    },
+    {
+     "host": "mags",
+     "text": "That concludes the statement.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Mags. For nine years I have lined my hat with Doug.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "You have.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "And the foil worked. I want that on the record. Whatever Doug says, whatever the Department made him say, the foil worked, I never once had a thought that wasn't mine while wearing it, and I've had a lot of thoughts, Mags, you've heard them. Grandma Velotti's Protective Foil. Still available. Doug needs this.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Grandma Velotti's. Thank you, Doug.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 71,
+   "tags": [
+    "any",
+    "gag:velotti:4"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-ad-bunker",
+   "kind": "ad",
+   "hosts": [
+    "dell",
+    "mags"
+   ],
+   "lines": [
+    {
+     "host": "dell",
+     "text": "Bunker Bob's Discount Shelving. Bob's not a prepper. Bob wants you to know that. Bob just believes that everything you own should be visible, labeled, and reachable in the dark, and if that makes him a prepper then the word has lost its meaning.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Bunker Bob's has shelving.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Bunker Bob's has shelving like the night has hours. Steel. Wire. The wooden kind that smells like a cabin. Bob will come to your home, personally, at any hour, and he'll stand in your closet, and he'll say, Where's your water. And you'll say, In the kitchen, Bob. And Bob will shake his head, slowly, and he'll say, That's a kitchen. Where's your water. And you'll understand, suddenly, that you've never had a shelf in your life, you've had surfaces.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Bunker Bob's is not a licensed contractor.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Bob's licensed to stack, Mags, it's in his eyes. Bunker Bob's Discount Shelving. Out past the roundabout, the one that turns. Bob says you'll know the place because it's the only building with nothing leaning against it.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 68,
+   "tags": [
+    "night"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-ad-lamplighter",
+   "kind": "ad",
+   "hosts": [
+    "mags",
+    "dell"
+   ],
+   "lines": [
+    {
+     "host": "mags",
+     "text": "The Lamplighter Society would like a word.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "The Lamplighter Society is not a cult. The Lamplighter Society is a book club that meets at night, wears robes for warmth, and has one rule, which is that you must finish the book. That's it. One rule. They've been very clear, legally, that it's one rule. The robes are optional. The robes are very popular.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "The Lamplighter Society is currently reading a book with a lighthouse on the cover.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "They're always reading a book with a lighthouse on the cover. That's the other thing, not a rule, a tendency. If you're the kind of person who reads until the sentences stop making sense and then keeps reading because stopping feels like losing, the Lamplighters want you. Meetings are in the back room of the laundromat where the Eastside library used to be. Bring the book. Finish the book. Don't ask about the lantern.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "The lantern is just a lantern.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "They said you'd say that. The Lamplighter Society. One rule. Lots of robes.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 67,
+   "tags": [
+    "night"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-news-3",
+   "kind": "news",
+   "hosts": [
+    "mags",
+    "dell"
+   ],
+   "lines": [
+    {
+     "host": "mags",
+     "text": "The Static City Night Desk. Two items and a correction.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Item one. The folding chair man at the Tanner Hill roundabout has been given a second folding chair by the city, for a friend. He reports that no friend has yet come, but that the chair has been useful for his thermos, and that the roundabout continues to turn at the speed of a minute hand, and that he's begun to think of it as a very large, very slow clock that only tells you where you're going.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Item two. Doug, of Velotti Household Products, has received a bouquet of flowers at his industrial unit from an anonymous sender. The card read: the foil worked. Doug is reported to have sat down.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "I don't know anything about that.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "And a correction. This desk has previously referred to letters received by this program's host as coming from, quote, the Department. I have now opened the fifth letter. It is from this station's accounting department. It concerns the host's expense report. Line fourteen is a request for reimbursement for four hundred double-A batteries.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "For the flashlights.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "How many flashlights do you own.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "One.",
+     "pauseAfterMs": 600
+    },
+    {
+     "host": "mags",
+     "text": "Accounting regrets the window envelope. That's the Night Desk.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 80,
+   "tags": [
+    "night",
+    "gag:department:3"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-skit-stair",
+   "kind": "skit",
+   "hosts": [
+    "dell",
+    "mags"
+   ],
+   "lines": [
+    {
+     "host": "dell",
+     "text": "Tonight on Static City Theatre, a dramatic reenactment. The Extra Stair. I'll play myself. Mags will play the stair.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "I'm not playing the stair.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "You just have to say one word, and the word is nothing, because stairs don't speak, so you'll be saying nothing, with intent. It's the third floor. Late. The lights buzz. A man climbs. One. Two. Three. Four. Five. Six. Seven. Eight. Nine. Ten. Eleven.",
+     "direction": "counting slower and slower, hushed",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "And then.",
+     "pauseAfterMs": 800
+    },
+    {
+     "host": "mags",
+     "text": "Nothing.",
+     "direction": "flat",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Twelve. The man stops. He looks down. The stair looks up. Not with eyes. With the general quality of a thing that has been placed there recently by someone who thought he wouldn't notice. The man kneels. He removes a glove. No, he puts a glove on. He touches the stair.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Nothing.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Warm. The stair is warm. Not hot. Warm like a chair someone just left. The man says: Who was sitting here. The stair says.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Nothing.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Exactly like that, that's exactly how it said it. The man stands. He finishes the climb. He does not look back, because looking back is how you tell a stair it won. He goes into his studio. He does a show. He tells the awake. And the stair, three floors down, in the dark, does what stairs do when they're not being counted.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Nothing.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "We don't know that. That's the point. That's the whole play. The Extra Stair. Mags, take a bow.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "No.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 94,
+   "tags": [
+    "night"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-skit-hold",
+   "kind": "skit",
+   "hosts": [
+    "dell",
+    "mags"
+   ],
+   "lines": [
+    {
+     "host": "dell",
+     "text": "I called the Department. On the number on the letter. I had Mags record it, because if I vanish I want there to be tape. Here's what happened. Mags, roll it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Thank you for calling. Your call is important to us. It is important in the way a leaf is important to a tree, which is to say the tree will go on. Please hold.",
+     "direction": "reading as a hold-system voice, perfectly flat",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "That's not what hold recordings say.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "You're listening to hold music. There is no music. We find that the silence helps callers reflect on why they called. Your estimated wait time is a while.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "A while, Mags! They said a while! That's not a unit!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "If you are calling about line fourteen, press one. If you are calling because you believe you are being watched, remain on the line, which is the same thing. If you are wearing a hat, we know. Please hold.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "I took the hat off right there. On the sidewalk. People saw.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Your call has been escalated. This means your call is now slightly higher than it was. It has not moved forward. It has moved up. Please enjoy a brief description of a fern.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "They described a fern to me for four minutes. It was a good fern. I'm not going to pretend it wasn't. And then?",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Thank you for holding. All of our representatives are currently holding, too. Goodbye.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "And it hung up. And the sidewalk was very quiet. And I'm not saying the Department is just a phone that holds. I'm only noticing that nobody has ever reached the other end, and the other end has never needed to reach us, and that is the most peaceful relationship in my life.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 112,
+   "tags": [
+    "night",
+    "gag:department:2"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-skit-word",
+   "kind": "skit",
+   "hosts": [
+    "mags",
+    "dell"
+   ],
+   "lines": [
+    {
+     "host": "mags",
+     "text": "It's time for the word. One word from the dictionary. No commentary. The envelope.",
+     "pauseAfterMs": 800
+    },
+    {
+     "host": "dell",
+     "text": "Open it slowly. The paper has a sound, and the sound is information.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Tonight's word is. Mellifluous.",
+     "pauseAfterMs": 600
+    },
+    {
+     "host": "dell",
+     "text": "Mellifluous.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Adjective. Sweetly or smoothly flowing, especially of a voice or words.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "That's a nice word. I'm suspicious of how nice it is, but it's nice. It flows. You can hear it flow. Mel. Lif. Lu. Ous. It's four little steps down to a stream. Who chose that.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "The dictionary. I open it at random.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Nothing is at random, Mags. Of all the words in there, the word tonight is the one for a voice that goes down smooth. On a radio show. At night. Where there's a voice. I'm not saying the dictionary knows it's being read on air.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "No commentary. That's the rule.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "I'm only noticing.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "That's commentary.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "It's adjacent to commentary. It's commentary-flavored. Fine. Mellifluous. To the awake: use it once tomorrow, in daylight, on a daytime person, and watch their face. Their face will tell you if they've been listening.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "That's the word. Good night, word.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 74,
+   "tags": [
+    "night",
+    "late"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-callin-linefour-1",
+   "kind": "callin",
+   "hosts": [
+    "dell",
+    "mags",
+    "caller-a"
+   ],
+   "lines": [
+    {
+     "host": "dell",
+     "text": "Who've we got.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Line two is a man who wants to talk about his water heater. Line three is Benji again. Line four is holding.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Holding for what.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Holding. They didn't say. They've been holding since before the show.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Before the show? The show's been on two hours. Who holds for two hours.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Someone patient.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Or someone who knows I'll pick up eventually. Which is a kind of patience I don't trust. Mags, pick up and ask who it is.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "I did. They said they'd wait.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "They said they'd wait? Not who they are, not what they want, just that they'll wait? That's not a caller, that's a condition. Okay. Okay. Leave them on. Don't take them off hold. If they're going to wait, they can wait, and I'm going to take the water heater, because a water heater I understand. Line two. You're on Static City.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-a",
+     "text": "Dell, it's Rudy. My water heater's fine. I lied to get through. The fence",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Rudy, not now, there's someone on line four.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-a",
+     "text": "Who.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Nobody knows, Rudy. Nobody knows.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 71,
+   "tags": [
+    "night",
+    "gag:linefour:1"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-callin-linefour-2",
+   "kind": "callin",
+   "hosts": [
+    "dell",
+    "mags"
+   ],
+   "lines": [
+    {
+     "host": "dell",
+     "text": "Mags. Is line four still",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Still holding.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "It's been the whole show. The whole show, Mags. They've heard everything. The stairs. The hum. The fern. They know about Doug. I feel exposed. I feel like I've been doing a show for one person who refuses to introduce themselves.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "That's radio.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "That's exactly radio and I don't like hearing it said out loud. Pick up. Ask again.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Line four. Hello.",
+     "pauseAfterMs": 1000
+    },
+    {
+     "host": "mags",
+     "text": "They said: still here.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Still here. Not hello, not it's so-and-so. Still here. Like a lighthouse. Like a stair. Mags, I'm not saying it's the Department. I'm only noticing the Department's hold recording said all of their representatives were holding too, and now someone's holding, on my line, and won't say why.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Or it's a listener who fell asleep with the phone.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Then they'd be snoring. Are they snoring.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Breathing. Evenly.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "That's worse. Even breathing is the most patient sound there is. Leave them. We go to music. We let them hold through the music like everyone else who's ever loved this show.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 70,
+   "tags": [
+    "night",
+    "gag:linefour:2"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-callin-linefour-3",
+   "kind": "callin",
+   "hosts": [
+    "dell",
+    "mags"
+   ],
+   "lines": [
+    {
+     "host": "dell",
+     "text": "All right. It's late. The sensible ones are gone. Line four. I'm doing it. I'm taking line four, and whatever's on it, I want the awake to remember I tapped peace earlier tonight, with the glove. Mags. Put them through.",
+     "pauseAfterMs": 800
+    },
+    {
+     "host": "dell",
+     "text": "Line four. You're on Static City. You've been very patient.",
+     "pauseAfterMs": 1200
+    },
+    {
+     "host": "dell",
+     "text": "Hello?",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "It's for me.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "What do you mean it's for you.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "It's Admiral.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "The cat.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "He has a phone at home. For emergencies. He sits on it. Sometimes it dials.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Your cat has been on hold for the entire show.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "He likes the show.",
+     "pauseAfterMs": 500
+    },
+    {
+     "host": "mags",
+     "text": "Yes. I know. I know. Did you eat. Okay.",
+     "direction": "quietly, into the phone, as to a colleague",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "What's he saying.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "He wants to know if the fridge here is plugged in.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Why would a cat",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Because I told him about the hum.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Is the fridge plugged in, Mags.",
+     "pauseAfterMs": 1000
+    },
+    {
+     "host": "mags",
+     "text": "No.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "It's not plugged in.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "It's never been plugged in. The outlet's behind the vending machine.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Then what has been humming.",
+     "pauseAfterMs": 800
+    },
+    {
+     "host": "mags",
+     "text": "Admiral says good night. Line four's clear.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "I'm going to need a minute. Music. Give me music.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 76,
+   "tags": [
+    "night",
+    "late",
+    "gag:linefour:3",
+    "gag:hum:3"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-callin-hollis-2",
+   "kind": "callin",
+   "hosts": [
+    "mags",
+    "dell",
+    "caller-d"
+   ],
+   "lines": [
+    {
+     "host": "mags",
+     "text": "Hollis.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Hollis. The bollard. How many cones.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-d",
+     "text": "Good evening, Dell. Marguerite. Two cones, at present. I wanted to report that the warm bollard has been joined by a second warm bollard, which is to say the one next to it has also become agreeable, and I'm wondering now whether it's less that one bollard is warm and more that warmth is, in some sense, a thing the yard is doing.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Hollis, that's a beautiful sentence and it's also the most frightening thing anyone's said on this program.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-d",
+     "text": "Thank you. I did practice it in the car. The men on the line are quite calm about it. One of them has taken to eating his sandwich on the first bollard. He says it's like a stone wall in the country. I've asked him to use a napkin.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Is it electrical.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-d",
+     "text": "We did wonder, Marguerite. We had the electrician in. He put his hand on it and said, Well, that's warm, and then he said, I'm not needed here, and he left, and he didn't invoice us, which is the part I found strange.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "The electrician didn't invoice.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-d",
+     "text": "He said it didn't feel right to.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Hollis, in nine years of this show, I have never heard of a tradesman declining to invoice. That bollard is doing something to people. It's making them decent. That's not necessarily a problem.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-d",
+     "text": "That's exactly what I said! That's precisely what I said to the night manager. Well. Third cone's standing by. I'll let you know. Good night, both. Good night, Deputy, if Deputy's there.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Deputy's on the fader.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-d",
+     "text": "Of course he is.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 106,
+   "tags": [
+    "night"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-callin-lorna-2",
+   "kind": "callin",
+   "hosts": [
+    "mags",
+    "caller-b",
+    "dell"
+   ],
+   "lines": [
+    {
+     "host": "mags",
+     "text": "Lorna. Line two. Kitchen.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-b",
+     "text": "Dell. I have good news. The toaster's doing both sides again.",
+     "direction": "whispering, delighted",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "What did you do.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-b",
+     "text": "I did what I told you. I put my hand on the counter and I said thank you all. And then, this is new, I apologized to the toaster specifically. I said, I've been taking your one side personally, and that wasn't fair, you were doing what you could. And this morning. Both sides. Golden.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Did you unplug it and plug it back in.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-b",
+     "text": "I did, Marguerite, but I did it respectfully.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Lorna, I have to tell you something, because you're the only one who'll understand. The hum. The one I've been hearing. The fridge isn't plugged in. It's never been plugged in. So it's not the fridge.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-b",
+     "text": "Oh, Dell. Have you thanked it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "I'm not going to thank a hum.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-b",
+     "text": "You're going to lie awake, then. I know the feeling. Here's what I'd say. I'd say: Hum, I hear you. I hear you, and I'm not going to hum back, because you asked me not to, in your way. But I hear you. And then I'd just go on with the show.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "That's it?",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-b",
+     "text": "That's always it. Being heard is most of what anything wants. The toaster. The hum. You, Dell. That's why you've got a show. Good night. Say good night to the pigeon.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "How does she know about the pigeon.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Everyone knows about the pigeon.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 95,
+   "tags": [
+    "night"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-dedic-soup",
+   "kind": "dedication",
+   "hosts": [
+    "dell",
+    "mags"
+   ],
+   "lines": [
+    {
+     "host": "dell",
+     "text": "We have a dedication that came in by phone, and Mags took it down, and I want her to read it exactly as she took it down, because I've seen the paper and it's remarkable.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "From Rudy. On Dunmore Street. To the neighbor. Not about the fence. About the soup. He says: it was nine years ago, and it was a cold night, and I'd just moved in, and you knocked, and you didn't say anything, you just handed me a pot with a towel around the handle, and went back inside. And I never returned the pot. It's in my cupboard. I use it. I'm sorry. This one's for you. The fence is not your fault.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "The fence is not your fault.",
+     "pauseAfterMs": 500
+    },
+    {
+     "host": "dell",
+     "text": "Rudy, if you're listening, and you are, because you're always listening, that's the bravest thing anyone's said on line two. Neighbor, if you're listening, and I don't know if you are, he's got your pot. He'd like to keep it. He'd never ask. The next record goes across the fence, in whatever direction the fence is going.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Here it is.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 72,
+   "tags": [
+    "night"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-dedic-benji",
+   "kind": "dedication",
+   "hosts": [
+    "mags",
+    "dell"
+   ],
+   "lines": [
+    {
+     "host": "mags",
+     "text": "A dedication from Benji.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Benji, buddy, go to sleep.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "He's not on the line. He left a message. It says: this is for Professor, who passed last night. He was a good hamster. He got a vote. Please play something he would have liked. He liked when it was quiet and then it wasn't.",
+     "pauseAfterMs": 600
+    },
+    {
+     "host": "dell",
+     "text": "Quiet and then it wasn't.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Okay. This is for Professor. {nextTitle}, by {nextArtist}, which Mags assures me starts quiet, and then doesn't. Benji, he was a good hamster. He voted well. He voted for clouds. Everyone remembers that.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "For Professor.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 39,
+   "tags": [
+    "night"
+   ],
+   "usesSlots": [
+    "nextTitle",
+    "nextArtist"
+   ],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-dedic-benji-nf",
+   "kind": "dedication",
+   "hosts": [
+    "mags",
+    "dell"
+   ],
+   "lines": [
+    {
+     "host": "mags",
+     "text": "A dedication from Benji.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Benji, buddy, go to sleep.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "He's not on the line. He left a message. It says: this is for Professor, who passed last night. He was a good hamster. He got a vote. Please play something he would have liked. He liked when it was quiet and then it wasn't.",
+     "pauseAfterMs": 600
+    },
+    {
+     "host": "dell",
+     "text": "Quiet and then it wasn't.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Okay. This next one is for Professor. Mags assures me it starts quiet, and then doesn't. Benji, he was a good hamster. He voted well. He voted for clouds. Everyone remembers that.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "For Professor.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 38,
+   "tags": [
+    "night"
+   ],
+   "usesSlots": [],
+   "fallbackOf": "sc-dedic-benji",
+   "weight": 1
+  },
+  {
+   "id": "sc-liner-artist",
+   "kind": "liner",
+   "hosts": [
+    "dell",
+    "mags"
+   ],
+   "lines": [
+    {
+     "host": "dell",
+     "text": "Next up is {nextArtist}. I don't know them. I've never met them. And yet somehow they knew to make a record that would end up in a library that would end up on this board at exactly this hour. I'm not saying they planned it. I'm only noticing the timing.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "They didn't plan it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Nobody plans anything, Mags. That's what's so suspicious about how well it all fits together.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 28,
+   "tags": [
+    "night"
+   ],
+   "usesSlots": [
+    "nextArtist"
+   ],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-liner-artist-nf",
+   "kind": "liner",
+   "hosts": [
+    "dell",
+    "mags"
+   ],
+   "lines": [
+    {
+     "host": "dell",
+     "text": "Next up is somebody I've never met. And yet somehow they knew to make a record that would end up in a library that would end up on this board at exactly this hour. I'm not saying they planned it. I'm only noticing the timing.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "They didn't plan it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Nobody plans anything, Mags. That's what's so suspicious about how well it all fits together.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 26,
+   "tags": [
+    "night"
+   ],
+   "usesSlots": [],
+   "fallbackOf": "sc-liner-artist",
+   "weight": 1
+  },
+  {
+   "id": "sc-liner-night",
+   "kind": "liner",
+   "hosts": [
+    "dell",
+    "mags"
+   ],
+   "lines": [
+    {
+     "host": "dell",
+     "text": "Here's a record for the hour. {nextTitle}. From {nextArtist}. Turn it down a little. Not off. Down. The awake listen low. Loud is for people with neighbors they trust.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Static City.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 13,
+   "tags": [
+    "night",
+    "late"
+   ],
+   "usesSlots": [
+    "nextTitle",
+    "nextArtist"
+   ],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-liner-night-nf",
+   "kind": "liner",
+   "hosts": [
+    "dell",
+    "mags"
+   ],
+   "lines": [
+    {
+     "host": "dell",
+     "text": "Here's a record for the hour. Turn it down a little. Not off. Down. The awake listen low. Loud is for people with neighbors they trust.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Static City.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 11,
+   "tags": [
+    "night",
+    "late"
+   ],
+   "usesSlots": [],
+   "fallbackOf": "sc-liner-night",
+   "weight": 1
+  },
+  {
+   "id": "sc-trans-still",
+   "kind": "transition",
+   "hosts": [
+    "mags",
+    "dell"
+   ],
+   "lines": [
+    {
+     "host": "mags",
+     "text": "That was {prevArtist}. Dell has his eyes closed.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "I'm not asleep. I'm listening to the room now that the record's done. There's always a second after a record where the room doesn't know what to do with itself. That's my favorite second. Did you hear it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "I was cueing the next one.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Then you missed it. There'll be another. There's always another. That's the one thing the night promises.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 28,
+   "tags": [
+    "night"
+   ],
+   "usesSlots": [
+    "prevArtist"
+   ],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-trans-still-nf",
+   "kind": "transition",
+   "hosts": [
+    "mags",
+    "dell"
+   ],
+   "lines": [
+    {
+     "host": "mags",
+     "text": "That was the last one. Dell has his eyes closed.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "I'm not asleep. I'm listening to the room now that the record's done. There's always a second after a record where the room doesn't know what to do with itself. That's my favorite second. Did you hear it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "I was cueing the next one.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Then you missed it. There'll be another. There's always another. That's the one thing the night promises.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 29,
+   "tags": [
+    "night"
+   ],
+   "usesSlots": [],
+   "fallbackOf": "sc-trans-still",
+   "weight": 1
+  },
+  {
+   "id": "sc-banter-guess",
+   "kind": "banter",
+   "hosts": [
+    "dell",
+    "mags"
+   ],
+   "lines": [
+    {
+     "host": "dell",
+     "text": "New game. I'm going to describe the next record without having heard it, using only what I can tell from the title, and Mags is going to tell me if I'm close.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "I haven't heard it either.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Doesn't matter. {nextTitle}. Okay. That's a title with a secret in it. I can tell because it's too calm. Calm titles are hiding something, like a quiet street. I predict a slow start. I predict somebody in that recording was tired. I predict it ends before you want it to.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Every record ends before you want it to.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Not every record, Mags. Some of them go on. Some of them get the hint. All right, let's find out how wrong I am. If I'm right about the tired part, I want a pretzel. Row L.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Deputy ate row L.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Then I want it noted.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Noted.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 57,
+   "tags": [
+    "night"
+   ],
+   "usesSlots": [
+    "nextTitle"
+   ],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-banter-guess-nf",
+   "kind": "banter",
+   "hosts": [
+    "dell",
+    "mags"
+   ],
+   "lines": [
+    {
+     "host": "dell",
+     "text": "New game. I'm going to describe the next record without having heard it, using only what I can tell from the title, and Mags is going to tell me if I'm close.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "I haven't heard it either.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Doesn't matter. I've read the title. It's a title with a secret in it. I can tell because it's too calm. Calm titles are hiding something, like a quiet street. I predict a slow start. I predict somebody in that recording was tired. I predict it ends before you want it to.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Every record ends before you want it to.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Not every record, Mags. Some of them go on. Some of them get the hint. All right, let's find out how wrong I am. If I'm right about the tired part, I want a pretzel. Row L.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Deputy ate row L.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Then I want it noted.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Noted.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 58,
+   "tags": [
+    "night"
+   ],
+   "usesSlots": [],
+   "fallbackOf": "sc-banter-guess",
+   "weight": 1
+  },
+  {
+   "id": "sc-mono-title",
+   "kind": "monologue",
+   "hosts": [
+    "dell",
+    "mags"
+   ],
+   "lines": [
+    {
+     "host": "dell",
+     "text": "I've been thinking about titles. That last one was called {prevTitle}. And somebody sat in a room, and the music was done, and they had to decide what to call it. That's a terrifying moment. All the sound in the world, and you have to put a word on the door.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Nobody titles the night. You'll notice that. Days get names, Monday, Tuesday, the whole roster. The night is just the back of the day with the lights off. I've thought about naming them. Mags, what would you call tonight.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Thursday.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "It's not Thursday anymore, it's after. After-Thursday. Thursday's basement. See, there's a title. There's a word on the door. I'm not saying the days are hiding the nights on purpose. I'm only noticing that there are seven names for the lit part and zero for the rest, and the rest is where we live.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "More music.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Untitled. As usual.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 60,
+   "tags": [
+    "night"
+   ],
+   "usesSlots": [
+    "prevTitle"
+   ],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-mono-title-nf",
+   "kind": "monologue",
+   "hosts": [
+    "dell",
+    "mags"
+   ],
+   "lines": [
+    {
+     "host": "dell",
+     "text": "I've been thinking about titles. That last record had one, and somebody sat in a room, and the music was done, and they had to decide what to call it. That's a terrifying moment. All the sound in the world, and you have to put a word on the door.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Nobody titles the night. You'll notice that. Days get names, Monday, Tuesday, the whole roster. The night is just the back of the day with the lights off. I've thought about naming them. Mags, what would you call tonight.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Thursday.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "It's not Thursday anymore, it's after. After-Thursday. Thursday's basement. See, there's a title. There's a word on the door. I'm not saying the days are hiding the nights on purpose. I'm only noticing that there are seven names for the lit part and zero for the rest, and the rest is where we live.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "More music.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Untitled. As usual.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 59,
+   "tags": [
+    "night"
+   ],
+   "usesSlots": [],
+   "fallbackOf": "sc-mono-title",
+   "weight": 1
+  },
+  {
+   "id": "sc-callin-benji-2",
+   "kind": "callin",
+   "hosts": [
+    "mags",
+    "caller-c",
+    "dell"
+   ],
+   "lines": [
+    {
+     "host": "mags",
+     "text": "Benji. Line three.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-c",
+     "text": "Hey, hey, sorry, quick one. What was that song. The one just now. I need it for a thing.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "What kind of thing.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-c",
+     "text": "A playlist. For a girl. Not like that. For a project. That's also for a girl.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Benji, that was {prevTitle}. By {prevArtist}. Write it down. Then write it down again on a different piece of paper, and keep them in separate rooms, because if you lose one you'll still have the other, and if you lose both, that's not a coincidence, that's a girl.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Don't take dating advice from Dell.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-c",
+     "text": "Is it dating advice?",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "It's filing advice, Benji. Everything's filing advice. The heart is a drawer.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-c",
+     "text": "The heart is a drawer. Okay cool thanks bye.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "He wrote that down.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "He's going to be fine. He's going to be strange, but he's going to be fine.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 58,
+   "tags": [
+    "night"
+   ],
+   "usesSlots": [
+    "prevTitle",
+    "prevArtist"
+   ],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-callin-benji-2-nf",
+   "kind": "callin",
+   "hosts": [
+    "mags",
+    "caller-c",
+    "dell"
+   ],
+   "lines": [
+    {
+     "host": "mags",
+     "text": "Benji. Line three.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-c",
+     "text": "Hey, hey, sorry, quick one. What was that song. The one just now. I need it for a thing.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "What kind of thing.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-c",
+     "text": "A playlist. For a girl. Not like that. For a project. That's also for a girl.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Benji, Mags has the title. She'll give it to you off air. Write it down. Then write it down again on a different piece of paper, and keep them in separate rooms, because if you lose one you'll still have the other, and if you lose both, that's not a coincidence, that's a girl.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Don't take dating advice from Dell.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-c",
+     "text": "Is it dating advice?",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "It's filing advice, Benji. Everything's filing advice. The heart is a drawer.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-c",
+     "text": "The heart is a drawer. Okay cool thanks bye.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "He wrote that down.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "He's going to be fine. He's going to be strange, but he's going to be fine.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 60,
+   "tags": [
+    "night"
+   ],
+   "usesSlots": [],
+   "fallbackOf": "sc-callin-benji-2",
+   "weight": 1
+  },
+  {
+   "id": "sc-skit-lineup",
+   "kind": "skit",
+   "hosts": [
+    "dell",
+    "mags"
+   ],
+   "lines": [
+    {
+     "host": "dell",
+     "text": "Static City Theatre presents: The Lineup. A detective. A room. A one-way mirror, which, by the way, I have questions about, but not tonight. Mags plays the detective.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Fine. Bring them in.",
+     "direction": "bored detective",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Number one steps forward. It's the next record. {nextTitle}. It's standing very still. It's by {nextArtist}, who is not in the room, who is never in the room, which is itself a kind of alibi. Detective, does the witness recognize the record.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "The witness hasn't heard it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "The witness is me. The witness hasn't heard it. But the witness has a feeling. The witness has been in this room a long time, Detective, and the witness knows that when a record stands that still, it's about to do something. Number one, say the line.",
+     "pauseAfterMs": 500
+    },
+    {
+     "host": "mags",
+     "text": "Records don't talk.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Then it's hiding something. Everyone who doesn't talk is hiding something, Detective, that's rule one, you taught me that, in the earlier scene we didn't do. Let it go. Let it walk. We'll see what it does when it thinks nobody's listening.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Everybody's listening.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "That's the twist. Roll it.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 72,
+   "tags": [
+    "night"
+   ],
+   "usesSlots": [
+    "nextTitle",
+    "nextArtist"
+   ],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-skit-lineup-nf",
+   "kind": "skit",
+   "hosts": [
+    "dell",
+    "mags"
+   ],
+   "lines": [
+    {
+     "host": "dell",
+     "text": "Static City Theatre presents: The Lineup. A detective. A room. A one-way mirror, which, by the way, I have questions about, but not tonight. Mags plays the detective.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Fine. Bring them in.",
+     "direction": "bored detective",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Number one steps forward. It's the next record. It's standing very still. The artist is not in the room. The artist is never in the room, which is itself a kind of alibi. Detective, does the witness recognize the record.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "The witness hasn't heard it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "The witness is me. The witness hasn't heard it. But the witness has a feeling. The witness has been in this room a long time, Detective, and the witness knows that when a record stands that still, it's about to do something. Number one, say the line.",
+     "pauseAfterMs": 500
+    },
+    {
+     "host": "mags",
+     "text": "Records don't talk.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Then it's hiding something. Everyone who doesn't talk is hiding something, Detective, that's rule one, you taught me that, in the earlier scene we didn't do. Let it go. Let it walk. We'll see what it does when it thinks nobody's listening.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Everybody's listening.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "That's the twist. Roll it.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 71,
+   "tags": [
+    "night"
+   ],
+   "usesSlots": [],
+   "fallbackOf": "sc-skit-lineup",
+   "weight": 1
+  },
+  {
+   "id": "sc-trans-deputy",
+   "kind": "transition",
+   "hosts": [
+    "mags",
+    "dell"
+   ],
+   "lines": [
+    {
+     "host": "mags",
+     "text": "That was {prevTitle}. Deputy's gone.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "What do you mean gone.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "During the record. It walked to the door. The door was open. It walked out. It went down the hall toward the break room.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "It went to the fridge.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "It went toward the fridge.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "The unplugged fridge. Mags.",
+     "pauseAfterMs": 800
+    },
+    {
+     "host": "dell",
+     "text": "Do you hear that.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "I don't hear anything.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Neither do I. The hum. It's gone. The hum is gone. The pigeon walked out and the hum walked out with it. I'm not saying the pigeon was the hum. I'm not saying that. I'm only noticing that I've got nothing under my chair for the first time in a month and I don't like it. It's too quiet. The quiet's got a pitch.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "You wanted it gone.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "I wanted it explained. There's a difference. Mags, if Deputy comes back, let him in. Give him row L. We'll all sit here, and hum, together.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Noted.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 63,
+   "tags": [
+    "night",
+    "late",
+    "gag:council:5",
+    "gag:hum:4"
+   ],
+   "usesSlots": [
+    "prevTitle"
+   ],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-trans-deputy-nf",
+   "kind": "transition",
+   "hosts": [
+    "mags",
+    "dell"
+   ],
+   "lines": [
+    {
+     "host": "mags",
+     "text": "That was the last one. Deputy's gone.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "What do you mean gone.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "During the record. It walked to the door. The door was open. It walked out. It went down the hall toward the break room.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "It went to the fridge.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "It went toward the fridge.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "The unplugged fridge. Mags.",
+     "pauseAfterMs": 800
+    },
+    {
+     "host": "dell",
+     "text": "Do you hear that.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "I don't hear anything.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Neither do I. The hum. It's gone. The hum is gone. The pigeon walked out and the hum walked out with it. I'm not saying the pigeon was the hum. I'm not saying that. I'm only noticing that I've got nothing under my chair for the first time in a month and I don't like it. It's too quiet. The quiet's got a pitch.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "You wanted it gone.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "I wanted it explained. There's a difference. Mags, if Deputy comes back, let him in. Give him row L. We'll all sit here, and hum, together.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Noted.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 63,
+   "tags": [
+    "night",
+    "late",
+    "gag:council:5",
+    "gag:hum:4"
+   ],
+   "usesSlots": [],
+   "fallbackOf": "sc-trans-deputy",
+   "weight": 1
+  },
+  {
+   "id": "sc-liner-prevnext",
+   "kind": "liner",
+   "hosts": [
+    "dell",
+    "mags"
+   ],
+   "lines": [
+    {
+     "host": "dell",
+     "text": "From {prevArtist} to {nextArtist}. Two names that have never been in the same sentence until just now. I did that. I put them together. Nobody authorized it. That's the only power I have and I use it nightly.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Here's the next one.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Listen for the seam.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 19,
+   "tags": [
+    "night"
+   ],
+   "usesSlots": [
+    "prevArtist",
+    "nextArtist"
+   ],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-liner-prevnext-nf",
+   "kind": "liner",
+   "hosts": [
+    "dell",
+    "mags"
+   ],
+   "lines": [
+    {
+     "host": "dell",
+     "text": "From the last one to the next one. Two names that have never been in the same sentence until Mags put them in a pile. Nobody authorized it. That's the only power this show has and we use it nightly.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "Here's the next one.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Listen for the seam.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 19,
+   "tags": [
+    "night"
+   ],
+   "usesSlots": [],
+   "fallbackOf": "sc-liner-prevnext",
+   "weight": 1
+  },
+  {
+   "id": "sc-dedic-dept",
+   "kind": "dedication",
+   "hosts": [
+    "dell",
+    "mags"
+   ],
+   "lines": [
+    {
+     "host": "dell",
+     "text": "One more dedication. This one's mine. I've never done one of my own. Mags, don't make a face.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "I'm not making a face.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "This goes out to accounting. Second floor. The ones with the window envelopes. I've spent a month thinking you were a Department. Capital D. I've put you in a drawer, with tape, with a glass of water. And you were just trying to ask about the batteries.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "For the record, they were for the flashlight. The one flashlight. I change the batteries every night, whether it needs them or not, because a flashlight that's been on all night deserves fresh ones, and because four hundred is a nice square number and eleven is not. I'll pay it back. In installments. In foil, if you'll take it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "So. To accounting. {nextTitle}, by {nextArtist}. I'm sorry about the drawer. Come up and get your water glass. The door opens outward. I know that now.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "They'll be glad to hear it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Nobody's glad to hear from me, Mags. They're just awake.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 69,
+   "tags": [
+    "night",
+    "late",
+    "gag:department:3"
+   ],
+   "usesSlots": [
+    "nextTitle",
+    "nextArtist"
+   ],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "sc-dedic-dept-nf",
+   "kind": "dedication",
+   "hosts": [
+    "dell",
+    "mags"
+   ],
+   "lines": [
+    {
+     "host": "dell",
+     "text": "One more dedication. This one's mine. I've never done one of my own. Mags, don't make a face.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "I'm not making a face.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "This goes out to accounting. Second floor. The ones with the window envelopes. I've spent a month thinking you were a Department. Capital D. I've put you in a drawer, with tape, with a glass of water. And you were just trying to ask about the batteries.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "For the record, they were for the flashlight. The one flashlight. I change the batteries every night, whether it needs them or not, because a flashlight that's been on all night deserves fresh ones, and because four hundred is a nice square number and eleven is not. I'll pay it back. In installments. In foil, if you'll take it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "So. This next one's for accounting. I'm sorry about the drawer. Come up and get your water glass. The door opens outward. I know that now.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "mags",
+     "text": "They'll be glad to hear it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "dell",
+     "text": "Nobody's glad to hear from me, Mags. They're just awake.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 68,
+   "tags": [
+    "night",
+    "late",
+    "gag:department:3"
+   ],
+   "usesSlots": [],
+   "fallbackOf": "sc-dedic-dept",
+   "weight": 1
+  }
+ ]
+}
