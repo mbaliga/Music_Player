@@ -48,7 +48,7 @@ Evidence labels used throughout:
 "Runout's AI Radio may make network calls to the Runout radio backend and nothing else. It is off by default; the first enable shows
 what leaves the device. Music files and audio of the library never leave the device. Microphone audio leaves the device only during
 a live call, only after a per-session tap, and is not stored. No analytics, no crash SDK, no third-party calls from the WebView."
-This needs the same treatment as the TestFlight exception (PT:D-AD) [REPO: PORTING_PLAN]: README, store listing and `docs/store/privacy-policy.md`
+This needs the same treatment as the TestFlight exception (PT:D-BD) [REPO: PORTING_PLAN]: README, store listing and `docs/store/privacy-policy.md`
 must name it. The WebView CSP currently closed [REPO] gets exactly one `connect-src` origin, only while the feature flag is on.
 
 ---

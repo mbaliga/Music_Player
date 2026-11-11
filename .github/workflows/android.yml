@@ -49,6 +49,13 @@ jobs:
       - name: Add Android platform
         run: npx --no-install cap add android
 
+      # Windowed / freeform / desktop mode: make the generated activity
+      # resizable. Prints the resulting manifest so the real values are in the log.
+      - name: Patch manifest for resizable windows
+        run: |
+          node scripts/patch-android-manifest.mjs
+          cat android/app/src/main/AndroidManifest.xml
+
       - name: Install the Runout launcher icon
         run: |
           pip install --quiet pillow
