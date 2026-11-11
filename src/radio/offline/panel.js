@@ -31,7 +31,7 @@ const CSS = `
 `;
 
 let styled = false;
-function ensureStyles(doc) {
+export function ensureStyles(doc) {
   if (styled) return;
   styled = true;
   const s = doc.createElement('style');
@@ -40,7 +40,7 @@ function ensureStyles(doc) {
   doc.head.append(s);
 }
 
-const el = (doc, tag, props = {}, ...kids) => {
+export const el = (doc, tag, props = {}, ...kids) => {
   const e = doc.createElement(tag);
   for (const [k, v] of Object.entries(props)) {
     if (k === 'class') e.className = v;

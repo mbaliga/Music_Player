@@ -79,10 +79,10 @@ async function freshBoot(storageValue, tag) {
   } finally { delete globalThis.window; }
 }
 
-test('flag off (default): only the real-station type exists and AI stations have no player', async () => {
+test('flag off (default): only the real-station and pre-written (canned) types exist and AI stations have no player', async () => {
   for (const [value, tag] of [[null, 'unset'], ['0', 'zero'], ['true', 'wrongvalue']]) {
     const st = await freshBoot(value, `off-${tag}`);
-    assert.deepEqual(st.listStationTypes().map((t) => t.id), ['radio-browser'], tag);
+    assert.deepEqual(st.listStationTypes().map((t) => t.id), ['radio-browser', 'canned'], tag);
     assert.equal(st.createSessionFor(st.aiYouStation(), {}), null);
     assert.equal(st.createSessionFor(st.aiYouCityStation('seattle'), {}), null);
   }
@@ -92,13 +92,13 @@ test('flag off (default): only the real-station type exists and AI stations have
     const st = await import('../../src/stations.js');
     st._resetStationTypes();
     await import('../../src/radio-player.js?boot=off-throws');
-    assert.deepEqual(st.listStationTypes().map((t) => t.id), ['radio-browser']);
+    assert.deepEqual(st.listStationTypes().map((t) => t.id), ['radio-browser', 'canned']);
   } finally { delete globalThis.window; }
 });
 
 test('flag on: both AI types register; a session lazy-loads the core and reports "unavailable" (stub)', async () => {
   const st = await freshBoot('1', 'on');
-  assert.deepEqual(st.listStationTypes().map((t) => t.id).sort(), ['ai-you', 'ai-you-city', 'radio-browser']);
+  assert.deepEqual(st.listStationTypes().map((t) => t.id).sort(), ['ai-you', 'ai-you-city', 'canned', 'radio-browser']);
   for (const station of [st.aiYouStation(), st.aiYouCityStation('Seattle WA')]) {
     const session = st.createSessionFor(station, {});
     const phases = [];

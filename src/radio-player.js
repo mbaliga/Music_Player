@@ -10,7 +10,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { discoverServers, searchStations, describeStation, streamCandidates, MAX_RECONNECTS } from './radio.js';
-import { registerStationType, registerAiStationTypes, unregisterAiStationTypes, createSessionFor, listStationTypes, aiYouStation } from './stations.js';
+import { registerStationType, registerAiStationTypes, unregisterAiStationTypes, registerCannedStationType, createSessionFor, listStationTypes, aiYouStation } from './stations.js';
 import { createStreamSession } from './radio-session.js';
 import { isRadioAiEnabled, setRadioAiEnabled } from './radio/flag.js';
 import {
@@ -36,6 +36,10 @@ function registerAi() {
   });
 }
 registerAi();
+
+// Pre-written (canned) stations: always available, no flag. Their code is a lazy import, fetched only when the dial is shown or
+// one of them starts (see src/radio/canned/).
+registerCannedStationType({ loadCanned: () => import('./radio/canned/index.js') });
 
 const AI_CSS = `.radio-setting{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:10px;background:var(--surface);border:1px solid var(--border);cursor:pointer;font-size:14px}
 .radio-setting small{display:block;color:var(--ink2);font-size:12px;margin-top:2px;line-height:1.35}
@@ -80,6 +84,8 @@ export class RadioUI {
     this.input = h('input', { class: 'mt-name', type: 'search', placeholder: 'Search stations…', 'aria-label': 'Search radio stations' });
     this.status = h('div', { class: 'radio-status' });
     this.listEl = h('div', { class: 'radio-list' });
+    this.dialEl = h('div', { class: 'radio-dial' });
+    this.netHead = h('div', { class: 'radio-sec-head radio-net-head' }, h('span', {}, 'Internet radio'));
     this.savedEl = h('div', { class: 'radio-saved' });
     this.now = h('div', { class: 'radio-now hidden' });
     const form = h('form', { class: 'radio-search', onsubmit: (e) => { e.preventDefault(); this.search({ name: this.input.value }); } },
@@ -101,14 +107,24 @@ export class RadioUI {
           h('small', { id: 'aiStationsHelp' }, 'Adds You Radio: automated hosts who talk between your own songs, with lines written and spoken on this phone. Needs no network and no account. Off by default.'))));
     const css = document.createElement('style'); css.textContent = AI_CSS; document.head.append(css);
     pane.append(h('div', { class: 'lib-toolbar radio-bar' }, form, chips),
-      h('div', { class: 'lib-grid-wrap' }, this.aiSec, this.savedEl, this.status, this.listEl, this.settingsEl),
+      h('div', { class: 'lib-grid-wrap' }, this.aiSec, this.savedEl, this.dialEl, this.netHead, this.status, this.listEl, this.settingsEl),
       this.now, this._aiPanel);
     // Retry when connectivity returns.
     window.addEventListener('online', () => { if (this._lastFailureOffline) this.search(this._lastParams || {}); });
+    window.addEventListener('offline', () => { this.netHead.dataset.offline = '1'; });
   }
 
   /** Called when the Radio tab is shown: first visit loads the top stations. */
-  activate() { this._renderSaved(); this._renderAi(); if (!this.loadedOnce) this.search({}); }
+  activate() { this._renderSaved(); this._renderAi(); this._renderDial(); if (!this.loadedOnce) this.search({}); }
+
+  /** The dial (pre-written shows, AI style cards): lazy-loaded the first time the Radio tab is shown. */
+  _renderDial() {
+    if (!this.dialEl) return;
+    import('./radio/canned/dial.js').then((m) => m.renderDial(this.dialEl, {
+      aiOn: () => this._aiOn(), isFav: (s) => isFavourite(this.store, s), toggleFav: (s) => this.toggleFav(s),
+      play: (s) => this.play(s), isCurrent: (s) => this._isCurrent(s), isPlaying: () => !!this.session, storage: this._storage(),
+    })).catch(() => { this.dialEl.replaceChildren(h('p', { class: 'radio-status err' }, 'The station list could not be loaded.')); });
+  }
 
   _aiOn() { try { return isRadioAiEnabled(window.localStorage); } catch { return false; } }
 
@@ -118,6 +134,7 @@ export class RadioUI {
     if (on) registerAi();
     else { if (this.station && this.station.type.startsWith('ai-')) this.stop(); unregisterAiStationTypes(); }
     this._renderAi();
+    this._renderDial();
   }
 
   _renderAi() {
@@ -137,7 +154,7 @@ export class RadioUI {
     return h('div', { class: 'radio-row' + (this._isCurrent(s) ? ' on' : ''), 'data-k': stationKey(s) || '', onclick: () => this.play(s) },
       h('div', { class: 'radio-row-main' },
         h('div', { class: 'alb-name' }, s.name),
-        h('div', { class: 'alb-artist' }, s.type === 'ai-you' ? 'Your own songs, with automated hosts · works offline' : describeStation({ country: '', codec: '', bitrate: 0, tags: [], ...s }))),
+        h('div', { class: 'alb-artist' }, s.type === 'ai-you' ? 'Your own songs, with automated hosts · works offline' : s.type === 'canned' ? 'Pre-written show · works offline' : describeStation({ country: '', codec: '', bitrate: 0, tags: [], ...s }))),
       star, h('span', { class: 'radio-row-go' }, '▶'));
   }
 
@@ -148,6 +165,9 @@ export class RadioUI {
     this._renderSaved();
     this.listEl.querySelectorAll('.radio-row').forEach((r) => { // refresh result-list stars in place
       if (r.dataset.k === stationKey(s)) r.querySelector('.radio-star')?.replaceWith(this._row(s).querySelector('.radio-star'));
+    });
+    this.dialEl?.querySelectorAll('.dial-card').forEach((r) => { // and the dial cards' stars
+      if (r.dataset.k === stationKey(s)) { const f = isFavourite(this.store, s); const b = r.querySelector('.dial-star'); if (b) { b.classList.toggle('on', f); b.textContent = f ? '★' : '☆'; b.setAttribute('aria-pressed', String(f)); } }
     });
     if (this.station) this._showNow(this.station, this.session?.state || { phase: 'idle', error: null });
   }
@@ -175,13 +195,14 @@ export class RadioUI {
     this.status.className = 'radio-status';
     this.status.textContent = 'Searching…';
     this.listEl.replaceChildren();
-    if (!this.servers) this.servers = await discoverServers((u, o) => fetch(u, o));
-    const r = await searchStations((u, o) => fetch(u, o), this.servers, params, { isOnline: () => navigator.onLine !== false });
+    // offline: do not even try the directory (no requests; the pre-written shows above still work)
+    if (!this.servers && navigator.onLine !== false) this.servers = await discoverServers((u, o) => fetch(u, o));
+    const r = await searchStations((u, o) => fetch(u, o), this.servers || [], params, { isOnline: () => navigator.onLine !== false });
     this._lastFailureOffline = !r.ok && r.kind === 'offline';
     if (!r.ok) {
       this.status.className = 'radio-status err';
       this.status.replaceChildren(
-        r.kind === 'offline' ? 'You are offline. Radio needs a connection.' : 'Could not reach the station directory.',
+        r.kind === 'offline' ? 'You are offline. Internet radio needs a connection. The pre-written shows above still work.' : 'Could not reach the station directory.',
         ' ', h('button', { class: 'sort-chip', type: 'button', onclick: () => this.search(params) }, 'Retry'));
       return;
     }
@@ -205,6 +226,7 @@ export class RadioUI {
         const urls = streamCandidates(station), i = session.urlIndex | 0;
         const worked = urls.length ? { ...station, streamUrl: urls[i], streamUrls: [urls[i], ...urls.filter((_, j) => j !== i)] } : station;
         this._commit(recordPlayed(this.store, worked)); this._renderSaved(); }
+      if (st.phase === 'idle' && session.isCanned && this._recorded) { this.stop(); return; } // a graceful sign-off finished
       this._showNow(station, st);
     });
     this._recorded = false;
@@ -219,11 +241,11 @@ export class RadioUI {
     this.now.classList.add('hidden'); this._pill.classList.add('hidden');
     this._aiPanel?.classList.add('hidden');
     if (!engineBacked) { this.d.onActive?.(false); this._muted = false; }
-    this.pane?.querySelectorAll('.radio-row.on').forEach((r) => r.classList.remove('on'));
+    this.pane?.querySelectorAll('.radio-row.on, .dial-card.on').forEach((r) => r.classList.remove('on'));
   }
 
   _showNow(station, st) {
-    const label = { connecting: 'Connecting…', buffering: 'Buffering…', reconnecting: `Connection lost. Reconnecting (${st.attempt || 1}/${MAX_RECONNECTS})…`, playing: (station.tags || []).includes('ai') ? 'On air' : 'Live', error: 'Error', idle: '' }[st.phase] || '';
+    const label = { connecting: 'Connecting…', buffering: 'Buffering…', reconnecting: `Connection lost. Reconnecting (${st.attempt || 1}/${MAX_RECONNECTS})…`, playing: (station.tags || []).includes('canned') ? 'On air · pre-written show' : (station.tags || []).includes('ai') ? 'On air' : 'Live', error: 'Error', idle: '' }[st.phase] || '';
     this.now.className = 'radio-now ' + st.phase + (st.error && st.error.kind === 'empty_library' ? ' info' : '');
     this.now.replaceChildren(...[
       h('div', { class: 'radio-now-main' },
@@ -236,7 +258,7 @@ export class RadioUI {
     ].filter(Boolean));
     this._pillName.textContent = station.name;
     this._pill.className = 'radio-pill ' + st.phase;
-    this.pane?.querySelectorAll('.radio-row').forEach((r) => r.classList.toggle('on', r.dataset.k === stationKey(station)));
+    this.pane?.querySelectorAll('.radio-row, .dial-card').forEach((r) => r.classList.toggle('on', r.dataset.k === stationKey(station)));
   }
 }
 

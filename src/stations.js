@@ -166,3 +166,61 @@ export function unregisterAiStationTypes() {
   registry.delete(AI_TYPE_YOU);
   registry.delete(AI_TYPE_YOU_CITY);
 }
+
+// ── Canned (pre-written) stations ─────────────────────────────────────────────
+//
+// 'canned' / <station id>: the six fictional stations in content/stations/. They are NOT behind the `radio.ai` flag: nothing is
+// generated at run time (the scripts were written in advance), so they are a plain station type, always registered. Their
+// code (src/radio/canned/) is lazy-loaded: this file only holds a thin proxy session, so nothing under src/radio/ is fetched
+// until the owner opens the dial or starts one. Same one-dial identity as everything else: key "canned|<station id>".
+
+export const CANNED_TYPE = 'canned';
+
+function createCannedProxySession(station, env = {}, loadCanned) {
+  let state = { phase: 'idle', error: null };
+  let cb = () => {};
+  let inner = null, panelEl = null, unmount = null, mod = null;
+  let gen = 0;
+  const set = (s) => { state = s; cb(state); };
+  const mountPanel = () => { try { if (inner && panelEl && mod && mod.mountCannedPanel) { unmount && unmount(); unmount = mod.mountCannedPanel(panelEl, inner, { station, onStop: (immediate) => (immediate ? api.stop() : inner.signOff()) }); } } catch { /* the panel is optional */ } };
+  const api = {
+    usesEngine: true,
+    isCanned: true,
+    onChange(fn) { cb = fn; },
+    get state() { return state; },
+    get inner() { return inner; },
+    async start() {
+      const my = ++gen;
+      set({ phase: 'connecting', error: null });
+      try {
+        mod = await loadCanned();
+        if (my !== gen) return;
+        if (!mod || typeof mod.createCannedSession !== 'function') throw new Error('canned module missing');
+        inner = mod.createCannedSession(station, env);
+      } catch {
+        if (my !== gen) return;
+        return set({ phase: 'error', error: { kind: 'unavailable', message: 'This pre-written station could not start on this device.' } });
+      }
+      inner.onChange((s) => {
+        if (my !== gen) return;
+        // a graceful sign-off ends in 'idle': tidy up like a Stop
+        set(s);
+      });
+      mountPanel();
+      await inner.start();
+    },
+    stop() { gen++; try { inner && inner.stop(); } catch { /* */ } try { unmount && unmount(); } catch { /* */ } unmount = null; inner = null; set({ phase: 'idle', error: null }); },
+    skip() { try { inner && inner.skip(); } catch { /* */ } },
+    signOff() { try { inner && inner.signOff(); } catch { /* */ } },
+    attachPanel(el) { panelEl = el; mountPanel(); },
+  };
+  return api;
+}
+
+/** Register the 'canned' station type. loadCanned: () => import('./radio/canned/index.js') (passed in so this file never names it). */
+export function registerCannedStationType({ loadCanned } = {}) {
+  registerStationType({
+    id: CANNED_TYPE, label: 'Pre-written shows',
+    createSession: (station, env) => (typeof loadCanned === 'function' && env && env.aiHost ? createCannedProxySession(station, env, loadCanned) : createAiStubSession(station, env, null)),
+  });
+}
