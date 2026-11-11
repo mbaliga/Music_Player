@@ -33,7 +33,7 @@ import { extractCuesFromEnvelope, toLibraryCues } from '../core/cues.js';
 import { stripMarkup, templateResolver } from '../core/markup.js';
 import { recordShow } from '../core/memory.js';
 import { createQueue, reduce as queueReduce } from '../../queue.js';
-import { reduceShow, initialShow } from './show-state.js';
+import { reduceShow, initialShow, EMPTY_MESSAGE } from './show-state.js';
 import { makeTrackFact, localParts, daypartFor, energyFromGenre, DEFAULT_PERSONA } from './context.js';
 import { recordPlay, recordSession } from './play-history.js';
 
@@ -61,6 +61,9 @@ export function createShowRunner(deps) {
   let triggers = [];
   let timer = null, windowBusy = false, preloadBusy = false, advanceBusy = false, background = false;
   let laneBusy = false;
+  // speechEpoch: bumped by every cancel; a break in flight checks it after each await (a skip during the pause between lines
+  // must not let the remaining lines speak over the next song). released/ownerTok: see abandon().
+  let speechEpoch = 0, released = false, ownerTok = null;
   const lane = [];
   const work = new Map(); // slotId -> { cand, lib }
   const aired = [];
@@ -82,7 +85,7 @@ export function createShowRunner(deps) {
       if (a.type === 'begin') begin().catch((e) => fail(e));
       else if (a.type === 'cancel-speech') cancelSpeech();
       else if (a.type === 'restore-music') { if (duck) duck.restoreNow(); }
-      else if (a.type === 'drop-next') { nextWork = null; try { player.dropNext(); } catch { /* */ } }
+      else if (a.type === 'drop-next') { nextWork = null; if (!released) { try { player.dropNext(); } catch { /* */ } } }
       else if (a.type === 'halt') halt();
       else if (a.type === 'advance') advance(a).catch((e) => fail(e));
       else if (a.type === 'notice') emit({ type: 'notice', text: a.text });
@@ -91,15 +94,16 @@ export function createShowRunner(deps) {
   function fail(e) { if (st.phase === 'starting' || st.phase === 'playing') dispatch({ type: 'fail', message: e && e.message ? e.message : 'The station stopped unexpectedly.' }); }
 
   function halt() {
-    gen++;
+    gen++; speechEpoch++;
+    try { player.cancelPending && player.cancelPending(); } catch { /* a decode still in flight must not install its song */ }
     if (timer) { timers.clearInterval(timer); timer = null; }
     lane.length = 0; triggers = [];
     try { voice.cancel(); } catch { /* */ }
     if (duck) duck.restoreNow();
-    Promise.resolve().then(() => player.halt()).catch(() => {});
+    if (!released) Promise.resolve().then(() => player.halt()).catch(() => {});
     finishShowMemory();
   }
-  function cancelSpeech() { lane.length = 0; try { voice.cancel(); } catch { /* */ } if (duck) duck.releaseAll(); emit({ type: 'caption-clear' }); }
+  function cancelSpeech() { speechEpoch++; lane.length = 0; try { voice.cancel(); } catch { /* */ } if (duck) duck.releaseAll(); emit({ type: 'caption-clear' }); }
 
   function finishShowMemory() {
     try {
@@ -239,8 +243,10 @@ export function createShowRunner(deps) {
 
   /** Air one break NOW: verify at air time, render, duck, speak, captions. */
   async function airBreak(entry, prevLib, nextLib, g, { firstSound = false } = {}) {
+    const ep = speechEpoch;
+    const live = () => alive(g) && ep === speechEpoch;
     if (speechReady) { try { await speechReady(); } catch { /* */ } }
-    if (!alive(g) || st.speech === 'off') return dropBreak(entry, 'speech_off');
+    if (!live() || st.speech === 'off') return dropBreak(entry, 'speech_off');
     const atMs = now();
     let made;
     try { made = await makeScript(entry, prevLib, nextLib, atMs); } catch { made = null; }
@@ -264,17 +270,18 @@ export function createShowRunner(deps) {
     let ok = true;
     try {
       for (let i = 0; i < rendered.utterances.length && ok; i++) {
-        if (!alive(g)) break;
+        if (!live()) break;
         const p = rendered.utterances[i];
         const su = script.utterances.find((u) => u.id === p.id) || script.utterances[i];
         const text = stripMarkup(su.text, { templates: resolve });
         const res = await voice.speak(p, {
           onStart: () => { emit({ type: 'caption', speaker: p.speaker, name: nameFor(p.speaker), text, slotId: entry.slot.slotId }); if (firstSound) dispatch({ type: 'first-sound' }); },
         });
+        if (!live()) break; // cancelled while that line was being spoken
         if (res.ok) dispatch({ type: 'speech-ok' });
         else if (res.reason !== 'cancelled') { dispatch({ type: 'speech-failed', reason: res.reason }); ok = false; note('speech_failed', { reason: res.reason }); }
         else ok = false;
-        if (ok && i < rendered.utterances.length - 1) await sleep(Math.min(900, p.pauseSec * 1000));
+        if (ok && i < rendered.utterances.length - 1) { await sleep(Math.min(900, p.pauseSec * 1000)); if (!live()) break; }
       }
     } finally {
       if (duck && hold) duck.release(hold);
@@ -307,6 +314,7 @@ export function createShowRunner(deps) {
     dispatch({ type: 'song-started', slotId: entry.slot.slotId, trackId: w.cand.trackId });
     if (!alive(g)) return;
     q = null; nextWork = null; triggers = [];
+    try { ownerTok = player.owner ? player.owner() : null; } catch { ownerTok = null; }
     // attachments that sit BEFORE this song (sign-on, talk-over-intro) are spoken over its start
     const idx = show.entries.indexOf(entry);
     const intro = show.entries.filter((e, i) => i < idx && e.status === 'pending');
@@ -386,9 +394,11 @@ export function createShowRunner(deps) {
   async function loadNextCold(g) {
     for (let i = 0; i < 8 && alive(g); i++) {
       const nx = await ensureNextSong(g);
-      if (!nx || !alive(g)) return false;
+      if (!alive(g)) return false;
+      if (!nx) break; // the library emptied or was re-linked under the show
       if (await coldLoad(nx.entry, nx, 'cold')) return true;
     }
+    if (alive(g)) dispatch({ type: 'fail', message: EMPTY_MESSAGE }); // else the deck would sit silent while the panel says "On air"
     return false;
   }
 
@@ -426,10 +436,10 @@ export function createShowRunner(deps) {
     const nw = nextWork;
     try {
       const handle = await player.decodeNext(nw.lib);
-      if (!alive(g) || nextWork !== nw) { try { player.dropNext(); } catch { /* */ } return; }
+      if (!alive(g) || nextWork !== nw) { if (!released && gen === g) { try { player.dropNext(); } catch { /* */ } } return; }
       handle.cues = cuesFrom(handle, nw.cand);
       await player.prepareNext(handle);
-      if (!alive(g) || nextWork !== nw) { try { player.dropNext(); } catch { /* */ } return; }
+      if (!alive(g) || nextWork !== nw) { if (!released && gen === g) { try { player.dropNext(); } catch { /* */ } } return; }
       nw.handle = handle;
       if (q) q = queueReduce(q, { type: 'preloaded', index: 1, bytes: handle.bytes || 0 }).state;
     } catch (e) {
@@ -455,6 +465,8 @@ export function createShowRunner(deps) {
     try { await tickOnce(g); } finally { tickBusy = false; }
   }
   async function tickOnce(g) {
+    // the deck changed under us (the user started a library / mixtape track): stand down without touching it
+    try { if (player.owner && player.owner() !== ownerTok) { abandon(); return; } } catch { /* */ }
     let pos = null;
     try { pos = player.position(); } catch { pos = null; }
     if (!pos) return;
@@ -473,6 +485,12 @@ export function createShowRunner(deps) {
     if (advanceBusy) return;
     advanceBusy = true;
     try { await loadNextCold(g); } finally { advanceBusy = false; }
+  }
+
+  /** The user started a record / tape on the shared engine: end the show WITHOUT touching the deck, next deck or music bus. */
+  function abandon() {
+    released = true;
+    if (st.phase === 'starting' || st.phase === 'playing') dispatch({ type: 'stop' });
   }
 
   // ── begin ──────────────────────────────────────────────────────────────────
@@ -504,11 +522,12 @@ export function createShowRunner(deps) {
 
   return {
     start() {
-      gen++;
+      gen++; released = false; ownerTok = null;
       const tracks = (() => { try { return context.playableCount ? context.playableCount() : 1; } catch { return 0; } })();
       dispatch({ type: 'start', tracks, speechAvailable: !!(voice && voice.available) });
     },
     stop() { dispatch({ type: 'stop' }); },
+    abandon,
     skip() { dispatch({ type: 'skip' }); },
     voiceChanged() { dispatch({ type: 'voice-changed' }); },
     /** app went to the background: speech cannot be trusted there; cancel it and keep the music */

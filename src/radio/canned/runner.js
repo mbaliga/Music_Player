@@ -22,7 +22,7 @@
 
 import { hashSeed, mulberry32 } from '../core/util.js';
 import { createQueue, reduce as queueReduce } from '../../queue.js';
-import { reduceShow, initialShow } from '../offline/show-state.js';
+import { reduceShow, initialShow, EMPTY_MESSAGE } from '../offline/show-state.js';
 import { prepareUtterance } from '../offline/voice.js';
 import { createChooser } from './chooser.js';
 import { slotValues, resolveUnit } from './slots.js';
@@ -32,6 +32,7 @@ import { lineVoice } from './voices.js';
 export const MAX_AUDIO_FAILS = 3;
 const MAX_LINE_PAUSE_MS = 1500;
 const OUTRO_MAX_WAIT_MS = 25000;
+const MAX_COLD_TRIES = 8; // consecutive songs that will not load before the show gives up (the reducer usually stops it sooner)
 const nameOf = (t) => ({ title: t && t.title, artist: t && t.artist, album: t && t.album });
 const isCallinLike = (u) => !!u && (u.kind === 'callin' || u.bit);
 
@@ -47,6 +48,11 @@ export function createCannedRunner(deps) {
   let startMs = 0, chooser = null, cur = null, nextWork = null, q = null, triggers = [];
   let timer = null, preloadBusy = false, advanceBusy = false, background = false, laneBusy = false, signingOff = false;
   let audioFails = 0, audioDisabled = false, tracksPlayed = 0, tickBusy = false;
+  // speechEpoch: bumped by every cancel (skip, background, sign-off, stop). A break in flight captured the epoch it started in and
+  // checks it after every await, so a cancelled break cannot resume after its inter-line pause and talk over the next song.
+  let speechEpoch = 0;
+  // released: the engine now belongs to someone else (the user started a record / tape). Stopping then must not touch the deck.
+  let released = false, ownerTok = null;
   const failedIds = new Set();
   const lane = [];
   const aired = [];
@@ -73,7 +79,7 @@ export function createCannedRunner(deps) {
       if (a.type === 'begin') begin().catch((e) => fail(e));
       else if (a.type === 'cancel-speech') cancelSpeech();
       else if (a.type === 'restore-music') { if (duck) duck.restoreNow(); }
-      else if (a.type === 'drop-next') { nextWork = null; try { player.dropNext(); } catch { /* */ } }
+      else if (a.type === 'drop-next') { nextWork = null; if (!released) { try { player.dropNext(); } catch { /* */ } } }
       else if (a.type === 'halt') halt();
       else if (a.type === 'advance') advance(a).catch((e) => fail(e));
       else if (a.type === 'notice') emit({ type: 'notice', text: a.text });
@@ -82,15 +88,17 @@ export function createCannedRunner(deps) {
   function fail(e) { if (st.phase === 'starting' || st.phase === 'playing') dispatch({ type: 'fail', message: e && e.message ? e.message : 'The station stopped unexpectedly.' }); }
 
   function halt() {
-    gen++;
+    gen++; speechEpoch++;
+    try { player.cancelPending && player.cancelPending(); } catch { /* */ } // a decode still in flight must not install its song after this
     if (timer) { timers.clearInterval(timer); timer = null; }
     lane.length = 0; triggers = [];
     try { voice && voice.cancel(); } catch { /* */ }
     try { audio && audio.cancel(); } catch { /* */ }
     if (duck) duck.restoreNow();
-    Promise.resolve().then(() => player.halt()).catch(() => {});
+    if (!released) Promise.resolve().then(() => player.halt()).catch(() => {});
   }
   function cancelSpeech() {
+    speechEpoch++;
     lane.length = 0;
     try { voice && voice.cancel(); } catch { /* */ }
     try { audio && audio.cancel(); } catch { /* */ }
@@ -143,6 +151,7 @@ export function createCannedRunner(deps) {
     dispatch({ type: 'song-started', slotId: `song-${tracksPlayed}`, trackId: lib.id });
     if (!alive(g)) return;
     q = null; triggers = [];
+    try { ownerTok = player.owner ? player.owner() : null; } catch { ownerTok = null; }
     // look ahead: the next song, then the break that rides the end of this one
     ensureNext();
     q = buildQueue();
@@ -178,12 +187,15 @@ export function createCannedRunner(deps) {
   }
 
   async function loadNextCold(g) {
-    for (let i = 0; i < 8 && alive(g); i++) {
+    for (let i = 0; i < MAX_COLD_TRIES && alive(g); i++) {
       const nw = ensureNext();
-      if (!nw || !alive(g)) return false;
+      if (!alive(g)) return false;
+      if (!nw) break; // the library emptied or was re-linked under the show: nothing playable remains
       nextWork = null;
       if (await coldLoad(nw.lib, 'cold')) return true;
     }
+    // otherwise the deck would sit silent while the panel still says "On air": end the show with the friendly message
+    if (alive(g)) dispatch({ type: 'fail', message: EMPTY_MESSAGE });
     return false;
   }
 
@@ -218,9 +230,9 @@ export function createCannedRunner(deps) {
     const nw = nextWork;
     try {
       const handle = await player.decodeNext(nw.lib);
-      if (!alive(g) || nextWork !== nw) { try { player.dropNext(); } catch { /* */ } return; }
+      if (!alive(g) || nextWork !== nw) { if (!released && gen === g) { try { player.dropNext(); } catch { /* */ } } return; }
       await player.prepareNext(handle);
-      if (!alive(g) || nextWork !== nw) { try { player.dropNext(); } catch { /* */ } return; }
+      if (!alive(g) || nextWork !== nw) { if (!released && gen === g) { try { player.dropNext(); } catch { /* */ } } return; }
       nw.handle = handle;
       if (q) q = queueReduce(q, { type: 'preloaded', index: 1, bytes: handle.bytes || 0 }).state;
     } catch {
@@ -241,6 +253,8 @@ export function createCannedRunner(deps) {
     try { await tickOnce(g); } finally { tickBusy = false; }
   }
   async function tickOnce(g) {
+    // the deck changed under us (a library / mixtape track was started by the user): stand down without touching it
+    try { if (player.owner && player.owner() !== ownerTok) { abandon(); return; } } catch { /* */ }
     let pos = null;
     try { pos = player.position(); } catch { pos = null; }
     if (!pos) return;
@@ -289,8 +303,10 @@ export function createCannedRunner(deps) {
   async function airPlan(job) {
     const { plan } = job;
     const g = job.gen;
+    const ep = speechEpoch;
+    const live = () => alive(g) && ep === speechEpoch;
     if (speechReady) { try { await speechReady(); } catch { /* */ } }
-    if (!alive(g) || st.speech === 'off') return drop(plan, 'speech_off');
+    if (!live() || st.speech === 'off') return drop(plan, 'speech_off');
     const values = slotValues({ prev: cur && cur.lib, next: nextWork && nextWork.lib });
     const unit = plan.unit;
     const resolved = resolveUnit(unit, values, { preferTwin: preferTwin(unit) });
@@ -304,7 +320,11 @@ export function createCannedRunner(deps) {
     chooser.commit({ ...plan, unit }, { startedSec, durSec: estSec });
     const rec = { unit: unit.id, segment: resolved.seg.id, kind: unit.kind, variant: resolved.variant, source, startSec: startedSec, durSec: estSec, lines: resolved.lines.map((l) => ({ host: l.host, text: l.text })), why: plan.why };
     aired.push(rec); if (aired.length > 400) aired.shift();
-    const hold = duck ? duck.hold(`s:${unit.id}`) : null;
+    // The duck is taken when sound actually starts (a recording's onStart; TTS just before the first line), never up front: a
+    // recording chain that fails would otherwise leave the song ducked with no voice for up to ~14 s. Kept across a fall back to TTS.
+    let held = false;
+    const takeHold = () => { if (duck && !held && live()) { duck.hold(`s:${unit.id}`); held = true; } };
+    job.takeHold = takeHold; job.live = live;
     emit({ type: 'speech', state: 'speaking', unit: unit.id, kind: unit.kind });
     let ok = true;
     try {
@@ -312,12 +332,12 @@ export function createCannedRunner(deps) {
         const r = await playRecording(resolved, entry, g, job, rec);
         if (r === 'fallback') {
           // the recording failed: this segment is spoken by TTS instead (if there is a voice)
-          if (voice && voice.available && alive(g)) { rec.source = 'tts'; rec.fellBack = true; diag.audioFallbacks++; ok = await speakLines(resolved, g, job, rec); }
+          if (voice && voice.available && live()) { rec.source = 'tts'; rec.fellBack = true; diag.audioFallbacks++; ok = await speakLines(resolved, g, job, rec); }
           else ok = false;
         } else ok = r === 'ok';
       } else ok = await speakLines(resolved, g, job, rec);
     } finally {
-      if (duck && hold) duck.release(hold);
+      if (duck && held) duck.release(`s:${unit.id}`);
       rec.durSec = Math.max(0.5, showSec() - startedSec);
       try { chooser.amend(unit.id, rec.durSec); } catch { /* */ }
       emit({ type: 'speech', state: 'idle', unit: unit.id, kind: unit.kind });
@@ -335,19 +355,21 @@ export function createCannedRunner(deps) {
     const lines = resolved.lines;
     let allOk = true;
     for (let i = 0; i < lines.length; i++) {
-      if (!alive(g) || background) { allOk = false; break; }
+      if (!job.live() || background) { allOk = false; break; }
       const l = lines[i];
       const lv = lineVoice(assign.byHost && assign.byHost[l.host], l.direction);
       const prepared = prepareUtterance({ id: `${resolved.seg.id}:${i}`, speaker: 'a', text: l.text, style: {} });
       if (!prepared.chunks.length) continue;
       prepared.override = { voiceId: lv.voiceId, rate: lv.rate, pitch: lv.pitch };
+      job.takeHold();
       const res = await voice.speak(prepared, {
         onStart: () => { emit(captionOf(resolved, l, unit)); if (job.firstSound) { job.firstSound = false; dispatch({ type: 'first-sound' }); } },
       });
+      if (!job.live()) { allOk = false; break; } // cancelled while that line was being spoken
       if (res.ok) { dispatch({ type: 'speech-ok' }); diag.ttsAired += i === 0 ? 1 : 0; }
       else if (res.reason !== 'cancelled') { dispatch({ type: 'speech-failed', reason: res.reason }); allOk = false; note('speech_failed', { reason: res.reason }); break; }
       else { allOk = false; break; }
-      if (i < lines.length - 1) await sleep(Math.min(MAX_LINE_PAUSE_MS, Math.max(120, Number(l.pauseAfterMs) || 250)));
+      if (i < lines.length - 1) { await sleep(Math.min(MAX_LINE_PAUSE_MS, Math.max(120, Number(l.pauseAfterMs) || 250))); if (!job.live()) { allOk = false; break; } }
     }
     return allOk;
   }
@@ -361,6 +383,8 @@ export function createCannedRunner(deps) {
     const res = await audio.play({
       candidates: cands, durationSec: entry.durationSec,
       onStart: () => {
+        if (!job.live()) return;
+        job.takeHold();
         if (job.firstSound) { job.firstSound = false; dispatch({ type: 'first-sound' }); }
         for (const c of tl) {
           const line = { host: c.host, text: c.text };
@@ -370,6 +394,7 @@ export function createCannedRunner(deps) {
       },
     });
     for (const t of capTimers) timers.clearTimeout(t);
+    if (!job.live()) return 'cancelled';
     if (res.ok) { audioFails = 0; diag.audioAired++; dispatch({ type: 'speech-ok' }); return 'ok'; }
     if (res.reason === 'cancelled') return 'cancelled';
     // a recording that will not load or decode: remember it, and after MAX_AUDIO_FAILS in a row stop trying them this session
@@ -381,6 +406,13 @@ export function createCannedRunner(deps) {
       emit({ type: 'notice', text: 'The recorded voices could not be played on this device, so the phone’s own voice is reading the shows instead.' });
     }
     return 'fallback';
+  }
+
+  /** The user started a record / tape on the shared engine: end the show WITHOUT touching the deck, next deck or music bus. */
+  function abandon() {
+    if (st.phase !== 'starting' && st.phase !== 'playing') { released = true; return; }
+    released = true;
+    dispatch({ type: 'stop' });
   }
 
   // ── begin / stop / sign-off ────────────────────────────────────────────────
@@ -423,11 +455,12 @@ export function createCannedRunner(deps) {
 
   return {
     start() {
-      gen++;
+      gen++; released = false; ownerTok = null; signingOff = false;
       const tracks = playable().length;
       dispatch({ type: 'start', tracks, speechAvailable: speechCapable() });
     },
     stop() { dispatch({ type: 'stop' }); },
+    abandon,
     skip() { dispatch({ type: 'skip' }); },
     /** graceful stop: the station signs off (if it has a sign-off and a voice), then stops. A second call stops at once. */
     signOff() {

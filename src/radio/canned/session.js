@@ -167,6 +167,8 @@ export function createCannedSession(station, env = {}) {
       runner.start();
     },
     stop() { gen++; if (runner) runner.stop(); else setState({ phase: 'idle', error: null }); },
+    /** the user started a record / tape on the shared engine: end the show without touching the deck or the music bus */
+    abandon() { gen++; if (runner) runner.abandon(); else setState({ phase: 'idle', error: null }); },
     /** graceful: the station signs off, then stops. A second call stops at once. */
     signOff() { if (runner) runner.signOff(); },
     skip() { if (runner) runner.skip(); },

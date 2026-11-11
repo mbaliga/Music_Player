@@ -28,6 +28,7 @@ import { CdView } from './cd-view.js';
 import { CD_KNOBS, formatTime } from './cd.js';
 import { MixtapeUI } from './mixtape-ui.js';
 import { RadioUI } from './radio-player.js';
+import { createEngineGate } from './engine-gate.js';
 import { LibraryManager, GridView } from './library.js';
 import {
   parseTheme, setThemeVars, clearThemeVars,
@@ -266,7 +267,12 @@ function showBuildId() {
 // `q` is the album context when the track was picked from an album/CD
 // (see queueFor); every other caller (file picker, drop, mixtape) passes none
 // and gets a plain single-track record.
-async function loadTrack(track, q = null) {
+// Radio decodes are cancellable: every Stop / source switch / user-started track bumps the gate, and a radio load or prepare
+// that began earlier refuses to install its song (see sr./engine-gate.js).
+const engineGate = createEngineGate();
+let foreignPlaybackHook = null; // set once the Radio tab exists: ends an engine-backed station when the user starts their own track
+async function loadTrack(track, q = null, fromRadio = false) {
+  if (!fromRadio) { engineGate.bump(); try { foreignPlaybackHook && foreignPlaybackHook(); } catch { /* */ } }
   state.track = track;
   state.frames = track.frames;
   state.T = track.frames / state.engine.sampleRate;
@@ -923,6 +929,7 @@ function installLibrary() {
     aiHost: makeAiHost(library), // You Radio (src/radio/offline) plays your library through this engine
   });
   radio.mount(el('paneRadio'));
+  foreignPlaybackHook = () => radio.foreignPlayback();
 
   // Tabs: Albums | Mixtapes | Radio.
   const panes = { albums: el('paneAlbums'), mixtapes: el('paneMixtapes'), radio: el('paneRadio') };
@@ -1026,19 +1033,25 @@ function makeAiHost(library) {
     getTracks: () => library.tracks,
     busParam: () => eng().musicBus.gain,
     audioNow: () => eng().ctx.currentTime,
+    owner: () => engineGate.token(),
+    cancelPending: () => { engineGate.bump(); }, // halt(): a decode still in flight must not install its song afterwards
     async load(libTrack) {
+      const tok = engineGate.token();
       await eng().resume();
       const track = await loadFile(libTrack.file, eng().ctx);
-      await loadTrack(track);
+      engineGate.check(tok);
+      await loadTrack(track, null, true);
       return { durationSec: state.T, envelope: state.envelope, bytes: track.frames * 8 };
     },
     async decodeNext(libTrack) {
+      const tok = engineGate.token();
       const track = await loadFile(libTrack.file, eng().ctx, { copy: false });
+      engineGate.check(tok);
       const [L, R] = track.channels;
       const envelope = computeEnvelope((i) => (L[i] + R[i]) * 0.5, track.frames, 1024);
-      return { track, envelope, name: track.name, frames: track.frames, durationSec: track.frames / eng().sampleRate, bytes: track.frames * 8 };
+      return { track, tok, envelope, name: track.name, frames: track.frames, durationSec: track.frames / eng().sampleRate, bytes: track.frames * 8 };
     },
-    async prepareNext(h) { await eng().prepareNext(h.track.channels, h.track.frames); h.track.channels = null; }, // the engine copied the PCM
+    async prepareNext(h) { engineGate.check(h.tok); await eng().prepareNext(h.track.channels, h.track.frames); h.track.channels = null; }, // the engine copied the PCM
     joinNext: (fadeSec) => eng().joinNext({ fadeSec }),
     dropNext: () => eng().dropNext(),
     adopt(h) { // the engine already switched decks; mirror loadTrack()'s non-engine state

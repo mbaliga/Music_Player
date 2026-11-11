@@ -240,9 +240,18 @@ export class RadioUI {
     try { this._stop(); } finally { this._stopping = false; }
   }
 
-  _stop() {
+  /** The user started their own record / tape on the shared engine: end an engine-backed station at once (no sign-off) and leave
+   *  the deck, the next deck and the music bus alone. A streamed station has its own <audio> and keeps the existing mute logic. */
+  foreignPlayback() {
+    const s = this.session;
+    if (!s || !s.usesEngine || this._stopping) return;
+    this._stopping = true;
+    try { this._stop(true); } finally { this._stopping = false; }
+  }
+
+  _stop(abandon = false) {
     const engineBacked = !!(this.session && this.session.usesEngine);
-    this.session?.stop();
+    if (abandon && typeof this.session?.abandon === 'function') this.session.abandon(); else this.session?.stop();
     this.session = null; this.station = null;
     this.now.classList.add('hidden'); this._pill.classList.add('hidden');
     this._aiPanel?.classList.add('hidden');

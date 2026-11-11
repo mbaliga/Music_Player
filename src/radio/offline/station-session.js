@@ -105,6 +105,7 @@ export function createOfflineSession(station, env = {}) {
       runner.start();
     },
     stop() { runner.stop(); },
+    abandon() { runner.abandon(); }, // the user started their own track on the shared engine: leave the deck alone
     skip() { runner.skip(); },
     setBackground(b) { runner.setBackground(b); },
     saveVoices() { saveVoicePrefs(storage, voice.hosts()); runner.voiceChanged(); },
