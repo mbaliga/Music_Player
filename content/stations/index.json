@@ -1,0 +1,327 @@
+{
+  "v": 1,
+  "stations": [
+    {
+      "id": "kilo-hertz-rock-102-7",
+      "file": "kilo-hertz-rock-102-7.json",
+      "name": "Kilo-Hertz Rock 102.7",
+      "dial": "102.7",
+      "tagline": "Loud enough to count as a hobby.",
+      "vibe": "A morning-zoo rock station: a booming host who is never right, a co-host who keeps score, a traffic reporter with no helicopter, and contests nobody should win.",
+      "daypart": [
+        "morning"
+      ],
+      "contentRating": "PG-13",
+      "hosts": [
+        {
+          "id": "danny",
+          "name": "Big Danny Sparks",
+          "role": "host"
+        },
+        {
+          "id": "kat",
+          "name": "Kat Mulroney",
+          "role": "co-host"
+        },
+        {
+          "id": "pete",
+          "name": "Tiny Pete",
+          "role": "cast"
+        },
+        {
+          "id": "wes",
+          "name": "Wes",
+          "role": "cast"
+        },
+        {
+          "id": "caller-a",
+          "name": "Dale from the Quarry",
+          "role": "caller"
+        },
+        {
+          "id": "caller-b",
+          "name": "Trish",
+          "role": "caller"
+        },
+        {
+          "id": "caller-c",
+          "name": "Rowan",
+          "role": "caller"
+        }
+      ],
+      "segments": 76,
+      "minutes": 61
+    },
+    {
+      "id": "meridian-91-5",
+      "file": "meridian-91-5.json",
+      "name": "Meridian 91.5",
+      "dial": "91.5",
+      "tagline": "The art of listening, after dark.",
+      "vibe": "A calm late-evening jazz-and-ambient station: two warm hosts, unhurried liner notes, lessons in listening, and gently absurd public-service messages from an Office of Quiet.",
+      "daypart": [
+        "evening",
+        "night"
+      ],
+      "contentRating": "PG-13",
+      "hosts": [
+        {
+          "id": "odette",
+          "name": "Odette Marsh",
+          "role": "host"
+        },
+        {
+          "id": "teodor",
+          "name": "Teodor Linn",
+          "role": "co-host"
+        },
+        {
+          "id": "caller-a",
+          "name": "Marisol",
+          "role": "caller"
+        },
+        {
+          "id": "caller-b",
+          "name": "Fen",
+          "role": "caller"
+        },
+        {
+          "id": "caller-c",
+          "name": "Dottie",
+          "role": "caller"
+        },
+        {
+          "id": "caller-d",
+          "name": "Conall",
+          "role": "caller"
+        }
+      ],
+      "segments": 79,
+      "minutes": 61
+    },
+    {
+      "id": "pirate-1400",
+      "file": "pirate-1400.json",
+      "name": "Pirate 1400",
+      "dial": "1400",
+      "tagline": "Unlicensed, unanchored, unbothered.",
+      "vibe": "A leaky ship somewhere off the mainland, broadcasting forbidden music to the shore with tremendous confidence and almost no navigation.",
+      "daypart": [
+        "evening",
+        "night",
+        "any"
+      ],
+      "contentRating": "PG-13",
+      "hosts": [
+        {
+          "id": "ros",
+          "name": "Captain Rosalind 'Red Ros' Marrow",
+          "role": "host"
+        },
+        {
+          "id": "barnaby",
+          "name": "First Mate Barnaby Clamp",
+          "role": "co-host"
+        },
+        {
+          "id": "grumm",
+          "name": "Mother Grumm",
+          "role": "co-host"
+        },
+        {
+          "id": "admiral",
+          "name": "The Admiral",
+          "role": "cast"
+        },
+        {
+          "id": "duchess",
+          "name": "The Salt Duchess",
+          "role": "cast"
+        },
+        {
+          "id": "pettigrew",
+          "name": "Inspector Pettigrew",
+          "role": "cast"
+        },
+        {
+          "id": "pip",
+          "name": "Pip",
+          "role": "cast"
+        },
+        {
+          "id": "clement",
+          "name": "Clement",
+          "role": "caller"
+        },
+        {
+          "id": "gwen",
+          "name": "Gwen",
+          "role": "caller"
+        },
+        {
+          "id": "commodore",
+          "name": "Commodore Stillwell",
+          "role": "caller"
+        }
+      ],
+      "segments": 83,
+      "minutes": 54
+    },
+    {
+      "id": "static-city-98-1",
+      "file": "static-city-98-1.json",
+      "name": "Static City 98.1",
+      "dial": "98.1",
+      "tagline": "The frequency between the frequencies.",
+      "vibe": "Late-night talk radio for the people who are up anyway: a paranoid, tender host, a producer made of granite, and callers who should not be awake.",
+      "daypart": [
+        "night"
+      ],
+      "contentRating": "PG-13",
+      "hosts": [
+        {
+          "id": "dell",
+          "name": "Dell Varga",
+          "role": "host"
+        },
+        {
+          "id": "mags",
+          "name": "Marguerite Okafor",
+          "role": "co-host"
+        },
+        {
+          "id": "caller-a",
+          "name": "Rudy",
+          "role": "caller"
+        },
+        {
+          "id": "caller-b",
+          "name": "Lorna",
+          "role": "caller"
+        },
+        {
+          "id": "caller-c",
+          "name": "Benji",
+          "role": "caller"
+        },
+        {
+          "id": "caller-d",
+          "name": "Hollis",
+          "role": "caller"
+        }
+      ],
+      "segments": 82,
+      "minutes": 69
+    },
+    {
+      "id": "sunbelt-soul-1060",
+      "file": "sunbelt-soul-1060.json",
+      "name": "Sunbelt Soul 1060 AM",
+      "dial": "1060",
+      "tagline": "Slow it down. We'll wait for you.",
+      "vibe": "A warm old AM station above a bowling alley, where the host talks like a slow dance and the sponsors are all somebody's cousin.",
+      "daypart": [
+        "evening",
+        "night",
+        "any"
+      ],
+      "contentRating": "PG-13",
+      "hosts": [
+        {
+          "id": "cornelius",
+          "name": "Cornelius 'Velvet' Gentry",
+          "role": "host"
+        },
+        {
+          "id": "odessa",
+          "name": "Aunt Odessa Fairweather",
+          "role": "co-host"
+        },
+        {
+          "id": "junebug",
+          "name": "Junebug Toussaint",
+          "role": "co-host"
+        },
+        {
+          "id": "earl",
+          "name": "Earl",
+          "role": "caller"
+        },
+        {
+          "id": "pearlie",
+          "name": "Pearlie",
+          "role": "caller"
+        },
+        {
+          "id": "loretta",
+          "name": "Loretta",
+          "role": "caller"
+        },
+        {
+          "id": "tobias",
+          "name": "Tobias Ludlow",
+          "role": "caller"
+        },
+        {
+          "id": "verbena",
+          "name": "Cousin Verbena",
+          "role": "caller"
+        }
+      ],
+      "segments": 84,
+      "minutes": 55
+    },
+    {
+      "id": "tape-hiss-fm",
+      "file": "tape-hiss-fm.json",
+      "name": "Tape Hiss FM",
+      "dial": "88.3",
+      "tagline": "Nine watts of whatever this is.",
+      "vibe": "A college station in a basement, run by people trying their absolute best long after everyone sensible has gone to bed.",
+      "daypart": [
+        "night",
+        "any"
+      ],
+      "contentRating": "PG-13",
+      "hosts": [
+        {
+          "id": "wren",
+          "name": "Wren Castellano",
+          "role": "host"
+        },
+        {
+          "id": "dez",
+          "name": "Desmond 'Dez' Pryor",
+          "role": "co-host"
+        },
+        {
+          "id": "thistle",
+          "name": "Thistle Abernathy",
+          "role": "host"
+        },
+        {
+          "id": "venn",
+          "name": "Professor Hollis Venn",
+          "role": "caller"
+        },
+        {
+          "id": "teddy",
+          "name": "Teddy",
+          "role": "caller"
+        },
+        {
+          "id": "ambrose",
+          "name": "Ambrose from Facilities",
+          "role": "caller"
+        },
+        {
+          "id": "noor",
+          "name": "Noor",
+          "role": "caller"
+        }
+      ],
+      "segments": 81,
+      "minutes": 55
+    }
+  ]
+}

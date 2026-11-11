@@ -282,10 +282,13 @@ export function createSystemVoice({ backends = [], timers = { setTimeout, clearT
       if (job) job.cancel('cancelled'); // one voice at a time
       const my = ++epoch;
       const hostSet = HOST_OFFSET[prepared.speaker] || HOST_OFFSET.a;
-      const voice = byId(hosts[prepared.speaker === 'b' ? 'b' : 'a']);
+      // `override` ({ voiceId, rate, pitch }, absolute values) lets a caller with more than two speakers (canned stations: a
+      // cast of hosts, callers and characters) pick the voice per line; the two-host path above is unchanged without it.
+      const ov = prepared.override && typeof prepared.override === 'object' ? prepared.override : null;
+      const voice = ov ? (ov.voiceId ? byId(ov.voiceId) : null) : byId(hosts[prepared.speaker === 'b' ? 'b' : 'a']);
       const sameVoice = hosts.a === hosts.b;
-      const rate = clamp(prepared.params.rate + (sameVoice ? hostSet.rate : 0), 0.6, 1.6);
-      const pitch = clamp(prepared.params.pitchMul * (sameVoice ? hostSet.pitch : 1), 0.5, 1.6);
+      const rate = ov && Number.isFinite(ov.rate) ? clamp(ov.rate, 0.6, 1.6) : clamp(prepared.params.rate + (sameVoice ? hostSet.rate : 0), 0.6, 1.6);
+      const pitch = ov && Number.isFinite(ov.pitch) ? clamp(ov.pitch, 0.5, 1.6) : clamp(prepared.params.pitchMul * (sameVoice ? hostSet.pitch : 1), 0.5, 1.6);
       const startedMs = now();
       let spokenChunks = 0, settled = false, current = null, pauseTimer = null, resolveAll;
       const done = new Promise((r) => { resolveAll = r; });
