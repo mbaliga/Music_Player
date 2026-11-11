@@ -109,7 +109,7 @@ export function createChooser(pack, { seed = 1, cadence = {}, preferTwin = false
   function cooled(u, atSec, relax) {
     const r = st.used.get(u.id);
     if (!r) return true;
-    const need = relax ? C.hardFloorSec : cooldownOf(u);
+    const need = relax ? Math.min(C.hardFloorSec, cooldownOf(u)) : cooldownOf(u);
     return atSec - r.lastSec >= need;
   }
 

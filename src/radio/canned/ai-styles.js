@@ -40,7 +40,7 @@ const host = (id, name, def, age, register, rate, pitch, mood, adjacent, pause, 
 export const AI_STYLES = Object.freeze([
   {
     id: 'morning-drive', title: 'Daybreak', style: 'Morning Drive', mode: 'Getting ready, commuting, wanting to be told the time without looking.',
-    tone: 'Brisk, warm, organised. The station that gets you out the door.', daypart: ['morning'], window: { from: 5, to: 10 }, windowNote: 'Daybreak signs off at ten.',
+    tone: 'Brisk, warm, organised. The station that gets you out the door.', daypart: ['morning'], onAir: { from: 5, to: 10 }, windowNote: 'Daybreak signs off at ten.',
     talkShare: 0.28, breaksPerHour: '4-5', maxBreakSec: 40, minSilentTransitions: 2, cityWeight: 0.3,
     hosts: [
       host('nia', 'Nia Castellan', true, '30s', 'alto', 1.08, 1.0, 'bright', ['neutral', 'amused'], 'short (0-300 ms)', 'clarity at speed; dry delivery, no sing-song', 'two-clause sentences, the second shorter than the first', 'alto, slightly dry'),
@@ -49,7 +49,7 @@ export const AI_STYLES = Object.freeze([
   },
   {
     id: 'after-hours', title: 'The Quiet Signal', style: 'After Hours', mode: 'Late night, winding down, working late. Company that does not demand anything.',
-    tone: 'Low, unhurried, kind. Thinks before speaking.', daypart: ['evening', 'night'], window: { from: 20, to: 4 }, windowNote: 'Best from eight in the evening to four in the morning.',
+    tone: 'Low, unhurried, kind. Thinks before speaking.', daypart: ['evening', 'night'], onAir: { from: 20, to: 4 }, windowNote: 'Best from eight in the evening to four in the morning.',
     talkShare: 0.22, breaksPerHour: '2-3', maxBreakSec: 75, minSilentTransitions: 4, cityWeight: 0.1,
     hosts: [
       host('ines', 'Ines Varga', true, '40s', 'low alto', 0.9, 0.95, 'soft', ['neutral', 'warm'], 'long (600-900 ms)', 'trailing sentence-ends without sounding cut off', 'sentences that end early, trailing into a pause', 'low alto, light non-specific European accent'),
@@ -58,7 +58,7 @@ export const AI_STYLES = Object.freeze([
   },
   {
     id: 'deep-cut', title: 'KDC', style: 'The Deep Cut', mode: 'Daytime, active listening. A host who cares about your collection as much as you do.',
-    tone: 'Enthusiastic nerd of the collection, not of music history.', daypart: ['day', 'evening'], window: { from: 10, to: 20 }, windowNote: 'Plays any time; best from ten to eight.',
+    tone: 'Enthusiastic nerd of the collection, not of music history.', daypart: ['day', 'evening'], onAir: { from: 10, to: 20 }, windowNote: 'Plays any time; best from ten to eight.',
     talkShare: 0.28, breaksPerHour: '3-4', maxBreakSec: 60, minSilentTransitions: 2, cityWeight: 0.2,
     hosts: [
       host('devika', 'Devika Rao', true, '30s', 'mezzo', 1.1, 1.05, 'bright', ['neutral', 'serious'], '150-300 ms', 'numbers spoken crisply: "track four of eleven"', 'every break holds exactly one count', 'mezzo, fast and precise'),
@@ -67,7 +67,7 @@ export const AI_STYLES = Object.freeze([
   },
   {
     id: 'town-line', title: 'Town Line', style: 'You City Radio', mode: 'The city in the room: weather, place, errands, a day at home.',
-    tone: 'Community-radio friendly. Neighbourly, slightly chatty.', daypart: ['morning', 'day', 'evening', 'night'], window: null, windowNote: 'Any time.',
+    tone: 'Community-radio friendly. Neighbourly, slightly chatty.', daypart: ['morning', 'day', 'evening', 'night'], onAir: null, windowNote: 'Any time.',
     talkShare: 0.3, breaksPerHour: '4', maxBreakSec: 60, minSilentTransitions: 2, cityWeight: 0.8,
     hosts: [
       host('hal', 'Hal Prentice', true, '50s', 'tenor', 0.95, 0.95, 'warm', ['amused', 'neutral'], '300-500 ms', 'gentle; the personified city line is not arch', 'addresses the city as a person once per break', 'tenor, unhurried'),
@@ -76,7 +76,7 @@ export const AI_STYLES = Object.freeze([
   },
   {
     id: 'signal-pirate', title: 'Signal Pirate', style: 'Chaos with your own music', mode: 'Bits, jingles, fake ads for products that cannot exist. The game-radio feeling.',
-    tone: 'Mischievous, theatrical, fast. Clearly labelled bits; real callers get sudden sincerity.', daypart: ['evening', 'night'], window: null, windowNote: 'Any time; best in the evening.',
+    tone: 'Mischievous, theatrical, fast. Clearly labelled bits; real callers get sudden sincerity.', daypart: ['evening', 'night'], onAir: null, windowNote: 'Any time; best in the evening.',
     talkShare: 0.3, breaksPerHour: '5', maxBreakSec: 50, minSilentTransitions: 2, cityWeight: 0.0,
     hosts: [
       host('odile', '“Captain” Odile Faraday', true, 'indeterminate', 'mezzo', 1.2, 1.05, 'dramatic', ['amused', 'neutral'], '700 ms before the punchline', 'formal diction at speed', 'formal grammar used for absurd content', 'mezzo, rapid'),

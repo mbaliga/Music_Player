@@ -14,6 +14,7 @@ import { createSystemVoice, webSpeechBackend } from '../../src/radio/offline/voi
 import { repairRundown, rundownProblems } from '../../src/radio/core/director-client.js';
 import { fakeTime, FakeSynth, FakeUtterance, VOICES, fakeLibrary } from './helpers.mjs';
 import { rig } from './rig.mjs';
+import { rig as cannedRig } from '../radio-canned/rig.mjs';
 
 const START = Date.parse('2026-11-04T18:05:00Z');
 
@@ -104,6 +105,14 @@ test('NO NETWORK: a full offline show (simulated and live-runner) with fetch, XH
     assert.ok(r.runner.aired.length > 2);
     r.runner.skip(); await r.time.advance(2000);
     r.runner.stop(); await r.time.advance(1000);
+    // and a canned (pre-written) station: same traps, same rule (its station files are loaded by an injected same-origin loader, see test/radio-canned/session.test.mjs)
+    const c = await cannedRig({ id: 'tape-hiss-fm', seed: 5 });
+    c.runner.start();
+    await c.time.advance(15 * 60 * 1000, 250);
+    assert.equal(c.runner.phase, 'playing');
+    assert.ok(c.runner.aired.length > 2);
+    c.runner.skip(); await c.time.advance(2000);
+    c.runner.stop(); await c.time.advance(1000);
   } finally {
     for (const n of names) { if (saved[n] === undefined) delete globalThis[n]; else globalThis[n] = saved[n]; }
     if (hadNav) Object.defineProperty(globalThis, 'navigator', hadNav); else delete globalThis.navigator;

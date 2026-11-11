@@ -81,10 +81,10 @@ export function cannedCard(e, hour) {
 }
 
 export function styleCard(s, hour, { cloudAvailable = false } = {}) {
-  const inWin = !s.window ? true : s.window.from < s.window.to ? hour >= s.window.from && hour < s.window.to : (hour >= s.window.from || hour < s.window.to);
+  const inWin = !s.onAir ? true : s.onAir.from < s.onAir.to ? hour >= s.onAir.from && hour < s.onAir.to : (hour >= s.onAir.from || hour < s.onAir.to);
   return {
     kind: 'style', key: `${AI_STYLE_TYPE}|${s.id}`, id: s.id, name: s.title, subtitle: s.style, mode: s.mode, tone: s.tone,
-    dayparts: s.daypart, daypartBadge: s.window ? `${String(s.window.from).padStart(2, '0')}:00 to ${String(s.window.to).padStart(2, '0')}:00` : 'Any time', inDaypart: inWin, windowNote: s.windowNote,
+    dayparts: s.daypart, daypartBadge: s.onAir ? `${String(s.onAir.from).padStart(2, '0')}:00 to ${String(s.onAir.to).padStart(2, '0')}:00` : 'Any time', inDaypart: inWin, windowNote: s.windowNote,
     talkShare: s.talkShare, musicShare: Math.round((1 - s.talkShare) * 100) / 100, hostChips: s.hosts.map((h) => ({ id: h.id, name: h.name, role: h.default ? 'default host' : 'host' })),
     startable: cloudAvailable === true, status: cloudAvailable === true ? '' : NEEDS_INTERNET, style: s,
   };

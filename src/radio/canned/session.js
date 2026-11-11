@@ -54,7 +54,10 @@ export async function loadStationsIndex({ fetchFn, baseUrl } = {}) {
 }
 
 /** Load (and cache) a station pack. -> { ok, pack, errors } */
+export const validStationId = (id) => typeof id === 'string' && /^[a-z0-9][a-z0-9-]{0,60}$/.test(id);
+
 export async function loadStationPack(id, { fetchFn, baseUrl, file = null } = {}) {
+  if (!validStationId(id)) return { ok: false, pack: null, errors: ['bad station id'] };
   if (packCache.has(id)) return { ok: true, pack: packCache.get(id), errors: [] };
   const name = file || `${id}.json`;
   let lastErr = 'no source';
@@ -72,6 +75,7 @@ export async function loadStationPack(id, { fetchFn, baseUrl, file = null } = {}
 
 /** The optional pre-rendered voice pack for a station (absent in this build). -> { entries, base, stationId } | null */
 export async function loadAudioPack(id, { fetchFn, baseUrl } = {}) {
+  if (!validStationId(id)) return null;
   if (audioCache.has(id)) return audioCache.get(id);
   for (const b of AUDIO_BASES) {
     try {
@@ -139,6 +143,7 @@ export function createCannedSession(station, env = {}) {
       const my = ++gen;
       setState({ phase: 'connecting', error: null });
       const fail = (message, kind = 'unavailable') => { if (my === gen) setState({ phase: 'error', error: { kind, message } }); };
+      if (!validStationId(station.id)) return fail('This pre-written station is not recognised.');
       if (!fetchFn && !packCache.has(station.id)) return fail('This station’s script could not be loaded.');
       const r = await loadStationPack(station.id, { fetchFn, baseUrl });
       if (my !== gen) return;
