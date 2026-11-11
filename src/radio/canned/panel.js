@@ -77,7 +77,7 @@ export function mountCannedPanel(container, session, { onStop, doc = document, s
     else if (e.type === 'state') {
       if (e.phase === 'empty' && e.error) { note.textContent = e.error.message; note.classList.remove('warn'); title.textContent = 'Nothing to play yet'; skip.disabled = true; }
       else if (e.phase === 'error' && e.error) { note.textContent = e.error.message; note.classList.add('warn'); }
-      else if (e.phase === 'playing' && e.speech === 'off') { note.textContent = 'Music only: this station’s talk is switched off on this device.'; note.classList.add('warn'); }
+      else if (e.phase === 'playing' && e.speech === 'off') { note.textContent = session.voice.unavailableReason === 'no_local_voice' ? 'No offline voice on this device. Music only.' : 'Music only: this station’s talk is switched off on this device.'; note.classList.add('warn'); }
       else if (e.phase === 'starting') { note.textContent = ''; skip.disabled = false; }
     }
   });

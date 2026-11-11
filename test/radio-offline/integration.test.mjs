@@ -141,8 +141,8 @@ test('session: maps the show onto the Session contract and persists history, mem
   assert.equal(r.session.getView().speechAvailable, true);
   assert.equal(r.session.getView().engine, 'web-speech');
   // two hosts, user-selectable and persisted
-  r.session.voice.setHost('b', 'cloudy'); r.session.saveVoices();
-  assert.deepEqual(JSON.parse(r.store.get(VOICE_PREFS_KEY)), { v: 1, a: r.session.voice.hosts().a, b: 'cloudy' });
+  r.session.voice.setHost('b', 'fiona'); r.session.saveVoices();
+  assert.deepEqual(JSON.parse(r.store.get(VOICE_PREFS_KEY)), { v: 1, a: r.session.voice.hosts().a, b: 'fiona' });
   r.session.skip();
   await r.time.advance(1000);
   r.session.stop();

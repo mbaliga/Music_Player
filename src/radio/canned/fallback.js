@@ -57,10 +57,13 @@ export function createFallbackController({ station = null, flagOn = false, cloud
     onSwitch(cb) { switchCbs.add(cb); return () => switchCbs.delete(cb); },
     onChange(cb) { stateCb = cb; },
     async start() {
+      if (!stopped && session) return true; // already running: a second start must not orphan the first session or double-subscribe
       stopped = false;
       decision = chooseShowSource({ online: online(), cloudAvailable, flagOn, userStation: station, lastSource: null });
       const s = launch(decision.source || 'canned');
       if (!s) return false;
+      try { unNet && unNet(); } catch { /* */ }
+      unNet = null;
       if (source === 'cloud' && net && typeof net.onChange === 'function') unNet = net.onChange((isOn) => { if (!isOn) rescue('went offline'); });
       await s.start();
       return true;

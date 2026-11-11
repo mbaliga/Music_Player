@@ -48,6 +48,8 @@ const ROMAN = { II: 'two', III: 'three', IV: 'four', VI: 'six', VII: 'seven', VI
 
 // ── titles ───────────────────────────────────────────────────────────────────
 
+/** Longest raw library string the cleaners look at; everything past it is dropped before any pattern matching. */
+export const RAW_CAP = 200;
 const JUNK_TAG = /^(?:\d{4}\s+)?(?:re-?master(?:ed)?(?:\s+\d{4})?|\d{4}\s+re-?master(?:ed)?|official(?:\s+\w+)*|(?:lyric|music|audio|hd|hq|4k)\s*(?:video)?|lyrics?|explicit|clean|mono|stereo|deluxe(?:\s+\w+)?|bonus(?:\s+track)?|single\s+version|radio\s+edit|album\s+version|digital\s+\w+|\w*\s*rip|web|youtube|free\s+download|\d{2,3}\s*kbps?)$/i;
 const NON_TITLES = /^(?:track\s*\d*|untitled(?:\s*\d*)?|unknown(?:\s+(?:title|track))?|audio\s*track\s*\d*|no\s+title|\d+)$/i;
 
@@ -58,11 +60,12 @@ const NON_TITLES = /^(?:track\s*\d*|untitled(?:\s*\d*)?|unknown(?:\s+(?:title|tr
  */
 export function cleanTitle(raw) {
   try {
-    let s = String(raw ?? '').normalize('NFC');
+    // library text is untrusted and can be 512 KB: bound it before any regex runs (a real title is far shorter)
+    let s = String(raw ?? '').slice(0, RAW_CAP).normalize('NFC');
     s = s.replace(/\.(mp3|flac|ogg|m4a|aac|opus|wav|wma|aiff?)$/i, '');
     s = s.replace(/[_•·]+/g, ' ').replace(/\s+/g, ' ').trim();
     s = s.replace(/^(?:[A-D]\d{1,2}|\d{1,3})\s*[-.)\]:]\s+/i, '').replace(/^\d{1,3}\s+(?=\D)/, '').trim();
-    s = s.replace(/\s*[[(]([^\])]*)[\])]/g, (m, inner) => (JUNK_TAG.test(inner.trim()) ? '' : m)).replace(/\s+/g, ' ').trim();
+    s = s.replace(/\s*[[(]([^\])[(]{0,80})[\])]/g, (m, inner) => (JUNK_TAG.test(inner.trim()) ? '' : m)).replace(/\s+/g, ' ').trim();
     s = s.replace(/[\u0000-\u001f\u007f]/g, '').replace(/[<>{}\\|]/g, ' ').replace(/\s+/g, ' ').trim();
     if (!s || NON_TITLES.test(s)) return null;
     if (!/[\p{L}\p{N}]/u.test(s)) return null;
@@ -78,7 +81,7 @@ const UNKNOWN_ARTIST = /^(?:unknown(?:\s+artist)?|<unknown>|various(?:\s+artists
 /** Artist tag -> a nameable artist, or null (unknown / compilation / too long). */
 export function cleanArtist(raw) {
   try {
-    const s = String(raw ?? '').replace(/[_\u0000-\u001f\u007f<>{}\\|]/g, ' ').replace(/\s+/g, ' ').trim();
+    const s = String(raw ?? '').slice(0, RAW_CAP).replace(/[_\u0000-\u001f\u007f<>{}\\|]/g, ' ').replace(/\s+/g, ' ').trim();
     if (!s || UNKNOWN_ARTIST.test(s) || s.length > 50 || !/[\p{L}\p{N}]/u.test(s)) return null;
     return s;
   } catch { return null; }
@@ -106,13 +109,14 @@ const EMOJI = /[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}\u{FE0F}\u{200D}]/gu;
 export function speakable(text) {
   try {
     let s = String(text ?? '');
-    s = s.normalize('NFC').replace(EMOJI, ' ').replace(/https?:\/\/\S+|www\.\S+/gi, ' ');
+    // one collapse up front keeps the later patterns linear on whitespace runs
+    s = s.normalize('NFC').replace(/\s+/g, ' ').replace(EMOJI, ' ').replace(/https?:\/\/\S+|www\.\S+/gi, ' ');
     s = s.replace(/\bfeat\.?(?=\s)|\bft\.(?=\s)/gi, 'featuring').replace(/\bw\/(?=\s|\w)/gi, 'with ').replace(/\bvs\.?(?=\s)/gi, 'versus');
     s = s.replace(/\bMr\./g, 'Mister').replace(/\bMrs\./g, 'Missus').replace(/\bDr\./g, 'Doctor').replace(/\bMs\./g, 'Miss');
     s = s.replace(/\bNo\.\s*(?=\d)/g, 'number ').replace(/\bVol\.\s*(?=\d)/gi, 'volume ').replace(/\bPt\.\s*(?=\d)/gi, 'part ');
     s = s.replace(/&/g, ' and ').replace(/\+/g, ' plus ').replace(/@/g, ' at ');
     s = s.replace(/(\d)\s*%/g, '$1 percent').replace(/%/g, ' percent ');
-    s = s.replace(/(-?\d+(?:\.\d+)?)\s*°\s*[CcFf]?/g, (m, n) => `${n} degrees`).replace(/°/g, ' degrees ');
+    s = s.replace(/(-?\d{1,15}(?:\.\d{1,15})?)\s*°\s*[CcFf]?/g, (m, n) => `${n} degrees`).replace(/°/g, ' degrees ');
     s = s.replace(/#\s*(?=\d)/g, 'number ').replace(/\$\s*(\d[\d,]*(?:\.\d+)?)/g, '$1 dollars');
     // clock times
     s = s.replace(/\b(\d{1,2}):(\d{2})\s*([ap])\.?m\.?\b/gi, (m, h, mi, ap) => clock(Number(h), Number(mi), `${ap.toLowerCase()} m`));

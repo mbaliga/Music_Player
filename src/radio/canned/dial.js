@@ -148,7 +148,7 @@ function fillInfo(info, c, ctx) {
       btn.dataset.busy = '1'; btn.textContent = 'Stop';
       const r = await auditioner.audition(host, { onLine: (t) => { note.textContent = t; } });
       btn.dataset.busy = '0'; btn.textContent = `Hear ${first}`;
-      note.textContent = r.ok ? 'That was the audition script, read in this host’s pace and pitch.' : r.reason === 'no speech engine' ? 'This device reported no speech engine, so there is nothing to play the audition with.' : 'The phone’s voice stopped before the audition finished.';
+      note.textContent = r.ok ? 'That was the audition script, read in this host’s pace and pitch.' : r.reason === 'no speech engine' ? 'This device reported no speech engine, so there is nothing to play the audition with.' : r.reason === 'no offline voice' ? 'No offline voice on this device, so there is nothing to play the audition with (the phone’s online voices are never used).' : 'The phone’s voice stopped before the audition finished.';
     } }, `Hear ${first}`);
     return h('div', { class: 'dial-host' },
       h('b', {}, host.name), host.default ? ' (default)' : '', h('div', { class: 'dial-vibe' }, `${host.age}, ${host.register}. Flat-voice device: ${host.flatDevice}.`),

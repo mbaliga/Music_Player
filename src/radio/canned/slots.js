@@ -9,7 +9,7 @@
 // later, at voice time, exactly as for You Radio.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { cleanTitle, cleanArtist, cleanAlbum } from '../offline/pronounce.js';
+import { cleanTitle, cleanArtist, cleanAlbum, RAW_CAP } from '../offline/pronounce.js';
 
 export const MAX_NAME_CHARS = 48;
 export const MAX_NAME_WORDS = 9;
@@ -24,10 +24,17 @@ export function isLatinText(s) {
   return letters.every((ch) => LATIN_LETTER.test(ch));
 }
 
+// invisible/format characters (bidi overrides, zero-width, tags), controls, private use, and emoji: never read aloud, and a
+// bidi override could reorder the caption. Emoji go to a space, the invisible ones vanish.
+const INVISIBLE = /[\p{Cf}\p{Cc}\p{Co}]/gu;
+const PICTO = /[\p{Extended_Pictographic}\p{Emoji_Modifier}\u{1F1E6}-\u{1F1FF}\uFE0F\u20E3]/gu;
+
 /** Library string -> a nameable value for one slot, or null. */
 export function cleanSlotValue(slot, raw) {
   try {
     let v = null;
+    // untrusted text: bound it first (the cleaners cap too), then drop invisibles and emoji so they can never be said or shown
+    raw = String(raw ?? '').slice(0, RAW_CAP).replace(/\s+/g, ' ').replace(INVISIBLE, '').replace(PICTO, ' ');
     if (slot === 'prevTitle' || slot === 'nextTitle') v = cleanTitle(raw);
     else if (slot === 'prevArtist' || slot === 'nextArtist') v = cleanArtist(raw);
     else if (slot === 'album') v = cleanAlbum(raw);
@@ -35,7 +42,8 @@ export function cleanSlotValue(slot, raw) {
     v = v.replace(/\s+/g, ' ').trim();
     if (!v || v.length > MAX_NAME_CHARS || (v.match(/\S+/g) || []).length > MAX_NAME_WORDS) return null;
     if (!isLatinText(v)) return null;
-    if (/^[\d\s\W_]+$/u.test(v)) return null; // digits and symbols only ("1999", "???")
+    if (!/[\p{L}\p{N}]/u.test(v)) return null; // symbols only ("???"); accented Latin ("Ø", "Éé") is a name, not a symbol
+    if (/^[\d\s]+$/.test(v)) return null; // digits only ("1999")
     if (/\.(mp3|flac|ogg|m4a|wav|opus)\b/i.test(v) || /[_]{1}/.test(v) || /\b(?:www|http)/i.test(v)) return null; // cruft that survived cleaning
     return v;
   } catch { return null; }

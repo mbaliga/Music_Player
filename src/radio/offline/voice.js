@@ -35,6 +35,13 @@ export const SYSTEM_CAPS = Object.freeze({
 
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 
+/**
+ * NO NETWORK TTS. Chrome/Android list cloud voices ("Google UK English Female", localService:false) beside the on-device ones;
+ * speaking with one sends the show's text to a cloud service. Canned shows and the offline host promise no network, so those
+ * voices are never offered, assigned or spoken with. A voice that does not say (localService undefined) counts as local.
+ */
+export const isLocalVoice = (v) => !!v && v.local !== false;
+
 // ── prepare one utterance (pure) ─────────────────────────────────────────────
 
 const EMOTION_TWEAK = {
@@ -231,28 +238,38 @@ export function createSystemVoice({ backends = [], timers = { setTimeout, clearT
   const avail = backends.filter((b) => b && b.available());
   let active = avail[0] || null;
   let voices = [];
+  let noLocal = false; // the engine listed voices but every one needs the network: speak with none of them
+  const localOf = (list) => (list || []).filter(isLocalVoice);
   let hosts = { a: prefs.a || null, b: prefs.b || null };
   let noStart = 0;
   let job = null; // the speak in flight: {cancel(reason)}
   let epoch = 0;
-  const diag = { backend: active ? active.name : 'none', failures: 0, assumedEnds: 0, lastReason: null };
+  const diag = { backend: active ? active.name : 'none', failures: 0, assumedEnds: 0, lastReason: null, networkVoicesSkipped: 0 };
 
   const byId = (id) => voices.find((v) => v.id === id) || null;
 
   const api = {
     name: 'system-speech',
-    capabilities: () => ({ ...SYSTEM_CAPS, available: !!active, engine: active ? active.name : 'none', startEvent: active ? active.startEvent : false }),
-    get available() { return !!active; },
+    capabilities: () => ({ ...SYSTEM_CAPS, available: !!active && !noLocal, engine: active ? active.name : 'none', startEvent: active ? active.startEvent : false }),
+    get available() { return !!active && !noLocal; },
+    /** why speech is unavailable, when it is: 'no_local_voice' (only network voices exist), 'no_engine', or null */
+    get unavailableReason() { return noLocal ? 'no_local_voice' : active ? null : 'no_engine'; },
     get backendName() { return active ? active.name : 'none'; },
     diag,
 
     /** Discover voices (waits briefly for async voice lists) and choose default hosts. */
     async init() {
+      noLocal = false; diag.networkVoicesSkipped = 0;
+      let sawNetwork = 0;
       for (const b of avail) {
-        const v = await b.getVoices({ waitMs: timeouts.voicesWaitMs });
+        const all = await b.getVoices({ waitMs: timeouts.voicesWaitMs });
+        const v = localOf(all);
+        sawNetwork = Math.max(sawNetwork, all.length - v.length);
         if (v.length) { active = b; voices = v; break; }
       }
-      if (!voices.length && active) voices = await active.getVoices({ waitMs: 0 }); // may legitimately be empty; engine default voice still works
+      diag.networkVoicesSkipped = sawNetwork;
+      // zero voices reported at all may be legitimate (the engine default still works); voices that are ALL network are not
+      if (!voices.length && sawNetwork) noLocal = true;
       const d = defaultHostVoices(voices);
       for (const k of ['a', 'b']) if (!hosts[k] || !byId(hosts[k])) hosts[k] = d[k];
       diag.backend = active ? active.name : 'none';
@@ -261,7 +278,7 @@ export function createSystemVoice({ backends = [], timers = { setTimeout, clearT
     voices: () => englishVoices(voices),
     allVoices: () => voices.slice(),
     hosts: () => ({ ...hosts }),
-    setHost(which, voiceId) { if (which === 'a' || which === 'b') hosts[which] = voiceId || null; },
+    setHost(which, voiceId) { if ((which === 'a' || which === 'b') && (!voiceId || byId(voiceId))) hosts[which] = voiceId || null; },
 
     /** Core Voice contract: prepare, don't synthesize. */
     async render({ script, nowParts } = {}) {
@@ -279,13 +296,16 @@ export function createSystemVoice({ backends = [], timers = { setTimeout, clearT
      */
     speak(prepared, hooks = {}) {
       if (!active) return Promise.resolve({ ok: false, reason: 'unavailable', chunks: 0 });
+      if (noLocal) return Promise.resolve({ ok: false, reason: 'no_local_voice', chunks: 0 });
       if (job) job.cancel('cancelled'); // one voice at a time
       const my = ++epoch;
       const hostSet = HOST_OFFSET[prepared.speaker] || HOST_OFFSET.a;
       // `override` ({ voiceId, rate, pitch }, absolute values) lets a caller with more than two speakers (canned stations: a
       // cast of hosts, callers and characters) pick the voice per line; the two-host path above is unchanged without it.
       const ov = prepared.override && typeof prepared.override === 'object' ? prepared.override : null;
-      const voice = ov ? (ov.voiceId ? byId(ov.voiceId) : null) : byId(hosts[prepared.speaker === 'b' ? 'b' : 'a']);
+      let voice = ov ? (ov.voiceId ? byId(ov.voiceId) : null) : byId(hosts[prepared.speaker === 'b' ? 'b' : 'a']);
+      // never hand the engine "no voice" while on-device voices exist: its default may be a network voice
+      if (!voice && voices.length) voice = englishVoices(voices)[0] || voices[0];
       const sameVoice = hosts.a === hosts.b;
       const rate = ov && Number.isFinite(ov.rate) ? clamp(ov.rate, 0.6, 1.6) : clamp(prepared.params.rate + (sameVoice ? hostSet.rate : 0), 0.6, 1.6);
       const pitch = ov && Number.isFinite(ov.pitch) ? clamp(ov.pitch, 0.5, 1.6) : clamp(prepared.params.pitchMul * (sameVoice ? hostSet.pitch : 1), 0.5, 1.6);
@@ -331,7 +351,7 @@ export function createSystemVoice({ backends = [], timers = { setTimeout, clearT
           try { current && current.cancel(); } catch { /* */ }
           noStart++;
           // a dead front-end (Android WebView): try the next backend for later utterances
-          if (noStart >= fallbackAfter) { const alt = avail.find((b) => b !== active); if (alt) { active = alt; diag.backend = alt.name; noStart = 0; voices = []; alt.getVoices().then((v) => { voices = v; const d = defaultHostVoices(v); for (const k of ['a', 'b']) if (!byId(hosts[k])) hosts[k] = d[k]; }); } }
+          if (noStart >= fallbackAfter) { const alt = avail.find((b) => b !== active); if (alt) { active = alt; diag.backend = alt.name; noStart = 0; voices = []; alt.getVoices().then((all) => { const v = localOf(all); voices = v; if (!v.length && all.length) noLocal = true; const d = defaultHostVoices(v); for (const k of ['a', 'b']) if (!byId(hosts[k])) hosts[k] = d[k]; }); } }
           finish({ ok: false, reason: 'no_start' });
         }, timeouts.startMs);
         try { hooks.onChunk && hooks.onChunk(ch.text, i); } catch { /* */ }

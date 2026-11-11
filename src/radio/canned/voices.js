@@ -69,7 +69,8 @@ export function directionTweak(direction) {
  */
 export function assignHostVoices(hostList, voices = [], prefs = {}) {
   const hosts = (Array.isArray(hostList) ? hostList : []).filter((h) => h && h.id);
-  const list = (Array.isArray(voices) ? voices : []).filter((v) => v && v.id);
+  // network voices (local === false) are never assigned: they would send the show's text to a cloud service
+  const list = (Array.isArray(voices) ? voices : []).filter((v) => v && v.id && v.local !== false);
   const order = hosts.slice().sort((a, b) => (ROLE_ORDER[a.role] ?? 9) - (ROLE_ORDER[b.role] ?? 9));
   const taken = new Map();
   const picked = new Map();

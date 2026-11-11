@@ -20,7 +20,7 @@ export function createAuditioner({ win = (typeof window !== 'undefined' ? window
     const my = ++running;
     const v = get();
     try { await v.init(); } catch { /* engine default voice still works */ }
-    if (!v.available) { onDone && onDone({ ok: false, spoken: 0, reason: 'no speech engine' }); return { ok: false, spoken: 0, reason: 'no speech engine' }; }
+    if (!v.available) { const reason = v.unavailableReason === 'no_local_voice' ? 'no offline voice' : 'no speech engine'; onDone && onDone({ ok: false, spoken: 0, reason }); return { ok: false, spoken: 0, reason }; }
     const pr = hostProsody(styleHost);
     const pause = (() => { const m = String(styleHost.pauseHabit || '').match(/(\d+)\D+(\d+)|(\d+)/); const n = m ? Number(m[2] || m[3] || m[1]) : 400; return Math.min(1200, Math.max(150, n)); })();
     const a = v.hosts().a;

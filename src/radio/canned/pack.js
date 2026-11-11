@@ -24,9 +24,13 @@ export const EST_TOL = 0.35;
 const BANNED = [
   [/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}]/u, 'emoji'],
   [/https?:\/\/|www\.|\.com\b|\.net\b|\.org\b/i, 'url'],
-  [/\[[^\]]*\]|\*[^*]+\*|\([^)]*(laugh|sigh|pause|beat|music|sfx)[^)]*\)/i, 'stage direction in text'],
-  [/\{(?!(prevTitle|prevArtist|nextTitle|nextArtist|album)\})[^}]*\}/, 'unknown slot'],
+  // bounded / bracket-excluding bodies keep every pattern linear on adversarial text ("[a [a [a ...", "(x(x(x ...")
+  [/\[[^\][]*\]|\*[^*]+\*|\([^)]{0,120}(laugh|sigh|pause|beat|music|sfx)[^)]{0,120}\)/i, 'stage direction in text'],
+  [/\{(?!(prevTitle|prevArtist|nextTitle|nextArtist|album)\})[^}{]*\}/, 'unknown slot'],
 ];
+
+/** A station id is a file name and a URL path segment: lowercase letters, digits and hyphens only (matches session.js validStationId). */
+export const isStationId = (id) => typeof id === 'string' && /^[a-z0-9][a-z0-9-]{0,60}$/.test(id);
 
 export const wordCount = (t) => String(t ?? '').split(/\s+/).filter(Boolean).length;
 const isObj = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
@@ -49,6 +53,7 @@ export function validatePackDoc(doc) {
     const st = isObj(doc.station) ? doc.station : {};
     stats.id = typeof st.id === 'string' ? st.id : null;
     for (const k of ['id', 'name', 'tagline', 'dial', 'vibe', 'contentRating']) if (typeof st[k] !== 'string' || !st[k]) err(null, `station.${k} missing`);
+    if (typeof st.id === 'string' && st.id && !isStationId(st.id)) err(null, `station.id "${st.id.slice(0, 40)}" is not URL-safe (lowercase letters, digits, hyphens)`);
     if (!Array.isArray(st.daypart) || !st.daypart.length || st.daypart.some((d) => !DAYPART_SET.has(d))) err(null, 'station.daypart invalid');
     const hosts = new Map();
     for (const h of arr(st.hosts)) {

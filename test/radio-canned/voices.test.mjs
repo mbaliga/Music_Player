@@ -98,5 +98,5 @@ test('the speech adapter honours a per-line override (voice, rate, pitch) and le
   await time.advance(3000); await p2;
   const p3 = voice.speak({ ...prep, override: { voiceId: null, rate: 9, pitch: 0.1 } });
   await time.advance(3000); await p3;
-  assert.deepEqual(synth.spoken.map((s) => [s.voice, s.rate, s.pitch]), [['Karen', 1.17, 0.83], ['Samantha', 1, 1], [undefined, 1.6, 0.5]]);
+  assert.deepEqual(synth.spoken.map((s) => [s.voice, s.rate, s.pitch]), [['Karen', 1.17, 0.83], ['Samantha', 1, 1], ['Samantha', 1.6, 0.5]]);
 });

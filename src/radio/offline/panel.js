@@ -107,7 +107,7 @@ export function mountYouPanel(container, session, { onStop, doc = document } = {
     else if (e.type === 'state') {
       if (e.phase === 'empty' && e.error) { note.textContent = e.error.message; note.classList.remove('warn'); title.textContent = 'Nothing to play yet'; skip.disabled = true; }
       else if (e.phase === 'error' && e.error) { note.textContent = e.error.message; note.classList.add('warn'); }
-      else if (e.phase === 'playing' && e.speech === 'off') { note.textContent = session.voice.available ? 'Music only: the hosts are staying quiet.' : 'This device reported no speech engine, so the hosts will stay quiet. Music only.'; note.classList.add('warn'); }
+      else if (e.phase === 'playing' && e.speech === 'off') { note.textContent = session.voice.available ? 'Music only: the hosts are staying quiet.' : session.voice.unavailableReason === 'no_local_voice' ? 'No offline voice on this device. Music only.' : 'This device reported no speech engine, so the hosts will stay quiet. Music only.'; note.classList.add('warn'); }
       else if (e.phase === 'starting') { note.textContent = ''; skip.disabled = false; }
     }
   });

@@ -6,6 +6,7 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { validatePackDoc } from '../src/radio/canned/pack.js';
+import { packFileError } from './stations-index.mjs';
 
 const dir = 'content/stations';
 const files = process.argv.slice(2).length ? process.argv.slice(2)
@@ -16,6 +17,8 @@ const err = (f, msg) => { errors++; console.error(`${f}: ${msg}`); };
 for (const f of files) {
   let doc;
   try { doc = JSON.parse(readFileSync(f, 'utf8')); } catch (e) { err(f, 'invalid JSON: ' + e.message); continue; }
+  const idErr = packFileError(f, doc);
+  if (idErr) err(f, idErr.slice(f.length + 2));
   const { errors: errs, stats } = validatePackDoc(doc);
   for (const e of errs) err(e.id ? `${f} [${e.id}]` : f, e.msg);
   console.log(`${stats.id}: ${stats.segments} segments, ${(stats.totalSec / 60).toFixed(1)} min, ${stats.slotSegs} slot / ${stats.standalone} slot-free`);

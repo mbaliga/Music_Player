@@ -24,7 +24,7 @@ import { dirname, resolve, relative, sep, posix } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { existsSync } from 'node:fs';
 import { validatePackDoc } from '../src/radio/canned/pack.js';
-import { buildStationsIndex, serializeIndex, isPackFile } from './stations-index.mjs';
+import { buildStationsIndex, serializeIndex, isPackFile, packFileError } from './stations-index.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -93,7 +93,10 @@ async function stageStations(outDir, srcDir, audioDir) {
   const files = (await readdir(srcDir)).filter(isPackFile).sort();
   for (const f of files) {
     const text = await readFile(resolve(srcDir, f), 'utf8');
-    const { errors } = validatePackDoc(JSON.parse(text));
+    const doc = JSON.parse(text);
+    const idErr = packFileError(f, doc);
+    if (idErr) throw new Error(`build:web — station pack ${idErr}`);
+    const { errors } = validatePackDoc(doc);
     if (errors.length) throw new Error(`build:web — station pack ${f} is invalid: ${errors.slice(0, 3).map((e) => e.msg).join('; ')}`);
     await writeFile(resolve(dest, f), text);
   }
