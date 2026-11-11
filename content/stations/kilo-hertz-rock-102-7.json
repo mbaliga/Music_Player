@@ -1,0 +1,4535 @@
+{
+ "v": 1,
+ "station": {
+  "id": "kilo-hertz-rock-102-7",
+  "name": "Kilo-Hertz Rock 102.7",
+  "tagline": "Loud enough to count as a hobby.",
+  "dial": "102.7",
+  "vibe": "A morning-zoo rock station: a booming host who is never right, a co-host who keeps score, a traffic reporter with no helicopter, and contests nobody should win.",
+  "daypart": [
+   "morning"
+  ],
+  "contentRating": "PG-13",
+  "hosts": [
+   {
+    "id": "danny",
+    "name": "Big Danny Sparks",
+    "role": "host",
+    "persona": "Morning host with the volume of a stadium and the batting average of a mascot. Every event is \"a situation,\" every plan is \"a play,\" and every wrong prediction is \"a learning.\" Shouts \"Write that down!\" at nobody, calls his truck The Judge, and considers salad a rumor. He loves demolition derbies, breakfast meats, and the sound of his own voice reverberating off a parking structure. Underneath the bluster he is a soft touch who tears up at dedications and pretends it is the studio dust.",
+    "voice": {
+     "genderHint": "male",
+     "ageHint": "adult",
+     "accent": "neutral-US",
+     "style": "booming, fast, carnival-barker energy that cracks when he gets sincere",
+     "rate": 1.1,
+     "pitch": 0.92
+    }
+   },
+   {
+    "id": "kat",
+    "name": "Kat Mulroney",
+    "role": "co-host",
+    "persona": "Co-host and scorekeeper. Keeps a running tally of Danny's failed predictions on a legal pad she calls The Ledger and reads from it with judicial calm. Hates mornings, hosts a morning show, has made peace with neither. Rides an old motorcycle she calls Marjorie and talks about it the way other people talk about a therapist. Her laugh is rare and real, and the bits that earn it are the ones that run.",
+    "voice": {
+     "genderHint": "female",
+     "ageHint": "adult",
+     "accent": "neutral-US",
+     "style": "sardonic, quick, low-key, a smile you can hear when a bit lands",
+     "rate": 1.05,
+     "pitch": 1
+    }
+   },
+   {
+    "id": "pete",
+    "name": "Tiny Pete",
+    "role": "cast",
+    "persona": "The station's traffic reporter, allegedly broadcasting from the Kilo-Copter, a helicopter that nobody has seen, heard, or insured. His reports are breathless, vivid, and describe a city that does not exist. Deeply earnest, easily flustered, loyal to the bit long after it has collapsed under him. Ends every report with \"Back to you in the studio\" even when he is standing in it.",
+    "voice": {
+     "genderHint": "male",
+     "ageHint": "young",
+     "accent": "neutral-US",
+     "style": "breathless, over-urgent, slightly muffled like a man talking into a cup",
+     "rate": 1.2,
+     "pitch": 1.08
+    }
+   },
+   {
+    "id": "wes",
+    "name": "Wes",
+    "role": "cast",
+    "persona": "The intern. Polite, bewildered, perpetually sent on errands that grow in scope while he is gone. Speaks in short, careful sentences, like a man reading his rights to himself. Takes every instruction literally and then has to live with the results. Secretly the most competent person in the building.",
+    "voice": {
+     "genderHint": "male",
+     "ageHint": "young",
+     "accent": "neutral-US",
+     "style": "quiet, careful, out of breath",
+     "rate": 1,
+     "pitch": 1.05
+    }
+   },
+   {
+    "id": "caller-a",
+    "name": "Dale from the Quarry",
+    "role": "caller",
+    "persona": "Calls from the quarry on his break, which seems to be constant. Gravel voice, gravel opinions, gravel job. Agrees with Danny on everything until the exact moment Danny is wrong, which he smells like a storm. Thinks every contest is rigged and enters every contest.",
+    "voice": {
+     "genderHint": "male",
+     "ageHint": "older",
+     "accent": "neutral-US",
+     "style": "gravelly, slow, shouting over machinery",
+     "rate": 0.92,
+     "pitch": 0.85
+    }
+   },
+   {
+    "id": "caller-b",
+    "name": "Trish",
+    "role": "caller",
+    "persona": "Has won every contest the station has ever run and is bored of winning. Calls in with the serene confidence of a woman whose garage is full of prizes she did not want. Corrects Danny's rules back to him. Is kind to Wes, which nobody else remembers to be.",
+    "voice": {
+     "genderHint": "female",
+     "ageHint": "adult",
+     "accent": "neutral-US",
+     "style": "relaxed, smug, chewing something",
+     "rate": 1,
+     "pitch": 0.98
+    }
+   },
+   {
+    "id": "caller-c",
+    "name": "Rowan",
+    "role": "caller",
+    "persona": "A kid who calls before school with extremely specific questions and no sense of how radio works. Says \"wait, wait, wait\" before every point. Loves the Tank. Believes the Kilo-Copter is real and defends Pete passionately, which Pete finds unbearably moving.",
+    "voice": {
+     "genderHint": "neutral",
+     "ageHint": "young",
+     "accent": "neutral-US",
+     "style": "high, fast, delighted",
+     "rate": 1.2,
+     "pitch": 1.2
+    }
+   }
+  ]
+ },
+ "segments": [
+  {
+   "id": "kh-signon-1",
+   "kind": "sign_on",
+   "hosts": [
+    "danny",
+    "kat"
+   ],
+   "lines": [
+    {
+     "host": "danny",
+     "text": "Good morning, you beautiful disasters! Kilo-Hertz Rock, one oh two point seven! I'm Big Danny Sparks, I'm awake, I'm loud, I had four eggs, and today is the day I get one right!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Zero for one hundred and six.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Write that down! Actually, don't, she already has. Let's go!",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 20,
+   "tags": [
+    "morning",
+    "open"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-signon-2",
+   "kind": "sign_on",
+   "hosts": [
+    "kat",
+    "danny"
+   ],
+   "lines": [
+    {
+     "host": "kat",
+     "text": "It's morning. I'm against it. This is Kilo-Hertz Rock. I'm Kat, that's Danny, he's already standing up for some reason.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "I'm standing because sitting is for the afternoon! One oh two point seven! Turn it up until a neighbor says something!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Don't do that. Turn it up a normal amount.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 20,
+   "tags": [
+    "morning",
+    "open"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-id-1",
+   "kind": "station_id",
+   "hosts": [
+    "danny"
+   ],
+   "lines": [
+    {
+     "host": "danny",
+     "text": "Kilo-Hertz Rock, one oh two point seven. If your speakers aren't moving, they're broken, or you're not trying.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 7,
+   "tags": [
+    "any"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-id-2",
+   "kind": "station_id",
+   "hosts": [
+    "kat",
+    "danny"
+   ],
+   "lines": [
+    {
+     "host": "kat",
+     "text": "One oh two point seven. Kilo-Hertz Rock. It's a thousand hertz. Danny doesn't know what that means.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "It means a lot of hertz!",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 9,
+   "tags": [
+    "any"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-id-3",
+   "kind": "station_id",
+   "hosts": [
+    "pete",
+    "kat"
+   ],
+   "lines": [
+    {
+     "host": "pete",
+     "text": "This is Kilo-Hertz Rock, one oh two point seven, coming to you from high above the city in the Kilo-Copter.",
+     "direction": "into a cup, with wind noise made by mouth",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "He's in the hallway.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 10,
+   "tags": [
+    "any"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-jingle-1",
+   "kind": "jingle",
+   "hosts": [
+    "danny"
+   ],
+   "lines": [
+    {
+     "host": "danny",
+     "text": "Kilo! Hertz! Rock! One oh two point seven! We're loud, we're wrong, we're on!",
+     "direction": "shouted in rhythm like a stadium chant",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 6,
+   "tags": [
+    "any"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-jingle-2",
+   "kind": "jingle",
+   "hosts": [
+    "kat"
+   ],
+   "lines": [
+    {
+     "host": "kat",
+     "text": "Kilo-Hertz Rock. The station your dad warned you about. He listens too.",
+     "direction": "dry, half-singing the last three words",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 5,
+   "tags": [
+    "any"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-jingle-3",
+   "kind": "jingle",
+   "hosts": [
+    "danny",
+    "kat"
+   ],
+   "lines": [
+    {
+     "host": "danny",
+     "text": "One oh two, point seven, that's the Kilo, that's the Hertz, that's the Rock!",
+     "direction": "sung badly, confidently",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "That's the whole thing. He wrote it in the car.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 10,
+   "tags": [
+    "any"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-promo-tank",
+   "kind": "promo",
+   "hosts": [
+    "danny",
+    "kat"
+   ],
+   "lines": [
+    {
+     "host": "danny",
+     "text": "All week on Kilo-Hertz: What's In The Tank! There's a fish tank in this studio. It's been here longer than anyone who works here. The water is the color of weak tea. Something in there moves. Call in, guess what it is, and if you're right, you win it!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "You win whatever is in the tank.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "You win the tank! The whole tank! It's a situation!",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 26,
+   "tags": [
+    "morning",
+    "gag:tank",
+    "seq:1"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-promo-thunder",
+   "kind": "promo",
+   "hosts": [
+    "kat",
+    "danny"
+   ],
+   "lines": [
+    {
+     "host": "kat",
+     "text": "Later this hour, the Thunder Bucket. You send us your worst ideas on a slip of paper. We read them. We judge them. The worst idea wins a Kilo-Hertz koozie, which is itself a bad idea, because it's a koozie shaped like a helicopter and it doesn't fit anything.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "It fits a thermos!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "It fits one specific thermos that Pete owns.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 24,
+   "tags": [
+    "morning",
+    "gag:thunder",
+    "seq:1"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-signoff-1",
+   "kind": "sign_off",
+   "hosts": [
+    "danny",
+    "kat"
+   ],
+   "lines": [
+    {
+     "host": "danny",
+     "text": "That's the show! Go to work, go to school, go lie back down, whatever your play is, make it loud! I'm Big Danny Sparks!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "I'm Kat. He was wrong about everything. The Ledger's been updated.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Tomorrow I'm right! Write that down!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Kilo-Hertz Rock. Pete, come in from the hallway.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 20,
+   "tags": [
+    "morning",
+    "close"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-signoff-2",
+   "kind": "sign_off",
+   "hosts": [
+    "kat",
+    "danny"
+   ],
+   "lines": [
+    {
+     "host": "kat",
+     "text": "We're done. Danny's hoarse, Pete's in a tree, Wes is still out, and the Tank did a thing during the last song that none of us are ready to discuss.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "It was a good thing, Kat. It was a hopeful thing.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "It was a bubble. Kilo-Hertz Rock. Be loud, be nice, come back.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 21,
+   "tags": [
+    "morning",
+    "close"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-banter-lock-1",
+   "kind": "banter",
+   "hosts": [
+    "danny",
+    "kat"
+   ],
+   "lines": [
+    {
+     "host": "danny",
+     "text": "It's time for Big Danny's Lock of the Day! One prediction. Guaranteed. Iron-clad. You can take it to the bank, and the bank will take it from you, because it's that good.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "For new listeners: the Lock of the Day is a prediction Danny makes every morning. I keep track. He has never once been right.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Never once yet.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Zero for one hundred and six. Including the morning he predicted it would be a Tuesday.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "It felt like a Tuesday! The air had a Tuesday quality! Okay. Today's Lock. I've thought about this. I've slept on it. I've eaten on it. Today, Wes comes back from the coffee run in under ten minutes.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Wes left forty minutes ago.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Then he's due! That's how due works! The longer something doesn't happen, the more it's about to! That's math!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "That is the opposite of math. That's the thing they warn you about in math.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Lock it in. Write it down. Wes. Under ten. Where's the coffee place, anyway?",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Across the street.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Then he's really due.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 70,
+   "tags": [
+    "morning",
+    "gag:lock",
+    "seq:1"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-banter-judge",
+   "kind": "banter",
+   "hosts": [
+    "kat",
+    "danny"
+   ],
+   "lines": [
+    {
+     "host": "kat",
+     "text": "Danny drove The Judge in today.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "I drive The Judge in every day, Kat, The Judge is my truck, it's my only vehicle, what am I going to do, ride in on a horse?",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "You said you were going to ride in on a horse.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "I looked into it! The horse place wanted references! Who's going to give me a reference for a horse? You? Pete?",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "I'd have given you a reference. It would have said, do not give this man a horse.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Anyway, The Judge is in the lot, and I want everyone to know that The Judge has a new sound. It's a sort of a chunk-chunk-whirr. It comes on at low speeds. I've named it. It's called The Verdict.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "That is a transmission problem.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "It's a personality. The Judge has had a long career. It's earned a chunk-chunk-whirr. You know what my mechanic said? He said, Danny, this truck is held together by stickers. And I said, Buddy, so am I.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Did he fix it?",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "He put another sticker on it. We're good for a month.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Marjorie would never.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Marjorie's a motorcycle! Marjorie's got two wheels, she can't afford a problem! The Judge has four, he can carry one!",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 81,
+   "tags": [
+    "morning"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-banter-wes-1",
+   "kind": "banter",
+   "hosts": [
+    "danny",
+    "wes",
+    "kat"
+   ],
+   "lines": [
+    {
+     "host": "danny",
+     "text": "Wes! Intern Wes! Get in here!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "wes",
+     "text": "I'm here.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Great. I need coffee. Four coffees. Mine black, Kat's whatever Kat has, Pete's with the thing he gets, and one for the Tank.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "wes",
+     "text": "For the Tank.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Just hold it up to the glass. Let it see it. It's about respect. Go across the street, and Wes, this is important, do not get distracted.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "wes",
+     "text": "Okay. What does Pete get?",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "He gets the thing.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "wes",
+     "text": "What thing?",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Kat, what does Pete get?",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Nobody knows. He orders it in a whisper.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "wes",
+     "text": "Okay. I'll ask them if they know Pete.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Perfect. That's initiative. That's a Wes play. Go. Under ten minutes. I've got money on it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "He doesn't have money on it. He has a Lock on it, which is worth less than money.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "wes",
+     "text": "Okay.",
+     "direction": "already leaving",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Great kid. He's going to be fine. What time is it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "You can't ask me that on air, you know the rule.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Then he's doing great.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 64,
+   "tags": [
+    "morning",
+    "gag:wes",
+    "seq:1"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-banter-mouth",
+   "kind": "banter",
+   "hosts": [
+    "kat",
+    "danny"
+   ],
+   "lines": [
+    {
+     "host": "kat",
+     "text": "Okay. Guess the Sound. Danny is going to make a sound with his mouth. You, the listener, guess what it is. There is no prize. There has never been a prize. Danny.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Here it comes.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Brrrrrrrrr-tunk. Tunk. Tunk. Wheeeeeee-oop.",
+     "direction": "enthusiastic mouth noises",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Okay. What was that.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "That was a vending machine falling down an escalator and landing on a bagpipe.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "No part of that was recognizable as any of those things.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "The tunk was the stairs!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "The tunk was you hitting the desk.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "That's how you make a tunk, Kat! Okay, another one. Fsssssss. Fsssss. Pop. Pop pop. Ahhhhh.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "That's a soda.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "That's a soda being opened by a man who is finally free. You missed the emotional layer.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "I don't guess emotional layers before nine.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "One more. Ready? Mmmmmmm. Mmm. Mmmm-hm.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "That's you eating.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "That's me eating a breakfast sandwich while thinking about a second breakfast sandwich. Full marks. That's Guess the Sound. Nobody wins. Everyone's a winner.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 65,
+   "tags": [
+    "morning"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-banter-grievance",
+   "kind": "banter",
+   "hosts": [
+    "danny",
+    "kat"
+   ],
+   "lines": [
+    {
+     "host": "danny",
+     "text": "Kat's Grievance Window is now open. Kat has one minute to complain about anything. Go.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Thank you. Shopping carts with one bad wheel. Not a broken wheel. A wheel that's fine until you turn, and then it has an opinion. You pick it out of the lineup, it's quiet, it's smooth, you get all the way into the store and the first time you go left it goes gug-gug-gug-gug like it's warning everyone about you.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Gug-gug-gug.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "And you can't go back! You've got stuff in it! You're committed now. You're a person with a loud cart. People look. You look back like, I know, I know, I didn't choose this. But you did. You chose it. You just didn't know. That's the grievance. That's life. Window's closed.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "That was beautiful. That was about more than carts.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "It was about carts.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "It was about The Judge. You think I don't know The Judge has a gug-gug? Everyone's got a gug-gug, Kat. You just have to love the gug-gug.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "My Grievance Window is now reopened for one more item, which is you.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Denied! One minute! Those are the rules!",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 75,
+   "tags": [
+    "morning"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-traffic-1",
+   "kind": "skit",
+   "hosts": [
+    "danny",
+    "pete",
+    "kat"
+   ],
+   "lines": [
+    {
+     "host": "danny",
+     "text": "Let's go up to the Kilo-Copter! Tiny Pete, what's it look like out there, buddy?",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "pete",
+     "text": "Thanks, Danny! It's a big morning out here, I am high above the city, the wind is intense, hold on.",
+     "direction": "into a cup; \"wind\" is him blowing on the mic",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "pete",
+     "text": "Okay. Here's your Kilo-Hertz traffic. We've got a slow-moving parade of accountants on the Memory Lane overpass, they're not in a parade, they're just walking in a line and nobody knows why. Reports of a goose with a clipboard at the bottom of Tanner Hill, he is directing traffic, drivers are obeying him, honestly things are moving better than usual.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Pete, where exactly is the helicopter right now?",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "pete",
+     "text": "We are over, uh, the city. The whole city. We can see it all from up here. There's a man on Fourth and Lemon who's dropped a tray of muffins and he's just standing there, with the tray, and I'd say that's a two-muffin delay if you're taking Lemon.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Pete, I can hear the vending machine behind you.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "pete",
+     "text": "That's the rotor.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "The rotor just dispensed a bag of pretzels.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "pete",
+     "text": "The Kilo-Copter is a modern aircraft with a lot of features! Okay, that's your traffic, avoid the goose unless you're into it, back to you in the studio!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Tiny Pete, everybody! The eye in the sky!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "The eye in the hall.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 85,
+   "tags": [
+    "morning",
+    "gag:kilocopter",
+    "seq:1"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-traffic-2",
+   "kind": "skit",
+   "hosts": [
+    "danny",
+    "pete",
+    "kat"
+   ],
+   "lines": [
+    {
+     "host": "danny",
+     "text": "Kilo-Copter! Tiny Pete! Talk to me!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "pete",
+     "text": "Danny, Kat, big morning, we've relocated, we are now hovering over the east side, altitude: very high, there's an echo up here, hello, hello.",
+     "direction": "the echo is Pete saying hello twice",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Pete, that echo sounds like a parking garage.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "pete",
+     "text": "It's the sound of altitude, Kat! Okay. Traffic. Big news, the roundabout at the bottom of Tanner Hill is turning on its own this morning, slow, like a minute hand, drivers are reporting they're ending up on the right street no matter where they entered, so that's a plus. Over on Blister Avenue, a mattress is in the road, it's the third mattress this week, it's the same mattress, it keeps coming back, nobody's claiming it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Is it a good mattress?",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "pete",
+     "text": "It looks comfortable, Danny, from up here, it looks like a mattress that's seen some things and come out softer. Downtown, all three lanes of Comet Street are open, which is suspicious, and the goose is back at the bottom of the hill, he's got a vest now, somebody gave him a vest.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Pete. Pete. A car just honked and I heard it twice. Once in your mic and once through the window.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "pete",
+     "text": "Sound travels, Kat! That's physics! Okay! Avoid the mattress, respect the goose, back to you in the studio!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "He's a pro. He's a pro, Kat.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "He's on level two of the garage. I can see his ladder.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 91,
+   "tags": [
+    "morning",
+    "gag:kilocopter",
+    "seq:2"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-ad-gulch",
+   "kind": "ad",
+   "hosts": [
+    "danny",
+    "kat"
+   ],
+   "lines": [
+    {
+     "host": "danny",
+     "text": "Big Gulch Truck Covers! You've got a truck. You've got stuff in the truck. Is the stuff covered? No! The stuff is just back there, living its life, getting rained on, getting looked at! Big Gulch Truck Covers covers your stuff! That's the whole pitch! Big Gulch!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Big Gulch Truck Covers come in three colors: black, blacker, and a tan that's really more of a black.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "I've got a Big Gulch on The Judge right now. You know what's under it? Nobody! That's the point! Could be tools! Could be a canoe! Could be nothing! Big Gulch keeps them guessing. Big Gulch Truck Covers, out on the frontage road, next to the place that used to be the other place.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Big Gulch Truck Covers are not waterproof. They are water-opinionated.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Water-opinionated! Write that down! Big Gulch!",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 54,
+   "tags": [
+    "morning"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-ad-drago",
+   "kind": "ad",
+   "hosts": [
+    "danny",
+    "kat"
+   ],
+   "lines": [
+    {
+     "host": "danny",
+     "text": "Drago's Protein Loaf. It's a loaf. It's protein. Drago made it. You eat it in the truck. You eat it on the site. You eat it standing up in the kitchen in the dark, and you don't feel good about it, but you feel strong about it. Drago's Protein Loaf.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Drago's Protein Loaf comes in one flavor, which is Loaf.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Drago says flavors are for people who've got time. Drago doesn't have time. Drago has a loaf. I met Drago. He's about yea big, he shook my hand, I couldn't feel my hand for an hour, and when I could feel it again it was stronger. That's the loaf. That's not medical, that's just what happened to me.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "That is not what happened to you.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Drago's Protein Loaf! It's in the cooler at the gas station with the eagle on it! Grab the loaf!",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 57,
+   "tags": [
+    "morning"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-ad-hammerhead",
+   "kind": "ad",
+   "hosts": [
+    "kat",
+    "danny"
+   ],
+   "lines": [
+    {
+     "host": "kat",
+     "text": "Hammerhead Sparkling Water. It's water. It's angry.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Hammerhead! You want hydration? Everybody wants hydration! But do you want it to fight back? Hammerhead Sparkling Water comes in a can that's heavier than it needs to be, and when you open it, it goes TSSSH like it's got something to say! Flavors include: Plain, Angrier Plain, and Lemon, which is just a picture of a lemon.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Hammerhead contains no lemon.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "It contains the idea of lemon, which is more than most waters are willing to commit to! I drink six a day! Kat says that's too many!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Kat says that's too many.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Hammerhead doesn't say that! Hammerhead says, keep going! Hammerhead Sparkling Water. Look for the shark. The shark is also angry.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 48,
+   "tags": [
+    "morning"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-ad-larry",
+   "kind": "ad",
+   "hosts": [
+    "danny",
+    "kat"
+   ],
+   "lines": [
+    {
+     "host": "danny",
+     "text": "Lunchbox Larry's Breakfast Garage! It's a garage! Larry sells breakfast in it! The cars are gone, mostly! Larry's got a burrito the size of your forearm and he'll measure your forearm to prove it!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Lunchbox Larry's Breakfast Garage: the only restaurant where you order from a guy on a creeper.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "He rolls out from under the counter! That's the Larry experience! You go, Larry, two of the big ones, and you hear a voice from the floor go, Coming up, and you don't see him for a while, and then there's a burrito. Where'd it come from? Underneath! Everything good comes from underneath!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Lunchbox Larry's does not have seating. It has a tire.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "It's a great tire! Lunchbox Larry's Breakfast Garage. Off the frontage road, past Big Gulch, follow the smell of victory and also motor oil.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 54,
+   "tags": [
+    "morning"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-news-1",
+   "kind": "news",
+   "hosts": [
+    "kat",
+    "danny"
+   ],
+   "lines": [
+    {
+     "host": "kat",
+     "text": "Kilo-Hertz Newsbreak. I read it, Danny reacts, nobody learns anything.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Top story. A cow that escaped from a hobby farm on the edge of town has been found at the Ten-Pin Palace bowling alley, where she has apparently been for several days. Staff say she arrived during league night, stood quietly by lane six, and was adopted by a team called the Gutter Snipes as, quote, a morale cow. The farm has agreed to leave her through the end of the season. Her average is not known.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "That's a situation. That's a good situation.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Next. Due to a clerical error in a form filed by the booster club, the mascot of Hollow Creek High School has been officially changed from the Hawks to the Fighting Accountants. The school says the paperwork to reverse it would take longer than the paperwork that caused it. The costume is described as a blazer with a very large head.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Go Accountants! Audit them! Audit them all!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "And finally. A man who has been living in the maintenance room behind the fountain at the Pinecrest Galleria has declared himself mayor of the fountain. Mall management says he's harmless and the fountain has never been cleaner. He has issued one proclamation, which is that coins thrown in the fountain now count as taxes, and that he's running a surplus.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Finally! A politician I can trust! He lives in the budget!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "That's your Newsbreak.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 94,
+   "tags": [
+    "morning"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-news-2",
+   "kind": "news",
+   "hosts": [
+    "kat",
+    "danny"
+   ],
+   "lines": [
+    {
+     "host": "kat",
+     "text": "Kilo-Hertz Newsbreak.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "First. The Gutter Snipes have advanced to the league semifinals with the morale cow in attendance. The team says she has not touched a ball but, quote, you can feel her believing. The opposing team filed a complaint on the grounds of unfair livestock, which was dismissed because the league has no rule against it, and now does.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "You can't legislate belief, Kat!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Second. The mayor of the fountain has appointed a cabinet consisting of a pigeon and a child who happened to be walking past. The child has since gone home. The pigeon remains in office.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Third, and this is local to the building. Something in the studio fish tank surfaced briefly during the last song. Two witnesses describe it as, quote, round, and quote, confident. It has returned below the surface. Guesses remain open.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Round and confident! That's me! Is it me, Kat? Have I been in the tank?",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "You've been in the tank since the first Lock. That's your Newsbreak.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 66,
+   "tags": [
+    "morning",
+    "gag:tank",
+    "seq:3"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-callin-tank-1",
+   "kind": "callin",
+   "hosts": [
+    "danny",
+    "caller-a",
+    "kat",
+    "caller-c",
+    "pete"
+   ],
+   "lines": [
+    {
+     "host": "danny",
+     "text": "What's in the Tank! Phones are lit! First caller, go!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-a",
+     "text": "Danny, it's Dale, from the quarry.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Dale from the Quarry! What's in the tank, Dale!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-a",
+     "text": "It's a turtle.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Why a turtle!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-a",
+     "text": "Because a turtle's the only thing that could live in that water that long and not complain. I've seen the tank. I came to the station for the thing that time. The water's brown, Danny. A fish would've written a letter.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "That's a legitimate theory. Dale, if it's a turtle, do you want it?",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-a",
+     "text": "I want the tank. I don't want the turtle. The turtle can stay where it is, it's clearly happy.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "You can't win the tank without the turtle, Dale, that's a package deal!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-a",
+     "text": "Then it's rigged.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "It's not rigged! Nobody knows what's in it! How do you rig a mystery!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-a",
+     "text": "You'd find a way. I'm writing down turtle. Back to the rocks.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Dale from the Quarry, turtle. Line two!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-c",
+     "text": "Hi, wait, wait, wait, is it a frog? Because frogs can",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Rowan! Buddy! It's a school day!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-c",
+     "text": "I'm in the car! Mom's driving! Is it a frog, because frogs can hold their breath for a super long time and also they're round when they sit.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Round when they sit. That tracks with the witness description.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-c",
+     "text": "Also, also, also, I think the Kilo-Copter is real and Kat should stop being mean about it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Rowan!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "pete",
+     "text": "Thank you, Rowan.",
+     "direction": "distant, from the hallway, choked up",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Frog, from Rowan. Turtle, from Dale. The Tank says nothing. The Tank never says anything.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 100,
+   "tags": [
+    "morning",
+    "gag:tank",
+    "seq:2"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-callin-trish-1",
+   "kind": "callin",
+   "hosts": [
+    "danny",
+    "kat",
+    "caller-b"
+   ],
+   "lines": [
+    {
+     "host": "danny",
+     "text": "Contest time! Caller number five wins a year of mulch from Mulch Kingdom! That's a lot of mulch! That's more mulch than a person needs! Caller five!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Line one. Hi, you're caller five.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-b",
+     "text": "Hi. It's Trish.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Trish.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-b",
+     "text": "Yep.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Trish, you won the truck cover last week.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-b",
+     "text": "And the smoker before that, and the trip to the water park, and the tickets to the thing, and the other smoker. I've got two smokers. I don't smoke anything. I don't need the mulch either. I'm just quick with a phone.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Trish, why do you keep calling if you don't want the prizes?",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-b",
+     "text": "I like winning. The prizes are a side effect. Is the mulch delivered or do I pick it up?",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Delivered. Monthly. For a year.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-b",
+     "text": "Then I'll take it. I'll put it on the smokers. Hey, is Wes there?",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Wes is on a coffee run.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-b",
+     "text": "Still? He was on a coffee run when I won the truck cover. Tell him Trish says hang in there. He's the only one of you who ever reads me the rules right.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "I read the rules right!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-b",
+     "text": "You said caller five and I was caller three. Kat waved two people off. I saw her do it in my head.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "No comment.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-b",
+     "text": "Mulch. Monthly. Love it. Bye.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Trish, everybody. Undefeated. Doesn't want any of it. A champion.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 90,
+   "tags": [
+    "morning"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-callin-dale-lock",
+   "kind": "callin",
+   "hosts": [
+    "kat",
+    "danny",
+    "caller-a"
+   ],
+   "lines": [
+    {
+     "host": "kat",
+     "text": "Dale from the Quarry is on the line and he says it's about the Lock.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Dale! You want in on the Lock! Today's Lock is Wes back in under ten!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-a",
+     "text": "Danny. You said that an hour ago.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "And he's not back, which means it's about to happen! You can feel it, Dale! It's building!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-a",
+     "text": "That's not how it works. That's not how anything works. I've been loading rock for thirty-one years and I'll tell you how it works. If the truck's not there, the truck's not coming. You don't stand in the pit going, well, it's due. You go get a sandwich.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Thirty-one years in the pit and he's never once been due.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Dale, I respect the quarry, but the quarry doesn't understand momentum.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-a",
+     "text": "The quarry's the only thing that understands momentum! Everything in a quarry's got momentum! That's the whole problem with a quarry! Look, I'm with you most days, Danny. Most days. But I can smell when you're wrong, and you're wrong, and it smells like a Tuesday.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Is it a Tuesday?",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "You know I can't say.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-a",
+     "text": "Put me down for Wes comes back tomorrow with a story. Back to the rocks.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Dale's Lock: tomorrow, with a story. Danny's Lock: ten minutes, no story. The Ledger's open.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "The Ledger's always open, Kat, that's the problem with the Ledger.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 89,
+   "tags": [
+    "morning",
+    "gag:lock",
+    "seq:2"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-liner-loud",
+   "kind": "liner",
+   "hosts": [
+    "danny",
+    "kat"
+   ],
+   "lines": [
+    {
+     "host": "danny",
+     "text": "Up next on Kilo-Hertz, {nextArtist}! I don't know what {nextTitle} is about and I don't care, I know it's about to be loud, and loud is a feeling, and the feeling is correct!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Turn it up a reasonable amount.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Turn it up an unreasonable amount and apologize later!",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 20,
+   "tags": [
+    "morning"
+   ],
+   "usesSlots": [
+    "nextArtist",
+    "nextTitle"
+   ],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-liner-loud-nf",
+   "kind": "liner",
+   "hosts": [
+    "danny",
+    "kat"
+   ],
+   "lines": [
+    {
+     "host": "danny",
+     "text": "Up next on Kilo-Hertz, more rock! I don't know what this one's about and I don't care, I know it's about to be loud, and loud is a feeling, and the feeling is correct!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Turn it up a reasonable amount.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Turn it up an unreasonable amount and apologize later!",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 20,
+   "tags": [
+    "morning"
+   ],
+   "usesSlots": [],
+   "fallbackOf": "kh-liner-loud",
+   "weight": 1
+  },
+  {
+   "id": "kh-trans-headbang",
+   "kind": "transition",
+   "hosts": [
+    "kat",
+    "danny"
+   ],
+   "lines": [
+    {
+     "host": "kat",
+     "text": "That was {prevTitle}, from {prevArtist}, and that was Danny hitting his head on the microphone arm about two-thirds of the way through it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "I was feeling it!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "You were feeling the arm.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "The arm came to me, Kat! I was in the zone and the arm entered the zone! It's fine! It's a learning! Everybody, check your microphone arms before you rock. That's a Kilo-Hertz safety tip. That's the only one we've got.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 30,
+   "tags": [
+    "morning"
+   ],
+   "usesSlots": [
+    "prevTitle",
+    "prevArtist"
+   ],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-trans-headbang-nf",
+   "kind": "transition",
+   "hosts": [
+    "kat",
+    "danny"
+   ],
+   "lines": [
+    {
+     "host": "kat",
+     "text": "That was the last one, and that thud about two-thirds of the way through it was Danny hitting his head on the microphone arm.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "I was feeling it!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "You were feeling the arm.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "The arm came to me, Kat! I was in the zone and the arm entered the zone! It's fine! It's a learning! Everybody, check your microphone arms before you rock. That's a Kilo-Hertz safety tip. That's the only one we've got.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 30,
+   "tags": [
+    "morning"
+   ],
+   "usesSlots": [],
+   "fallbackOf": "kh-trans-headbang",
+   "weight": 1
+  },
+  {
+   "id": "kh-banter-lock-song",
+   "kind": "banter",
+   "hosts": [
+    "danny",
+    "kat"
+   ],
+   "lines": [
+    {
+     "host": "danny",
+     "text": "Bonus Lock! A second Lock of the Day, because the first one's taking a while to come in!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "The first one is dead, Danny. It's been dead for an hour.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Bonus Lock! The next song, {nextTitle}, has a drum part where the drummer hits everything at once. Everything. At the same time. I can feel it. The title has a drum-everything-at-once quality.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "You've never heard this song.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "I've never heard most things, Kat, that's never stopped me! That's what a Lock is! If you knew, it'd be a fact! A Lock is bravery!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "A Lock is a guess with a cape on. Fine. Bonus Lock is in The Ledger. Everybody, listen for the drummer hitting everything. If it happens, Danny gets one. If it doesn't, he's zero for one hundred and seven and I need a new pad.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Here it comes. Everything. At once. Write it down!",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 59,
+   "tags": [
+    "morning",
+    "gag:lock",
+    "seq:3"
+   ],
+   "usesSlots": [
+    "nextTitle"
+   ],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-banter-lock-song-nf",
+   "kind": "banter",
+   "hosts": [
+    "danny",
+    "kat"
+   ],
+   "lines": [
+    {
+     "host": "danny",
+     "text": "Bonus Lock! A second Lock of the Day, because the first one's taking a while to come in!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "The first one is dead, Danny. It's been dead for an hour.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Bonus Lock! The next song has a drum part where the drummer hits everything at once. Everything. At the same time. I can feel it. I read the title and it has a drum-everything-at-once quality.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "You've never heard this song.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "I've never heard most things, Kat, that's never stopped me! That's what a Lock is! If you knew, it'd be a fact! A Lock is bravery!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "A Lock is a guess with a cape on. Fine. Bonus Lock is in The Ledger. Everybody, listen for the drummer hitting everything. If it happens, Danny gets one. If it doesn't, he's zero for one hundred and seven and I need a new pad.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Here it comes. Everything. At once. Write it down!",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 60,
+   "tags": [
+    "morning",
+    "gag:lock",
+    "seq:3"
+   ],
+   "usesSlots": [],
+   "fallbackOf": "kh-banter-lock-song",
+   "weight": 1
+  },
+  {
+   "id": "kh-dedic-shift",
+   "kind": "dedication",
+   "hosts": [
+    "kat",
+    "danny"
+   ],
+   "lines": [
+    {
+     "host": "kat",
+     "text": "We've got a dedication. Danny, you want it? You always want it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "I always want it. Gimme.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "It says: this one's for my brother, who drives the early route and has to listen to you two whether he likes it or not. He says he doesn't. He hums the jingle in the shower. Play him something that goes.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "He hums the jingle.",
+     "direction": "suddenly sincere",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "He hums the jingle.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Okay. Okay. To the brother on the early route. This is {nextTitle}, by {nextArtist}, and it goes. It goes, pal. Keep both hands on the wheel and hum whatever you want. We're honored. It's dusty in here.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "It's not dusty.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "It's a little dusty, Kat.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 46,
+   "tags": [
+    "morning"
+   ],
+   "usesSlots": [
+    "nextTitle",
+    "nextArtist"
+   ],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-dedic-shift-nf",
+   "kind": "dedication",
+   "hosts": [
+    "kat",
+    "danny"
+   ],
+   "lines": [
+    {
+     "host": "kat",
+     "text": "We've got a dedication. Danny, you want it? You always want it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "I always want it. Gimme.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "It says: this one's for my brother, who drives the early route and has to listen to you two whether he likes it or not. He says he doesn't. He hums the jingle in the shower. Play him something that goes.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "He hums the jingle.",
+     "direction": "suddenly sincere",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "He hums the jingle.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Okay. Okay. To the brother on the early route. This next one goes. It goes, pal. Keep both hands on the wheel and hum whatever you want. We're honored. It's dusty in here.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "It's not dusty.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "It's a little dusty, Kat.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 44,
+   "tags": [
+    "morning"
+   ],
+   "usesSlots": [],
+   "fallbackOf": "kh-dedic-shift",
+   "weight": 1
+  },
+  {
+   "id": "kh-mono-hottake-salad",
+   "kind": "monologue",
+   "hosts": [
+    "kat",
+    "danny"
+   ],
+   "lines": [
+    {
+     "host": "kat",
+     "text": "It's time for Danny's Hot Take. Danny has a take. It's hot. I have no part in this.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Salad is a rumor. That's the take. Hear me out. Have you ever finished a salad? No. Nobody has. You eat the top. You eat the parts with the stuff. And then there's a layer at the bottom, a wet layer, that's just leaves and regret, and you push it around, and you say, I'm good. You're not good! You're defeated! The salad won!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Now compare that to a sandwich. You finish a sandwich. You hold it up at the end, you've got two corners of bread, you eat the corners, you're done, you've completed a task. A sandwich respects your time. A salad is a bowl of homework that goes bad.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "People finish salads.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Name one.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Me. Yesterday.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Was there a wet layer.",
+     "pauseAfterMs": 400
+    },
+    {
+     "host": "kat",
+     "text": "There's always a wet layer.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "There's always a wet layer! Write that down! That's the take! Salad is a rumor started by bowls! Hot Take, over!",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 67,
+   "tags": [
+    "morning"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-mono-hottake-derby",
+   "kind": "monologue",
+   "hosts": [
+    "danny",
+    "kat"
+   ],
+   "lines": [
+    {
+     "host": "danny",
+     "text": "Danny's Hot Take. Here we go. The demolition derby is the most honest sport there is. Every other sport, somebody's pretending. Pretending they're not tired. Pretending that was a foul. Pretending they're happy for the other guy. Not the derby. At the derby, the whole point is out in the open. I'm going to hit you with a car. You're going to hit me with a car. Last car moving wins. That's it. No clock to manage. No strategy except: don't stop, and if you stop, stop near someone.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "And here's the thing people don't get. The derby is about love. You take a car, a car that's done, a car that nobody wanted, and you paint a number on it and you give it one more night. One more night where it matters! Where people cheer when it moves! You know what that is? That's a retirement party where you get to hit things. That's what I want. That's what everybody wants, they just can't say it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "The Judge is going to end up in a derby.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "The Judge would be honored. The Judge has been training his whole life. The Verdict is just The Judge warming up. Hot Take, over, I'm going to go look at him.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 82,
+   "tags": [
+    "morning"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-mono-kat-morning",
+   "kind": "monologue",
+   "hosts": [
+    "kat",
+    "danny"
+   ],
+   "lines": [
+    {
+     "host": "kat",
+     "text": "Danny's getting more coffee, which means for ninety seconds this is a normal radio station. Hi. I'd like to talk about mornings, since I'm in one, against my will, for a living.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Here's what nobody tells you about hosting a morning show. You don't become a morning person. You become a person who is awake in the morning, which is a different animal. A morning person wakes up and the day is a gift. I wake up and the day is a situation I've been assigned. I ride Marjorie in with my visor down and I don't open it until I'm in the lot, because the sky at that hour is too pleased with itself.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "And then I walk in here, and there's a man already standing, already shouting about eggs, and something in me goes, fine. Fine. If he can be that wrong that early, I can be awake. That's the deal. That's the whole show. He's the engine and I'm the brake and somehow we get to the end of the road every day. I don't love it. I'd miss it. Those are both true and I'm not going to explain how.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "He's back. He's got two coffees. Neither is for me. Normal radio's over.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "One of them's for the Tank!",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 83,
+   "tags": [
+    "morning"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-mono-hottake-nap",
+   "kind": "monologue",
+   "hosts": [
+    "danny",
+    "kat"
+   ],
+   "lines": [
+    {
+     "host": "danny",
+     "text": "Danny's Hot Take, and this one's different, because this one I've been accused of. Fine. Yes. The slip in the Thunder Bucket that says Nap Room At Work. Every week. Same handwriting. It's my handwriting. I'm the one putting it in. Kat knew. Kat's known since the second week.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "It's a very distinctive capital N.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Here's the thing. It's not a bad idea. I put it in the bad ideas bucket because I was embarrassed, because a man like me isn't supposed to want a quiet room with a cot in it, I'm supposed to want a louder room with a bigger truck in it. But I'm standing up here from the first egg to the last jingle, and sometimes, around the second hour, I'd like to lie down for eleven minutes in the dark. That's it. That's the take. Eleven minutes. A cot. A door that locks from the inside. And nobody says anything.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "That's the most reasonable thing you've ever said on this show.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "I know! That's why I hid it in the bucket! Hot Take, over. Don't write that down. Actually write it down. In the good ideas column.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "There's no good ideas column.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Then start one.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 79,
+   "tags": [
+    "morning",
+    "gag:thunder",
+    "seq:3",
+    "payoff"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-skit-thunder-1",
+   "kind": "skit",
+   "hosts": [
+    "danny",
+    "kat"
+   ],
+   "lines": [
+    {
+     "host": "danny",
+     "text": "It's the Thunder Bucket! Kat's got the bucket. The bucket's got your worst ideas. Read 'em!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "First slip. A restaurant where the menu is just a photo of your fridge, so you feel bad and leave.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "That's not a restaurant, that's an intervention! Next!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Second slip. Shoes for your hands, so you can walk on your hands without hurting your hands.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Those are gloves! That's gloves! Somebody invented gloves in the bucket! Next!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Third slip. A cologne that smells like the inside of a new car, for men who can't afford a new car.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Okay, that one, I'd buy that, that's a good bad idea, put that in the maybe pile.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "There's no maybe pile. Fourth slip. Nap Room At Work.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Boo! Boring! Who wrote that!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "It's in blue pen. Capital N looks like a lightning bolt.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Lot of people write like that. Next!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Fifth and last. A dating app, but for shopping carts, so the one with the bad wheel can find someone who accepts it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "That's for you! Somebody wrote that for you!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "I know. I'm keeping it. Winner is the fridge menu. Whoever you are, you've won the helicopter koozie, come get it, it's in the hallway with Pete.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 82,
+   "tags": [
+    "morning",
+    "gag:thunder",
+    "seq:1"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-skit-thunder-2",
+   "kind": "skit",
+   "hosts": [
+    "kat",
+    "danny"
+   ],
+   "lines": [
+    {
+     "host": "kat",
+     "text": "Thunder Bucket. The bucket's full. Danny, read, I'll judge.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Slip one! A gym where the weights are just your groceries and the workout is putting them away!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "That's chores. Somebody put chores in the bucket.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Slip two! An alarm clock that doesn't make noise, it just slowly gets warm until you can't stand it!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "That's a cat. That's what a cat is.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Slip three! Uh. Nap Room At Work.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Huh. Again.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Lot of people want a nap room, Kat, it's a national mood! Slip four! A reality show where contestants have to assemble furniture while the instructions are read to them by a man who's never seen the furniture!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "That's just Pete reading traffic. Keep going.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Slip five! Edible receipts. So when you buy a snack you don't have a receipt, you have a second snack.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "That's a good one. That's the winner. Edible receipts. The koozie's yours.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "What about the nap room!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "The nap room didn't win because the nap room isn't a bad idea. It's just an idea. Somebody keeps putting it in the wrong bucket. Blue pen. Lightning bolt N. Any idea who that is, Danny?",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Lot of people. Lot of people with pens. Music!",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 80,
+   "tags": [
+    "morning",
+    "gag:thunder",
+    "seq:2"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-traffic-3",
+   "kind": "skit",
+   "hosts": [
+    "danny",
+    "pete",
+    "kat"
+   ],
+   "lines": [
+    {
+     "host": "danny",
+     "text": "Up to the Kilo-Copter! Pete, where are you, buddy!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "pete",
+     "text": "Thanks Danny. Hey. So. Quick thing before traffic.",
+     "direction": "no wind, no echo; quiet",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Oh, this is new. Go ahead, Pete.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "pete",
+     "text": "I'm on a stepladder on the roof of the car wash on Comet Street. I've been on the stepladder the whole time. There's no helicopter. There's never been a helicopter. I made the wind with my mouth. I'm sorry. The guy who runs the car wash lets me up here because I bought a wax package I don't use. I don't have a car.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Pete.",
+     "pauseAfterMs": 500
+    },
+    {
+     "host": "pete",
+     "text": "I just couldn't do the rotor noise anymore, Danny, my lips hurt. So. Traffic. From the ladder. I can see the bottom of Tanner Hill and the goose is there, he's still in the vest, he's directing. I can see a guy carrying a ladder, which is funny, because, you know. I can see the car wash, but I'm on it, so that's not useful. Everything else I'm going to describe is a guess, like always, but now you know it's a guess.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Pete. That was brave. Honestly. Everybody knew. But that was brave.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "pete",
+     "text": "Everybody knew?",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Rowan didn't know.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "pete",
+     "text": "Oh no.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Pete, listen to me. You've been doing traffic for a city that doesn't exist from a helicopter that doesn't exist for three years, and it's the best part of the show. The goose, the mattress, the muffins. That's not traffic, buddy. That's art. Stay on the ladder.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "pete",
+     "text": "Thanks, Danny.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "pete",
+     "text": "Back to you in the studio.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 98,
+   "tags": [
+    "morning",
+    "gag:kilocopter",
+    "seq:3"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-traffic-4",
+   "kind": "skit",
+   "hosts": [
+    "kat",
+    "pete",
+    "danny"
+   ],
+   "lines": [
+    {
+     "host": "kat",
+     "text": "Traffic. And a station announcement. Pete, you want to tell them?",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "pete",
+     "text": "The station bought me a drone!",
+     "direction": "genuinely thrilled",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "The station bought him a drone! It's a real Kilo-Copter! It's small! It's got a camera! It's a situation!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "pete",
+     "text": "Okay, so, I'm on the car wash roof, I've got the controller, Wes helped me set it up before he left on the thing, it's charged, it's got four little rotors, it makes the noise for me now, I don't have to do it with my mouth. Taking off. Taking off in three, two, one.",
+     "pauseAfterMs": 800
+    },
+    {
+     "host": "pete",
+     "text": "It's up! It's up! Oh, it's beautiful, you guys, I can see the whole street on the little screen, there's the hill, there's the goose, there's a guy on Lemon dropping, yep, he's dropped a tray again, same guy, that's a two-muffin delay, I was right about him, I was right the whole time",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Pete, how high is it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "pete",
+     "text": "Pretty high. Going higher. Going, uh. Okay, there's a tree.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Steer around the tree, Pete.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "pete",
+     "text": "I'm steering around the tree.",
+     "pauseAfterMs": 600
+    },
+    {
+     "host": "pete",
+     "text": "I did not steer around the tree.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Where is the drone, Pete.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "pete",
+     "text": "The drone is in the tree. The big one in front of the car wash. It's pretty high up. The camera's still on. I can see leaves. I can see a lot of leaves. There's a bird looking at it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Is it the goose?",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "pete",
+     "text": "It's a different bird, Danny. So, traffic from inside a tree. Leaves. Branches. One bird. Expect delays if you are a drone. Back to you in the studio.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Fourteen seconds of flight. A record.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 105,
+   "tags": [
+    "morning",
+    "gag:kilocopter",
+    "seq:4",
+    "payoff"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-traffic-5",
+   "kind": "skit",
+   "hosts": [
+    "danny",
+    "pete",
+    "kat"
+   ],
+   "lines": [
+    {
+     "host": "danny",
+     "text": "Kilo-Copter traffic with Tiny Pete!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "pete",
+     "text": "Thanks Danny. The Kilo-Copter remains in the tree. It's day three. The battery's gone, but I come up here every morning and look at it, and I'm going to tell you what I see, because that's the job.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Go ahead, Pete.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "pete",
+     "text": "From the tree, which is where my heart is: the branch it's on is doing fine, no delays. The bird has made a nest in the little cage around the rotor and I've decided that's okay. I've named the bird Ridership. Below the tree, Comet Street is Comet Street, cars go by, the car wash guy waves at me every morning now, he's stopped charging me for the wax. The goose has moved up the hill one block and I think he's been promoted. The mattress on Blister Avenue is gone and I miss it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Pete, that's the best report you've ever done.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "pete",
+     "text": "I don't have to make the wind anymore, Danny. I can just talk. Turns out that's most of it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Rowan called. Rowan says the drone in the tree is still a Kilo-Copter and anybody who says different is wrong.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "pete",
+     "text": "Rowan's a good kid.",
+     "pauseAfterMs": 400
+    },
+    {
+     "host": "pete",
+     "text": "Back to you in the studio.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 79,
+   "tags": [
+    "morning",
+    "gag:kilocopter",
+    "seq:5"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-callin-wes-1",
+   "kind": "callin",
+   "hosts": [
+    "kat",
+    "danny",
+    "wes"
+   ],
+   "lines": [
+    {
+     "host": "kat",
+     "text": "We've got Wes on line one. Wes is calling in.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Wes! Where are you, buddy! Is this the ten minutes!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "wes",
+     "text": "Hi. So. The coffee place across the street was closed.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Closed!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "wes",
+     "text": "There was a sign. It said Back In Five. I waited. Then a man came and took the sign down and put up a different sign that said Back In Ten, and I thought, okay, that's progress, and I waited, and then he took that one down and didn't put anything up, and I didn't know what that meant, so I went to the other coffee place.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "The one on Comet?",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "wes",
+     "text": "The one on Comet. And that one was open, but they didn't know Pete, so I couldn't get Pete's thing, and I didn't want to come back without Pete's thing, so I asked where another coffee place was, and the lady said there was a really good one, and she gave me directions, and the directions were, um, long.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "How long, Wes.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "wes",
+     "text": "I'm on a bus.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Wes. Come back. We'll get Pete's thing some other way.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "wes",
+     "text": "I'm pretty far into it now. I think I should see it through. I've got the four cups. They're empty. I'm holding them. People on the bus keep looking at the cups.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Wes, Trish called. She said hang in there.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "wes",
+     "text": "Trish is nice. Okay. The bus is stopping. I think this is near it. I'll call you back.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Zero for one hundred and six, Danny, and this one's still open.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "He's due, Kat! He's so due!",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 102,
+   "tags": [
+    "morning",
+    "gag:wes",
+    "seq:2"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-callin-wes-2",
+   "kind": "callin",
+   "hosts": [
+    "kat",
+    "wes",
+    "danny"
+   ],
+   "lines": [
+    {
+     "host": "kat",
+     "text": "Wes again. Line one.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "wes",
+     "text": "Hi. Okay. Update. I found the coffee place. It was really good, the lady was right. They had Pete's thing. The guy knew exactly what it was when I described Pete. He said, oh, the whisper guy. So I've got Pete's thing. I've got everybody's thing.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Then get back here, Wes! Come home!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "wes",
+     "text": "So that's the thing. On the way out there was a line for something, and I thought it was the bus line, so I got in it, and it wasn't the bus line, it was a line for a county office that's in the same building, and by the time I figured that out I was pretty close to the front, and the people behind me had been really nice about holding the coffees while I tied my shoe, and I didn't want to leave the line and make them feel like they'd held coffee for nothing.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "What's the line for, Wes.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "wes",
+     "text": "I don't know yet. There's a form. I filled out the form. I'm good at forms. There's a test, I think? There's a room with a test in it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "A test for what!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "wes",
+     "text": "The lady said, you'll do fine, and I believed her. They're calling my number. I have to go. The coffee's getting cold. I'm sorry about the coffee. I'll call you after.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Wes.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "wes",
+     "text": "Tell Trish hi.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "He's taking a test, Kat. The intern is taking a county test with four coffees. That's a situation.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Dale's Lock is looking very good.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Dale's Lock is looking good! Dale's never once been due!",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 104,
+   "tags": [
+    "morning",
+    "gag:wes",
+    "seq:3"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-banter-wes-3",
+   "kind": "banter",
+   "hosts": [
+    "kat",
+    "danny",
+    "wes"
+   ],
+   "lines": [
+    {
+     "host": "kat",
+     "text": "Hold on. Hold on. The door.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "WES!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "wes",
+     "text": "I'm back.",
+     "direction": "exhausted, proud",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "He's back! He's got the tray! He's got four coffees! Are they hot!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "wes",
+     "text": "They are not hot. They were hot at a point. Here's Pete's thing. The guy says hi.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Wes. What was the test.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "wes",
+     "text": "So. I'm a notary now.",
+     "pauseAfterMs": 600
+    },
+    {
+     "host": "danny",
+     "text": "A what!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "wes",
+     "text": "A notary public. I passed. I've got a stamp. They gave me the stamp at the end. It's got my name on it. I can witness documents. I don't totally know what that means yet but the lady said I'd use it more than I think.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "The intern went for coffee and came back licensed by the county.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Wes. Wes, buddy. Come here. The Ledger. Kat's Ledger. The Lock of the Day. Can you notarize it?",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "wes",
+     "text": "What is it?",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "It's a list of every time I've been wrong.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "wes",
+     "text": "Is it accurate?",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Scrupulously.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "wes",
+     "text": "Then yes. Hold it flat.",
+     "pauseAfterMs": 800
+    },
+    {
+     "host": "wes",
+     "text": "There. It's official.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Zero for one hundred and seven. Notarized. Framed by Friday.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "You know what, Kat? I'll take it. Dale was right. He came back with a story. Best story we've ever had. Wes, you're off coffee duty forever. You're legal now.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "wes",
+     "text": "Okay. Can I sit down?",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Nobody sits before the afternoon! Kidding! Sit! Sit, you magnificent clerk!",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 87,
+   "tags": [
+    "morning",
+    "gag:wes",
+    "seq:4",
+    "payoff",
+    "gag:lock"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-skit-tank-reveal",
+   "kind": "skit",
+   "hosts": [
+    "danny",
+    "wes",
+    "kat"
+   ],
+   "lines": [
+    {
+     "host": "danny",
+     "text": "It's time. What's In The Tank. We're doing it. Kat's got the net. Wes is standing by to notarize whatever comes out.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "wes",
+     "text": "I don't think that's what notaries",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Stand by, Wes! Kat. Go in.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Okay. Going in. The water is. Warm. That's unexpected. Pushing the net toward the back. There's something. It's heavy. It's round. It's coming up.",
+     "pauseAfterMs": 1000
+    },
+    {
+     "host": "kat",
+     "text": "It's a sponge.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "A sponge!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "It's a very large sponge. A sea sponge, I think, or it was one. It's the size of a cantaloupe. It's got a sort of a face. It's got a sort of a, Danny, I'm not going to say it's confident, but it has a bearing.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "It's got a bearing! The sponge has a bearing! Nobody guessed sponge! Not Dale, not Rowan, not Trish! The Tank wins! Nobody takes the Tank!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "What do we do with it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "We do what you do with anyone who sits quietly in a corner of this building for years without complaining and nobody notices. We promote him. Ladies and gentlemen, the new program director of Kilo-Hertz Rock: Gerald.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "You can't make a sponge the program director.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "The current program director hasn't been seen since the spring, Kat, Gerald's already got attendance over her. Gerald! Your first decision as PD! The Lock of the Day! Keep it or kill it!",
+     "pauseAfterMs": 1200
+    },
+    {
+     "host": "kat",
+     "text": "He's just sitting there.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "He's thinking!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Water's coming out of him.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "That's a no. That's a no on the Lock. Gerald's killed the Lock.",
+     "pauseAfterMs": 500
+    },
+    {
+     "host": "danny",
+     "text": "Good call, Gerald. Tough, but fair. Put him back in. He's earned the warm water.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 106,
+   "tags": [
+    "morning",
+    "gag:tank",
+    "seq:4",
+    "payoff"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-ad-mulch",
+   "kind": "ad",
+   "hosts": [
+    "kat",
+    "danny"
+   ],
+   "lines": [
+    {
+     "host": "kat",
+     "text": "Mulch Kingdom.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Mulch Kingdom! Where the mulch is king and you are a loyal subject with a wheelbarrow! You got dirt showing? That's a crime against your yard! Cover it! Cover it in chips! Red chips, brown chips, black chips, a chip they call Midnight that's just black but it costs more because it's got a name!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Mulch Kingdom has a throne. It is made of mulch. You can sit on it. It is not comfortable.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "I've sat on the throne! I've ruled from the throne! For about a minute, until the king came out, and the king is a man named Gus in a crown he got from a party store, and he said, Off the throne, Danny, and I got off, because he's the king! Mulch Kingdom! Bring a truck! Bring The Judge! The Judge loves mulch!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Mulch Kingdom: out past the roundabout, you'll smell it before you see it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "You'll smell it, and then you'll see it, and then you'll be it!",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 65,
+   "tags": [
+    "morning"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-ad-carpet",
+   "kind": "ad",
+   "hosts": [
+    "danny",
+    "kat"
+   ],
+   "lines": [
+    {
+     "host": "danny",
+     "text": "Carl's Carpet Castle! Carl has carpet! Carl has so much carpet that if you unrolled it all it would go from the Castle to a place Carl won't name because he says it'd spook the competition!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Carl's Carpet Castle. Remnants, rolls, and that one shag Carl refuses to sell because he says it's not ready.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "The shag's not ready, Kat! Carl knows! Carl walks on it every morning in socks and he says, Not yet. That's a carpet man! That's a man who respects the pile! Carl's got a deal going right now: you buy a room, Carl measures a second room for free, and he'll tell you what's wrong with it. Not the carpet. The room. Carl has opinions about rooms.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Carl told me my living room was, quote, trying too hard.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Carl's right! I've seen it! Carl's Carpet Castle! There's a drawbridge! It's a ramp! Carl calls it a drawbridge! Go!",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 60,
+   "tags": [
+    "morning"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-ad-steaktent",
+   "kind": "ad",
+   "hosts": [
+    "kat",
+    "danny"
+   ],
+   "lines": [
+    {
+     "host": "kat",
+     "text": "Sir Loin's Steak Tent.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Sir Loin's Steak Tent! It's a tent! It's full of steak! There's a guy named Sir Loin who is not a knight and did not change his name legally but he will not answer to anything else! You walk in, he's got a sword, the sword's for the steak, he cuts your steak with a sword, that's the whole gimmick, and it's enough!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Sir Loin's Steak Tent is a tent in a lot. In the rain, the tent is the restaurant. In the sun, the lot is the restaurant.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "The lot has a great view of the tent! Look. I've eaten a lot of steak. In buildings. With roofs. And nothing, nothing, hits like a steak cut in half by a man in a cape who looks you in the eye and goes, Rise. He says rise, Kat. To the steak. Sir Loin's Steak Tent! Bring cash! The sword doesn't take cards!",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 61,
+   "tags": [
+    "morning"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-news-3",
+   "kind": "news",
+   "hosts": [
+    "kat",
+    "danny"
+   ],
+   "lines": [
+    {
+     "host": "kat",
+     "text": "Kilo-Hertz Newsbreak. All local, all made up by someone, not me.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "First. The Gutter Snipes have won the league championship. The morale cow was present. In a post-game interview the team captain said, quote, she never bowled a frame, and she never had to. The cow has been given a tiny trophy, which she ate.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Champions! The believing paid off!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Second. The mayor of the fountain has announced he is not seeking a second term. He has endorsed the pigeon. The pigeon's platform is unclear, but mall management says the fountain has started to attract a better class of coin.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Third. In station news, a sea sponge recovered from the studio fish tank has been named program director of this station. His first act was to cancel a long-running prediction feature. His second act was to leak onto a legal pad. Staff describe the mood as, quote, damp but hopeful.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Gerald's a reformer!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "That's your Newsbreak.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 62,
+   "tags": [
+    "morning",
+    "gag:tank",
+    "seq:5"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-callin-rowan-pete",
+   "kind": "callin",
+   "hosts": [
+    "kat",
+    "caller-c",
+    "danny",
+    "pete",
+    "wes"
+   ],
+   "lines": [
+    {
+     "host": "kat",
+     "text": "Rowan's on the line. Rowan, you're in the car?",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-c",
+     "text": "Yeah, wait, wait, wait, I have to say something to Pete. Is Pete there?",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Pete! Rowan's got something for you!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "pete",
+     "text": "Hi, Rowan.",
+     "direction": "wary, from the hallway",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-c",
+     "text": "Okay. So. I heard you say there's no helicopter. And I was really mad. For a whole day. I didn't listen yesterday. My mom said I was being dramatic.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "pete",
+     "text": "I'm sorry, Rowan.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-c",
+     "text": "No, wait, wait, that's not the thing. The thing is, I thought about it, and I decided the helicopter's real anyway. Because the goose is real. You said the goose had a vest, and then two days later my mom and I saw a goose with a vest, a real one, at the pond by school, somebody put a vest on it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Rowan, that's",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-c",
+     "text": "So if the goose is real then you saw the goose, and if you saw the goose you were up high, and if you were up high you were in something. So. Helicopter. I don't care about the ladder.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "pete",
+     "text": "Rowan.",
+     "pauseAfterMs": 800
+    },
+    {
+     "host": "danny",
+     "text": "He's crying, Rowan. He's in the hallway and he's crying.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "pete",
+     "text": "I'm not crying, it's the dust.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "It's not dusty.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-c",
+     "text": "Okay I have to go we're at school, bye Pete, bye everybody, the Kilo-Copter is real.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "The Kilo-Copter is real, everybody. By order of Rowan. Write it down. Wes, notarize it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "wes",
+     "text": "I need it on paper.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Then put it on paper!",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 93,
+   "tags": [
+    "morning",
+    "gag:kilocopter",
+    "seq:4"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-callin-trish-2",
+   "kind": "callin",
+   "hosts": [
+    "danny",
+    "kat",
+    "caller-b",
+    "caller-a",
+    "wes"
+   ],
+   "lines": [
+    {
+     "host": "danny",
+     "text": "Caller nine wins a Kilo-Hertz prize pack! That's a shirt, a koozie, and a sticker for your truck that says, I Was Loud When It Counted! Caller nine!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Line four. You're caller nine.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-b",
+     "text": "It's Trish.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "How! How, Trish! We said nine! Nine is a lot of callers!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-b",
+     "text": "I have two phones. I use one to call and one to count. It's not hard. Dale from the Quarry does the same thing, he's just slower because of the gloves.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-a",
+     "text": "I heard that!",
+     "direction": "cutting in from another line",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Dale, how are you on the air, you're not caller nine.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-a",
+     "text": "I'm caller ten! I'm caller ten and eleven, I'm in line behind myself!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-b",
+     "text": "See? Gloves.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Trish. Do you want the prize pack.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-b",
+     "text": "No. I've got the shirt. I've got four of the shirt. I want to give it to Wes. Wes has been there, what, a year? Does Wes have a shirt?",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "wes",
+     "text": "I don't have a shirt.",
+     "direction": "from across the room",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-b",
+     "text": "Give Wes the shirt. And the koozie. And put the sticker on his, what's he drive?",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "wes",
+     "text": "I take the bus.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-b",
+     "text": "Put it on the bus. Bye.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "She hung up. She won and she gave it to the intern. She's the best person who's ever called this show and I don't think she likes us.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "She likes Wes.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-a",
+     "text": "Everybody likes Wes! Back to the rocks!",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 87,
+   "tags": [
+    "morning"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-dedic-quarry",
+   "kind": "dedication",
+   "hosts": [
+    "kat",
+    "danny"
+   ],
+   "lines": [
+    {
+     "host": "kat",
+     "text": "Dedication came in on a slip, and it's from Dale, and he asked me not to make a thing of it, so Danny's not reading it, I am.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "I'd make a thing of it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "You would. Okay. From Dale, at the quarry. He says: for the guys on the night crew who load the trucks I unload, who I've never met, because by the time I get there they're gone, and all that's left is the pile. Thirty-one years. Never met one of them. I know them by the pile. The pile's always neat. Play them something with a beat they can hear over the machines.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "He knows them by the pile.",
+     "direction": "quiet",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "He knows them by the pile. So, night crew, wherever you are, if you're hearing this on your way home: Dale says the pile's always neat. He noticed. For thirty-one years he noticed. This one's for you, and it goes.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "It's dusty, Kat.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "It's a quarry, Danny. It's allowed to be.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 65,
+   "tags": [
+    "morning"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-dedic-marjorie",
+   "kind": "dedication",
+   "hosts": [
+    "danny",
+    "kat"
+   ],
+   "lines": [
+    {
+     "host": "danny",
+     "text": "Kat's got a dedication and it's hers and I'm not allowed to talk.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "You're not. This one's from me. It's for Marjorie. My bike. She wouldn't start this morning. First time in six years. I stood in the driveway and I talked to her for ten minutes like a lunatic, and then she started, and I'd like to think it was the talking, and I know it was the choke.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "So this is for Marjorie. {nextTitle}. By {nextArtist}. It's the kind of thing I play in my helmet when the sky's being smug. Marjorie, you're a good machine. Don't do that again.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Can I talk now?",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "No.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "The Judge says hi.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Marjorie doesn't acknowledge The Judge.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 47,
+   "tags": [
+    "morning"
+   ],
+   "usesSlots": [
+    "nextTitle",
+    "nextArtist"
+   ],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-dedic-marjorie-nf",
+   "kind": "dedication",
+   "hosts": [
+    "danny",
+    "kat"
+   ],
+   "lines": [
+    {
+     "host": "danny",
+     "text": "Kat's got a dedication and it's hers and I'm not allowed to talk.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "You're not. This one's from me. It's for Marjorie. My bike. She wouldn't start this morning. First time in six years. I stood in the driveway and I talked to her for ten minutes like a lunatic, and then she started, and I'd like to think it was the talking, and I know it was the choke.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "So this next one is for Marjorie. It's the kind of thing I play in my helmet when the sky's being smug. Marjorie, you're a good machine. Don't do that again.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Can I talk now?",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "No.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "The Judge says hi.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Marjorie doesn't acknowledge The Judge.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 46,
+   "tags": [
+    "morning"
+   ],
+   "usesSlots": [],
+   "fallbackOf": "kh-dedic-marjorie",
+   "weight": 1
+  },
+  {
+   "id": "kh-liner-kat",
+   "kind": "liner",
+   "hosts": [
+    "kat",
+    "danny"
+   ],
+   "lines": [
+    {
+     "host": "kat",
+     "text": "Kilo-Hertz Rock. This is {nextArtist}. Danny's going to shout the title over the intro, so I'll say it now while it's quiet: {nextTitle}. There. Go, Danny.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "KILO-HERTZ!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "That's not the title.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "It's the feeling!",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 15,
+   "tags": [
+    "morning"
+   ],
+   "usesSlots": [
+    "nextArtist",
+    "nextTitle"
+   ],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-liner-kat-nf",
+   "kind": "liner",
+   "hosts": [
+    "kat",
+    "danny"
+   ],
+   "lines": [
+    {
+     "host": "kat",
+     "text": "Kilo-Hertz Rock. The next one's coming. Danny's going to shout over the intro, so I'll tell you now while it's quiet: it's good. There. Go, Danny.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "KILO-HERTZ!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "That's not the title.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "It's the feeling!",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 14,
+   "tags": [
+    "morning"
+   ],
+   "usesSlots": [],
+   "fallbackOf": "kh-liner-kat",
+   "weight": 1
+  },
+  {
+   "id": "kh-liner-pete",
+   "kind": "liner",
+   "hosts": [
+    "pete",
+    "kat"
+   ],
+   "lines": [
+    {
+     "host": "pete",
+     "text": "Tiny Pete here, from the ladder. The next song is {nextTitle}, by {nextArtist}, and I'm told it's a good one for driving, so if you're driving, and you see a guy on a car wash roof, that's me, honk twice. Not once. Once is for the goose.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Back to you in the studio, Pete.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "pete",
+     "text": "That's my line.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 24,
+   "tags": [
+    "morning",
+    "gag:kilocopter",
+    "seq:3"
+   ],
+   "usesSlots": [
+    "nextTitle",
+    "nextArtist"
+   ],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-liner-pete-nf",
+   "kind": "liner",
+   "hosts": [
+    "pete",
+    "kat"
+   ],
+   "lines": [
+    {
+     "host": "pete",
+     "text": "Tiny Pete here, from the ladder. The next one's a good one for driving, I'm told, so if you're driving, and you see a guy on a car wash roof, that's me, honk twice. Not once. Once is for the goose.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Back to you in the studio, Pete.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "pete",
+     "text": "That's my line.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 21,
+   "tags": [
+    "morning",
+    "gag:kilocopter",
+    "seq:3"
+   ],
+   "usesSlots": [],
+   "fallbackOf": "kh-liner-pete",
+   "weight": 1
+  },
+  {
+   "id": "kh-trans-gerald",
+   "kind": "transition",
+   "hosts": [
+    "danny",
+    "kat"
+   ],
+   "lines": [
+    {
+     "host": "danny",
+     "text": "That was {prevArtist}! Gerald loved it! Gerald rose about an inch during the chorus!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Gerald floats. That's buoyancy.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Buoyancy is a form of approval! You don't see Gerald floating for everything! You've seen Gerald sink! He sank during the Hot Take!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "He did sink during the Hot Take.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "He's a tough PD! He's got standards! Next one coming up. For Gerald.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 25,
+   "tags": [
+    "morning",
+    "gag:tank",
+    "seq:5"
+   ],
+   "usesSlots": [
+    "prevArtist"
+   ],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-trans-gerald-nf",
+   "kind": "transition",
+   "hosts": [
+    "danny",
+    "kat"
+   ],
+   "lines": [
+    {
+     "host": "danny",
+     "text": "That was the last one and Gerald loved it! Gerald rose about an inch during the chorus!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Gerald floats. That's buoyancy.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Buoyancy is a form of approval! You don't see Gerald floating for everything! You've seen Gerald sink! He sank during the Hot Take!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "He did sink during the Hot Take.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "He's a tough PD! He's got standards! Next one coming up. For Gerald.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 26,
+   "tags": [
+    "morning",
+    "gag:tank",
+    "seq:5"
+   ],
+   "usesSlots": [],
+   "fallbackOf": "kh-trans-gerald",
+   "weight": 1
+  },
+  {
+   "id": "kh-banter-album",
+   "kind": "banter",
+   "hosts": [
+    "kat",
+    "danny"
+   ],
+   "lines": [
+    {
+     "host": "kat",
+     "text": "Danny, you're holding the display.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "I'm reading the album! {album}! That's the album the last one came off of! I'm going to say something about it that nobody's ever said! Ready? That is a tremendous album!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "People have said that.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Not like that! Not with my chest! Look, here's the thing about albums. An album is a bunch of songs that agreed to live together. That's hard! I can't get four coffees to live together on one tray! And these songs did it! For years! In order! Respect the album, Kat!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "I respect the album.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Then say it with your chest!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "I respect the album.",
+     "direction": "exactly as flat as before",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "That's as loud as she gets before noon, folks. We'll take it. Next one.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 49,
+   "tags": [
+    "morning"
+   ],
+   "usesSlots": [
+    "album"
+   ],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-banter-album-nf",
+   "kind": "banter",
+   "hosts": [
+    "kat",
+    "danny"
+   ],
+   "lines": [
+    {
+     "host": "kat",
+     "text": "Danny, you're holding the display.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "I'm reading the album name off the screen! The album the last one came off of! I'm going to say something about it that nobody's ever said! Ready? That is a tremendous album!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "People have said that.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Not like that! Not with my chest! Look, here's the thing about albums. An album is a bunch of songs that agreed to live together. That's hard! I can't get four coffees to live together on one tray! And these songs did it! For years! In order! Respect the album, Kat!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "I respect the album.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Then say it with your chest!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "I respect the album.",
+     "direction": "exactly as flat as before",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "That's as loud as she gets before noon, folks. We'll take it. Next one.",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 49,
+   "tags": [
+    "morning"
+   ],
+   "usesSlots": [],
+   "fallbackOf": "kh-banter-album",
+   "weight": 1
+  },
+  {
+   "id": "kh-callin-rowan-song",
+   "kind": "callin",
+   "hosts": [
+    "kat",
+    "caller-c",
+    "danny"
+   ],
+   "lines": [
+    {
+     "host": "kat",
+     "text": "Rowan. Quick, you're in the car.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-c",
+     "text": "Wait, wait, wait, what was that one? The one before the last one? Not the last one, the one before, with the part.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "The part!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-c",
+     "text": "The part where it goes up!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Rowan, two back was {prevTitle}, by {prevArtist}, and if the part where it goes up is the part I think it is, then yes. That's the part. Everybody loves that part.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-c",
+     "text": "Okay I'm writing it on my hand.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Write it on your hand! That's how I learned everything I know!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "That explains a lot.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-c",
+     "text": "Okay bye, tell Pete hi, tell Gerald hi.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Gerald says hi back! He rose a little!",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 45,
+   "tags": [
+    "morning"
+   ],
+   "usesSlots": [
+    "prevTitle",
+    "prevArtist"
+   ],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-callin-rowan-song-nf",
+   "kind": "callin",
+   "hosts": [
+    "kat",
+    "caller-c",
+    "danny"
+   ],
+   "lines": [
+    {
+     "host": "kat",
+     "text": "Rowan. Quick, you're in the car.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-c",
+     "text": "Wait, wait, wait, what was that one? The one before the last one? Not the last one, the one before, with the part.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "The part!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-c",
+     "text": "The part where it goes up!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Rowan, I've got the title here, I'll have Wes text it to your mom's phone, and if the part where it goes up is the part I think it is, then yes. That's the part. Everybody loves that part.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-c",
+     "text": "Okay I'm writing it on my hand.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Write it on your hand! That's how I learned everything I know!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "That explains a lot.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-c",
+     "text": "Okay bye, tell Pete hi, tell Gerald hi.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Gerald says hi back! He rose a little!",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 47,
+   "tags": [
+    "morning"
+   ],
+   "usesSlots": [],
+   "fallbackOf": "kh-callin-rowan-song",
+   "weight": 1
+  },
+  {
+   "id": "kh-mono-volume",
+   "kind": "monologue",
+   "hosts": [
+    "danny",
+    "kat"
+   ],
+   "lines": [
+    {
+     "host": "danny",
+     "text": "Hot Take, speed round. {prevArtist}. That last one. Here's my take: it wasn't loud enough. Not the song. The song was loud. You weren't loud enough. The listener. You had it at a reasonable level. I could feel it from here.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Here's what I believe. Volume is a conversation. The song says something, and you turn it up, and that's you saying, go on. And the song goes on! It gets bigger! Not literally, the recording's the same, but you're in it now, you're a participant, you've got skin in it. At a reasonable level, you're an audience. At an unreasonable level, you're a member. Be a member.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Be a considerate member. Windows up.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Windows up, volume up, hand on the wheel, other hand on the wheel, that's two hands, that's the rule, Hot Take, over!",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 54,
+   "tags": [
+    "morning"
+   ],
+   "usesSlots": [
+    "prevArtist"
+   ],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-mono-volume-nf",
+   "kind": "monologue",
+   "hosts": [
+    "danny",
+    "kat"
+   ],
+   "lines": [
+    {
+     "host": "danny",
+     "text": "Hot Take, speed round. That last song. Here's my take: it wasn't loud enough. Not the song. The song was loud. You weren't loud enough. The listener. You had it at a reasonable level. I could feel it from here.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Here's what I believe. Volume is a conversation. The song says something, and you turn it up, and that's you saying, go on. And the song goes on! It gets bigger! Not literally, the recording's the same, but you're in it now, you're a participant, you've got skin in it. At a reasonable level, you're an audience. At an unreasonable level, you're a member. Be a member.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Be a considerate member. Windows up.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Windows up, volume up, hand on the wheel, other hand on the wheel, that's two hands, that's the rule, Hot Take, over!",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 53,
+   "tags": [
+    "morning"
+   ],
+   "usesSlots": [],
+   "fallbackOf": "kh-mono-volume",
+   "weight": 1
+  },
+  {
+   "id": "kh-skit-traffic-song",
+   "kind": "skit",
+   "hosts": [
+    "danny",
+    "pete",
+    "kat"
+   ],
+   "lines": [
+    {
+     "host": "danny",
+     "text": "Tiny Pete! Traffic!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "pete",
+     "text": "Thanks Danny. From the ladder. I've started doing a new thing where I report on what's coming out of the cars, since I can't see the roads, and I'm good at hearing.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "pete",
+     "text": "So. Three cars went by during the last song with the last song on, that's {prevTitle}, and every one of them had the window down and at least one person doing the hand thing, the drum thing on the door. Up next in the cars should be {nextTitle}, if they're listening to us, and they are, because the car wash guy's got us on too, I can hear it in stereo.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "That's not traffic, Pete.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "pete",
+     "text": "It's the traffic's mood, Kat. The traffic's mood is good. The goose is doing the hand thing too, in his way. Back to you in the studio.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "The traffic's mood! Nobody else reports the mood! That's a Kilo-Hertz exclusive!",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 60,
+   "tags": [
+    "morning",
+    "gag:kilocopter",
+    "seq:5"
+   ],
+   "usesSlots": [
+    "prevTitle",
+    "nextTitle"
+   ],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-skit-traffic-song-nf",
+   "kind": "skit",
+   "hosts": [
+    "danny",
+    "pete",
+    "kat"
+   ],
+   "lines": [
+    {
+     "host": "danny",
+     "text": "Tiny Pete! Traffic!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "pete",
+     "text": "Thanks Danny. From the ladder. I've started doing a new thing where I report on what's coming out of the cars, since I can't see the roads, and I'm good at hearing.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "pete",
+     "text": "So. Three cars went by during the last song with the last song on, and every one of them had the window down and at least one person doing the hand thing, the drum thing on the door. Up next in the cars should be whatever's up next on us, if they're listening to us, and they are, because the car wash guy's got us on too, I can hear it in stereo.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "That's not traffic, Pete.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "pete",
+     "text": "It's the traffic's mood, Kat. The traffic's mood is good. The goose is doing the hand thing too, in his way. Back to you in the studio.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "The traffic's mood! Nobody else reports the mood! That's a Kilo-Hertz exclusive!",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 60,
+   "tags": [
+    "morning",
+    "gag:kilocopter",
+    "seq:5"
+   ],
+   "usesSlots": [],
+   "fallbackOf": "kh-skit-traffic-song",
+   "weight": 1
+  },
+  {
+   "id": "kh-trans-ledger",
+   "kind": "transition",
+   "hosts": [
+    "kat",
+    "danny"
+   ],
+   "lines": [
+    {
+     "host": "kat",
+     "text": "Okay. {prevTitle}. Done. Danny's Bonus Lock was that the drummer hits everything at once at some point in that song.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "And?",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "There was a point where the drummer hit several things.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Several is everything if you've only got several!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "The Ledger disagrees. Zero for one hundred and eight. But I'm putting a little star next to it, because the drummer did hit a lot of things, and I was kind of hoping.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "A star!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Kat, that's the nicest thing you've ever done for me.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "It's a very small star.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "It's a huge star! It's a situation! Next song!",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 41,
+   "tags": [
+    "morning",
+    "gag:lock",
+    "seq:3"
+   ],
+   "usesSlots": [
+    "prevTitle"
+   ],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-trans-ledger-nf",
+   "kind": "transition",
+   "hosts": [
+    "kat",
+    "danny"
+   ],
+   "lines": [
+    {
+     "host": "kat",
+     "text": "Okay. That one's done. Danny's Bonus Lock was that the drummer hits everything at once at some point in that song.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "And?",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "There was a point where the drummer hit several things.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Several is everything if you've only got several!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "The Ledger disagrees. Zero for one hundred and eight. But I'm putting a little star next to it, because the drummer did hit a lot of things, and I was kind of hoping.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "A star!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Kat, that's the nicest thing you've ever done for me.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "It's a very small star.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "It's a huge star! It's a situation! Next song!",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 41,
+   "tags": [
+    "morning",
+    "gag:lock",
+    "seq:3"
+   ],
+   "usesSlots": [],
+   "fallbackOf": "kh-trans-ledger",
+   "weight": 1
+  },
+  {
+   "id": "kh-ad-carwash",
+   "kind": "ad",
+   "hosts": [
+    "kat",
+    "danny"
+   ],
+   "lines": [
+    {
+     "host": "kat",
+     "text": "New sponsor. The Comet Street Car Wash.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "The Comet Street Car Wash! Home of the Kilo-Copter! Well. Home of the roof the Kilo-Copter used to launch from! Home of the tree the Kilo-Copter lives in now! You drive in dirty, you drive out clean, and the whole time there's a man on the roof describing a goose!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "The Comet Street Car Wash offers a basic wash, a deluxe wash, and a wax package that Pete bought and has never used because he doesn't own a car.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "The wax package is transferable! The owner, Marv, told me himself! He said, Danny, Pete's wax is good for anybody, and I said, Marv, I'm bringing The Judge, and he said, Danny, I'm not sure wax is what The Judge needs, and I said, Marv, nobody's sure what The Judge needs, that's why he's The Judge!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "The Comet Street Car Wash is the only car wash in the city with a traffic reporter on the roof. Marv would like that noted.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Noted! Comet Street! Look for the tree with the drone in it! Honk twice!",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 71,
+   "tags": [
+    "morning",
+    "gag:kilocopter",
+    "seq:5"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  },
+  {
+   "id": "kh-callin-dale-gerald",
+   "kind": "callin",
+   "hosts": [
+    "kat",
+    "caller-a",
+    "danny"
+   ],
+   "lines": [
+    {
+     "host": "kat",
+     "text": "Dale's on the line. Dale, this is about the sponge, isn't it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-a",
+     "text": "It's about the sponge.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "Dale! Gerald's a sponge! You said turtle!",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-a",
+     "text": "I said turtle because a turtle made sense. A sponge doesn't make sense. A sponge isn't a thing that's in a tank, a sponge is a thing you clean a tank with. Somebody dropped the cleaning sponge in there years ago and nobody fished it out and now it's the boss of the radio station. That's a rig if I ever heard one.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Nobody rigged the sponge, Dale.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-a",
+     "text": "I'm not saying anybody rigged it. I'm saying that's how rigging feels. You lose to a thing that shouldn't have been in the running. Anyway, I called to say I'm fine with it.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "You're fine with it?",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-a",
+     "text": "I've worked under worse. I had a foreman once who was basically a sponge. Soaked everything up, never said a word, you squeezed him and out came whatever you put in. Good foreman. Gerald'll do fine. Just don't let him near the Lock.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "He killed the Lock, Dale. First day.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "caller-a",
+     "text": "Then he's already better than the last one. Back to the rocks.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "kat",
+     "text": "Dale from the Quarry, endorsing the sponge. It's a weird morning.",
+     "pauseAfterMs": 300
+    },
+    {
+     "host": "danny",
+     "text": "It's a great morning! Everything's rigged and everybody's fine!",
+     "pauseAfterMs": 300
+    }
+   ],
+   "estSec": 84,
+   "tags": [
+    "morning",
+    "gag:tank",
+    "seq:5"
+   ],
+   "usesSlots": [],
+   "fallbackOf": null,
+   "weight": 1
+  }
+ ]
+}

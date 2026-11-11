@@ -19,7 +19,21 @@ import {
 } from './model.js';
 import { bakeMatSprite, bakeRecord, drawFrame, makeGeometry, setLayout, getLayoutName, armTransform } from './render.js';
 import { Walkthrough } from './walkthrough.js';
+import {
+  TONEARM_KNOBS, estimateDurations, buildLayout, locate, seekTarget, stepIndex,
+  previousTarget, classifyFlick,
+} from './tonearm.js';
+import { NeedleFX } from './needle-fx.js';
+import { CdView } from './cd-view.js';
+import { CD_KNOBS, formatTime } from './cd.js';
+import { MixtapeUI } from './mixtape-ui.js';
+import { RadioUI } from './radio-player.js';
+import { createEngineGate } from './engine-gate.js';
 import { LibraryManager, GridView } from './library.js';
+import {
+  parseTheme, setThemeVars, clearThemeVars,
+  storeTheme, loadStoredTheme, clearStoredTheme,
+} from './theme.js';
 
 // The track is mastered for one fixed reference speed. The needle plays it
 // correctly at this RPM (rate = 1). Moving the speed dial above/below it shifts
@@ -52,6 +66,18 @@ const state = {
   reachedEnd: false,
 
   lastFrameTime: 0,
+
+  // album context (Workstream V). queue = { kind:'vinyl'|'cd', index, items:[{file,title,dur}] }
+  // or null for a single loose track. layout = tonearm.js band layout for the record.
+  queue: null,
+  layout: null,
+  view: 'vinyl',             // 'vinyl' platter | 'cd' player
+  cdPlaying: true,
+  cdMute: false,             // brief CD "re-read" silence after a skip
+  jumping: false,            // a track change is decoding (arm stays lifted)
+  trail: [],                 // pointer trail while the tonearm is held (flick detection)
+  ghost: null,               // { r, angle, label, gap } while dragging the tonearm
+  dropFx: null,              // { r, t0 } set-down ripple
 };
 
 const el = (id) => document.getElementById(id);
@@ -62,14 +88,17 @@ const armEl = el('arm');
 // ── boot ─────────────────────────────────────────────────────────────────────
 async function boot() {
   await state.engine.init();
+  state.fx = new NeedleFX(state.engine.ctx);
   await loadTrack(synthesizeTrack(state.engine.sampleRate, 24));
   sizeCanvas();
   window.addEventListener('resize', sizeCanvas);
   installInput();
   installControls();
+  installAlbumNav();
   installToolbar();
   installLibrary();
   installLayout();
+  installCustomTheme();
   installPinchTransition();
   requestAnimationFrame(loop);
   updateLatencyReadout();
@@ -100,8 +129,128 @@ function installLayout() {
   document.addEventListener('click', () => { if (!pop.classList.contains('hidden')) toggle(false); });
 
   pop.querySelectorAll('.sp-opt').forEach((b) => {
-    b.addEventListener('click', () => { applyLayout(b.dataset.layout); toggle(false); });
+    // The custom-theme entry (#btnCustomTheme) is also an .sp-opt but opens
+    // its own overlay instead of picking a layout — skip it here.
+    if (b.dataset.layout) b.addEventListener('click', () => { applyLayout(b.dataset.layout); toggle(false); });
   });
+}
+
+// ── Custom theme: JSON paste → mandatory verbatim preview → Apply ───────────
+// Independent of the dark/light toggle above (installToolbar): a custom
+// theme supplies ITS OWN light and dark color sets, and the toggle just
+// decides which of those (or which of the built-in pair) is currently shown.
+
+// Re-applies whichever theme is active — the stored custom one, or none (the
+// built-in default) — for the given mode ('dark'|'light'). Called at boot and
+// every time the dark/light toggle flips, so a custom theme's own light/dark
+// pair tracks that toggle exactly like the built-in colors do.
+function applyActiveCustomTheme(mode) {
+  const stored = loadStoredTheme();
+  if (stored) setThemeVars(stored, mode);
+  else clearThemeVars();
+}
+
+function installCustomTheme() {
+  const overlay = el('themeOverlay');
+  const stepEdit = el('themeStepEdit');
+  const stepPreview = el('themeStepPreview');
+  const input = el('themeInput');
+  const previewText = el('themePreviewText');
+  const errorBox = el('themeError');
+  const okBox = el('themeOk');
+  const applyBtn = el('themeApplyBtn');
+  const statusEl = el('customThemeStatus');
+
+  // The last successfully parsed theme from the CURRENT preview screen, or
+  // null. Apply only ever commits this — never re-parses on click — so
+  // there's no window where a malformed paste could sneak through.
+  let pendingParsed = null;
+
+  function refreshStatus() {
+    const stored = loadStoredTheme();
+    if (stored) {
+      statusEl.textContent = `Custom: ${stored.name}`;
+      statusEl.classList.add('theme-current');
+    } else {
+      statusEl.textContent = 'Built-in (default)';
+      statusEl.classList.remove('theme-current');
+    }
+  }
+
+  function showEdit() {
+    stepPreview.classList.add('hidden');
+    stepEdit.classList.remove('hidden');
+  }
+
+  function showPreview() {
+    // The preview renders the EXACT textarea text back, byte-for-byte —
+    // via .textContent (never innerHTML, never reformatted/pretty-printed),
+    // so the user sees precisely what they typed before anything can apply.
+    const raw = input.value;
+    previewText.textContent = raw;
+
+    const result = parseTheme(raw);
+    pendingParsed = result.ok ? result.theme : null;
+
+    if (result.ok) {
+      errorBox.classList.add('hidden');
+      okBox.classList.remove('hidden');
+      okBox.textContent = `Looks good — "${result.theme.name}". Apply to use it.`;
+      applyBtn.disabled = false;
+    } else {
+      okBox.classList.add('hidden');
+      errorBox.classList.remove('hidden');
+      errorBox.textContent = result.error;
+      applyBtn.disabled = true; // malformed input can never be applied
+    }
+
+    stepEdit.classList.add('hidden');
+    stepPreview.classList.remove('hidden');
+  }
+
+  function openOverlay() {
+    // Re-opening pre-fills the currently active custom theme's JSON (if any)
+    // rather than starting blank, so tweaking one is easy.
+    const stored = loadStoredTheme();
+    input.value = stored ? JSON.stringify(stored, null, 2) : '';
+    pendingParsed = null;
+    showEdit();
+    overlay.classList.remove('hidden');
+  }
+
+  function closeOverlay() {
+    overlay.classList.add('hidden');
+  }
+
+  el('btnCustomTheme').addEventListener('click', (e) => {
+    e.stopPropagation();
+    el('settingsPop').classList.add('hidden');
+    el('btnSettings').classList.remove('active');
+    openOverlay();
+  });
+
+  el('themePreviewBtn').addEventListener('click', showPreview);
+  el('themeBack').addEventListener('click', showEdit);
+  el('themeCancel1').addEventListener('click', closeOverlay);   // Cancel/back discards — nothing was ever applied.
+  el('themeCancel2').addEventListener('click', closeOverlay);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) closeOverlay(); });
+
+  el('themeResetDefault').addEventListener('click', () => {
+    clearStoredTheme();
+    clearThemeVars();
+    refreshStatus();
+    closeOverlay();
+  });
+
+  applyBtn.addEventListener('click', () => {
+    if (!pendingParsed) return; // guard: never apply a malformed theme
+    storeTheme(pendingParsed);
+    setThemeVars(pendingParsed, document.documentElement.dataset.theme);
+    refreshStatus();
+    closeOverlay();
+  });
+
+  refreshStatus();
 }
 
 // Stamp which build this is, so a stale/cached APK download is obvious at a
@@ -115,10 +264,21 @@ function showBuildId() {
   if (node) node.textContent = 'build: ' + id;
 }
 
-async function loadTrack(track) {
+// `q` is the album context when the track was picked from an album/CD
+// (see queueFor); every other caller (file picker, drop, mixtape) passes none
+// and gets a plain single-track record.
+// Radio decodes are cancellable: every Stop / source switch / user-started track bumps the gate, and a radio load or prepare
+// that began earlier refuses to install its song (see sr./engine-gate.js).
+const engineGate = createEngineGate();
+let foreignPlaybackHook = null; // set once the Radio tab exists: ends an engine-backed station when the user starts their own track
+async function loadTrack(track, q = null, fromRadio = false) {
+  if (!fromRadio) { engineGate.bump(); try { foreignPlaybackHook && foreignPlaybackHook(); } catch { /* */ } }
   state.track = track;
   state.frames = track.frames;
   state.T = track.frames / state.engine.sampleRate;
+  state.queue = q;
+  if (q) q.items[q.index].dur = state.T;
+  setView(q?.kind === 'cd' ? 'cd' : 'vinyl');
 
   // Envelope: windowed RMS over a mono mixdown. (Off-thread in v1; cheap enough
   // inline for one synthesized track in v0.)
@@ -127,10 +287,12 @@ async function loadTrack(track) {
   state.envelope = computeEnvelope(mono, track.frames, 1024);
 
   await state.engine.load(track.channels, track.frames);
+  state.engine.setPlaying(!state.radioOn); // load() re-arms the bus; keep it muted under a live station
   state.engine.setRate(0);
   state.reachedEnd = false;
   el('trackName').textContent = track.name;
   rebake();
+  syncAlbumUI();
 }
 
 function sizeCanvas() {
@@ -149,11 +311,19 @@ function sizeCanvas() {
   rebake();
 }
 
+// Record layout: one band per album track (single track = the classic record).
+function rebuildLayout() {
+  if (!state.geom) return;
+  const known = state.queue ? state.queue.items.map((it) => it.dur) : [state.T];
+  state.layout = buildLayout(estimateDurations(known), state.geom.rOut, state.geom.rIn);
+}
+
 function rebake() {
+  rebuildLayout();
   // Mat (slipmat) is static + track-independent → bake once. The record's groove
   // IS the waveform → rebake per track from the envelope.
   if (!state.matSprite) state.matSprite = bakeMatSprite();
-  if (state.envelope) state.recordSprite = bakeRecord(state.envelope);
+  if (state.envelope) state.recordSprite = bakeRecord(state.envelope, null, state.layout?.bands, state.queue?.index ?? 0);
 }
 
 // ── the frame loop ─────────────────────────────────────────────────────────
@@ -190,7 +360,10 @@ function loop(now) {
   );
 
   // 3. Platter ω → playback rate (normalized to the FIXED reference RPM).
-  const rate = state.seeking ? 0 : rateFromOmega(state.platter.omega, REFERENCE_RPM);
+  // CD view: steady 1x (or 0 when paused / re-reading) -- no platter, no pitch bend.
+  const rate = state.view === 'cd'
+    ? (state.cdPlaying && !state.jumping && !state.cdMute ? 1 : 0)
+    : (state.seeking || state.jumping ? 0 : rateFromOmega(state.platter.omega, REFERENCE_RPM));
   state.engine.setRate(rate);
 
   // 4. Read audio time back from the worklet to position the needle.
@@ -201,21 +374,32 @@ function loop(now) {
     state.reachedEnd = true;
     state.playCount += 1;
     localStorage.setItem('runout.playCount', String(state.playCount));
+    // A CD runs on to the next track by itself (a record just reaches the runout).
+    if (state.view === 'cd' && state.queue && stepIndex(state.queue.index, 1, state.queue.items.length) != null) {
+      goTo({ index: state.queue.index + 1, time: 0 }, false);
+    }
   }
   if (t < state.T - 0.2) state.reachedEnd = false;
 
   // 5. Render: static mat + the record spinning on top. The tonearm is the
   // screen-fixed SVG overlay; we only toggle its "lifted" pose on a silent seek.
-  drawFrame(ctx, { mat: state.matSprite, record: state.recordSprite }, {
-    theta: state.platter.theta,
-    dust: clamp(state.playCount / 20, 0, 1),
-  }, state.geom);
-
-  if (state.seeking !== state._armLifted) {
-    state._armLifted = state.seeking;
-    armEl.classList.toggle('lifted', state.seeking);
+  if (state.view === 'cd') {
+    state.cd.draw({ t, T: state.T, playing: state.cdPlaying, dt, loading: state.jumping });
+  } else {
+    drawFrame(ctx, { mat: state.matSprite, record: state.recordSprite }, {
+      theta: state.platter.theta,
+      dust: clamp(state.playCount / 20, 0, 1),
+      needle: needleOverlay(now),
+    }, state.geom);
   }
 
+  const lifted = state.seeking || state.jumping;
+  if (lifted !== state._armLifted) {
+    state._armLifted = lifted;
+    armEl.classList.toggle('lifted', lifted);
+  }
+
+  state.mixtapes?.tick(t, state.T, rate, dt);
   updateHud(rate, t);
   requestAnimationFrame(loop);
 }
@@ -254,9 +438,15 @@ function installInput() {
     // Grab the tonearm (seek) when starting near/outside the outer edge; grab
     // the platter (scrub) when starting on the groove annulus.
     if (d > rOut * 0.9) {
+      if (state.jumping) return;          // a track change is still loading
       state.seeking = true;
       state.engine.setPlaying(false);     // tonearm lifted = music bus silent
+      state.fx?.lift();
       state.seekRadius = clamp(d, rIn, rOut);
+      state.trail = [];
+      state.dropFx = null;
+      trailPush();
+      updateGhost();
     } else if (d >= rIn * 0.9) {
       state.touchingPlatter = true;
       state.prevFingerAngle = pointerAngle();
@@ -269,16 +459,31 @@ function installInput() {
     if (state.seeking) {
       const { rIn, rOut } = state.geom;
       state.seekRadius = clamp(radialDist(state.pointer), rIn, rOut);
+      trailPush();
+      updateGhost();
     }
   });
 
   const endPointer = () => {
     if (state.seeking) {
-      // Tonearm set-down: hard jump to the time under the needle, music resumes.
-      const tSeek = timeAtRadius(state.seekRadius, state.T, state.geom.rOut, state.geom.rIn);
-      state.engine.seek(tSeek * state.engine.sampleRate);
-      state.engine.setPlaying(true);
+      // Tonearm set-down. A quick sideways flick = next / previous track;
+      // otherwise: whatever is under the needle (a point in a track, or the
+      // start of the next track if dropped in the gap between tracks).
+      const { cx, cy } = state.geom;
+      const flick = classifyFlick(state.trail, { x: cx, y: cy });
+      const q = state.queue;
+      let target = null;
+      if (flick.dir && q) {
+        target = flick.dir === 'next'
+          ? (stepIndex(q.index, 1, q.items.length) != null ? { index: q.index + 1, time: 0 } : null)
+          : previousTarget(q.index, state.engine.position / state.engine.sampleRate, q.items.length);
+      }
+      if (!target) target = seekTarget(state.layout, state.seekRadius);
+      state.trail = [];
+      state.ghost = null;
       state.seeking = false;
+      state.dropFx = { r: state.seekRadius, t0: performance.now() };
+      goTo(target, true);
     }
     if (state.touchingPlatter) {
       // Release: motor reclaims, ω winds back up to speed — you hear it.
@@ -296,6 +501,155 @@ function installInput() {
   window.addEventListener('keyup', (e) => {
     if (e.code === 'Space') { e.preventDefault(); state.braking = false; }
   });
+}
+
+// ── tonearm: ghost needle, set-down, track jumping (Workstream V) ────────────
+// Pure mapping lives in tonearm.js (radius -> track/gap, flick classifier);
+// this is only the glue. Tunables: TONEARM_KNOBS there.
+
+function trailPush() {
+  const p = canvasPoint(state.pointer);
+  state.trail.push({ x: p.x, y: p.y, t: performance.now() });
+  if (state.trail.length > 48) state.trail.shift();
+}
+
+function updateGhost() {
+  const loc = locate(state.layout, state.seekRadius);
+  const multi = state.layout.bands.length > 1;
+  const tgt = seekTarget(state.layout, state.seekRadius);
+  const gap = loc.zone === 'gap';
+  const label = gap
+    ? `▸ track ${tgt.index + 1}`
+    : (multi ? `${tgt.index + 1} · ` : '') + formatTime(tgt.time);
+  if (gap && !state._inGap) { try { navigator.vibrate?.(8); } catch { /* no haptics */ } }
+  state._inGap = gap;
+  state.ghost = { r: gap ? loc.gap.r : state.seekRadius, angle: pointerAngle(), label, gap };
+}
+
+// The overlay handed to drawFrame: live ghost while dragging, ripple after release.
+function needleOverlay(now) {
+  let dropR = null, dropT = 1;
+  if (state.dropFx) {
+    dropT = (now - state.dropFx.t0) / TONEARM_KNOBS.dropAnimMs;
+    if (dropT >= 1) state.dropFx = null; else dropR = state.dropFx.r;
+  }
+  if (!state.ghost && dropR == null) return null;
+  return { ghostR: state.ghost?.r ?? null, angle: state.ghost?.angle ?? 0, label: state.ghost?.label, gap: state.ghost?.gap, dropR, dropT };
+}
+
+// Commit a (index, time) target. Same track: a hard seek. Other track: decode it,
+// then seek. `needle` = play the vinyl set-down sound/animation (CD skips are silent).
+function goTo(target, needle) {
+  const q = state.queue;
+  const sr = state.engine.sampleRate;
+  if (!q || target.index === q.index) {
+    state.engine.seek(target.time * sr);
+    state.reachedEnd = false;
+    if (state.view === 'cd') cdSkipMute(); else finishDrop(needle);
+    return;
+  }
+  jumpTo(target, needle);
+}
+
+async function jumpTo(target, needle) {
+  const q = state.queue;
+  if (!q || state.jumping) return;
+  state.jumping = true;
+  state.engine.setPlaying(false);
+  try {
+    await state.engine.resume();
+    const track = await loadFile(q.items[target.index].file, state.engine.ctx);
+    q.index = target.index;
+    await loadTrack(track, q);
+    state.engine.seek(target.time * state.engine.sampleRate);
+  } catch (err) {
+    console.error('track jump failed', err);
+  } finally {
+    state.jumping = false;
+  }
+  if (state.view === 'cd') cdSkipMute(); else finishDrop(needle);
+}
+
+// Needle lands: thump + arm settle, then the music bus reopens a beat later.
+function finishDrop(needle) {
+  if (needle) {
+    state.fx?.drop();
+    armEl.classList.remove('dropping');
+    void armEl.getBoundingClientRect();           // restart the CSS animation
+    armEl.classList.add('dropping');
+    setTimeout(() => armEl.classList.remove('dropping'), TONEARM_KNOBS.dropAnimMs + 40);
+  }
+  setTimeout(() => state.engine.setPlaying(!state.radioOn), needle ? TONEARM_KNOBS.dropDelayMs : 0);
+}
+
+// CD "re-read": a few ms of silence on any skip, then straight back at 1x.
+function cdSkipMute() {
+  state.cdMute = true;
+  state.engine.setPlaying(!state.radioOn);
+  setTimeout(() => { state.cdMute = false; }, CD_KNOBS.skipMuteMs);
+}
+
+// Album context for a pick from the library: the shelf item (vinyl LP or one CD
+// disc) that holds the picked track. Null when it can't be found (single track).
+function queueFor(library, trackObj) {
+  if (!trackObj) return null;
+  const item = library.albums().find((a) => a.tracks.includes(trackObj));
+  if (!item) return null;
+  return {
+    kind: item.kind,
+    index: item.tracks.indexOf(trackObj),
+    items: item.tracks.map((t) => ({ file: t.file, title: t.title, dur: null })),
+  };
+}
+
+function setView(v) {
+  if (state.view === v && state._viewSet) return;
+  state._viewSet = true;
+  state.view = v;
+  document.querySelector('.stage').dataset.view = v;
+  appEl().dataset.view = v;
+  state.cd?.show(v === 'cd');
+  if (v === 'cd') state.cdPlaying = true;
+}
+
+function syncAlbumUI() {
+  const q = state.queue;
+  const n = q ? q.items.length : 0;
+  el('trkNav').classList.toggle('hidden', !(n > 1 && state.view === 'vinyl'));
+  if (q) el('trkIdx').textContent = `${q.index + 1} / ${n}`;
+  if (q && state.view === 'cd') {
+    state.cd.setTracks(q.items.map((it) => it.title), estimateDurations(q.items.map((it) => it.dur)), q.index);
+  }
+}
+
+function stepTrack(dir) {
+  const q = state.queue;
+  if (!q || state.jumping) return;
+  const t = state.engine.position / state.engine.sampleRate;
+  const target = dir > 0
+    ? (stepIndex(q.index, 1, q.items.length) != null ? { index: q.index + 1, time: 0 } : null)
+    : previousTarget(q.index, t, q.items.length);
+  if (!target) return;
+  state.dropFx = state.view === 'vinyl' ? { r: state.geom.rOut * 0.92, t0: performance.now() } : null;
+  if (state.view === 'vinyl') state.fx?.lift();
+  goTo(target, state.view === 'vinyl');
+}
+
+function installAlbumNav() {
+  el('btnPrevTrk').addEventListener('click', async () => { await state.engine.resume(); stepTrack(-1); });
+  el('btnNextTrk').addEventListener('click', async () => { await state.engine.resume(); stepTrack(1); });
+  state.cd = new CdView({
+    root: el('cdView'), canvas: el('cdCanvas'), list: el('cdList'),
+    prev: el('cdPrev'), next: el('cdNext'), play: el('cdPlay'),
+    num: el('cdNum'), time: el('cdTime'), title: el('cdTitle'),
+  }, {
+    onTrack: (i) => { if (state.queue && !state.jumping) goTo({ index: i, time: 0 }, false); },
+    onSeekFrac: (f) => { if (!state.jumping) goTo({ index: state.queue?.index ?? 0, time: f * state.T }, false); },
+    onPrev: () => stepTrack(-1),
+    onNext: () => stepTrack(1),
+    onToggle: async () => { await state.engine.resume(); state.cdPlaying = !state.cdPlaying; },
+  });
+  setView(state.view);
 }
 
 // ── controls / HUD ───────────────────────────────────────────────────────────
@@ -525,12 +879,16 @@ function installToolbar() {
     btnMode.classList.toggle('active', mode === 'audiophile');
   });
 
-  // Light / dark theme toggle. Persist choice.
+  // Light / dark theme toggle. Persist choice. Independent of the custom
+  // palette (installCustomTheme below) — this only ever flips which of the
+  // two color sets (built-in, or a custom theme's light/dark colors) is
+  // showing, never which colors those are.
   const btnTheme = el('btnTheme');
   const applyTheme = (t) => {
     root.dataset.theme = t;
     btnTheme.textContent = t === 'dark' ? '☾' : '☀';
     localStorage.setItem('runout.theme', t);
+    applyActiveCustomTheme(t);
   };
   const savedTheme = localStorage.getItem('runout.theme') || 'dark';
   applyTheme(savedTheme);
@@ -551,15 +909,83 @@ function installLibrary() {
   progressEl.style.display = 'none';
   el('libGridWrap').insertBefore(progressEl, gridEl);
 
-  const grid = new GridView(gridEl, library, async (file) => {
+  const grid = new GridView(gridEl, library, async (file, _album, _artist, trackObj) => {
     el('libOverlay').classList.add('hidden');
     await state.engine.resume();
     const track = await loadFile(file, state.engine.ctx);
-    await loadTrack(track);
+    await loadTrack(track, queueFor(library, trackObj));
   });
 
   // Render the grid immediately so it's ready when the pinch transition opens it.
   grid.render();
+  // Persisted library metadata (tags only, no audio) -> albums + mixtape refs
+  // resolve before any re-scan; those tracks show "needs re-link" until then.
+  library.restore().then((n) => { if (n) { grid.render(); state.mixtapes?.refresh?.(); } }).catch(() => {});
+
+  // Radio: real stations via an <audio> element. While one plays the vinyl bus is
+  // muted (a live stream has no spiral to scrub); stopping restores it.
+  const radio = new RadioUI({
+    onActive: (on) => { state.radioOn = on; state.engine.setPlaying(!on); },
+    aiHost: makeAiHost(library), // You Radio (src/radio/offline) plays your library through this engine
+  });
+  radio.mount(el('paneRadio'));
+  foreignPlaybackHook = () => radio.foreignPlayback();
+
+  // Tabs: Albums | Mixtapes | Radio.
+  const panes = { albums: el('paneAlbums'), mixtapes: el('paneMixtapes'), radio: el('paneRadio') };
+  el('libTabs').addEventListener('click', (e) => {
+    const tab = e.target.closest('[data-tab]');
+    if (!tab) return;
+    el('libTabs').querySelectorAll('.lib-tab').forEach((b) => b.classList.toggle('active', b === tab));
+    for (const [k, p] of Object.entries(panes)) p.classList.toggle('hidden', k !== tab.dataset.tab);
+    if (tab.dataset.tab === 'radio') radio.activate();
+  });
+
+  // Mixtapes: custom playlists (pure model in mixtape.js; this is wiring only).
+  state.mixtapes = new MixtapeUI({
+    getLibraryTracks: () => library.tracks,
+    closeLibrary,
+    playFile: async (file) => {
+      await state.engine.resume();
+      const track = await loadFile(file, state.engine.ctx);
+      await loadTrack(track);
+      return track;
+    },
+    relink: () => library.relink(),
+    // Cassette player hooks (src/mixtape-ui.js): real seek / pause / wind-mute / level meter.
+    seekFrac: (frac) => {
+      if (!(state.T > 0)) return;
+      state.engine.seek(clamp(frac, 0, 0.99) * state.T * state.engine.sampleRate);
+      state.reachedEnd = false;
+    },
+    setPaused: (on) => { state.braking = on; el('brakePad').classList.toggle('active', on); },
+    muteBus: (on) => state.engine.setPlaying(!on && !state.radioOn),
+    levelAt: (t, T) => {
+      const e = state.envelope;
+      return e && T > 0 ? e[Math.max(0, Math.min(e.length - 1, Math.floor((t / T) * e.length)))] : 0;
+    },
+    // Gapless hooks (queue.js model; AudioEngine.prepareNext/joinNext).
+    decodeNext: async (file) => {
+      const track = await loadFile(file, state.engine.ctx, { copy: false });
+      const [L, R] = track.channels;
+      track.envelope = computeEnvelope((i) => (L[i] + R[i]) * 0.5, track.frames, 1024); // off the join path
+      return track;
+    },
+    prepareNext: (track) => state.engine.prepareNext(track.channels, track.frames),
+    joinNext: (fadeSec) => state.engine.joinNext({ fadeSec }),
+    dropNext: () => state.engine.dropNext(),
+    adoptTrack: (track) => {
+      // The engine already switched decks; mirror loadTrack()'s non-engine state.
+      state.track = { frames: track.frames, name: track.name, channels: null };
+      state.frames = track.frames;
+      state.T = track.frames / state.engine.sampleRate;
+      state.envelope = track.envelope;
+      state.reachedEnd = false;
+      el('trackName').textContent = track.name;
+      rebake();
+    },
+  });
+  state.mixtapes.mount(el('mtList'), el('mtNew'), el('mtImport'));
 
   el('btnLibrary').addEventListener('click', () => { openLibrary(); grid.render(); });
   el('libClose').addEventListener('click', closeLibrary);
@@ -581,6 +1007,14 @@ function installLibrary() {
     grid.render();
   });
 
+  el('kindChips').addEventListener('click', (e) => {
+    const chip = e.target.closest('[data-kind]');
+    if (!chip) return;
+    el('kindChips').querySelectorAll('.sort-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    grid.setKind(chip.dataset.kind);
+  });
+
   el('sortChips').addEventListener('click', (e) => {
     const chip = e.target.closest('[data-sort]');
     if (!chip) return;
@@ -588,6 +1022,53 @@ function installLibrary() {
     chip.classList.add('active');
     grid.setSort(chip.dataset.sort);
   });
+}
+
+// ── You Radio host port (src/radio/offline/station-session.js) ────────────────
+// The offline AI station plays the user's library through THIS engine (gapless prepareNext/joinNext, same as
+// mixtapes) and ducks the music bus under live speech. All logic lives in src/radio/offline; this is glue only.
+function makeAiHost(library) {
+  const eng = () => state.engine;
+  return {
+    getTracks: () => library.tracks,
+    busParam: () => eng().musicBus.gain,
+    audioNow: () => eng().ctx.currentTime,
+    owner: () => engineGate.token(),
+    cancelPending: () => { engineGate.bump(); }, // halt(): a decode still in flight must not install its song afterwards
+    async load(libTrack) {
+      const tok = engineGate.token();
+      await eng().resume();
+      const track = await loadFile(libTrack.file, eng().ctx);
+      engineGate.check(tok);
+      await loadTrack(track, null, true);
+      return { durationSec: state.T, envelope: state.envelope, bytes: track.frames * 8 };
+    },
+    async decodeNext(libTrack) {
+      const tok = engineGate.token();
+      const track = await loadFile(libTrack.file, eng().ctx, { copy: false });
+      engineGate.check(tok);
+      const [L, R] = track.channels;
+      const envelope = computeEnvelope((i) => (L[i] + R[i]) * 0.5, track.frames, 1024);
+      return { track, tok, envelope, name: track.name, frames: track.frames, durationSec: track.frames / eng().sampleRate, bytes: track.frames * 8 };
+    },
+    async prepareNext(h) { engineGate.check(h.tok); await eng().prepareNext(h.track.channels, h.track.frames); h.track.channels = null; }, // the engine copied the PCM
+    joinNext: (fadeSec) => eng().joinNext({ fadeSec }),
+    dropNext: () => eng().dropNext(),
+    adopt(h) { // the engine already switched decks; mirror loadTrack()'s non-engine state
+      state.track = { frames: h.frames, name: h.name, channels: null };
+      state.frames = h.frames;
+      state.T = h.frames / eng().sampleRate;
+      state.envelope = h.envelope;
+      state.reachedEnd = false;
+      el('trackName').textContent = h.name;
+      rebake();
+    },
+    position: () => ({ t: eng().position / eng().sampleRate, T: state.T }),
+    async halt() { // stop = the needle rests in the runout groove; the vinyl bus stays alive for the next record
+      eng().dropNext();
+      eng().seek(Math.max(0, state.frames - 2));
+    },
+  };
 }
 
 boot().catch((err) => {

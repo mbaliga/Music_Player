@@ -112,6 +112,16 @@ explicit: **decide the stack by feel on-device, not on theory.**
   Oboe/AAudio. Because the engine is the only swappable layer, that is not a
   rewrite.
 
+## Albums, Mixtapes, Radio
+
+Library metadata (tags incl. track/disc numbers, no audio) is remembered between sessions; tracks show "needs re-link" until you re-pick the folder (`src/tags.js`, `src/libindex.js`; see HANDOFF.md "Tags, library persistence, gapless mixtapes").
+
+The library overlay (`≡`) has three tabs:
+
+- **Albums.** Vinyls and CDs are albums (`src/albums.js`, pure + tested). An album, or any folder in a track's path, labelled `CD1`/`CD 2`/`Disc 2`/`Disk_1` (case-insensitive, 1-2 digit number) is a **CD**, one per disc for multi-disc sets; everything else is a **Vinyl**. Cards show the distinction (sleeve + peeking record vs. jewel case + disc); filter All/Vinyl/CD. A CD currently reuses the vinyl platter to play.
+- **Mixtapes.** Custom playlists (`src/mixtape.js`, v3) dressed as cassettes (`src/cassette/`, the owner's cassette system): 37 styles (opaque, clear, flat, glass), a label editor (title, tagline, by, side + note, 4 pens, ink colour, wear, gloss), a Stack / Spines shelf, a back-of-case view and two player skins (Deck, Player). Songs are real library refs (stable id; v1/v2 tapes migrate; "needs re-link" states keep working). Playback is the real gapless queue: while playing you see the mixtape name only (the cassette; the reels change size as the tape runs, area-conserving, omega = v/r); tap the cassette for the song list; hold the left/right reel (or the deck's rew/ff keys) to wind and seek. Pen fonts are bundled (`src/fonts/`, nothing fetched). JSON export/import with a verbatim preview (also reads the standalone Mixtape Deck data); saved in `localStorage`.
+- **Radio.** Real public stations from the [Radio Browser](https://www.radio-browser.info) directory (`src/radio.js`, `src/radio-player.js`), streamed via an `<audio>` element. Star stations to keep Favourites; Recents and one-tap Resume sit at the top of the tab (`src/radio-store.js`, stored locally with a snapshot so they play even if the directory is down). Dead streams try the directory's alternate URL, and a dropped stream reconnects with backoff. Needs a network; degrades to a retry message. `src/stations.js` is the seam where AI/"You" stations plug in. **You Radio (experimental, off by default):** Radio tab > Settings > "AI stations (experimental)" adds a station of automated hosts who talk between your own songs. The lines are templated and written on the phone, spoken by its built-in voice (captions on screen, labelled "Automated host"), over your library played through the normal engine; it needs no network and no account (`src/radio/offline/`). **Pre-written shows** (always on, no flag): six fictional stations with hosts who talk between your own songs, written in advance so they work with no internet; pick them from the dial at the top of the Radio tab (`src/radio/canned/`, `content/stations/`). They are labelled "Pre-written show" and captioned; voices are the phone's own speech (recordings are supported but none exist yet).
+
 ## Not in v0 (later phases)
 
 Local library + import, off-thread envelope precompute, per-track procedural
@@ -125,3 +135,11 @@ Platform packaging (Ubuntu Touch, Linux, iOS/iPadOS, macOS, Windows) is planned,
 
 - The **pure model layer** (spiral/platter physics, `src/model.js`) is intentionally isolated for a later native (Oboe/AAudio) swap — **keep it portable** (zero browser deps).
 - **COOP/COEP headers** are required for SharedArrayBuffer — the dev server (`serve.py`) sets them; don't drop them.
+
+## Licence
+
+Source-available, free for noncommercial use under the [PolyForm Noncommercial License 1.0.0](LICENSE). If you make money with it, you need a commercial licence: see [COMMERCIAL-LICENSE.md](COMMERCIAL-LICENSE.md).
+
+
+## Track jumping and the CD view
+Vinyl albums are one record with a band per track: hold the tonearm (outer edge) to see a ghost needle, drop it in the gap between grooves to start the next track, or flick sideways for next/previous. CD albums get a separate player (rainbow disc, track ring, tap to skip; no scrubbing). Details and tuning knobs: HANDOFF.md.

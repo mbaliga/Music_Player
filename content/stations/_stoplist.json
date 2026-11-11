@@ -1,0 +1,35 @@
+{
+  "_doc": "SEED stoplist for scripts/review-content.mjs (canned-review.md section 1.5). It is NOT a clearance: it holds only generic terms, brand-suffix patterns and a few ubiquitous real-brand tells that anyone can recognise without searching, plus profanity. It deliberately contains NO station names or call-sign lists from real radio or from games (that needs a one-off human search; see docs/CANNED_REVIEW_FINDINGS.md 'Not done'). Extend it, do not trust its silence. Entries are matched case-insensitively as whole words unless marked as a pattern.",
+  "version": 1,
+  "seed": true,
+  "brandSuffixPatterns": [
+    "\\b(?:Inc|Incorporated|Corp|Corporation|LLC|Ltd|Limited|GmbH|PLC)\\b\\.?",
+    "\\bCo\\.",
+    "[\\u00AE\\u2122\\u00A9]",
+    "\\b[A-Z][a-z]+(?:\\s[A-Z][a-z]+)?\\s(?:Brands|Industries|Enterprises|Holdings|Group)\\b"
+  ],
+  "callSignPattern": "\\b[KW][A-Z]{2,3}(?:-FM|-AM)?\\b",
+  "brands": [
+    "google", "amazon", "facebook", "instagram", "twitter", "youtube", "netflix", "spotify", "microsoft", "iphone", "android",
+    "coca-cola", "coca cola", "pepsi", "mcdonald", "starbucks", "walmart", "ikea", "nike", "adidas", "uber", "tesla", "toyota", "ford",
+    "disney", "marvel", "nintendo", "playstation", "xbox", "lego", "barbie", "kleenex", "band-aid", "velcro", "post-it", "taser", "jacuzzi"
+  ],
+  "realProductCategoriesForAds": [
+    "phone", "smartphone", "car", "truck", "insurance", "bank", "loan", "mortgage", "credit card", "beer", "wine", "whiskey", "vodka", "pizza", "burger",
+    "soda", "cola", "coffee chain", "airline", "hotel", "mattress", "gym", "supplement", "vitamin", "pharmacy", "medicine", "laptop", "app", "subscription",
+    "streaming", "dating", "casino", "betting", "lottery", "law firm", "lawyer", "cryptocurrency", "bitcoin", "mobile plan", "internet provider"
+  ],
+  "songAdjacentClaimWords": [
+    "classic", "great", "amazing", "awesome", "favorite", "favourite", "masterpiece", "hit", "best", "underrated", "legendary", "timeless", "banger",
+    "gem", "iconic", "beautiful", "fantastic", "incredible", "perfect", "brilliant", "genius"
+  ],
+  "gameRadioTells": [
+    "chatterbox", "radio free", "talk radio", "shock jock", "the doctor will see you", "lifestyle guru"
+  ],
+  "profanityStrong": ["fuck", "shit", "bitch", "bastard", "asshole", "cunt", "dick", "piss", "whore", "slut"],
+  "profanityMild": ["damn", "hell", "crap", "ass", "sucks"],
+  "realCities": [
+    "new york", "los angeles", "chicago", "houston", "phoenix", "philadelphia", "san francisco", "seattle", "boston", "miami", "atlanta", "dallas", "denver",
+    "london", "manchester", "liverpool", "paris", "berlin", "madrid", "rome", "tokyo", "sydney", "melbourne", "toronto", "vancouver", "dublin", "edinburgh", "glasgow", "mumbai", "delhi"
+  ]
+}

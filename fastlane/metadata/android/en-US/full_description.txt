@@ -1,0 +1,30 @@
+One disc, one needle, and your finger on it. Runout turns a piece of audio into
+something you play with your hand rather than something you press play on.
+
+There is no progress bar. Position on the disc is position in the sound,
+continuously, so scrubbing feels like it is on the material rather than commanding
+a player that responds a moment later.
+
+WHAT IT IS
+• A single record you can scrub, hold, nudge and release.
+• Groove banding that shows the shape of the music, so you can see where the loud
+  part is before you get there.
+• Drop in any audio file from your device and play it this way.
+
+WHAT IT IS NOT
+It is not a music player, a library or a streaming client. It has no playlists and
+no catalogue. It is an instrument for one piece of audio at a time.
+
+BUILT AROUND LATENCY
+The whole point is the feel, so the audio path is built for it: the scrub target is
+under thirty milliseconds of perceived delay. If that number is not met the thing
+is not worth shipping, which is why it is the first thing the project measured.
+
+QUIET BY DESIGN
+• No ads, no accounts, no analytics, no tracking.
+• Your audio files stay on your device. Nothing is uploaded.
+
+Runout ships with a synthesised test pressing so there is something to play
+immediately. No copyrighted audio is bundled.
+
+This is an early version, focused entirely on whether the feel is right.

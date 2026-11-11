@@ -54,7 +54,9 @@ class RunoutProcessor extends AudioWorkletProcessor {
     if (msg.type === 'rate') this.targetRate = msg.value;
     else if (msg.type === 'seek') this.readPosition = msg.value;
     else if (msg.type === 'playing') this.playing = msg.value ? 1 : 0;
-    else if (msg.type === 'pcm') {
+    else if (msg.type === 'free') { // gapless hook: drop the PCM so it can be collected
+      this.pcm = new Float32Array(0); this.frames = 0; this.playing = 0; this.control = null;
+    } else if (msg.type === 'pcm') {
       this.pcm = new Float32Array(msg.pcm);
       this.frames = msg.frames;
       this.channels = msg.channels;

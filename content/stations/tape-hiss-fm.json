@@ -1,0 +1,4423 @@
+{
+  "v": 1,
+  "station": {
+    "id": "tape-hiss-fm",
+    "name": "Tape Hiss FM",
+    "tagline": "Nine watts of whatever this is.",
+    "dial": "88.3",
+    "vibe": "A college station in a basement, run by people trying their absolute best long after everyone sensible has gone to bed.",
+    "daypart": [
+      "night",
+      "any"
+    ],
+    "contentRating": "PG-13",
+    "hosts": [
+      {
+        "id": "wren",
+        "name": "Wren Castellano",
+        "role": "host",
+        "persona": "Third-year philosophy minor who has been told by four separate listeners that she sounds like she is reading her own ransom note. She is fine. She simply refuses to raise her voice above library level and reads every public-service announcement like a eulogy. She loves the lost-and-found bin, anyone who returns a library book on time, and the station's broken wall clock, which she considers honest. She hates exclamation points, the word 'vibes', and Lionel the vending machine. Rates things out of strange numbers and closes bits with a flat 'Anyway.'",
+        "voice": {
+          "genderHint": "female",
+          "ageHint": "young",
+          "accent": "neutral-US",
+          "style": "deadpan, low, dry",
+          "rate": 0.92,
+          "pitch": 0.95
+        }
+      },
+      {
+        "id": "dez",
+        "name": "Desmond 'Dez' Pryor",
+        "role": "co-host",
+        "persona": "First-year volunteer and the only person at the station who owns a laminated binder. Earnest to the point of radiance, he writes every link on index cards and then drops them. Treats the nine-watt transmitter like the bridge of a starship and the station handbook, a single photocopied page, like scripture. He is afraid of dead air the way other people are afraid of sharks. Tics: 'Quick note,' 'per the handbook,' and saying the frequency with every decimal lovingly pronounced.",
+        "voice": {
+          "genderHint": "male",
+          "ageHint": "young",
+          "accent": "neutral-US",
+          "style": "bright, eager, slightly too fast",
+          "rate": 1.12,
+          "pitch": 1.05
+        }
+      },
+      {
+        "id": "thistle",
+        "name": "Thistle Abernathy",
+        "role": "host",
+        "persona": "Senior, exchange student, and host of 'The Quiet Hour', a show-within-the-show that lasts about four minutes. She narrates the student lounge as a hushed nature documentary, treating first-years at the microwave as a migrating herd. Utterly serious about it. She never laughs on air and believes the lounge vending area is the most dramatic ecosystem on campus.",
+        "voice": {
+          "genderHint": "female",
+          "ageHint": "young",
+          "accent": "neutral-UK",
+          "style": "hushed, breathy, documentary",
+          "rate": 0.84,
+          "pitch": 0.95
+        }
+      },
+      {
+        "id": "venn",
+        "name": "Professor Hollis Venn",
+        "role": "caller",
+        "persona": "The station's faculty advisor, who listens from home specifically to catch violations of a rulebook nobody else has seen. Retired from the music department in spirit if not on paper. Gruff, exact, secretly delighted by the station, and incapable of ending a phone call.",
+        "voice": {
+          "genderHint": "male",
+          "ageHint": "older",
+          "accent": "neutral-US",
+          "style": "gravelly, clipped",
+          "rate": 0.9,
+          "pitch": 0.85
+        }
+      },
+      {
+        "id": "teddy",
+        "name": "Teddy",
+        "role": "caller",
+        "persona": "An undergraduate who calls from a canoe in the middle of the campus duck pond, which is exactly where the signal gives out. Nobody knows why he is in the canoe. He is cheerful, mumbly, and treats the canoe as a perfectly normal address.",
+        "voice": {
+          "genderHint": "male",
+          "ageHint": "young",
+          "accent": "neutral-US",
+          "style": "mumbly, cheerful",
+          "rate": 0.98,
+          "pitch": 1
+        }
+      },
+      {
+        "id": "ambrose",
+        "name": "Ambrose from Facilities",
+        "role": "caller",
+        "persona": "Night-shift facilities worker who has heard everything the station has ever broadcast, mostly through a ceiling vent. Warm, patient, philosophical about mops. Knows where every lost object on campus actually is.",
+        "voice": {
+          "genderHint": "male",
+          "ageHint": "older",
+          "accent": "neutral-US",
+          "style": "warm, unhurried",
+          "rate": 0.92,
+          "pitch": 0.92
+        }
+      },
+      {
+        "id": "noor",
+        "name": "Noor",
+        "role": "caller",
+        "persona": "A sophomore who calls in to report lost-and-found items with the precision of an insurance adjuster. Brisk, bright, keeps a spreadsheet. Also plays small parts in station skits when someone is needed.",
+        "voice": {
+          "genderHint": "female",
+          "ageHint": "young",
+          "accent": "neutral-US",
+          "style": "brisk, bright",
+          "rate": 1.08,
+          "pitch": 1.08
+        }
+      }
+    ]
+  },
+  "segments": [
+    {
+      "id": "th-sign-on-1",
+      "kind": "sign_on",
+      "hosts": [
+        "wren"
+      ],
+      "lines": [
+        {
+          "host": "wren",
+          "text": "This is Tape Hiss FM, eighty-eight point three. We are on the air. Technically.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "wren",
+          "text": "If you can hear this, you are inside a very small circle, and I respect that.",
+          "pauseAfterMs": 0,
+          "direction": "flat, unhurried, almost a sigh"
+        }
+      ],
+      "estSec": 12,
+      "tags": [
+        "night",
+        "opener"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-sign-on-2",
+      "kind": "sign_on",
+      "hosts": [
+        "dez"
+      ],
+      "lines": [
+        {
+          "host": "dez",
+          "text": "Good evening and welcome to Tape Hiss FM, eighty-eight point three, broadcasting at a full nine watts.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "dez",
+          "text": "Quick note: please do not walk in front of the antenna. It is on the roof and also it is kind of tired.",
+          "pauseAfterMs": 0,
+          "direction": "bright, rehearsed, rushing the last sentence"
+        }
+      ],
+      "estSec": 16,
+      "tags": [
+        "night",
+        "opener",
+        "gag:nine-watts"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-id-1",
+      "kind": "station_id",
+      "hosts": [
+        "wren"
+      ],
+      "lines": [
+        {
+          "host": "wren",
+          "text": "Tape Hiss FM. Eighty-eight point three. We were here before you tuned in, and we will be here after, slightly worse.",
+          "pauseAfterMs": 0,
+          "direction": "deadpan"
+        }
+      ],
+      "estSec": 8,
+      "tags": [
+        "any"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-id-2",
+      "kind": "station_id",
+      "hosts": [
+        "dez"
+      ],
+      "lines": [
+        {
+          "host": "dez",
+          "text": "You are listening to eighty-eight. Point. Three. Tape Hiss FM. I said all the numbers. Per the handbook.",
+          "pauseAfterMs": 0,
+          "direction": "proud, savoring each number"
+        }
+      ],
+      "estSec": 7,
+      "tags": [
+        "any"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-id-3",
+      "kind": "station_id",
+      "hosts": [
+        "wren",
+        "dez"
+      ],
+      "lines": [
+        {
+          "host": "wren",
+          "text": "Tape Hiss FM, eighty-eight point three.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "dez",
+          "text": "Reaching the dining hall, the north stairwell, and one specific bench.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "The bench knows what it did.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 9,
+      "tags": [
+        "any",
+        "gag:nine-watts"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-id-4",
+      "kind": "station_id",
+      "hosts": [
+        "thistle"
+      ],
+      "lines": [
+        {
+          "host": "thistle",
+          "text": "You are listening to Tape Hiss FM.",
+          "pauseAfterMs": 600
+        },
+        {
+          "host": "thistle",
+          "text": "Remain very still. The music cannot see you if you do not move.",
+          "pauseAfterMs": 0,
+          "direction": "whispered, documentary hush"
+        }
+      ],
+      "estSec": 8,
+      "tags": [
+        "night"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-jingle-1",
+      "kind": "jingle",
+      "hosts": [
+        "dez"
+      ],
+      "lines": [
+        {
+          "host": "dez",
+          "text": "Tape Hiss F M!",
+          "pauseAfterMs": 200
+        },
+        {
+          "host": "dez",
+          "text": "The sound of a basement!",
+          "pauseAfterMs": 200
+        },
+        {
+          "host": "dez",
+          "text": "Doing its best!",
+          "pauseAfterMs": 0,
+          "direction": "sung-spoken, three rising notes, huge effort"
+        }
+      ],
+      "estSec": 5,
+      "tags": [
+        "any"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-jingle-2",
+      "kind": "jingle",
+      "hosts": [
+        "wren"
+      ],
+      "lines": [
+        {
+          "host": "wren",
+          "text": "Tape Hiss.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "wren",
+          "text": "It's in the name.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "wren",
+          "text": "We warned you.",
+          "pauseAfterMs": 0,
+          "direction": "completely flat, each phrase on one note"
+        }
+      ],
+      "estSec": 4,
+      "tags": [
+        "any"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-jingle-3",
+      "kind": "jingle",
+      "hosts": [
+        "dez",
+        "wren"
+      ],
+      "lines": [
+        {
+          "host": "dez",
+          "text": "Eighty-eight point three, from the room with the hum!",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "wren",
+          "text": "The hum is Lionel. Lionel is a vending machine. Do not sing about Lionel.",
+          "pauseAfterMs": 0,
+          "direction": "dez sings, wren interrupts dryly"
+        }
+      ],
+      "estSec": 9,
+      "tags": [
+        "any",
+        "gag:lionel"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-promo-quiet-hour",
+      "kind": "promo",
+      "hosts": [
+        "wren"
+      ],
+      "lines": [
+        {
+          "host": "wren",
+          "text": "Coming up later on Tape Hiss FM, The Quiet Hour with Thistle Abernathy.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "wren",
+          "text": "It is not an hour. It is about four minutes. It is the best four minutes we have.",
+          "pauseAfterMs": 0,
+          "direction": "the warmest wren gets, which is not very"
+        }
+      ],
+      "estSec": 12,
+      "tags": [
+        "night",
+        "gag:quiet-hour"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-promo-chair",
+      "kind": "promo",
+      "hosts": [
+        "dez"
+      ],
+      "lines": [
+        {
+          "host": "dez",
+          "text": "The Tape Hiss FM chair drive continues. Our goal is one chair. A chair with four legs.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "dez",
+          "text": "We currently have a chair with three legs and a strong opinion.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 11,
+      "tags": [
+        "any",
+        "gag:chair-drive"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-liner-1",
+      "kind": "liner",
+      "hosts": [
+        "wren"
+      ],
+      "lines": [
+        {
+          "host": "wren",
+          "text": "Tape Hiss FM. Music for people who were going to go to bed an hour ago and still might.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 7,
+      "tags": [
+        "night"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-liner-2",
+      "kind": "liner",
+      "hosts": [
+        "wren"
+      ],
+      "lines": [
+        {
+          "host": "wren",
+          "text": "Tape Hiss FM, where every lost object eventually becomes a segment.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 4,
+      "tags": [
+        "any",
+        "gag:lost-found"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-sign-off-1",
+      "kind": "sign_off",
+      "hosts": [
+        "wren"
+      ],
+      "lines": [
+        {
+          "host": "wren",
+          "text": "That's the end of our shift here at Tape Hiss FM.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "wren",
+          "text": "Return your library books. Drink some water. Turn off the light in the hall if you were the one who turned it on.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "wren",
+          "text": "Anyway.",
+          "pauseAfterMs": 0,
+          "direction": "slow, warm in a buried way"
+        }
+      ],
+      "estSec": 14,
+      "tags": [
+        "night",
+        "closer"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-sign-off-2",
+      "kind": "sign_off",
+      "hosts": [
+        "dez"
+      ],
+      "lines": [
+        {
+          "host": "dez",
+          "text": "That's it for us. Per the handbook, I'm supposed to say something memorable.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "dez",
+          "text": "Lionel, if you can hear this, we forgive you for the crackers.",
+          "pauseAfterMs": 0,
+          "direction": "sincere, slightly choked up for no reason"
+        }
+      ],
+      "estSec": 10,
+      "tags": [
+        "night",
+        "closer",
+        "gag:lionel"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-backsell-rating",
+      "kind": "transition",
+      "hosts": [
+        "wren",
+        "dez"
+      ],
+      "lines": [
+        {
+          "host": "wren",
+          "text": "That was {prevTitle} by {prevArtist}.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "wren",
+          "text": "I'm giving it five out of seven. Not because anything was wrong. Seven is just a very generous number and I'm not ready to give all of it to anyone.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "wren",
+          "text": "Dez, what would you give it?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "I would give it a standing ovation, but the chair is broken, so I'll give it a sitting ovation, which is just sitting.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "Noted.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 26,
+      "tags": [
+        "any"
+      ],
+      "usesSlots": [
+        "prevTitle",
+        "prevArtist"
+      ],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-backsell-rating-fb",
+      "kind": "transition",
+      "hosts": [
+        "wren",
+        "dez"
+      ],
+      "lines": [
+        {
+          "host": "wren",
+          "text": "That last one gets five out of seven from me.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "wren",
+          "text": "Not because anything was wrong. Seven is just a very generous number and I'm not ready to give all of it to anyone.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "wren",
+          "text": "Dez, what would you give it?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "I would give it a standing ovation, but the chair is broken, so I'll give it a sitting ovation, which is just sitting.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "Noted.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 26,
+      "tags": [
+        "any"
+      ],
+      "usesSlots": [],
+      "fallbackOf": "th-backsell-rating",
+      "weight": 1
+    },
+    {
+      "id": "th-intro-cards",
+      "kind": "transition",
+      "hosts": [
+        "dez",
+        "wren"
+      ],
+      "lines": [
+        {
+          "host": "dez",
+          "text": "Okay. I made an index card for this. It says, and I'm reading directly: \"Next up, {nextTitle} by {nextArtist}.\"",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "dez",
+          "text": "And then underneath I wrote \"say something cool,\" and then underneath that I wrote \"no, not that.\"",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "What was \"that\"?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "I don't remember, which means past me really protected present me. Here it is.",
+          "pauseAfterMs": 0,
+          "direction": "dez reads from the card, gets flustered"
+        }
+      ],
+      "estSec": 21,
+      "tags": [
+        "any",
+        "dez"
+      ],
+      "usesSlots": [
+        "nextTitle",
+        "nextArtist"
+      ],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-intro-cards-fb",
+      "kind": "transition",
+      "hosts": [
+        "dez",
+        "wren"
+      ],
+      "lines": [
+        {
+          "host": "dez",
+          "text": "Okay. I made an index card for the next one. It says, and I'm reading directly: \"Introduce the next song with confidence.\"",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "dez",
+          "text": "And then underneath I wrote \"say something cool,\" and then underneath that I wrote \"no, not that.\"",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "What was \"that\"?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "I don't remember, which means past me really protected present me. Here it is.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 23,
+      "tags": [
+        "any",
+        "dez"
+      ],
+      "usesSlots": [],
+      "fallbackOf": "th-intro-cards",
+      "weight": 1
+    },
+    {
+      "id": "th-album-facts",
+      "kind": "transition",
+      "hosts": [
+        "dez",
+        "wren"
+      ],
+      "lines": [
+        {
+          "host": "dez",
+          "text": "Quick note. Per the handbook, when we play something from an album, we're supposed to share a fact about the album.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "dez",
+          "text": "That last one was from {album}, and I have no facts about {album}.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "dez",
+          "text": "I do have one fact about the station stapler, which is that it has never once stapled. It just bites the paper and lets go.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "That's not a fact. That's a character study.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "The handbook doesn't specify.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 29,
+      "tags": [
+        "any",
+        "dez"
+      ],
+      "usesSlots": [
+        "album"
+      ],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-album-facts-fb",
+      "kind": "transition",
+      "hosts": [
+        "dez",
+        "wren"
+      ],
+      "lines": [
+        {
+          "host": "dez",
+          "text": "Quick note. Per the handbook, after every song we're supposed to share a fact about the record.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "dez",
+          "text": "I have no facts about the record.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "dez",
+          "text": "I do have one fact about the station stapler, which is that it has never once stapled. It just bites the paper and lets go.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "That's not a fact. That's a character study.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "The handbook doesn't specify.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 25,
+      "tags": [
+        "any",
+        "dez"
+      ],
+      "usesSlots": [],
+      "fallbackOf": "th-album-facts",
+      "weight": 1
+    },
+    {
+      "id": "th-prev-lost-found",
+      "kind": "transition",
+      "hosts": [
+        "wren"
+      ],
+      "lines": [
+        {
+          "host": "wren",
+          "text": "Adding to tonight's lost and found: if you had {prevTitle} stuck in your head before the song started, it's been returned to you. Please collect it from the front desk of your own skull.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "wren",
+          "text": "No questions asked. A few questions implied.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 16,
+      "tags": [
+        "any",
+        "gag:lost-found"
+      ],
+      "usesSlots": [
+        "prevTitle"
+      ],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-prev-lost-found-fb",
+      "kind": "transition",
+      "hosts": [
+        "wren"
+      ],
+      "lines": [
+        {
+          "host": "wren",
+          "text": "Adding to tonight's lost and found: if you had that last song stuck in your head before it even started, it's been returned to you. Please collect it from the front desk of your own skull.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "wren",
+          "text": "No questions asked. A few questions implied.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 17,
+      "tags": [
+        "any",
+        "gag:lost-found"
+      ],
+      "usesSlots": [],
+      "fallbackOf": "th-prev-lost-found",
+      "weight": 1
+    },
+    {
+      "id": "th-next-psa",
+      "kind": "transition",
+      "hosts": [
+        "wren"
+      ],
+      "lines": [
+        {
+          "host": "wren",
+          "text": "In a moment, {nextArtist}.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "wren",
+          "text": "But first, a public-service announcement. The stairs in the old library have always been there. They are not new. You are just looking up more.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "wren",
+          "text": "Here's {nextTitle}.",
+          "pauseAfterMs": 0,
+          "direction": "eulogy voice for the PSA"
+        }
+      ],
+      "estSec": 13,
+      "tags": [
+        "night",
+        "psa"
+      ],
+      "usesSlots": [
+        "nextArtist",
+        "nextTitle"
+      ],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-next-psa-fb",
+      "kind": "transition",
+      "hosts": [
+        "wren"
+      ],
+      "lines": [
+        {
+          "host": "wren",
+          "text": "In a moment, more music.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "wren",
+          "text": "But first, a public-service announcement. The stairs in the old library have always been there. They are not new. You are just looking up more.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "wren",
+          "text": "Here it comes.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 13,
+      "tags": [
+        "night",
+        "psa"
+      ],
+      "usesSlots": [],
+      "fallbackOf": "th-next-psa",
+      "weight": 1
+    },
+    {
+      "id": "th-thistle-ending",
+      "kind": "transition",
+      "hosts": [
+        "thistle"
+      ],
+      "lines": [
+        {
+          "host": "thistle",
+          "text": "And so {prevTitle} comes to the end of its brief life.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "thistle",
+          "text": "It does not resist. It simply becomes quieter, and then it is gone, and a new song, {nextTitle}, steps out of the tall grass.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "thistle",
+          "text": "This is nature. We do not interfere.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 17,
+      "tags": [
+        "night",
+        "gag:quiet-hour"
+      ],
+      "usesSlots": [
+        "prevTitle",
+        "nextTitle"
+      ],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-thistle-ending-fb",
+      "kind": "transition",
+      "hosts": [
+        "thistle"
+      ],
+      "lines": [
+        {
+          "host": "thistle",
+          "text": "And so the song comes to the end of its brief life.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "thistle",
+          "text": "It does not resist. It simply becomes quieter, and then it is gone, and a new song steps out of the tall grass.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "thistle",
+          "text": "This is nature. We do not interfere.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 17,
+      "tags": [
+        "night",
+        "gag:quiet-hour"
+      ],
+      "usesSlots": [],
+      "fallbackOf": "th-thistle-ending",
+      "weight": 1
+    },
+    {
+      "id": "th-teddy-request",
+      "kind": "callin",
+      "hosts": [
+        "dez",
+        "wren"
+      ],
+      "lines": [
+        {
+          "host": "dez",
+          "text": "We got a request earlier from Teddy, calling as usual from the canoe in the middle of the duck pond.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "dez",
+          "text": "Teddy asked for something by {nextArtist}, \"or a sandwich, whichever is closer.\"",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "We can't send a sandwich into the pond.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "We tried. Handbook says requests are requests. So, Teddy, the song is coming. The sandwich is floating. Here's {nextTitle}.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 24,
+      "tags": [
+        "any",
+        "gag:nine-watts",
+        "teddy"
+      ],
+      "usesSlots": [
+        "nextArtist",
+        "nextTitle"
+      ],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-teddy-request-fb",
+      "kind": "callin",
+      "hosts": [
+        "dez",
+        "wren"
+      ],
+      "lines": [
+        {
+          "host": "dez",
+          "text": "We got a request earlier from Teddy, calling as usual from the canoe in the middle of the duck pond.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "dez",
+          "text": "Teddy asked for \"the next song, or a sandwich, whichever is closer.\"",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "We can't send a sandwich into the pond.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "We tried. Handbook says requests are requests. So, Teddy, the song is coming. The sandwich is floating.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 23,
+      "tags": [
+        "any",
+        "gag:nine-watts",
+        "teddy"
+      ],
+      "usesSlots": [],
+      "fallbackOf": "th-teddy-request",
+      "weight": 1
+    },
+    {
+      "id": "th-lionel-hum",
+      "kind": "banter",
+      "hosts": [
+        "dez",
+        "wren"
+      ],
+      "lines": [
+        {
+          "host": "dez",
+          "text": "Did anyone else notice that during {prevTitle}, Lionel was humming in the same key?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "Lionel is a vending machine, Dez. Lionel hums in one key. It's the key of refrigeration.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "I'm just saying he seemed engaged.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "Lionel has dispensed exactly one item in three years. It was a packet of unsalted soup crackers and he made someone wait for it. He is not engaged. He is plotting.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 27,
+      "tags": [
+        "night",
+        "gag:lionel"
+      ],
+      "usesSlots": [
+        "prevTitle"
+      ],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-lionel-hum-fb",
+      "kind": "banter",
+      "hosts": [
+        "dez",
+        "wren"
+      ],
+      "lines": [
+        {
+          "host": "dez",
+          "text": "Did anyone else notice that during that last song, Lionel was humming in the same key?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "Lionel is a vending machine, Dez. Lionel hums in one key. It's the key of refrigeration.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "I'm just saying he seemed engaged.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "Lionel has dispensed exactly one item in three years. It was a packet of unsalted soup crackers and he made someone wait for it. He is not engaged. He is plotting.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 28,
+      "tags": [
+        "night",
+        "gag:lionel"
+      ],
+      "usesSlots": [],
+      "fallbackOf": "th-lionel-hum",
+      "weight": 1
+    },
+    {
+      "id": "th-dedication-board",
+      "kind": "dedication",
+      "hosts": [
+        "wren"
+      ],
+      "lines": [
+        {
+          "host": "wren",
+          "text": "From the dedication board outside the studio, which is a sheet of paper taped to a door.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "wren",
+          "text": "This one says: \"To whoever keeps refilling the hallway stapler with paper clips. We know it's you. We don't know who you are. Please stop. Love, everyone.\"",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "wren",
+          "text": "For you, mysterious person, here's {nextTitle} by {nextArtist}.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 21,
+      "tags": [
+        "any"
+      ],
+      "usesSlots": [
+        "nextTitle",
+        "nextArtist"
+      ],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-dedication-board-fb",
+      "kind": "dedication",
+      "hosts": [
+        "wren"
+      ],
+      "lines": [
+        {
+          "host": "wren",
+          "text": "From the dedication board outside the studio, which is a sheet of paper taped to a door.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "wren",
+          "text": "This one says: \"To whoever keeps refilling the hallway stapler with paper clips. We know it's you. We don't know who you are. Please stop. Love, everyone.\"",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "wren",
+          "text": "This next one's for you, mysterious person.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 20,
+      "tags": [
+        "any"
+      ],
+      "usesSlots": [],
+      "fallbackOf": "th-dedication-board",
+      "weight": 1
+    },
+    {
+      "id": "th-six-degrees",
+      "kind": "banter",
+      "hosts": [
+        "wren",
+        "dez"
+      ],
+      "lines": [
+        {
+          "host": "wren",
+          "text": "I'm going to connect {prevArtist} to {nextArtist} in six steps.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "wren",
+          "text": "Step one. {prevArtist}. Step two. A song. Step three. Another song. Step four. This station. Step five. Me, sitting here. Step six. {nextArtist}.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "dez",
+          "text": "That's just the order of events.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "Most connections are. Here's {nextTitle}.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 18,
+      "tags": [
+        "any"
+      ],
+      "usesSlots": [
+        "prevArtist",
+        "nextArtist",
+        "nextTitle"
+      ],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-six-degrees-fb",
+      "kind": "banter",
+      "hosts": [
+        "wren",
+        "dez"
+      ],
+      "lines": [
+        {
+          "host": "wren",
+          "text": "I'm going to connect the last song to the next song in six steps.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "wren",
+          "text": "Step one. The last song. Step two. It ended. Step three. A short silence. Step four. This station. Step five. Me, sitting here. Step six. The next song.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "dez",
+          "text": "That's just the order of events.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "Most connections are.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 21,
+      "tags": [
+        "any"
+      ],
+      "usesSlots": [],
+      "fallbackOf": "th-six-degrees",
+      "weight": 1
+    },
+    {
+      "id": "th-handbook-next",
+      "kind": "transition",
+      "hosts": [
+        "dez",
+        "wren"
+      ],
+      "lines": [
+        {
+          "host": "dez",
+          "text": "Per the handbook, section one, which is also the only section: \"Tell the listener what's next.\"",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "dez",
+          "text": "What's next is {nextTitle} by {nextArtist}. Section one complete. I feel incredible.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "Section one also says \"do not eat over the board.\"",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "That was a muffin and it was an emergency.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 19,
+      "tags": [
+        "any",
+        "dez"
+      ],
+      "usesSlots": [
+        "nextTitle",
+        "nextArtist"
+      ],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-handbook-next-fb",
+      "kind": "transition",
+      "hosts": [
+        "dez",
+        "wren"
+      ],
+      "lines": [
+        {
+          "host": "dez",
+          "text": "Per the handbook, section one, which is also the only section: \"Tell the listener what's next.\"",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "dez",
+          "text": "What's next is a song. That's all the information on the card. Section one complete, mostly. I feel incredible.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "Section one also says \"do not eat over the board.\"",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "That was a muffin and it was an emergency.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 22,
+      "tags": [
+        "any",
+        "dez"
+      ],
+      "usesSlots": [],
+      "fallbackOf": "th-handbook-next",
+      "weight": 1
+    },
+    {
+      "id": "th-chair-trade",
+      "kind": "banter",
+      "hosts": [
+        "wren",
+        "dez"
+      ],
+      "lines": [
+        {
+          "host": "wren",
+          "text": "I would trade {prevTitle} for a working chair.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "dez",
+          "text": "You can't trade a song for a chair.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "Not the song itself. Just the feeling of it. I'd hand someone the feeling, and they'd hand me a chair with four legs, and we'd both walk away better off.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "Who would accept that?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "Someone with a lot of chairs and no feelings. I'm told they exist. They run the furniture office.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 28,
+      "tags": [
+        "any",
+        "gag:chair-drive"
+      ],
+      "usesSlots": [
+        "prevTitle"
+      ],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-chair-trade-fb",
+      "kind": "banter",
+      "hosts": [
+        "wren",
+        "dez"
+      ],
+      "lines": [
+        {
+          "host": "wren",
+          "text": "I would trade that last song for a working chair.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "dez",
+          "text": "You can't trade a song for a chair.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "Not the song itself. Just the feeling of it. I'd hand someone the feeling, and they'd hand me a chair with four legs, and we'd both walk away better off.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "Who would accept that?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "Someone with a lot of chairs and no feelings. I'm told they exist. They run the furniture office.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 28,
+      "tags": [
+        "any",
+        "gag:chair-drive"
+      ],
+      "usesSlots": [],
+      "fallbackOf": "th-chair-trade",
+      "weight": 1
+    },
+    {
+      "id": "th-lost-found-1",
+      "kind": "monologue",
+      "hosts": [
+        "wren"
+      ],
+      "lines": [
+        {
+          "host": "wren",
+          "text": "It's time for the Tape Hiss FM Lost and Found, where we read out items people have dropped in the bin by the studio door, and items people have emailed us about, and once, an item that emailed us about itself.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "wren",
+          "text": "Found: one left glove, grey, fingerless. So it's less a glove and more a sleeve with ambitions. It's in the bin.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "wren",
+          "text": "Found: a reusable water bottle with forty-one stickers on it. Some of those stickers are for bands. Some are for causes. One just says \"no.\" I don't know what it's refusing. I think that's between you and the bottle.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "wren",
+          "text": "Lost: a calculator. The owner writes, \"It's the good one. You'll know it's the good one because it's warm.\" We have not found it. If you are holding a warm calculator, please consider your choices.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "wren",
+          "text": "Found: a single sock, rolled up, inside a second sock. So technically, found: one sock, and one sock's apartment.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "wren",
+          "text": "Found: a library book about patience, eleven weeks overdue. I find that beautiful.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "wren",
+          "text": "And lost, from a listener named Noor: \"My sense of direction, last seen in the science building, which has four floors on one side and three on the other and that is not my fault.\"",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "wren",
+          "text": "Noor, nobody is going to find that. The science building ate it. The science building eats everyone's.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "wren",
+          "text": "If any of these are yours, the bin is outside the studio, under the poster for a play that closed two years ago. The play was about a man who couldn't let go of things. We can't take the poster down. Anyway.",
+          "pauseAfterMs": 0,
+          "direction": "slow, deliberate, each item its own little funeral"
+        }
+      ],
+      "estSec": 104,
+      "tags": [
+        "any",
+        "gag:lost-found",
+        "seq:1"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-lost-found-2",
+      "kind": "callin",
+      "hosts": [
+        "wren",
+        "noor",
+        "dez"
+      ],
+      "lines": [
+        {
+          "host": "wren",
+          "text": "Tape Hiss FM, you're on the air.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "noor",
+          "text": "Hi, it's Noor. I'm calling to submit lost-and-found items, and before you say anything, I have a spreadsheet.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "I would never say anything against a spreadsheet.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "noor",
+          "text": "Item one. Found in the second-floor study room: a retainer. Clear plastic. In its case. The case is shaped like a clam.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "Is the clam open or closed?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "noor",
+          "text": "Closed. It seemed private.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "Good instinct.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "noor",
+          "text": "Item two. A trombone. Just the slide part. No trombone attached.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "How do you lose half a trombone?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "noor",
+          "text": "I think the better question is where is the other half, and is it okay.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "That is the better question. Item three?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "noor",
+          "text": "Item three is a goose.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "A goose.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "noor",
+          "text": "Not lost exactly. It's standing outside the dining hall and it seems to be waiting for someone. I've put it in column C, which is \"items with intent.\"",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "Should we be reading out a goose?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "noor",
+          "text": "It's on the spreadsheet, Dez. Everything on the spreadsheet gets read.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "She's right. The spreadsheet is binding.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "wren",
+          "text": "Owner of the goose, the goose is outside the dining hall. Owner of the trombone slide, the slide is in the bin. Owner of the clam, we respect your privacy. Thank you, Noor.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "noor",
+          "text": "I'll be back. Column D is getting long.",
+          "pauseAfterMs": 0,
+          "direction": "noor reads like an insurance adjuster; wren is gently enchanted"
+        }
+      ],
+      "estSec": 86,
+      "tags": [
+        "any",
+        "gag:lost-found",
+        "seq:2"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-lost-found-3",
+      "kind": "monologue",
+      "hosts": [
+        "dez",
+        "wren"
+      ],
+      "lines": [
+        {
+          "host": "dez",
+          "text": "Quick note from the station. We've had an issue with the lost and found.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "dez",
+          "text": "It's lost.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "dez",
+          "text": "The bin. The physical bin. It was outside the studio door when I came in, and then I went to get a cup of hot water, because I'm trying to like tea, and when I came back, the bin was gone.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "dez",
+          "text": "I want to be very clear that everything inside it was also lost. So now we have lost the lost and found, which means everything in it is, in a sense, double lost. The trombone slide. The clam. The calculator that was warm. It was found last week, by the way, and it was not warm. It was a regular calculator someone had sat on.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "wren",
+          "text": "Dez, breathe.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "I am breathing. I'm breathing into the microphone, which I know we're not supposed to do, per the handbook.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "dez",
+          "text": "So, listeners: if you see a blue plastic bin, about this big, which you can't see because this is radio, full of other people's belongings, please do not open it. Just call us. And if you are the person who took it, I'm not angry. I just want to know what you were going to do with half a trombone.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "Make music, probably. Very slowly. In one direction.",
+          "pauseAfterMs": 0,
+          "direction": "dez is genuinely rattled, trying to stay professional"
+        }
+      ],
+      "estSec": 84,
+      "tags": [
+        "any",
+        "gag:lost-found",
+        "seq:3"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-lost-found-4",
+      "kind": "callin",
+      "hosts": [
+        "wren",
+        "ambrose",
+        "dez"
+      ],
+      "lines": [
+        {
+          "host": "wren",
+          "text": "Tape Hiss FM.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "ambrose",
+          "text": "Evening. This is Ambrose, from Facilities. I hear you lost your lost and found.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "Ambrose, yes, we did, do you know where it is?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ambrose",
+          "text": "I do. It's in the lost and found.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "I'm sorry?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ambrose",
+          "text": "The building lost and found. Down by the loading dock. Somebody saw a blue bin full of belongings sitting by a door, no name on it, and they did the responsible thing. They turned it in.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "Our lost and found was turned in to the lost and found.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ambrose",
+          "text": "Happens more than you'd think. I once found the mop room in the mop room. Long story. Not very interesting. The mop room was where it always is.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "Can we just go and get it?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ambrose",
+          "text": "Well, here's the thing. You have to describe it. That's the rule. Can't just walk in and say \"that's mine.\" Anybody could say that.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "It's a blue bin with a retainer, a trombone slide, a calculator, a glove that's mostly a sleeve",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ambrose",
+          "text": "That's the one. There's a goose standing next to it, by the way. Not in it. Next to it.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "The goose found the bin.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ambrose",
+          "text": "The goose seems very invested in the bin.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "Ambrose, thank you. This is the most satisfying thing that has ever happened on this station.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ambrose",
+          "text": "Well, it's a slow night. Go get your bin. Say hello to the goose. Don't make eye contact if it's not in the mood.",
+          "pauseAfterMs": 0,
+          "direction": "ambrose is warm and in no hurry; dez is frantic; wren is quietly thrilled"
+        }
+      ],
+      "estSec": 95,
+      "tags": [
+        "any",
+        "gag:lost-found",
+        "seq:4",
+        "ambrose",
+        "payoff"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-psa-1",
+      "kind": "ad",
+      "hosts": [
+        "wren"
+      ],
+      "lines": [
+        {
+          "host": "wren",
+          "text": "This is a public-service announcement from Tape Hiss FM.",
+          "pauseAfterMs": 600
+        },
+        {
+          "host": "wren",
+          "text": "If you have been staring at the same paragraph for some time, the paragraph has not changed. It will not change. It is waiting for you to change.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "wren",
+          "text": "You may get up. You may walk to the window. You may come back to the paragraph with fresh eyes, and the paragraph will still be the paragraph, but you will be a slightly different person, and that is the best either of you can hope for.",
+          "pauseAfterMs": 600
+        },
+        {
+          "host": "wren",
+          "text": "This has been a public-service announcement. Thank you for your service.",
+          "pauseAfterMs": 0,
+          "direction": "eulogy tone, long pauses, completely sincere"
+        }
+      ],
+      "estSec": 38,
+      "tags": [
+        "night",
+        "psa"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-psa-2",
+      "kind": "ad",
+      "hosts": [
+        "dez",
+        "wren"
+      ],
+      "lines": [
+        {
+          "host": "dez",
+          "text": "Tape Hiss FM public-service announcement.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "dez",
+          "text": "The microwave in the student lounge is not a time machine. Adding thirty seconds will not take you back to the moment before your noodles were cold. It will only take you forward to the moment where your noodles are lava.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "dez",
+          "text": "Please microwave responsibly. Stir halfway. If the instructions say \"let stand,\" let it stand. It has been through a lot.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "That was very good, Dez.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "I wrote it from experience.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "I know. I was there. I watched the noodles become lava.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 35,
+      "tags": [
+        "night",
+        "psa"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-psa-3",
+      "kind": "ad",
+      "hosts": [
+        "wren"
+      ],
+      "lines": [
+        {
+          "host": "wren",
+          "text": "A public-service announcement from the Tape Hiss FM Committee for Small Courtesies.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "wren",
+          "text": "When someone holds a door for you from very far away, you are not required to jog. You are allowed to walk at your normal speed and accept the gift with dignity.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "wren",
+          "text": "To the door-holders: you are being kind. But if the person is more than four doors away, you have entered a relationship. Consider letting go.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "wren",
+          "text": "The Committee for Small Courtesies is me. I meet with myself on Thursdays. We have never reached a quorum.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 35,
+      "tags": [
+        "night",
+        "psa"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-ad-bagel",
+      "kind": "ad",
+      "hosts": [
+        "dez",
+        "wren"
+      ],
+      "lines": [
+        {
+          "host": "dez",
+          "text": "This hour of Tape Hiss FM is supported by the Midnight Bagel Cooperative, in the basement of the arts annex, next to the kiln.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "dez",
+          "text": "The Midnight Bagel Cooperative is student-run, which means the bagels are made by people who are also writing a paper about the bagels.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "dez",
+          "text": "Flavors this week include plain, sesame, everything, and \"nothing,\" which is a bagel with the everything seasoning carefully picked off. It costs extra, because of the labor.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "dez",
+          "text": "The Cooperative's motto is \"A hole is not an absence. A hole is a choice.\"",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "dez",
+          "text": "The Midnight Bagel Cooperative. Next to the kiln. Do not touch the kiln. The bagels are warm because of the kiln. Do not touch the kiln.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "He said it twice because someone touched the kiln.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "Someone touched the kiln.",
+          "pauseAfterMs": 0,
+          "direction": "ad-read energy, slightly too fast"
+        }
+      ],
+      "estSec": 51,
+      "tags": [
+        "any",
+        "ad"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-ad-bike",
+      "kind": "ad",
+      "hosts": [
+        "wren"
+      ],
+      "lines": [
+        {
+          "host": "wren",
+          "text": "Tape Hiss FM is brought to you in part by the Hollow Oak Bike Co-op.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "wren",
+          "text": "Do you have a bicycle that makes a noise? A clicking? A whimper? A sound like a small, metal apology?",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "wren",
+          "text": "Bring it to the Hollow Oak Bike Co-op, behind the gymnasium. Volunteers will look at your bicycle, and then at you, and then back at your bicycle, and then they will say, \"Yeah.\"",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "wren",
+          "text": "They won't say anything else. Just \"yeah.\" But somehow you'll feel understood.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "wren",
+          "text": "Then they'll fix it. Probably. They fixed mine. It no longer apologizes. It just clicks now, and I've decided the click is confidence.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "wren",
+          "text": "The Hollow Oak Bike Co-op. \"Yeah.\"",
+          "pauseAfterMs": 0,
+          "direction": "deadpan; the final \"yeah\" is very small"
+        }
+      ],
+      "estSec": 44,
+      "tags": [
+        "any",
+        "ad"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-ad-typewriter",
+      "kind": "ad",
+      "hosts": [
+        "dez",
+        "wren"
+      ],
+      "lines": [
+        {
+          "host": "dez",
+          "text": "Are your essays too fast? Too easy to delete? Do you miss the feeling of commitment?",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "dez",
+          "text": "Panhandle Typewriter Rental, on the third floor of the old engineering building, rents manual typewriters to students by the hour.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "dez",
+          "text": "With a Panhandle typewriter, every mistake is permanent. Every word costs you something. Your roommate will hear every letter you type and form opinions.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "wren",
+          "text": "I rented one for a history paper. I typed the first sentence and I've been living with it ever since.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "What was the sentence?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "\"Throughout history.\" That's it. It just stops there. It's framed now.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "Panhandle Typewriter Rental. The backspace key is a lie we've stopped telling.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 43,
+      "tags": [
+        "any",
+        "ad"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-news-1",
+      "kind": "news",
+      "hosts": [
+        "dez",
+        "wren"
+      ],
+      "lines": [
+        {
+          "host": "dez",
+          "text": "Here's the Tape Hiss campus news roundup, which is news, from campus, rounded up by me, from a corkboard.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "dez",
+          "text": "Our top story. The Student Senate voted late in session to officially recognize the duck pond as a club. The duck pond now has a budget, a faculty sponsor, and a secretary, who is a duck. Meeting minutes so far consist of the word \"quack,\" which the Senate has accepted as a quorum.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "dez",
+          "text": "In athletics, the intramural chess team has won its match against the intramural chess team, which is the only other chess team. Both teams have declared victory. There's going to be an appeal.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "dez",
+          "text": "The library would like to remind students that the fourth-floor silent study area is a silent study area, and that the person who has been whistling up there should know the whistling is beautiful, and must stop.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "dez",
+          "text": "And finally, the campus clock tower is running eleven minutes slow, as it has been since it was built. A spokesperson says the tower is \"not slow, just thoughtful,\" and that it will \"get there when it gets there.\"",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "dez",
+          "text": "That's the news. I'm Dez. Some of that is true. All of it is on the corkboard.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "Everything on the corkboard is true. That's the corkboard's whole deal.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 83,
+      "tags": [
+        "any",
+        "news"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-news-2",
+      "kind": "news",
+      "hosts": [
+        "wren"
+      ],
+      "lines": [
+        {
+          "host": "wren",
+          "text": "The news.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "wren",
+          "text": "The philosophy department has announced that its annual debate, \"Does the Spoon Exist,\" has been postponed after the spoon was lost. Organizers say this proves nothing.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "wren",
+          "text": "The campus art gallery has opened a new exhibition consisting of a single folding table. The artist statement reads, \"This is where I was going to put the art.\" Attendance has been strong. People keep putting their bags on it.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "wren",
+          "text": "The dining hall has introduced a new soup. They're calling it \"Soup.\" When asked what kind, staff said, \"the warm kind,\" and then, \"please move along, there's a line.\"",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "wren",
+          "text": "And the goose outside the dining hall has been given a student ID by mistake. The goose has already checked out two library books. Both are overdue. The library has opted not to pursue it.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "wren",
+          "text": "That's the news. It's all we had. Anyway.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 56,
+      "tags": [
+        "any",
+        "news",
+        "gag:lost-found"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-news-3",
+      "kind": "news",
+      "hosts": [
+        "dez",
+        "wren"
+      ],
+      "lines": [
+        {
+          "host": "dez",
+          "text": "Tape Hiss FM news, brought to you live from the Tape Hiss FM newsroom, which is a corner of this room with a lamp on.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "dez",
+          "text": "The Department of Astronomy has reported a new star visible above the parking structure. After further investigation, the star has been identified as the red light on top of our antenna. The department has asked us to \"make it twinkle less, it's confusing the freshmen.\"",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "dez",
+          "text": "The marching band has completed its practice of a new formation, which spells out a word when viewed from above. Nobody has viewed it from above yet. Band members believe it says \"hello.\" A drone pilot who flew over says it says \"help.\" The band is choosing to believe \"hello.\"",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "dez",
+          "text": "Residence Life wants to remind everyone that fire drills are not optional, even if you are, quote, \"in the middle of something.\" Everyone is in the middle of something. That's what the middle is for.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "dez",
+          "text": "That was the news. Next week: more news, if anything happens, and if it doesn't, we'll talk about the lamp.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "The lamp has been through a lot.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 72,
+      "tags": [
+        "any",
+        "news",
+        "gag:nine-watts"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-teddy-1",
+      "kind": "callin",
+      "hosts": [
+        "dez",
+        "teddy",
+        "wren"
+      ],
+      "lines": [
+        {
+          "host": "dez",
+          "text": "Tape Hiss FM, eighty-eight point three, you're live, go ahead.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "teddy",
+          "text": "Hey. It's Teddy. I'm in the canoe.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "Hi, Teddy.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "teddy",
+          "text": "I just wanted to say you're coming in great out here. Right up to the middle of the pond. Then it kind of stops.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "That's the edge of our coverage area. You're literally at the edge.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "teddy",
+          "text": "Yeah, if I lean to the left, I can hear you. If I lean to the right, it's just ducks.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "Teddy, a question everyone has. Why are you in a canoe in the middle of the duck pond?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "teddy",
+          "text": "Oh. It's quiet. And my roommate has a new keyboard. The loud kind. Every letter sounds like a tiny horse.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "That's fair.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "teddy",
+          "text": "Also I don't totally know how to get back.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "You don't know how to paddle back?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "teddy",
+          "text": "I know how to paddle. I just don't know which way the shore is. It's dark and it's all shore. All the way around.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "Teddy, that means every direction is correct.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "teddy",
+          "text": "Whoa. Okay. That's actually really comforting.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "That's what we're here for.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "teddy",
+          "text": "Okay. I'm gonna lean left for a while. Play something good.",
+          "pauseAfterMs": 0,
+          "direction": "teddy mumbles, sounds content; wren is surprisingly tender"
+        }
+      ],
+      "estSec": 76,
+      "tags": [
+        "any",
+        "gag:nine-watts",
+        "teddy",
+        "seq:1"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-teddy-2",
+      "kind": "callin",
+      "hosts": [
+        "dez",
+        "teddy",
+        "wren"
+      ],
+      "lines": [
+        {
+          "host": "dez",
+          "text": "We have Teddy back on the line, from the canoe.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "teddy",
+          "text": "Hey. Okay, big news. I'm not alone anymore.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "Someone joined you in the canoe?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "teddy",
+          "text": "No, there's a second canoe. Somebody else rowed out here. We're kind of next to each other. He also has a roommate with a keyboard.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "There are now two of you, in two canoes, in the middle of the duck pond.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "teddy",
+          "text": "It's a community. We tied the canoes together. It's like a tiny floating apartment.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "Is that safe?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "teddy",
+          "text": "It's a duck pond, man, it's like three feet deep. I could stand up. I just don't want to.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "Teddy, what's your neighbor's name?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "teddy",
+          "text": "I didn't ask. It felt like it would ruin it. He just nodded at me. I nodded back. We have an agreement now.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "That's the most functional relationship I've heard about all week.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "teddy",
+          "text": "Okay, he says hi. Well, he nodded. I'm translating the nod.",
+          "pauseAfterMs": 0,
+          "direction": "teddy is delighted, almost proud"
+        }
+      ],
+      "estSec": 62,
+      "tags": [
+        "any",
+        "gag:nine-watts",
+        "teddy",
+        "seq:2"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-teddy-3",
+      "kind": "callin",
+      "hosts": [
+        "dez",
+        "teddy",
+        "wren"
+      ],
+      "lines": [
+        {
+          "host": "dez",
+          "text": "Teddy, you're on Tape Hiss FM.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "teddy",
+          "text": "Hey. So. There's six canoes now.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "Six.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "teddy",
+          "text": "Six. Word got out. It's like a little town. Somebody brought a lamp. Battery kind. We have a lamp.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "The listener base in the duck pond has grown by six hundred percent.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "teddy",
+          "text": "It's a whole thing. We have a rule that you have to lean left, so everyone can hear the station. If you lean right you have to say why.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "What are people saying when they lean right?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "teddy",
+          "text": "Mostly \"a duck was looking at me.\" It's a good reason. It's allowed.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "Teddy, does this mean you've found your way back to shore?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "teddy",
+          "text": "Nah. I mean, kind of. We figured out you can just stand up and walk. It's three feet. But we don't. That's the thing. We could leave, and we don't. That's what makes it a town.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "Teddy, that's the most profound thing that's ever been said on this station.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "teddy",
+          "text": "Thanks. Somebody's roommate said it first. I'm just passing it along.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "To the citizens of the pond: we see you. Faintly. Lean left.",
+          "pauseAfterMs": 0,
+          "direction": "teddy as cheerful mayor of nothing"
+        }
+      ],
+      "estSec": 73,
+      "tags": [
+        "any",
+        "gag:nine-watts",
+        "teddy",
+        "seq:3",
+        "payoff"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-venn-1",
+      "kind": "callin",
+      "hosts": [
+        "wren",
+        "venn",
+        "dez"
+      ],
+      "lines": [
+        {
+          "host": "wren",
+          "text": "Tape Hiss FM.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "venn",
+          "text": "This is Professor Venn.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "Professor Venn! Our faculty advisor! Hello!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "venn",
+          "text": "Dez, you said the frequency fourteen times in the last hour.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "Is that too many?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "venn",
+          "text": "The rule is \"at least once an hour.\" It's a floor, not a target. You're not filling a bucket.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "I just like saying it.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "venn",
+          "text": "I know you like saying it. I can hear you liking it.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "venn",
+          "text": "Second. Wren. You described the last public-service announcement as \"a eulogy for the microwave.\"",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "It was a eulogy for the microwave.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "venn",
+          "text": "The microwave isn't dead.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "Not yet.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "venn",
+          "text": "You cannot pre-mourn university property on the air. There's a form for that.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "venn",
+          "text": "Third, and I'm only calling because no one else will tell you. The thing you did, with the lost and found, and the goose. That was very good radio. Do not let it go to your heads. Goodnight.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "Goodnight, Professor.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "venn",
+          "text": "And Dez. Once an hour.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "Eighty-eight point three, Professor.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "venn",
+          "text": "That's fifteen.",
+          "pauseAfterMs": 0,
+          "direction": "venn is gruff; the compliment slips out as if by accident"
+        }
+      ],
+      "estSec": 65,
+      "tags": [
+        "any",
+        "venn",
+        "seq:1"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-venn-2",
+      "kind": "callin",
+      "hosts": [
+        "dez",
+        "venn",
+        "wren"
+      ],
+      "lines": [
+        {
+          "host": "dez",
+          "text": "Tape Hiss FM, eighty-eight point three, you're on the",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "venn",
+          "text": "Sixteen.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "Professor Venn.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "venn",
+          "text": "I'm calling about the chair drive.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "You're going to pledge?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "venn",
+          "text": "I am going to explain why you cannot hold a chair drive. There's a form. Fundraising requires the form. The form requires a signature from the faculty advisor.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "That's you.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "venn",
+          "text": "That's me. And I haven't seen the form.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "Professor, would you sign the form?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "venn",
+          "text": "I would have to see it first.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "Where would we get the form?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "venn",
+          "text": "From me.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "So we'd ask you for a form, then give it back to you, and you'd sign it.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "venn",
+          "text": "That's the process. It exists for a reason.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "What's the reason?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "venn",
+          "text": "I've forgotten. It was a very good reason at the time. Someone did something with a raffle.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "venn",
+          "text": "I'll bring the form tomorrow. And a chair.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "You'll bring a chair?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "venn",
+          "text": "I've had a spare chair in my office for eleven years. Nobody's ever asked. You can't fundraise for something that already exists, it's ethically murky. Goodnight.",
+          "pauseAfterMs": 0,
+          "direction": "venn grumbles; the chair offer arrives completely flat"
+        }
+      ],
+      "estSec": 69,
+      "tags": [
+        "any",
+        "venn",
+        "seq:2",
+        "gag:chair-drive"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-chair-drive-1",
+      "kind": "banter",
+      "hosts": [
+        "dez",
+        "wren"
+      ],
+      "lines": [
+        {
+          "host": "dez",
+          "text": "Okay, chair drive update. We've drawn a fundraising thermometer on a napkin and taped it to the window.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "dez",
+          "text": "Our goal is one chair. We are currently at fourteen dollars, a button, and a coupon for a free side salad, which expires before any of us will want a side salad.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "The button is nice.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "The button is nice. It's from a coat. Someone pledged a single button. I think it's a symbol. I think they're saying \"I'm in this with you, but I'm not going to give you the whole coat.\"",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "That's how I feel about most things.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "Here's how a pledge works. You find us, you hand us something, and we put it on the napkin. The napkin is the thermometer. The thermometer is the napkin.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "wren",
+          "text": "The current chair has three legs. You have to sit very still and lean a little to the north, and when you get up, the chair falls over, and it sounds like an argument.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "It's been our chair since before either of us got here.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "It's not a chair. It's an endurance event.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "Help us. Pledge something. Not a button, though. We have a button.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 77,
+      "tags": [
+        "any",
+        "gag:chair-drive",
+        "seq:1"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-chair-drive-2",
+      "kind": "banter",
+      "hosts": [
+        "wren",
+        "dez"
+      ],
+      "lines": [
+        {
+          "host": "wren",
+          "text": "Chair drive update.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "wren",
+          "text": "We have a chair.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "dez",
+          "text": "We have a chair! Four legs! Professor Venn brought it from his office, it's wooden, it has a cushion, and the cushion has a pattern on it that I think is ducks, or very serious leaves.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "It's ducks.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "It's ducks. Professor Venn says it's been in his office unused for eleven years and he \"never realized it was a chair,\" he just thought it was \"where the papers went.\"",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "wren",
+          "text": "Here's the problem.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "There's a small problem.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "Somebody saw the chair come in, and they've filed a claim with the lost and found. They say it's their chair. They say they left it in a professor's office eleven years ago and have been waiting for someone to notice.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "There's a description on the form, and it says \"wooden, cushion, ducks.\"",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "So it's a strong claim.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "So for now, legally, we're sitting in a lost-and-found item.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "wren",
+          "text": "I've never been more comfortable. I can feel myself being returned.",
+          "pauseAfterMs": 0,
+          "direction": "dez is ecstatic, wren is quietly at peace"
+        }
+      ],
+      "estSec": 66,
+      "tags": [
+        "any",
+        "gag:chair-drive",
+        "seq:2",
+        "payoff"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-lionel-1",
+      "kind": "banter",
+      "hosts": [
+        "dez",
+        "wren"
+      ],
+      "lines": [
+        {
+          "host": "dez",
+          "text": "Okay, I have to ask about the hum.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "It's Lionel.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "I know it's Lionel, I'm saying, is it only Lionel? Because sometimes, late, it sounds like it's saying a word.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "What word?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "I think it's \"Desmond.\"",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "Lionel doesn't know your name.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "I've told him my name. I introduced myself on my first shift. I put in a coin and said, \"Hi, I'm Dez.\" He took the coin and gave me nothing. That's a relationship, Wren. That's a transaction with no product.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "wren",
+          "text": "Everyone's first coin goes into Lionel. It's a tax. It's how he knows you're staff.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "What happens with the second coin?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "Nobody's ever put in a second coin.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "Why not?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "Because we learned. That's the point of the first coin. Lionel is not a vending machine, Dez. Lionel is a lesson.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "He hummed again. He hummed \"Desmond.\"",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "He hummed \"B flat.\" Anyway.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 60,
+      "tags": [
+        "night",
+        "gag:lionel",
+        "seq:1"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-lionel-2",
+      "kind": "banter",
+      "hosts": [
+        "dez",
+        "wren"
+      ],
+      "lines": [
+        {
+          "host": "dez",
+          "text": "Something happened.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "wren",
+          "text": "Did you put in a second coin?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "I put in a second coin. I know. I know. But it's my birthday next week, and I thought, what if. And Wren. He dispensed.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "wren",
+          "text": "What did he dispense.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "A second packet of unsalted soup crackers.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "The same one.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "Not the same one. A second one. So now there's two. Somebody got one three years ago and now I have one, and we're connected. Me and a stranger, across time, holding the same cracker.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "That's either beautiful or Lionel only stocks one thing.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "I've chosen beautiful.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "Are you going to eat it?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "I'm going to put it in the lost and found. Somebody might be looking for it. Somebody might have been looking for three years.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "That's the most Tape Hiss thing anyone has ever done. Happy almost birthday.",
+          "pauseAfterMs": 0,
+          "direction": "dez overwhelmed, wren genuinely moved"
+        }
+      ],
+      "estSec": 57,
+      "tags": [
+        "night",
+        "gag:lionel",
+        "seq:2",
+        "payoff"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-quiet-hour-1",
+      "kind": "skit",
+      "hosts": [
+        "thistle"
+      ],
+      "lines": [
+        {
+          "host": "thistle",
+          "text": "This is The Quiet Hour. I'm Thistle Abernathy.",
+          "pauseAfterMs": 800
+        },
+        {
+          "host": "thistle",
+          "text": "Tonight, we travel to the student lounge, on the second floor, where the lights are always slightly too bright, and where the creatures of the night gather at the watering hole.",
+          "pauseAfterMs": 600
+        },
+        {
+          "host": "thistle",
+          "text": "The watering hole is a microwave.",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "thistle",
+          "text": "Look. A first-year approaches. He is carrying a bowl of soup, covered with a paper towel. The paper towel is a sign of respect. The others will see it, and they will know he is not a threat.",
+          "pauseAfterMs": 600
+        },
+        {
+          "host": "thistle",
+          "text": "He presses the buttons. One. Zero. Zero. Start. A full minute. Bold.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "thistle",
+          "text": "Behind him, a second first-year has arrived, holding a frozen burrito. She does not speak. She simply waits, at a distance of exactly four tiles. This is the custom. Four tiles. Any closer, and it becomes a confrontation.",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "thistle",
+          "text": "The microwave hums. It is the oldest creature in the lounge. It has seen thousands of bowls. It remembers none of them.",
+          "pauseAfterMs": 800
+        },
+        {
+          "host": "thistle",
+          "text": "The soup is done. He removes it, too soon, with his bare hands. A small sound. He has learned something about heat that his ancestors also learned, in this same place, from this same microwave.",
+          "pauseAfterMs": 600
+        },
+        {
+          "host": "thistle",
+          "text": "The burrito steps forward. The cycle continues.",
+          "pauseAfterMs": 900
+        },
+        {
+          "host": "thistle",
+          "text": "This has been The Quiet Hour. Please, do not move suddenly. They frighten easily.",
+          "pauseAfterMs": 0,
+          "direction": "extremely slow, hushed, completely serious nature-documentary register"
+        }
+      ],
+      "estSec": 87,
+      "tags": [
+        "night",
+        "gag:quiet-hour",
+        "seq:1"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-quiet-hour-2",
+      "kind": "skit",
+      "hosts": [
+        "thistle"
+      ],
+      "lines": [
+        {
+          "host": "thistle",
+          "text": "This is The Quiet Hour.",
+          "pauseAfterMs": 900
+        },
+        {
+          "host": "thistle",
+          "text": "Tonight, the lounge couch.",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "thistle",
+          "text": "For many seasons, the lounge couch has belonged to a single upperclassman. No one has ever seen him arrive. No one has ever seen him leave. He is simply there, beneath a blanket the color of old porridge, with a laptop open to a document that never seems to grow.",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "thistle",
+          "text": "We will call him the Elder.",
+          "pauseAfterMs": 600
+        },
+        {
+          "host": "thistle",
+          "text": "Tonight, a challenger. A sophomore, with a pillow, has entered the lounge. She looks at the couch. She looks at the Elder. The Elder does not look up. He does not need to.",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "thistle",
+          "text": "She sits on the armchair beside the couch instead. A strategic retreat. In the wild, there is no shame in the armchair.",
+          "pauseAfterMs": 600
+        },
+        {
+          "host": "thistle",
+          "text": "But wait. The Elder stirs. He reaches, slowly, for a mug on the floor. The mug is empty. It has been empty for some time. He lifts it anyway, drinks nothing, and puts it down.",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "thistle",
+          "text": "This is a display. He is saying, I am still here. I have been here longer than you. I will be here when the building is renamed.",
+          "pauseAfterMs": 800
+        },
+        {
+          "host": "thistle",
+          "text": "The sophomore opens her own laptop. Her document also does not grow.",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "thistle",
+          "text": "They are, in this moment, the same.",
+          "pauseAfterMs": 900
+        },
+        {
+          "host": "thistle",
+          "text": "This has been The Quiet Hour.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 87,
+      "tags": [
+        "night",
+        "gag:quiet-hour",
+        "seq:2"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-quiet-hour-3",
+      "kind": "skit",
+      "hosts": [
+        "thistle"
+      ],
+      "lines": [
+        {
+          "host": "thistle",
+          "text": "This is The Quiet Hour.",
+          "pauseAfterMs": 900
+        },
+        {
+          "host": "thistle",
+          "text": "We return to the lounge, where something rare is happening. The vending machine has been restocked.",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "thistle",
+          "text": "The news travels quickly. Not by word, but by sound. The sound of a crinkle. One crinkle, and then another. Doors along the corridor open, one by one, like flowers at the first warmth of spring.",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "thistle",
+          "text": "They arrive in slippers. They arrive in coats over pyjamas. One arrives carrying a textbook, as if to say, I was studying, I simply happened to pass by.",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "thistle",
+          "text": "No one believes him. Not even the textbook.",
+          "pauseAfterMs": 600
+        },
+        {
+          "host": "thistle",
+          "text": "They stand before the machine. A ritual of choosing. Each one points, silently, at the glass, and then withdraws the finger, and then points again. The machine hums. It enjoys this. It is the only time anyone looks at it with love.",
+          "pauseAfterMs": 800
+        },
+        {
+          "host": "thistle",
+          "text": "One of them has a single coin. The others watch. If the coin is accepted, there will be celebration. If the coin is rejected, there will be a long and quiet walk back to the room, and the coin will be placed on a desk, and stared at, and blamed.",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "thistle",
+          "text": "The coin is accepted.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "thistle",
+          "text": "The crowd does not cheer. That is not their way. But the shoulders, collectively, lower by about an inch.",
+          "pauseAfterMs": 900
+        },
+        {
+          "host": "thistle",
+          "text": "This has been The Quiet Hour. We have not interfered. We never do.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 92,
+      "tags": [
+        "night",
+        "gag:quiet-hour",
+        "seq:3"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-quiet-hour-4",
+      "kind": "skit",
+      "hosts": [
+        "thistle"
+      ],
+      "lines": [
+        {
+          "host": "thistle",
+          "text": "This is The Quiet Hour. Tonight is our final episode of the term.",
+          "pauseAfterMs": 900
+        },
+        {
+          "host": "thistle",
+          "text": "The lounge is nearly empty. Exams have driven the herd to the library, where the lights are dimmer and the chairs are harder and no one is allowed to eat. A harsh land. Many will not return the same.",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "thistle",
+          "text": "But one creature remains.",
+          "pauseAfterMs": 600
+        },
+        {
+          "host": "thistle",
+          "text": "It is the Elder. Still on the couch. Still beneath the porridge-coloured blanket. But tonight, for the first time in many seasons, his document is growing. Word after word. He types without stopping. He does not drink from the empty mug. He has no time for displays.",
+          "pauseAfterMs": 800
+        },
+        {
+          "host": "thistle",
+          "text": "And then he stops. He closes the laptop. He folds the blanket, and leaves it on the couch, square and neat.",
+          "pauseAfterMs": 600
+        },
+        {
+          "host": "thistle",
+          "text": "He stands. We have never seen him stand. He is taller than expected. They always are.",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "thistle",
+          "text": "He walks to the door, and he is gone.",
+          "pauseAfterMs": 1000
+        },
+        {
+          "host": "thistle",
+          "text": "The blanket, we are told, has been turned in to the Tape Hiss FM Lost and Found. It is unclaimed. Perhaps it always will be. Perhaps it was never his. Perhaps he was the blanket's.",
+          "pauseAfterMs": 900
+        },
+        {
+          "host": "thistle",
+          "text": "This has been The Quiet Hour. Thank you for watching, which you were not doing, because this is radio.",
+          "pauseAfterMs": 0,
+          "direction": "the most moving thistle gets; still never warm, only slower"
+        }
+      ],
+      "estSec": 84,
+      "tags": [
+        "night",
+        "gag:quiet-hour",
+        "seq:4",
+        "payoff",
+        "gag:lost-found"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-dez-first-shift",
+      "kind": "monologue",
+      "hosts": [
+        "dez"
+      ],
+      "lines": [
+        {
+          "host": "dez",
+          "text": "I want to tell you about my first shift here, because I think it explains a lot.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "dez",
+          "text": "I showed up two hours early. I had the binder. I'd laminated the binder. Not the pages in the binder, the binder itself, which, in hindsight, wasn't necessary, binders are already pretty sealed.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "dez",
+          "text": "Wren was here. Wren is always here. I'm not totally sure Wren goes home. I asked once and she said \"home is a strong word,\" and then she put a record on, and that was the end of the conversation.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "dez",
+          "text": "She handed me the handbook. It's one page. Photocopied so many times that half the words have turned into little grey clouds. I can make out \"do not,\" \"the board,\" \"at least once,\" and, at the bottom, in different handwriting, \"you'll be fine.\"",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "dez",
+          "text": "I've thought about \"you'll be fine\" a lot. I don't know who wrote it. I don't know when. But somebody sat in this chair, probably this exact broken chair, and they were scared, and someone else wrote that for them, and now I've got it.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "dez",
+          "text": "Anyway. My first link, I said the frequency wrong. I said \"eighty-eight point three point three.\" Wren just looked at me and said \"that's a new station.\" And then I dropped all my index cards, and while I was picking them up, the song ended, and there was dead air. Four whole seconds.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "dez",
+          "text": "And nothing happened. That's the thing. The world was fine. The ducks were fine. Teddy was probably fine.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "dez",
+          "text": "So, if you're new at something, and you're scared of the silence: you'll be fine. It's in the handbook.",
+          "pauseAfterMs": 0,
+          "direction": "earnest, slowing down as he goes; the last line almost a whisper"
+        }
+      ],
+      "estSec": 105,
+      "tags": [
+        "any",
+        "dez"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-wren-insomnia",
+      "kind": "monologue",
+      "hosts": [
+        "wren"
+      ],
+      "lines": [
+        {
+          "host": "wren",
+          "text": "Someone asked me once why I do the overnight shift.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "wren",
+          "text": "I think it's because nothing at this hour has to be impressive. During the day, every building on this campus is trying very hard to be a place where important things happen. At night, they give up. The science building stops pretending to make sense. The library turns off half its lights and admits it's mostly carpet.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "wren",
+          "text": "And the people who are still awake are not performing. They're just here. Writing things they'll rewrite. Eating cereal standing up. Calling a radio station from a canoe.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "wren",
+          "text": "The radio at night is like a lamp left on in a window. It's not for anyone in particular. It's just evidence that somebody's still up.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "wren",
+          "text": "If you're listening, and you're the only one awake where you are, that's fine. You're not the only one awake. You're just the only one awake there.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "wren",
+          "text": "There's at least one other person up, in a basement, with a broken clock, playing you songs.",
+          "pauseAfterMs": 600
+        },
+        {
+          "host": "wren",
+          "text": "Anyway.",
+          "pauseAfterMs": 0,
+          "direction": "slower than usual; the deadpan softens without ever becoming sentimental"
+        }
+      ],
+      "estSec": 67,
+      "tags": [
+        "night",
+        "wren"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-dedication-wall",
+      "kind": "dedication",
+      "hosts": [
+        "wren"
+      ],
+      "lines": [
+        {
+          "host": "wren",
+          "text": "More from the dedication board, which is a piece of paper taped to the studio door that has become, against everyone's wishes, important.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "wren",
+          "text": "\"To Priyanka, who lent me her good pen in the exam and didn't ask for it back. I still have it. It's my good pen now. I'm sorry. I love it.\"",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "wren",
+          "text": "\"To the person who left a note on my car saying 'nice parking.' I couldn't tell if you were being sarcastic. I've been thinking about it for two weeks. Please clarify.\"",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "wren",
+          "text": "\"To Malcolm, from Malcolm's mother. Please call. Not because anything is wrong. Just to let me know you're eating vegetables. A potato does not count. I don't care what you read.\"",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "wren",
+          "text": "And one unsigned. \"To whoever hums in the third-floor bathroom. It's always the same tune. I don't know what it is. I think about it all day. Please never stop and please never tell me.\"",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "wren",
+          "text": "These go out to all of you. Especially Malcolm. Call your mother. Eat a leaf.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 66,
+      "tags": [
+        "any",
+        "dedication"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-dedication-wall-2",
+      "kind": "dedication",
+      "hosts": [
+        "dez",
+        "wren"
+      ],
+      "lines": [
+        {
+          "host": "dez",
+          "text": "I'm taking over the dedication board tonight, Wren said I could, as long as I read them, quote, \"with no exclamation points in my voice.\"",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "dez",
+          "text": "\"To Fennimore, my lab partner, who was right about the copper sulfate. You were right. I've told everyone.\"",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "dez",
+          "text": "\"To Jules, who taught me to cook rice. I've made rice every day since. I am running out of things to put on rice. Please teach me a second thing.\"",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "dez",
+          "text": "\"To the girl at the bus stop with the umbrella that's shaped like a frog. I don't want anything. I just want you to know it is the best umbrella.\"",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "dez",
+          "text": "And: \"To the Tape Hiss FM Lost and Found. I lost my keys, my scarf, and a whole afternoon, and you found two of them. I'm not going to say which two.\"",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "dez",
+          "text": "That last one was very mysterious. I feel like I've been dedicated to. That's a first.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "You were dedicated to. Welcome. It's a little warm in here, isn't it.",
+          "pauseAfterMs": 0,
+          "direction": "dez works very hard to keep his voice level and almost manages"
+        }
+      ],
+      "estSec": 65,
+      "tags": [
+        "any",
+        "dedication",
+        "gag:lost-found"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-show-within",
+      "kind": "skit",
+      "hosts": [
+        "wren",
+        "dez"
+      ],
+      "lines": [
+        {
+          "host": "wren",
+          "text": "Before The Quiet Hour, there was another show-within-a-show on Tape Hiss FM. It ran for one episode, a few years ago. We still have the tape. Dez found it.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "dez",
+          "text": "It was in the lost and found, which is where everything is.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "It's called \"Ask the Antenna.\" The premise is that the antenna on our roof answers listener questions. It was hosted by a student who is no longer with the station. He graduated. He's fine. He does insurance now.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "dez",
+          "text": "We're going to do a short reenactment. I'm the antenna.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "I'm the host.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "wren",
+          "text": "Antenna. A listener asks: \"What can you see from up there?\"",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "I can see the roof of the dining hall. The lid of a pot is stuck on it. Nobody knows how.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "wren",
+          "text": "Antenna. A listener asks: \"Are you lonely?\"",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "I am nine watts. I reach one bench and the middle of a pond. I am exactly as lonely as I can afford to be.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "wren",
+          "text": "Antenna, final question. \"Will you ever be more powerful?\"",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "No. But one night, a student will open the north stairwell door, and the signal will slip through, and for one moment, someone in the parking structure will hear a song they didn't expect.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "dez",
+          "text": "That will be enough.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "wren",
+          "text": "And that was the entire episode. It was cancelled because the antenna kept getting the best lines.",
+          "pauseAfterMs": 0,
+          "direction": "dez plays the antenna with total solemnity"
+        }
+      ],
+      "estSec": 89,
+      "tags": [
+        "night",
+        "gag:nine-watts"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-north-stairwell",
+      "kind": "banter",
+      "hosts": [
+        "dez",
+        "wren"
+      ],
+      "lines": [
+        {
+          "host": "dez",
+          "text": "Wren, I have news. Big news. Coverage news.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "Tell me.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "Somebody propped open the north stairwell door with a brick. And I just got an email from someone in the parking structure. Level three. They heard us.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "Level three.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "Level three! We've never been on level three! We've been on level one, by the ramp, if the wind's right. But level three is new territory.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "wren",
+          "text": "What did they say?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "They said, and I'm reading: \"Hi. I was sitting in my car waiting for the rain to stop and the radio just turned into you. I don't know who you are. You sound like you're in a basement. Thank you.\"",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "wren",
+          "text": "We are in a basement.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "They could tell!",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "wren",
+          "text": "Whoever put the brick in the door. You've expanded our listening area by one level of a parking structure. That's the biggest thing that's happened to this station since the goose.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "dez",
+          "text": "Should we thank them on air?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "We just did. Don't move the brick.",
+          "pauseAfterMs": 0,
+          "direction": "dez is losing his mind with joy; wren matches him by about two percent"
+        }
+      ],
+      "estSec": 66,
+      "tags": [
+        "any",
+        "gag:nine-watts",
+        "payoff"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-callin-noor-skit",
+      "kind": "skit",
+      "hosts": [
+        "dez",
+        "noor",
+        "wren"
+      ],
+      "lines": [
+        {
+          "host": "dez",
+          "text": "We're doing something new. Tape Hiss FM Theater. Noor has agreed to help.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "noor",
+          "text": "I read the script. It's two lines.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "It's a very tight script.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "wren",
+          "text": "Tape Hiss FM Theater presents: \"The Return.\"",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "noor",
+          "text": "Excuse me. I'm here about a glove.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "Can you describe the glove?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "noor",
+          "text": "Grey. Fingerless. It's barely a glove. It's more of a sleeve with ambitions.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "I'm sorry. I'll need you to be more specific. We have many sleeves with ambitions.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "noor",
+          "text": "It has a small hole at the thumb. It's been with me since first year. It's not a good glove. It's my glove.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "dez",
+          "text": "Here you go.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "noor",
+          "text": "Thank you. I didn't think I'd ever see it again.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "Nobody ever thinks that. That's why we keep the bin.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "wren",
+          "text": "Tape Hiss FM Theater. \"The Return.\" That was the whole play.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "noor",
+          "text": "That was more than two lines.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "I improvised.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "noor",
+          "text": "You did well. I'm keeping the glove, by the way. This is actually my glove.",
+          "pauseAfterMs": 0,
+          "direction": "play it straight; the glove is real"
+        }
+      ],
+      "estSec": 64,
+      "tags": [
+        "any",
+        "gag:lost-found"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-horoscopes",
+      "kind": "monologue",
+      "hosts": [
+        "wren",
+        "dez"
+      ],
+      "lines": [
+        {
+          "host": "wren",
+          "text": "It's time for Tape Hiss Horoscopes, in which I read the horoscopes of the objects in this studio, because the objects have been asking, and because I don't believe in horoscopes for people. People are too unpredictable. Objects commit.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "wren",
+          "text": "The broken wall clock. You have been stopped at the same moment for three years. This week, someone will look at you and believe you, briefly. Treasure that. It will be the most right you've been in a long time.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "wren",
+          "text": "The three-legged chair. You will fall over at least twice this week. Both times, you'll take someone with you. This is not a weakness. This is a personality.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "wren",
+          "text": "The microphone. Someone is going to breathe on you. It will be Dez. Forgive him.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "dez",
+          "text": "I'm working on it.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "The stapler. Your teeth are strong but your will is weak. This is the week you finally staple something. You won't. But it's the week.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "wren",
+          "text": "And Lionel. The stars say nothing about Lionel. The stars have looked at Lionel, and they've looked away.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "wren",
+          "text": "Those have been your horoscopes. If you are an object, please don't call in. We have enough going on.",
+          "pauseAfterMs": 0,
+          "direction": "flat oracle voice"
+        }
+      ],
+      "estSec": 75,
+      "tags": [
+        "night",
+        "wren"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-ad-laundromat",
+      "kind": "ad",
+      "hosts": [
+        "dez",
+        "wren"
+      ],
+      "lines": [
+        {
+          "host": "dez",
+          "text": "Tape Hiss FM is supported by Tumbledown Laundromat, three blocks from the east gate, open whenever the door is open.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "dez",
+          "text": "At Tumbledown Laundromat, every machine has a personality. Number four is gentle. Number seven is ambitious. Number twelve is out of order and has been since before the laundromat opened. Nobody knows how.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "dez",
+          "text": "And now, Tumbledown is proud to offer the Lost Sock Guarantee. If you lose a sock in a Tumbledown dryer, they won't find it. But they will give you a different sock, from the bucket.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "wren",
+          "text": "The bucket is enormous. I've seen it. It's a monument.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "The bucket currently holds more than four thousand individual socks, none of which match. Some say it's a laundromat with a sock problem. Tumbledown says it's a sock library with a laundry problem.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "dez",
+          "text": "Tumbledown Laundromat. Your socks were never really yours. They were just visiting.",
+          "pauseAfterMs": 0,
+          "direction": "cheery, sincere ad read"
+        }
+      ],
+      "estSec": 57,
+      "tags": [
+        "any",
+        "ad",
+        "gag:lost-found"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-ad-poetry",
+      "kind": "ad",
+      "hosts": [
+        "wren"
+      ],
+      "lines": [
+        {
+          "host": "wren",
+          "text": "Tape Hiss FM is brought to you by the Open Mic Night at the Lantern Room, every week, in the back of the bookshop on Pell Street.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "wren",
+          "text": "At the Lantern Room, anyone can get up and read a poem. Anyone. Last month a man read a poem about his car's check-engine light. It was eleven minutes long. It had three movements. In the third movement, the light came back on.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "wren",
+          "text": "People wept. The car is fine.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "wren",
+          "text": "There's tea, there are folding chairs with four legs each, and there's a jar where you can leave a word you don't need anymore. At the end of the night, someone reads the jar out loud. Last week it was \"actually,\" \"hopefully,\" and \"Gregory.\"",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "wren",
+          "text": "We don't know who Gregory is. We don't think he knows either.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "wren",
+          "text": "The Lantern Room. Bring a poem, or bring your face, and point it at someone else's poem.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 59,
+      "tags": [
+        "night",
+        "ad"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-ambrose-2",
+      "kind": "callin",
+      "hosts": [
+        "wren",
+        "ambrose",
+        "dez"
+      ],
+      "lines": [
+        {
+          "host": "wren",
+          "text": "Tape Hiss FM.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ambrose",
+          "text": "Evening, it's Ambrose. I'm mopping the hallway above you and I wanted to say the last couple songs came through the vent nicely.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "Ambrose, do you listen every night?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ambrose",
+          "text": "Through the vent. You sound good through the vent. A little like you're in a tin can, but a nice tin can. A tin can with a rug in it.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "Ambrose, can I ask you something? You've been on the night shift for a long time.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ambrose",
+          "text": "Twenty-two years.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "What have you learned?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ambrose",
+          "text": "Mostly about floors.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "ambrose",
+          "text": "A floor will tell you everything that happened on it, if you pay attention. Little heel scuffs by the vending area, that's somebody who waited too long and gave up. Footprints that go in a circle by the notice board, that's somebody who lost something and looked for it in the same three places. People always look in the same three places.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "ambrose",
+          "text": "And you mop it, and it's gone, and in the morning it's a brand new floor. Nobody knows what happened there. Only me.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "dez",
+          "text": "That's kind of beautiful.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ambrose",
+          "text": "It's kind of a lot of mopping. But yeah.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "ambrose",
+          "text": "I'll let you go. Oh, and your goose is back by the dining hall. Seems happy. I gave it a nod.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "Did it nod back?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "ambrose",
+          "text": "Geese don't nod. They just look at you like you owe them money. But it was a friendly look, for a goose.",
+          "pauseAfterMs": 0,
+          "direction": "ambrose unhurried, a philosopher with a mop"
+        }
+      ],
+      "estSec": 94,
+      "tags": [
+        "night",
+        "ambrose"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-clock",
+      "kind": "banter",
+      "hosts": [
+        "dez",
+        "wren"
+      ],
+      "lines": [
+        {
+          "host": "dez",
+          "text": "Wren, can we talk about the clock?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "The clock is perfect.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "The clock is broken. The hands haven't moved since before I was a student here.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "That's what makes it honest. Every other clock on campus is pretending it knows where we are. The clock tower is eleven minutes slow. The clock in the library is somehow ahead. The clock on my phone changes when I fly anywhere, which is a red flag.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "wren",
+          "text": "Our clock just picked a moment and stayed there. It's not trying to tell you the time. It's telling you about a time. One specific time, when someone, I assume, sat in this room and said, \"this is fine, I'll stay here.\"",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "Don't you want to know what time it is?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "Never on the air. That's a rule. We don't tell anybody what time it is. If you want to know, look at the ceiling. If the ceiling's dark, it's late. If it's light, I've stayed too long.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "dez",
+          "text": "That's not in the handbook.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "It's in the other handbook.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "There's another handbook?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "There's always another handbook.",
+          "pauseAfterMs": 0,
+          "direction": "wren's most passionate tone, which is still very calm"
+        }
+      ],
+      "estSec": 72,
+      "tags": [
+        "any",
+        "wren"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-sports-goose",
+      "kind": "news",
+      "hosts": [
+        "dez",
+        "wren"
+      ],
+      "lines": [
+        {
+          "host": "dez",
+          "text": "Here's the Tape Hiss FM sports desk, the only sports desk with no sports, because the athletics department has never returned our emails. So instead, I'll be covering the goose.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "dez",
+          "text": "The goose was active today outside the dining hall. In the first half, the goose took up a position near the main door and held it for some time against a steady stream of students. Several attempted to go around the goose. None succeeded. One tried to go over. We don't talk about it.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "dez",
+          "text": "In the second half, the goose advanced to the bike rack, where it stood on the seat of a bicycle for a while and looked very proud. Analysts say this is the goose's best performance of the season.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "dez",
+          "text": "When asked for comment, the goose hissed, which we're counting as a quote.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "dez",
+          "text": "Looking ahead, the goose is expected to remain at the dining hall, where it will continue to do whatever it is the goose is doing. Its coach could not be reached for comment, because it doesn't have one, because it's a goose.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "dez",
+          "text": "That's sports.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "That was the best sports we've ever had.",
+          "pauseAfterMs": 0,
+          "direction": "classic sportscaster cadence played totally straight"
+        }
+      ],
+      "estSec": 74,
+      "tags": [
+        "any",
+        "news"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-dead-air-drill",
+      "kind": "skit",
+      "hosts": [
+        "wren",
+        "dez"
+      ],
+      "lines": [
+        {
+          "host": "wren",
+          "text": "Dez, we need to do a dead-air drill.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "A what?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "A drill. In case the music stops and there's silence. It's the station's version of a fire drill. Ready?",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "dez",
+          "text": "Ready. Wait, how do we",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "Silence.",
+          "pauseAfterMs": 1500
+        },
+        {
+          "host": "dez",
+          "text": "Okay this is very hard.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "You lasted a second and a half.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "It felt like a year. It felt like I was in space.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "wren",
+          "text": "Here's the rule. If the music ever stops, you say the station name. Then you say one true thing. Then you say the station name again. And by then something will have happened.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "dez",
+          "text": "What's a true thing?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "Anything. \"The chair has three legs.\" \"Lionel is humming.\" \"Somebody, somewhere, is microwaving soup.\" All true. All the time.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "dez",
+          "text": "Okay. Let me try.",
+          "pauseAfterMs": 300
+        },
+        {
+          "host": "dez",
+          "text": "Tape Hiss FM. The stapler has never stapled. Tape Hiss FM.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "wren",
+          "text": "Beautiful. You passed.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "That was so easy. Why was I scared of that?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "Because silence sounds like it's never going to end. And it always does. That's the whole drill. Anyway.",
+          "pauseAfterMs": 0
+        }
+      ],
+      "estSec": 68,
+      "tags": [
+        "any",
+        "dez",
+        "wren"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-thistle-why",
+      "kind": "monologue",
+      "hosts": [
+        "thistle"
+      ],
+      "lines": [
+        {
+          "host": "thistle",
+          "text": "People ask me why I narrate the lounge.",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "thistle",
+          "text": "Back home, when I was small, there was a programme on late at night about animals. A man with a very soft voice would describe a frog sitting on a leaf for twenty minutes, and he made it sound like the most important thing that had ever happened.",
+          "pauseAfterMs": 600
+        },
+        {
+          "host": "thistle",
+          "text": "And I would watch it, and think, the frog doesn't know. The frog has no idea that someone is watching it and thinking it is wonderful.",
+          "pauseAfterMs": 600
+        },
+        {
+          "host": "thistle",
+          "text": "When I came here, I didn't know anybody. I sat in the lounge every night. And I started to notice things. The way people hold their mugs with both hands when they're tired. The way someone always leaves a single biscuit in the packet, out of politeness, for no one. The way the person who comes in crying always gets a seat, even when there aren't any.",
+          "pauseAfterMs": 700
+        },
+        {
+          "host": "thistle",
+          "text": "Nobody in the lounge knows they're wonderful either.",
+          "pauseAfterMs": 800
+        },
+        {
+          "host": "thistle",
+          "text": "So that's why. Somebody should tell them. Quietly. In case they're listening.",
+          "pauseAfterMs": 0,
+          "direction": "very slow; no performance of emotion, let the words do it"
+        }
+      ],
+      "estSec": 68,
+      "tags": [
+        "night",
+        "gag:quiet-hour"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    },
+    {
+      "id": "th-venn-3",
+      "kind": "callin",
+      "hosts": [
+        "dez",
+        "venn",
+        "wren"
+      ],
+      "lines": [
+        {
+          "host": "dez",
+          "text": "Tape Hiss FM, eighty-eight point",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "venn",
+          "text": "Don't.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "Professor Venn.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "venn",
+          "text": "I'm calling to say I've been listening tonight, as always, and I've counted the frequency. You said it once an hour. Exactly once. Every hour.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "I've been practicing.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "venn",
+          "text": "It's very upsetting.",
+          "pauseAfterMs": 400
+        },
+        {
+          "host": "wren",
+          "text": "You wanted him to do it once an hour.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "venn",
+          "text": "I did want that. And now that I have it, I miss the fourteen. Dez, I've been doing this for thirty years. Do you know how many students have been excited to say the frequency?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "How many?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "venn",
+          "text": "One.",
+          "pauseAfterMs": 500
+        },
+        {
+          "host": "venn",
+          "text": "Say it however many times you like. The rule is a floor. I'll amend the handbook. I'll add a line. In my handwriting.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "The handbook has a line at the bottom, Professor. \"You'll be fine.\" Is that your handwriting?",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "venn",
+          "text": "Hm.",
+          "pauseAfterMs": 1200
+        },
+        {
+          "host": "venn",
+          "text": "Goodnight, Wren.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "wren",
+          "text": "Goodnight, Professor.",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "dez",
+          "text": "Eighty-eight point three!",
+          "pauseAfterMs": 350
+        },
+        {
+          "host": "venn",
+          "text": "Thank you, Dez.",
+          "pauseAfterMs": 0,
+          "direction": "venn falters on the handwriting question; leave the silence in"
+        }
+      ],
+      "estSec": 59,
+      "tags": [
+        "any",
+        "venn",
+        "seq:3",
+        "payoff"
+      ],
+      "usesSlots": [],
+      "fallbackOf": null,
+      "weight": 1
+    }
+  ]
+}

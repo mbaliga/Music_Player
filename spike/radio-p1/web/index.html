@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Runout radio spike P1 (THROWAWAY)</title>
+<style>
+  :root { color-scheme: dark; --bg:#111; --fg:#e8e8e8; --mut:#9a9a9a; --acc:#8b6cff; --ok:#4caf50; --bad:#ef5350; --warn:#ffb300; }
+  body { margin:0; padding:12px 16px 80px; font:15px/1.4 system-ui,sans-serif; background:var(--bg); color:var(--fg); }
+  h1 { font-size:18px; margin:0 0 4px } h2 { font-size:16px; margin:22px 0 6px; border-top:1px solid #333; padding-top:12px }
+  .banner { background:#3a2a00; border:1px solid var(--warn); padding:8px 10px; border-radius:6px; font-size:13px }
+  button { font:inherit; padding:12px 14px; margin:4px 6px 4px 0; border-radius:8px; border:1px solid #555; background:#222; color:var(--fg); min-height:44px }
+  button.primary { background:var(--acc); border-color:var(--acc); color:#fff }
+  select, input { font:inherit; padding:8px; background:#222; color:var(--fg); border:1px solid #555; border-radius:6px }
+  pre { background:#000; border:1px solid #333; padding:8px; overflow:auto; max-height:260px; font-size:12px; white-space:pre-wrap }
+  table { border-collapse:collapse; width:100%; font-size:12px } td,th { border:1px solid #333; padding:3px 5px; text-align:right } th:first-child,td:first-child { text-align:left }
+  .mut { color:var(--mut); font-size:13px } .pass{color:var(--ok)} .fail{color:var(--bad)} .warn{color:var(--warn)}
+  label { display:inline-block; margin:4px 10px 4px 0 }
+</style></head><body>
+<h1>Runout radio spike P1</h1>
+<div class="banner">THROWAWAY spike code (spike/radio-p1). Not part of the app. Numbers on this page are only as good as the conditions you ran them in; see docs/RADIO_SPIKE_P1.md. No audio or results leave this device unless you copy them out yourself.</div>
+
+<h2>0. Environment</h2>
+<button id="btnEnv" class="primary">Probe environment</button>
+<pre id="outEnv">(not run)</pre>
+
+<h2>1. Echo / full-duplex (unknown 1)</h2>
+<p class="mut">Phone flat on a table, media volume about 60%, quiet room, DO NOT speak during the test (single-talk). Run once per route. Speaker mode: nothing plugged in. Headphones mode: wired/BT headphones ON your ears is fine, but then the mic still hears only what leaks, so also note it.</p>
+<label>Route <select id="route"><option>speaker</option><option>wired-headphones</option><option>bluetooth-headphones</option></select></label>
+<label>Play seconds <input id="playSec" type="number" value="5" min="2" max="12" style="width:5em"></label><br>
+<button id="btnEcho" class="primary">Run echo suite (4 mic modes)</button>
+<pre id="outEcho">(not run)</pre>
+<div id="echoDl"></div>
+
+<h2>2. Background audio (unknown 2)</h2>
+<p class="mut">Start, then lock the screen / switch apps for 30 min. Come back and press "Summarize". Tone is quiet; keep media volume low but audible. For audible-gap proof also record the speaker with a second device (see doc).</p>
+<label><input type="checkbox" id="optMs" checked> MediaSession metadata+handlers</label>
+<label><input type="checkbox" id="optWl"> Screen wake lock (keeps screen ON; not the goal, for comparison only)</label>
+<label><input type="checkbox" id="optNative" checked> Native foreground service (APK only)</label><br>
+<button id="btnBgStart" class="primary">Start background test</button>
+<button id="btnBgStop">Stop</button>
+<button id="btnBgSum">Summarize</button>
+<button id="btnBgClear">Clear saved log</button>
+<pre id="outBg">(not run)</pre>
+
+<h2>3. Caller-loop latency (unknown 3)</h2>
+<p class="mut">Live mic + live VAD + live WebAudio playback; stages 2-6 are FAKE configured delays (editable) because no vendor is wired. Say a short phrase when prompted, then stop talking. Stage 8 is the browser's REPORTED output latency, not measured.</p>
+<label>Turns <input id="turns" type="number" value="5" min="1" max="30" style="width:4em"></label>
+<label>Hangover ms <input id="hang" type="number" value="300" style="width:5em"></label>
+<label>LLM TTFT p50 <input id="cfgLlm" type="number" value="450" style="width:5em"></label>
+<label>TTS TTFB p50 <input id="cfgTts" type="number" value="250" style="width:5em"></label><br>
+<button id="btnLat" class="primary">Run live turns</button>
+<pre id="outLat">(not run)</pre>
+
+<h2>Results</h2>
+<button id="btnCopy">Copy all results JSON</button><button id="btnDl">Download results JSON</button>
+<pre id="outAll">{}</pre>
+<script type="module" src="./spike.js"></script>
+</body></html>
