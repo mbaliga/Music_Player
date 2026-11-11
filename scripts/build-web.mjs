@@ -22,10 +22,21 @@
 import { rm, mkdir, cp, readFile, writeFile, readdir, stat } from 'node:fs/promises';
 import { dirname, resolve, relative, sep, posix } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { existsSync } from 'node:fs';
+import { validatePackDoc } from '../src/radio/canned/pack.js';
+import { buildStationsIndex, serializeIndex, isPackFile } from './stations-index.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 export const ITEMS = ['index.html', 'src'];
+
+// DATA SHIPPED BESIDE src/ (fetched lazily from the app's own origin by src/radio/canned, never imported):
+//   content/stations/<id>.json  -> www/stations/<id>.json     the canned station packs (validated here; an invalid pack fails the build)
+//   (generated)                 -> www/stations/index.json    the dial's station list, built from the packs
+//   content/audio/** (optional) -> www/audio/**               pre-rendered voice packs from scripts/render-shows.py; ABSENT today
+// Dev-only files in content/stations (README.md, _stoplist.json, the committed index.json) are not copied.
+export const STATIONS_SRC = 'content/stations';
+export const AUDIO_SRC = 'content/audio';
 
 export const DENY = Object.freeze([
   'src/radio/core/dev.js',            // dev/test barrel
@@ -75,6 +86,22 @@ export async function reachableFiles(dir) {
   return { files: [...seen].filter((f) => !missing.includes(f)).map(rel).sort(), missing: missing.map(rel).sort() };
 }
 
+/** Copy + validate the station packs, write the generated index, copy the optional audio packs. -> shipped pack file names */
+async function stageStations(outDir, srcDir, audioDir) {
+  const dest = resolve(outDir, 'stations');
+  await mkdir(dest, { recursive: true });
+  const files = (await readdir(srcDir)).filter(isPackFile).sort();
+  for (const f of files) {
+    const text = await readFile(resolve(srcDir, f), 'utf8');
+    const { errors } = validatePackDoc(JSON.parse(text));
+    if (errors.length) throw new Error(`build:web — station pack ${f} is invalid: ${errors.slice(0, 3).map((e) => e.msg).join('; ')}`);
+    await writeFile(resolve(dest, f), text);
+  }
+  await writeFile(resolve(dest, 'index.json'), serializeIndex(buildStationsIndex(srcDir, audioDir)));
+  if (existsSync(audioDir)) await cp(audioDir, resolve(outDir, 'audio'), { recursive: true });
+  return files;
+}
+
 /** List every shipped file (posix paths relative to `dir`), sorted. */
 export async function listFiles(dir) {
   const out = [];
@@ -86,7 +113,7 @@ export async function listFiles(dir) {
  * Stage the app into `outDir` (default ./www). `buildId` is stamped into index.html (default derived from
  * GITHUB_SHA + the current time; pass one for a reproducible build).
  */
-export async function buildWeb({ outDir = resolve(root, 'www'), buildId = null, quiet = false } = {}) {
+export async function buildWeb({ outDir = resolve(root, 'www'), buildId = null, quiet = false, stationsDir = resolve(root, STATIONS_SRC), audioDir = resolve(root, AUDIO_SRC) } = {}) {
   await rm(outDir, { recursive: true, force: true });
   await mkdir(outDir, { recursive: true });
   let skipped = 0;
@@ -100,6 +127,9 @@ export async function buildWeb({ outDir = resolve(root, 'www'), buildId = null, 
       },
     });
   }
+
+  // Canned station packs (+ optional audio packs), lazy-loaded data.
+  const stationFiles = await stageStations(outDir, stationsDir, audioDir);
 
   // Stamp the build id into the staged index.html so a stale APK download is
   // obvious in the app UI. GITHUB_SHA is set automatically in CI; locally it's
@@ -119,8 +149,8 @@ export async function buildWeb({ outDir = resolve(root, 'www'), buildId = null, 
 
   let bytes = 0;
   for (const f of await listFiles(outDir)) bytes += (await stat(resolve(outDir, f))).size;
-  if (!quiet) console.log(`build:web → staged ${ITEMS.join(', ')} into ${relative(root, outDir) || '.'}/ (${skipped} dev-only files skipped, ${(bytes / 1024).toFixed(0)} KB, build ${buildId})`);
-  return { outDir, buildId, skipped, bytes };
+  if (!quiet) console.log(`build:web → staged ${ITEMS.join(', ')} into ${relative(root, outDir) || '.'}/ (${skipped} dev-only files skipped, ${stationFiles.length} station packs, ${(bytes / 1024).toFixed(0)} KB, build ${buildId})`);
+  return { outDir, buildId, skipped, bytes, stations: stationFiles };
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1] || '').href) {

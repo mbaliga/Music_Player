@@ -29,6 +29,14 @@ export function daypartOfHour(hour) {
 
 export const daypartFits = (dayparts, hour) => !Array.isArray(dayparts) || !dayparts.length || dayparts.includes('any') || dayparts.includes(daypartOfHour(hour));
 
+/** 2 = names this time of day, 1 = plays any time, 0 = suits another time of day (all of them still play) */
+export function daypartFit(dayparts, hour) {
+  const d = Array.isArray(dayparts) ? dayparts : [];
+  if (!d.length) return 1;
+  if (d.includes(daypartOfHour(hour))) return 2;
+  return d.includes('any') ? 1 : 0;
+}
+
 const cap = (s) => (s ? s[0].toUpperCase() + s.slice(1) : s);
 /** badge text: "Any time", "Evening / night" */
 export function daypartBadge(dayparts) {
@@ -65,7 +73,7 @@ export function cannedCard(e, hour) {
   const speakers = e.hosts.filter((h) => h.role === 'host' || h.role === 'co-host');
   return {
     kind: 'canned', key: `${CANNED_TYPE}|${e.id}`, id: e.id, name: e.name, dial: e.dial, tagline: e.tagline, vibe: e.vibe,
-    label: PRE_WRITTEN_LABEL, dayparts: e.daypart, daypartBadge: daypartBadge(e.daypart), inDaypart: daypartFits(e.daypart, hour),
+    label: PRE_WRITTEN_LABEL, dayparts: e.daypart, daypartBadge: daypartBadge(e.daypart), inDaypart: daypartFits(e.daypart, hour), fit: daypartFit(e.daypart, hour),
     hostChips: (speakers.length ? speakers : e.hosts.slice(0, 3)).map((h) => ({ id: h.id, name: h.name, role: h.role })),
     castCount: Math.max(0, e.hosts.length - speakers.length), minutes: e.minutes, segments: e.segments,
     startable: true, station: cannedStation(e),
@@ -84,9 +92,9 @@ export function styleCard(s, hour, { cloudAvailable = false } = {}) {
 
 const dialNum = (c) => { const n = parseFloat(c.dial); return Number.isFinite(n) ? n : 1e9; };
 
-/** in-daypart first, then the rest; each group by dial number then name */
+/** stations that name this time of day first, then 'any time' ones, then the rest; each group by dial number then name */
 export function orderCanned(cards) {
-  return cards.slice().sort((a, b) => (Number(b.inDaypart) - Number(a.inDaypart)) || (dialNum(a) - dialNum(b)) || (a.name < b.name ? -1 : 1));
+  return cards.slice().sort((a, b) => ((b.fit ?? Number(b.inDaypart)) - (a.fit ?? Number(a.inDaypart))) || (dialNum(a) - dialNum(b)) || (a.name < b.name ? -1 : 1));
 }
 
 /**

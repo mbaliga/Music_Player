@@ -232,8 +232,9 @@ export function createChooser(pack, { seed = 1, cadence = {}, preferTwin = false
     },
 
     /** Record that a planned break aired (call at air time, with the measured length when known). */
-    commit(plan, { startedSec, durSec } = {}) {
+    commit(plan, info) {
       try {
+        const { startedSec, durSec } = info || {};
         if (!plan || plan.type !== 'talk') return;
         const u = plan.unit;
         const d = Number.isFinite(durSec) && durSec > 0 ? durSec : plan.estSec;

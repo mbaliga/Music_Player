@@ -42,7 +42,8 @@ function kindOf(userStation) {
   return 'auto';
 }
 
-export function chooseShowSource({ online = true, cloudAvailable = false, flagOn = false, userStation = null, lastSource = null } = {}) {
+export function chooseShowSource(input) {
+  const { online = true, cloudAvailable = false, flagOn = false, userStation = null, lastSource = null } = (input && typeof input === 'object') ? input : {};
   const cloudOk = cloudAvailable === true && online !== false && flagOn === true;
   const kind = kindOf(userStation);
   const out = (source, reason, extra = {}) => ({ source, reason, degraded: false, sticky: false, ...extra });
