@@ -34,3 +34,11 @@ weather, traffic, time or date, and nothing asserted about the listener. Text is
 prose; performance cues go in `direction`.
 
 Validate with `node scripts/check-content.mjs`.
+
+## Files in this folder
+
+- `<station-id>.json`: the packs (the only files the app and `build:web` treat as stations).
+- `index.json`: GENERATED list the Radio tab's dial renders from (name, dial, tagline, vibe, daypart, hosts, minutes), copied from the packs. After editing a pack's header (a rename!) run `node scripts/stations-index.mjs`; the tests fail while it is stale.
+- `_stoplist.json`: SEED stoplist for `node scripts/review-content.mjs` (report-only mechanical review, findings in `docs/CANNED_REVIEW_FINDINGS.md`). Not shipped.
+- Pre-rendered voices (none yet) go to `content/audio/<station-id>/manifest.json` + `<segment>.opus` (from `scripts/render-shows.py`); `build:web` ships them to `www/audio/`. Never commit models; commit audio only when the owner decides to.
+
