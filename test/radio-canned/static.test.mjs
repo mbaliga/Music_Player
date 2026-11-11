@@ -29,6 +29,8 @@ test('static: canned code has no network API except the two injectable same-orig
       assert.doesNotMatch(m[1], /fake-adapters|fixtures|\/sim\.js|dev\.js/, `${f} imports a dev-only module: ${m[1]}`);
     }
   }
+  // found in real Chromium: a default `{ setTimeout, clearTimeout }` object called as a method throws "Illegal invocation"
+  for (const f of files) assert.doesNotMatch(code(read(resolve(dir, f))), /=\s*\{\s*setTimeout\s*,\s*clearTimeout/, `${f} defaults timers to the bare globals`);
   // the session's fetch is a parameter with an own-origin check; the cross-origin guard is present
   const sess = code(read(resolve(dir, 'session.js')));
   assert.match(sess, /refused: not the app origin/);

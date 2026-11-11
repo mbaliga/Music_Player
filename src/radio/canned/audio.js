@@ -17,7 +17,7 @@
 
 export const AUDIO_TIMEOUTS = Object.freeze({ startMs: 7000, endSlackMs: 4000, endFactor: 1.5 });
 
-export function createAudioBackend({ createAudio = () => new Audio(), timers = { setTimeout, clearTimeout }, timeouts = AUDIO_TIMEOUTS } = {}) {
+export function createAudioBackend({ createAudio = () => new Audio(), timers = { setTimeout: (f, ms) => setTimeout(f, ms), clearTimeout: (t) => clearTimeout(t) }, timeouts = AUDIO_TIMEOUTS } = {}) {
   let cur = null; // { cancel }
   const api = {
     get playing() { return !!cur; },
@@ -25,7 +25,7 @@ export function createAudioBackend({ createAudio = () => new Audio(), timers = {
     play({ candidates = [], durationSec = 20, onStart, onProgress } = {}) {
       if (cur) cur.cancel('cancelled');
       return new Promise((resolve) => {
-        let settled = false, el = null, idx = 0, startT = null, endT = null, started = false, tried = 0;
+        let settled = false, el = null, idx = 0, startT = null, endT = null, started = false, tried = 0, attempt = 0;
         const clear = () => { if (startT) timers.clearTimeout(startT); if (endT) timers.clearTimeout(endT); startT = endT = null; };
         const release = () => { try { if (el) { el.onplaying = el.onended = el.onerror = el.ontimeupdate = null; el.pause(); el.removeAttribute('src'); el.load(); } } catch { /* */ } el = null; };
         const finish = (res) => { if (settled) return; settled = true; clear(); const c = candidates[idx - 1] || null; release(); if (cur === handle) cur = null; resolve({ ...res, candidate: c, tried }); };
@@ -36,25 +36,26 @@ export function createAudioBackend({ createAudio = () => new Audio(), timers = {
           clear(); release(); started = false;
           if (idx >= candidates.length) return finish({ ok: false, reason: tried ? `load_failed:${why}` : 'unsupported' });
           const cand = candidates[idx++];
+          const mine = ++attempt; // events and promise rejections from a superseded candidate must not advance the list again
           let probe = '';
           try { el = createAudio(); probe = cand.type ? el.canPlayType(cand.type) : 'maybe'; } catch (e) { return finish({ ok: false, reason: 'no_audio_element' }); }
           if (cand.type && probe === '') { release(); return next('unsupported_type'); }
           tried++;
           el.preload = 'auto';
           el.onplaying = () => {
-            if (settled || started) return;
+            if (settled || started || mine !== attempt) return;
             started = true; if (startT) timers.clearTimeout(startT); startT = null;
             try { onStart && onStart(); } catch { /* host callback must not break us */ }
             endT = timers.setTimeout(() => finish({ ok: true, reason: 'assumed_end', assumed: true }), durationSec * 1000 * timeouts.endFactor + timeouts.endSlackMs);
           };
-          el.onended = () => finish({ ok: true, reason: 'done' });
-          el.onerror = () => { if (!started) next('error'); else finish({ ok: false, reason: 'error_mid_play' }); };
+          el.onended = () => { if (mine === attempt) finish({ ok: true, reason: 'done' }); };
+          el.onerror = () => { if (mine !== attempt) return; if (!started) next('error'); else finish({ ok: false, reason: 'error_mid_play' }); };
           if (onProgress) el.ontimeupdate = () => { try { onProgress(el.currentTime); } catch { /* */ } };
-          startT = timers.setTimeout(() => { if (!started) next('no_start'); }, timeouts.startMs);
+          startT = timers.setTimeout(() => { if (!started && mine === attempt) next('no_start'); }, timeouts.startMs);
           try {
             el.src = cand.url;
             const p = el.play();
-            if (p && typeof p.catch === 'function') p.catch((e) => { if (settled || started) return; if (e && e.name === 'AbortError') return; next('play_rejected'); });
+            if (p && typeof p.catch === 'function') p.catch((e) => { if (settled || started || mine !== attempt) return; if (e && e.name === 'AbortError') return; next('play_rejected'); });
           } catch { next('throw'); }
         };
         next('start');

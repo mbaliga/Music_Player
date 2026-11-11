@@ -76,7 +76,7 @@ class FakeAudioEl {
   removeAttribute(k) { delete this.attrs[k]; }
   load() {}
   pause() { this.paused = true; }
-  play() { const mode = this.script(this.src); this.paused = false; if (mode === 'reject') return Promise.reject(new Error('NotSupported')); if (mode === 'error') { Promise.resolve().then(() => this.onerror && this.onerror()); return Promise.resolve(); } if (mode === 'ok') { Promise.resolve().then(() => { this.onplaying && this.onplaying(); }); return Promise.resolve(); } return Promise.resolve(); /* 'hang' */ }
+  play() { const mode = this.script(this.src); this.paused = false; if (mode === 'reject') return Promise.reject(new Error('NotSupported')); if (mode === 'both') { Promise.resolve().then(() => this.onerror && this.onerror()); return new Promise((_, rej) => setTimeout(() => rej(Object.assign(new Error('NotSupported'), { name: 'NotSupportedError' })), 5)); } if (mode === 'error') { Promise.resolve().then(() => this.onerror && this.onerror()); return Promise.resolve(); } if (mode === 'ok') { Promise.resolve().then(() => { this.onplaying && this.onplaying(); }); return Promise.resolve(); } return Promise.resolve(); /* 'hang' */ }
   finish() { this.onended && this.onended(); }
 }
 FakeAudioEl.made = [];
@@ -146,4 +146,19 @@ test('audio backend: cancel settles the pending play; a stalled end is assumed a
   await time.advance(11000);
   const r = await p2;
   assert.deepEqual([r.ok, r.assumed], [true, true]);
+});
+
+test('audio backend: a candidate that fires an error AND rejects play() later advances the list once, not twice (found in real Chromium)', async () => {
+  const time = fakeTime();
+  const a = mk(time, (src) => (/opus/.test(src) ? 'both' : 'hang')); // the .m4a is still loading when the opus's late rejection arrives
+  const p = a.play({ candidates: cands, durationSec: 5 });
+  await new Promise((r) => setTimeout(r, 30));
+  await time.flush(); await time.flush();
+  FakeAudioEl.made.at(-1).onplaying();
+  FakeAudioEl.made.at(-1).finish();
+  const r = await p;
+  assert.equal(r.ok, true);
+  assert.equal(r.candidate.url, 'audio/x/a.m4a');
+  assert.equal(r.tried, 2);
+  assert.equal(FakeAudioEl.made.length, 2);
 });

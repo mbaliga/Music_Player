@@ -119,7 +119,7 @@ function styleCard(c, ctx) {
     info.hidden = !info.hidden;
     card.setAttribute('aria-expanded', String(!info.hidden));
   };
-  const card = h('div', { class: 'dial-card grey', role: 'button', tabindex: '0', 'data-k': c.key, 'data-style': c.id, 'aria-expanded': 'false', 'aria-disabled': 'true',
+  const card = h('div', { class: 'dial-card grey', role: 'button', tabindex: '0', 'data-k': c.key, 'data-style': c.id, 'aria-expanded': 'false', 'data-startable': 'false',
     'aria-label': `${c.name}, ${c.subtitle}. ${NEEDS_INTERNET}. Tap for details.`, onclick: toggle,
     onkeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } } },
     h('div', { class: 'dial-top' }, h('span', { class: 'dial-name' }, c.name), h('span', { class: 'dial-num' }, c.subtitle)),
@@ -140,15 +140,16 @@ function fillInfo(info, c, ctx) {
   const note = h('div', { class: 'dial-aud', role: 'status' });
   const hosts = s.hosts.map((host) => {
     const pr = hostProsody(host);
+    const first = host.id.charAt(0).toUpperCase() + host.id.slice(1);
     const btn = h('button', { type: 'button', 'data-audition': host.id, onclick: async () => {
       if (ctx.isPlaying && ctx.isPlaying()) { note.textContent = 'Stop the station that is playing first, then listen.'; return; }
       auditioner = auditioner || createAuditioner({ storage: ctx.storage || null });
-      if (btn.dataset.busy === '1') { auditioner.stop(); btn.dataset.busy = '0'; btn.textContent = `Hear ${host.name.split(' ')[0]}`; note.textContent = ''; return; }
+      if (btn.dataset.busy === '1') { auditioner.stop(); btn.dataset.busy = '0'; btn.textContent = `Hear ${first}`; note.textContent = ''; return; }
       btn.dataset.busy = '1'; btn.textContent = 'Stop';
       const r = await auditioner.audition(host, { onLine: (t) => { note.textContent = t; } });
-      btn.dataset.busy = '0'; btn.textContent = `Hear ${host.name.split(' ')[0]}`;
+      btn.dataset.busy = '0'; btn.textContent = `Hear ${first}`;
       note.textContent = r.ok ? 'That was the audition script, read in this host’s pace and pitch.' : r.reason === 'no speech engine' ? 'This device reported no speech engine, so there is nothing to play the audition with.' : 'The phone’s voice stopped before the audition finished.';
-    } }, `Hear ${host.name.split(' ')[0]}`);
+    } }, `Hear ${first}`);
     return h('div', { class: 'dial-host' },
       h('b', {}, host.name), host.default ? ' (default)' : '', h('div', { class: 'dial-vibe' }, `${host.age}, ${host.register}. Flat-voice device: ${host.flatDevice}.`),
       h('dl', {}, h('dt', {}, 'Pace / pitch'), h('dd', {}, `${pr.rate} / ${pr.pitch} (${host.mood})`), h('dt', {}, 'Pauses'), h('dd', {}, host.pauseHabit), h('dt', {}, 'Listen for'), h('dd', {}, host.auditionFor)), btn);

@@ -5,7 +5,7 @@
 import { createSystemVoice, webSpeechBackend, capacitorBackend, resolveCapacitorTts, prepareUtterance, loadVoicePrefs } from '../offline/voice.js';
 import { AUDITION_SCRIPT, hostProsody } from './ai-styles.js';
 
-export function createAuditioner({ win = (typeof window !== 'undefined' ? window : {}), storage = null, timers = { setTimeout, clearTimeout } } = {}) {
+export function createAuditioner({ win = (typeof window !== 'undefined' ? window : {}), storage = null, timers = { setTimeout: (f, ms) => setTimeout(f, ms), clearTimeout: (t) => clearTimeout(t) } } = {}) {
   let voice = null, running = 0;
   const get = () => {
     if (voice) return voice;
