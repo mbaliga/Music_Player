@@ -15,6 +15,7 @@ import { createStreamSession } from './radio-session.js';
 import { isRadioAiEnabled, setRadioAiEnabled } from './radio/flag.js';
 import {
   loadModel, saveModel, stationKey, stationFromEntry, isFavourite, toggleFavourite, recordPlayed, clearRecents,
+  refreshCannedSnapshots, isMissingCanned, removeEntry,
 } from './radio-store.js';
 
 // ── StationType 'radio-browser': a Session is an <audio> element on a URL ────
@@ -59,6 +60,7 @@ const h = (tag, props = {}, ...kids) => {
   return e;
 };
 
+const NO_LONGER = 'This station is no longer in the app';
 const GENRES = ['jazz', 'rock', 'classical', 'ambient', 'lofi', 'news', 'electronic', 'folk'];
 
 export class RadioUI {
@@ -70,6 +72,7 @@ export class RadioUI {
     this.station = null;
     this.loadedOnce = false;
     this.store = loadModel(this._storage());
+    this._cannedIndex = null; // the stations index once the dial has loaded it (refreshes + missing-station checks)
     this._pill = h('div', { class: 'radio-pill hidden' },
       h('span', { class: 'radio-pill-dot' }), (this._pillName = h('span', { class: 'radio-pill-name' })),
       h('button', { class: 'radio-pill-stop', type: 'button', 'aria-label': 'Stop radio', onclick: () => this.stop() }, '■'));
@@ -108,7 +111,7 @@ export class RadioUI {
     const css = document.createElement('style'); css.textContent = AI_CSS; document.head.append(css);
     pane.append(h('div', { class: 'lib-toolbar radio-bar' }, form, chips),
       h('div', { class: 'lib-grid-wrap' }, this.aiSec, this.savedEl, this.dialEl, this.netHead, this.status, this.listEl, this.settingsEl),
-      this.now, this._aiPanel);
+      this._aiPanel, this.now); // the card sits BEFORE the now-bar so CSS can hide the bar while the card is up (index.html)
     // Retry when connectivity returns.
     window.addEventListener('online', () => { if (this._lastFailureOffline) this.search(this._lastParams || {}); });
     window.addEventListener('offline', () => { this.netHead.dataset.offline = '1'; });
@@ -123,7 +126,17 @@ export class RadioUI {
     import('./radio/canned/dial.js').then((m) => m.renderDial(this.dialEl, {
       aiOn: () => this._aiOn(), isFav: (s) => isFavourite(this.store, s), toggleFav: (s) => this.toggleFav(s),
       play: (s) => this.play(s), isCurrent: (s) => this._isCurrent(s), isPlaying: () => !!this.session, storage: this._storage(),
+      onIndex: (idx) => this._onIndex(idx),
     })).catch(() => { this.dialEl.replaceChildren(h('p', { class: 'radio-status err' }, 'The station list could not be loaded.')); });
+  }
+
+  /** The stations index loaded: refresh saved canned snapshots from it, and re-draw Resume / Favourites / Recents. */
+  _onIndex(idx) {
+    if (!Array.isArray(idx) || !idx.length) return;
+    this._cannedIndex = idx;
+    const m = refreshCannedSnapshots(this.store, idx);
+    if (m !== this.store) this._commit(m);
+    this._renderSaved();
   }
 
   _aiOn() { try { return isRadioAiEnabled(window.localStorage); } catch { return false; } }
@@ -158,6 +171,17 @@ export class RadioUI {
       star, h('span', { class: 'radio-row-go' }, '▶'));
   }
 
+  _missing(s) { return isMissingCanned(s, this._cannedIndex); }
+
+  _removeSaved(s) { this._commit(removeEntry(this.store, stationKey(s))); this._renderSaved(); }
+
+  /** A saved canned station whose pack is gone: say so, and offer Remove (never a play button that can only fail). */
+  _missingRow(s) {
+    return h('div', { class: 'radio-row missing', 'data-k': stationKey(s) || '' },
+      h('div', { class: 'radio-row-main' }, h('div', { class: 'alb-name' }, s.name), h('div', { class: 'alb-artist' }, NO_LONGER)),
+      h('button', { class: 'sort-chip radio-remove', type: 'button', 'aria-label': `Remove ${s.name}`, onclick: () => this._removeSaved(s) }, 'Remove'));
+  }
+
   _isCurrent(s) { return !!this.station && stationKey(this.station) === stationKey(s); }
 
   toggleFav(s) {
@@ -178,12 +202,13 @@ export class RadioUI {
     const kids = [];
     if (m.last) {
       const last = stationFromEntry(m.last);
-      kids.push(h('button', { class: 'radio-resume', type: 'button', onclick: () => this.play(last) },
+      if (this._missing(last)) kids.push(this._missingRow(last));
+      else kids.push(h('button', { class: 'radio-resume', type: 'button', onclick: () => this.play(last) },
         h('span', { class: 'radio-resume-go' }, '▶'), h('span', { class: 'radio-resume-txt' }, 'Resume ', h('b', {}, last.name))));
     }
     const section = (title, entries, extra) => entries.length ? h('div', { class: 'radio-sec' },
       h('div', { class: 'radio-sec-head' }, h('span', {}, title), extra || null),
-      h('div', { class: 'radio-list' }, entries.map((e) => this._row(stationFromEntry(e))))) : null;
+      h('div', { class: 'radio-list' }, entries.map((e) => { const s = stationFromEntry(e); return this._missing(s) ? this._missingRow(s) : this._row(s); }))) : null;
     kids.push(section('Favourites', m.favs));
     kids.push(section('Recents', m.recents.slice(0, 8), h('button', { class: 'sort-chip', type: 'button', onclick: () => { this._commit(clearRecents(this.store)); this._renderSaved(); } }, 'Clear')));
     this.savedEl.replaceChildren(...kids.filter(Boolean));
@@ -211,6 +236,9 @@ export class RadioUI {
   }
 
   play(station) {
+    if (this._missing(station)) { // a renamed / removed pack: say what happened instead of a generic start failure
+      this._showNow(station, { phase: 'error', error: { kind: 'missing', message: NO_LONGER } }); return;
+    }
     const prevEngine = !!(this.session && this.session.usesEngine);
     this.session?.stop();
     const session = createSessionFor(station, { aiHost: this.d.aiHost });
@@ -225,7 +253,7 @@ export class RadioUI {
       if (st.phase === 'playing' && !this._recorded) { this._recorded = true; // remember the URL that actually worked as the preferred one
         const urls = streamCandidates(station), i = session.urlIndex | 0;
         const worked = urls.length ? { ...station, streamUrl: urls[i], streamUrls: [urls[i], ...urls.filter((_, j) => j !== i)] } : station;
-        this._commit(recordPlayed(this.store, worked)); this._renderSaved(); }
+        this._commit(recordPlayed(this.store, worked, Date.now(), this._cannedIndex)); this._renderSaved(); }
       if (st.phase === 'idle' && session.isCanned && this._recorded && !this._stopping) { this.stop(); return; } // a graceful sign-off finished
       this._showNow(station, st);
     });
@@ -268,7 +296,8 @@ export class RadioUI {
         h('div', { class: 'alb-artist' }, st.phase === 'error' ? st.error.message : label)),
       (() => { const f = isFavourite(this.store, station);
         return h('button', { class: 'radio-star' + (f ? ' on' : ''), type: 'button', 'aria-pressed': String(f), 'aria-label': f ? 'Remove from favourites' : 'Add to favourites', onclick: () => this.toggleFav(station) }, f ? '★' : '☆'); })(),
-      st.phase === 'error' ? h('button', { class: 'sort-chip', type: 'button', onclick: () => this.play(station) }, 'Retry') : null,
+      st.phase === 'error' && st.error.kind === 'missing' ? h('button', { class: 'sort-chip', type: 'button', onclick: () => { this._removeSaved(station); this.stop(); } }, 'Remove')
+        : st.phase === 'error' ? h('button', { class: 'sort-chip', type: 'button', onclick: () => this.play(station) }, 'Retry') : null,
       h('button', { class: 'theme-btn', type: 'button', onclick: () => this.stop() }, 'Stop'),
     ].filter(Boolean));
     this._pillName.textContent = station.name;

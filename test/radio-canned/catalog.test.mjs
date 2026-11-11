@@ -112,5 +112,5 @@ test('favourites / recents / resume work for canned stations through the existin
   const again = stationFromEntry(back.last);
   assert.equal(again.type, 'canned'); assert.equal(again.id, e.id); assert.equal(again.name, e.name);
   assert.ok(again.tags.includes('canned'));
-  assert.ok(Object.keys(snapshotOf(st)).every((k) => ['name', 'country', 'tags', 'codec', 'bitrate'].includes(k)));
+  assert.ok(Object.keys(snapshotOf(st)).every((k) => ['name', 'dial', 'tagline', 'country', 'tags', 'codec', 'bitrate'].includes(k)));
 });

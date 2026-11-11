@@ -19,8 +19,12 @@ const CSS = `
 .dial-cards{display:flex;flex-direction:column;gap:10px}
 .dial-card{position:relative;padding:12px;border-radius:12px;background:var(--surface);border:1px solid var(--border);color:var(--ink);cursor:pointer;text-align:left}
 .dial-card.on{border-color:var(--violet);box-shadow:0 0 0 1px var(--violet) inset}
-.dial-card:focus-visible{outline:2px solid var(--violet);outline-offset:2px}
+.dial-card:has(.dial-play:focus-visible){outline:2px solid var(--violet);outline-offset:2px}
 .dial-card.grey{opacity:.62;cursor:pointer}
+.dial-play{display:block;width:100%;margin:0;padding:0;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.dial-play:focus{outline:none}
+.dial-play::after{content:"";position:absolute;inset:0;border-radius:12px}
+.dial-card .dial-info{position:relative;z-index:1;cursor:auto}
 .dial-top{display:flex;align-items:baseline;gap:8px;padding-right:44px}
 .dial-name{font-size:16px;font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis}
 .dial-num{font-size:12px;font-weight:700;color:var(--ink2);border:1px solid var(--border);border-radius:8px;padding:0 6px;white-space:nowrap}
@@ -32,7 +36,7 @@ const CSS = `
 .dial-meta{display:flex;flex-wrap:wrap;gap:6px 10px;margin-top:8px;font-size:11px;color:var(--ink2);align-items:center}
 .dial-badge{font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink)}
 .dial-badge.soon{color:var(--ink2)}
-.dial-star{position:absolute;top:6px;right:6px}
+.dial-star{position:absolute;top:0;right:0;z-index:2;width:44px;height:44px;margin:0}
 .dial-bar{height:6px;border-radius:3px;background:var(--surface2);overflow:hidden;margin-top:8px;display:flex}
 .dial-bar i{display:block;height:100%;background:var(--violet)}
 .dial-bar b{display:block;height:100%;background:var(--border)}
@@ -41,7 +45,7 @@ const CSS = `
 .dial-info dt{color:var(--ink2)}
 .dial-info dd{margin:0}
 .dial-host{margin-top:8px;padding:8px;border-radius:8px;background:var(--surface2)}
-.dial-host button{margin-top:6px;padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--ink);font:inherit;font-size:12px;cursor:pointer}
+.dial-host button{margin-top:6px;min-height:40px;padding:6px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--ink);font:inherit;font-size:12px;cursor:pointer}
 .dial-aud{min-height:1.2em;font-size:12px;color:var(--ink2);margin-top:4px}
 `;
 let styled = false;
@@ -70,6 +74,7 @@ export async function renderDial(root, ctx) {
   const baseUrl = ctx.baseUrl || document.baseURI;
   const fetchFn = ctx.fetchFn || ((u, o) => fetch(u, o));
   const index = await loadStationsIndex({ fetchFn, baseUrl });
+  try { if (ctx.onIndex) ctx.onIndex(index); } catch { /* saved-list refresh is best effort */ }
   const hour = Number.isFinite(ctx.hour) ? ctx.hour : new Date().getHours();
   const cat = buildCatalog({ index, flagOn: ctx.aiOn(), hour, cloudAvailable: false });
   const kids = [];
@@ -98,12 +103,14 @@ function cannedCard(c, ctx) {
   const fav = ctx.isFav(st);
   const star = h('button', { class: 'radio-star dial-star' + (fav ? ' on' : ''), type: 'button', 'aria-pressed': String(fav), 'aria-label': (fav ? 'Remove ' : 'Add ') + c.name + (fav ? ' from favourites' : ' to favourites'),
     onclick: (e) => { e.stopPropagation(); ctx.toggleFav(st); } }, fav ? '★' : '☆');
-  const open = () => ctx.play(st);
-  return h('div', { class: 'dial-card' + (ctx.isCurrent(st) ? ' on' : ''), role: 'button', tabindex: '0', 'data-k': c.key, 'data-station': c.id,
-    'aria-label': `${c.name}, dial ${c.dial}. ${c.tagline} Pre-written show.`, onclick: open,
-    onkeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } } },
-    h('div', { class: 'dial-top' }, h('span', { class: 'dial-name' }, c.name), h('span', { class: 'dial-num' }, c.dial)),
-    h('div', { class: 'dial-tag' }, c.tagline),
+  const tagId = `dial-tag-${c.id}`;
+  // A plain container: the ONE real <button> is the station name, stretched over the card (::after) so the whole card plays it;
+  // the star is a sibling above the overlay (44 px hit area, no taller card), so a missed star tap can only miss, never start.
+  return h('div', { class: 'dial-card' + (ctx.isCurrent(st) ? ' on' : ''), 'data-k': c.key, 'data-station': c.id },
+    h('div', { class: 'dial-top' },
+      h('button', { class: 'dial-play', type: 'button', 'aria-label': `Play ${c.name}, dial ${c.dial}`, 'aria-describedby': tagId, onclick: () => ctx.play(st) },
+        h('span', { class: 'dial-name' }, c.name), ' ', h('span', { class: 'dial-num' }, c.dial))),
+    h('div', { class: 'dial-tag', id: tagId }, c.tagline),
     h('div', { class: 'dial-vibe' }, c.vibe),
     h('div', { class: 'dial-chips' }, c.hostChips.map((x) => h('span', { class: 'dial-chip', title: x.role }, x.name)), c.castCount ? h('span', { class: 'dial-chip dim' }, `+${c.castCount} more voices`) : null),
     h('div', { class: 'dial-meta' }, h('span', { class: 'dial-badge' }, PRE_WRITTEN_LABEL), h('span', {}, `about ${c.minutes} min of talk`), h('span', { 'data-daypart': c.inDaypart ? 'fit' : 'other' }, c.daypartBadge)),
@@ -117,12 +124,14 @@ function styleCard(c, ctx) {
   const toggle = () => {
     if (!built) { built = true; fillInfo(info, c, ctx); }
     info.hidden = !info.hidden;
-    card.setAttribute('aria-expanded', String(!info.hidden));
+    card.querySelector('.dial-play').setAttribute('aria-expanded', String(!info.hidden));
   };
-  const card = h('div', { class: 'dial-card grey', role: 'button', tabindex: '0', 'data-k': c.key, 'data-style': c.id, 'aria-expanded': 'false', 'data-startable': 'false',
-    'aria-label': `${c.name}, ${c.subtitle}. ${NEEDS_INTERNET}. Tap for details.`, onclick: toggle,
-    onkeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } } },
-    h('div', { class: 'dial-top' }, h('span', { class: 'dial-name' }, c.name), h('span', { class: 'dial-num' }, c.subtitle)),
+  const infoId = `dial-info-${c.id}`;
+  info.id = infoId;
+  const card = h('div', { class: 'dial-card grey', 'data-k': c.key, 'data-style': c.id, 'data-startable': 'false' },
+    h('div', { class: 'dial-top' },
+      h('button', { class: 'dial-play', type: 'button', 'aria-expanded': 'false', 'aria-controls': infoId, 'aria-label': `${c.name}, ${c.subtitle}. ${NEEDS_INTERNET}. Tap for details.`, onclick: toggle },
+        h('span', { class: 'dial-name' }, c.name), ' ', h('span', { class: 'dial-num' }, c.subtitle))),
     h('div', { class: 'dial-tag' }, c.mode),
     h('div', { class: 'dial-bar', role: 'img', 'aria-label': `${Math.round(c.talkShare * 100)} percent talk, ${Math.round(c.musicShare * 100)} percent music` },
       h('i', { style: `width:${Math.round(c.talkShare * 100)}%` }), h('b', { style: `width:${Math.round(c.musicShare * 100)}%` })),

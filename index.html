@@ -584,8 +584,24 @@
     background: var(--surface); color: var(--ink); border: 1px solid var(--secondary); font: inherit; font-size: 14px; }
   .radio-resume-go { color: var(--secondary); font-size: 12px; }
   .radio-resume-txt { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .radio-star { flex: 0 0 auto; width: 36px; height: 36px; border: none; background: none; color: var(--ink2); font-size: 20px; line-height: 1; cursor: pointer; border-radius: 50%; }
+  /* 36 px of layout, 44 px of hit area (negative margin), so rows do not grow */
+  .radio-star { flex: 0 0 auto; width: 44px; height: 44px; margin: -4px; border: none; background: none; color: var(--ink2); font-size: 20px; line-height: 1; cursor: pointer; border-radius: 50%; }
   .radio-star.on { color: #f5c542; }
+  .radio-remove { min-height: 40px; padding: 0 14px; }
+  .radio-row.missing { cursor: default; }
+  /* The canned / You Radio card shows station, state and errors itself: hide the now-bar while it is mounted (the card sits right before it). */
+  .ai-panel:not(.hidden) + .radio-now { display: none; }
+  /* The card never takes more than ~40% of the tab: captions and the cast list scroll inside it, so the dial keeps room. */
+  .ai-panel:not(.hidden) { flex: 0 1 auto; display: flex; flex-direction: column; max-height: 46%; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+  .ai-panel .ai-card { margin: 6px 12px; padding: 10px 12px; gap: 6px; flex: 0 0 auto; min-width: 0; }
+  /* label, title, captions and Skip / Stop come first; the cast list (collapsed <details>) is last, so opening it scrolls the card, not the controls away */
+  .ai-panel .ai-captions { min-height: 2.7em; max-height: 6.5em; overflow-y: auto; }
+  .ai-panel .ai-label small { display: none; }
+  .ai-panel .ai-voices[open] > div { max-height: 30vh; overflow-y: auto; }
+  .ai-panel .ai-controls button { min-height: 44px; }
+  .ai-panel .ai-voices summary { min-height: 40px; display: flex; align-items: center; }
+  /* the dial scroller always keeps a usable strip */
+  .radio-bar + .lib-grid-wrap { flex: 1 1 0; min-height: 200px; }
   .radio-now.reconnecting .alb-artist { color: #f5c542; white-space: normal; }
   .radio-pill.reconnecting .radio-pill-dot { background: #f5c542; }
   .radio-now {
