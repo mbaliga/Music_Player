@@ -66,3 +66,12 @@ test('cleanArtist / cleanAlbum drop unknowns and compilations', () => {
   assert.equal(cleanAlbum('Unknown Album'), null); assert.equal(cleanAlbum('Singles'), null);
   assert.equal(cleanAlbum('Night Drive [Deluxe Edition]'), 'Night Drive');
 });
+
+test('speakable stays fast on hostile runs of brackets and punctuation (late space-before-punctuation pass was quadratic)', () => {
+  for (const ch of ['[', '(', ' [', ' ,', '{', '|']) {
+    const t = performance.now();
+    speakable(ch.repeat(60000));
+    assert.ok(performance.now() - t < 100, `speakable(${JSON.stringify(ch)} x 60000) took ${(performance.now() - t).toFixed(0)} ms`);
+  }
+  assert.ok(speakable('x'.repeat(100000)).length <= 4000, 'input is bounded');
+});

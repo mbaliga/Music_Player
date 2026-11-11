@@ -108,7 +108,8 @@ const EMOJI = /[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}\u{FE0F}\u{200D}]/gu;
  */
 export function speakable(text) {
   try {
-    let s = String(text ?? '');
+    // bounded input: every later pass is linear, but a hostile title should never cost more than a line is worth
+    let s = String(text ?? '').slice(0, 4000);
     // one collapse up front keeps the later patterns linear on whitespace runs
     s = s.normalize('NFC').replace(/\s+/g, ' ').replace(EMOJI, ' ').replace(/https?:\/\/\S+|www\.\S+/gi, ' ');
     s = s.replace(/\bfeat\.?(?=\s)|\bft\.(?=\s)/gi, 'featuring').replace(/\bw\/(?=\s|\w)/gi, 'with ').replace(/\bvs\.?(?=\s)/gi, 'versus');
@@ -142,6 +143,7 @@ export function speakable(text) {
     s = s.replace(/\b([A-Z][a-z]+)\s+(II|III|IV|VI|VII|VIII|IX)\b(?=\s*(?:[,.;:!?)]|$))/g, (m, w, r) => `${w} ${ROMAN[r]}`);
     s = s.replace(/[–—]/g, ', ').replace(/\s-\s/g, ', ').replace(/…/g, '...').replace(/_/g, ' ');
     s = s.replace(/\//g, ' ').replace(/[*~^=<>|\\[\]{}]/g, ' ').replace(/["“”]/g, '').replace(/[‘’]/g, "'");
+    s = s.replace(/\s{2,}/g, ' ');   // brackets/symbols were turned into spaces above: re-collapse before the space-before-punctuation pass
     s = s.replace(/\s+([,.;:!?])/g, '$1').replace(/([,;:])(?:\s*[,;:])+/g, '$1').replace(/\s+/g, ' ').trim();
     return s;
   } catch { return ''; }

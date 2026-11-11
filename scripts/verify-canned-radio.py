@@ -220,7 +220,7 @@ def run():
         out['C_new_requests_mid_show'] = [u for u in reqs[n:] if not u.startswith('data:') and not u.startswith('blob:')]
         page.screenshot(path=SHOTS + '/06-offline-still-playing.png')
         # stop at once (the pill) then start the same station again, still offline
-        page.click('.radio-now .theme-btn')
+        page.click('.ai-panel button:has-text("Stop")')
         time.sleep(0.8)
         out['C_stopped_phase_hidden'] = page.evaluate('document.querySelector(".ai-panel").classList.contains("hidden")')
         n2 = len(reqs)
@@ -254,12 +254,12 @@ def run():
         page.wait_for_function('document.querySelector(".ai-note") && document.querySelector(".ai-note").textContent.length > 0', timeout=10000)
         out['E0_empty_library_note'] = page.inner_text('.ai-card .ai-note')
         page.screenshot(path=SHOTS + '/07-empty-library.png')
-        page.click('.radio-now .theme-btn')
+        page.click('.ai-panel button:has-text("Stop")')
         scan(page)
         page.click('.radio-resume')
         page.wait_for_function('document.querySelector(".ai-now-title") && document.querySelector(".ai-now-title").textContent !== "Tuning in…" && document.querySelector(".ai-now-title").textContent !== "Nothing to play yet"', timeout=20000)
         out['E0_resume_plays'] = page.inner_text('.ai-now-title')
-        page.click('.radio-now .theme-btn'); time.sleep(0.5)
+        page.click('.ai-panel button:has-text("Stop")'); time.sleep(0.5)
 
         # ---- E: flag on: AI style cards, You Radio row, audition
         page.check('#aiStationsToggle')
