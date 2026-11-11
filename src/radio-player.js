@@ -226,7 +226,7 @@ export class RadioUI {
         const urls = streamCandidates(station), i = session.urlIndex | 0;
         const worked = urls.length ? { ...station, streamUrl: urls[i], streamUrls: [urls[i], ...urls.filter((_, j) => j !== i)] } : station;
         this._commit(recordPlayed(this.store, worked)); this._renderSaved(); }
-      if (st.phase === 'idle' && session.isCanned && this._recorded) { this.stop(); return; } // a graceful sign-off finished
+      if (st.phase === 'idle' && session.isCanned && this._recorded && !this._stopping) { this.stop(); return; } // a graceful sign-off finished
       this._showNow(station, st);
     });
     this._recorded = false;
@@ -235,6 +235,12 @@ export class RadioUI {
   }
 
   stop() {
+    if (this._stopping) return;
+    this._stopping = true;
+    try { this._stop(); } finally { this._stopping = false; }
+  }
+
+  _stop() {
     const engineBacked = !!(this.session && this.session.usesEngine);
     this.session?.stop();
     this.session = null; this.station = null;

@@ -10,7 +10,7 @@ const CSS = `
 .pw-label .ai-dot{background:var(--violet)}
 .pw-cap-bit{display:inline-block;margin-left:6px;padding:0 6px;border-radius:8px;border:1px solid var(--border);font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink2);vertical-align:1px}
 .pw-voice-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:8px;align-items:center;margin-top:8px;font-size:13px}
-.pw-voice-row span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pw-voice-row span{min-width:0}
 .pw-voice-row small{display:block;color:var(--ink2);font-size:11px}
 .pw-voice-row select{min-width:0;padding:6px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--ink);font:inherit;font-size:13px}
 .pw-reset{margin-top:8px;padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--ink);font:inherit;font-size:12px;cursor:pointer}
