@@ -15,11 +15,14 @@
 //   • talk share by time targets 25-30 % over a rolling hour: below the band the chooser prefers longer segments, above it it
 //     stays silent. Talk is spoken over the music bed, and counts as talk at its measured (or estimated) length.
 //   • at least MIN_GAP_SEC of pure music between breaks; two talk segments are never adjacent unless one is a skit/callin.
-//   • no unit airs twice inside its cool-down (90 min; 20-30 min for the few ID/jingle units); a hard floor of 45 min applies
-//     even when the pool is exhausted. A slot segment and its twin are ONE unit.
+//   • no unit airs twice inside its cool-down: 90 min for a kind with 5+ units, 45 min (the hard floor) for a kind with 4 or
+//     fewer (news, promo, liner ...), 25 min only for the few station_id / jingle units. When the pool is exhausted the
+//     cool-down relaxes to the 45-minute floor for non-ID kinds (never below it; 25 min stays for IDs), else the chooser stays
+//     silent (music only). A slot segment and its twin are ONE unit.
 //   • running gags (`gag:<name>` / `serial:<name>` + `seq:<n>` + `payoff`): beats air in seq order, never skipping to a later
 //     beat, the payoff only after its earlier beats, beats of a gag at least GAG_GAP_SEC apart. Equal seq numbers are
-//     alternatives of one beat.
+//     alternatives of one beat. `seq`/`payoff` tags belong to the gag tag they follow. Only airable units hold a level. A gag is
+//     FINISHED when its top beat / payoff airs: none of its units airs again (a payoff never replays without its set-up).
 //   • `bit` units: at most 2 per rolling hour.
 //   • time of day is NOT a rule here (owner: playable any time); the picker orders by daypart, the review flags time words.
 // ─────────────────────────────────────────────────────────────────────────────
@@ -52,7 +55,7 @@ export function createChooser(pack, { seed = 1, cadence = {}, preferTwin = false
   const twinFor = (u) => (typeof preferTwin === 'function' ? !!preferTwin(u) : !!preferTwin);
   const C = { ...CADENCE, ...cadence };
   const units = pack.units;
-  const levels = gagLevels(pack);
+  const levels = gagLevels(pack, { maxEstSec: C.maxEstSec });
   const kindCount = {};
   for (const u of units) if (!BOOKENDS.has(u.kind)) kindCount[u.kind] = (kindCount[u.kind] || 0) + 1;
 
@@ -62,6 +65,7 @@ export function createChooser(pack, { seed = 1, cadence = {}, preferTwin = false
     talk: [],                 // [{ startSec, endSec, kind, unit }]
     lastTalkEndSec: -Infinity, lastTalkKind: null, lastKind: null, lastIdSec: -Infinity, lastIdKind: null,
     gagDone: new Map(),       // gag -> Set(levels done)
+    gagFinished: new Set(),   // gags whose top beat / payoff has aired: nothing of them airs again
     gagCount: new Map(),      // gag -> number of airings
     gagLastSec: new Map(),    // gag -> last airing (ordered beats)
     bits: [],                 // [sec]
@@ -73,24 +77,23 @@ export function createChooser(pack, { seed = 1, cadence = {}, preferTwin = false
     return Number.isFinite(m) && m > 0 ? m : resolved.estSec;
   };
 
-  const cooldownOf = (u) => (kindCount[u.kind] <= C.rareUnits || ID_KINDS.has(u.kind) ? C.cooldownRareSec : C.cooldownSec);
+  // 25 min only for ID kinds; a small pool (<= rareUnits) of anything else cools for the hard floor, a large one for the full 90 min
+  const cooldownOf = (u) => (ID_KINDS.has(u.kind) ? C.cooldownRareSec : kindCount[u.kind] <= C.rareUnits ? C.hardFloorSec : C.cooldownSec);
 
   function gagOk(u, atSec) {
     for (const g of u.gags) {
+      if (st.gagFinished.has(g)) return false;                                  // the payoff has aired: no replays without the set-up
       const lv = levels.get(g) || [];
       const done = st.gagDone.get(g) || new Set();
-      if (u.seq != null) {
-        for (const l of lv) if (l < u.seq && !done.has(l)) return false;       // never skip to a later beat
+      const b = (u.gagBeats && u.gagBeats.get(g)) || { seq: null, payoff: false };
+      if (b.seq != null) {
+        for (const l of lv) if (l < b.seq && !done.has(l)) return false;       // never skip to a later beat (this also covers the payoff)
         const maxDone = done.size ? Math.max(...done) : -1;
-        if (u.seq < maxDone) return false;                                      // no stepping back once a later beat aired
+        if (b.seq < maxDone) return false;                                      // no stepping back once a later beat aired
         const last = st.gagLastSec.get(g);
         if (last != null && atSec - last < C.gagGapSec) return false;           // let a beat breathe
-      } else if (u.payoff) {
+      } else if (b.payoff) {
         if ((st.gagCount.get(g) || 0) < 1) return false;                        // a payoff with no seq still waits for the set-up
-      }
-      if (u.payoff && u.seq != null) {
-        // the payoff is the last of the gag's ordered beats BELOW its level, and the set-up must have aired
-        if (!lv.filter((l) => l < u.seq).every((l) => done.has(l))) return false;
       }
     }
     return true;
@@ -109,7 +112,7 @@ export function createChooser(pack, { seed = 1, cadence = {}, preferTwin = false
   function cooled(u, atSec, relax) {
     const r = st.used.get(u.id);
     if (!r) return true;
-    const need = relax ? Math.min(C.hardFloorSec, cooldownOf(u)) : cooldownOf(u);
+    const need = relax && ID_KINDS.has(u.kind) ? cooldownOf(u) : relax ? Math.min(C.hardFloorSec, cooldownOf(u)) : cooldownOf(u);
     return atSec - r.lastSec >= need;
   }
 
@@ -121,8 +124,8 @@ export function createChooser(pack, { seed = 1, cadence = {}, preferTwin = false
     if (u.kind === st.lastKind) w *= 0.25;
     if (!st.used.has(u.id)) w *= 2.5; // fresh material first
     // the next beat of a gag that is already running is worth hearing soon
-    if (u.gags.length && u.seq != null) { const started = u.gags.some((g) => (st.gagCount.get(g) || 0) > 0); if (started) w *= 1.7; }
-    if (u.payoff) w *= 1.4;
+    if (u.gags.some((g) => { const b = u.gagBeats.get(g); return b && b.seq != null && (st.gagCount.get(g) || 0) > 0; })) w *= 1.7;
+    if (u.gags.some((g) => u.gagBeats.get(g) && u.gagBeats.get(g).payoff)) w *= 1.4;
     return w;
   }
 
@@ -179,12 +182,9 @@ export function createChooser(pack, { seed = 1, cadence = {}, preferTwin = false
         if (!(songDurSec > 0)) return silence('unknown song length');
         const rng = rngFor('plan');
         const share = shareAt(nowSec);
-        const idDue = nowSec + (songDurSec - 30) - st.lastIdSec >= C.idEverySec - Math.floor(rng() * C.idJitterSec);
+        const idTime = nowSec + (songDurSec - 30) - st.lastIdSec >= C.idEverySec - Math.floor(rng() * C.idJitterSec);
         const musicOnly = ctx.musicOnly === true;
         if (musicOnly) return silence('music only');
-
-        // 1. a silent unit is how a pack supplies silence; if the share is high we simply stay silent anyway
-        if (!idDue && share >= C.shareHi) return silence(`share ${share.toFixed(2)} >= ${C.shareHi}`, { share });
 
         const wantBig = share < C.shareLo;
         const wantSmall = share > (C.shareLo + C.shareHi) / 2;
@@ -213,15 +213,21 @@ export function createChooser(pack, { seed = 1, cadence = {}, preferTwin = false
 
         let cands = [];
         let why = 'normal';
-        if (idDue) {
+        // an ID is only "due" when one can actually air now; otherwise (no ID units, all cooling, no room) the share gate applies
+        let idDue = false;
+        if (idTime) {
           cands = build(false, true, true);
+          if (!cands.length) cands = build(true, true, true);
           if (cands.length) {
+            idDue = true;
             // alternate between ID and jingle when both exist
             const other = cands.filter((c) => c.u.kind !== st.lastIdKind);
             if (other.length) cands = other;
             why = 'station-id due';
-          } else cands = build(true, true, true);
+          }
         }
+        // a silent unit is how a pack supplies silence; if the share is high we simply stay silent anyway
+        if (!idDue && share >= C.shareHi) return silence(`share ${share.toFixed(2)} >= ${C.shareHi}`, { share });
         if (!cands.length) cands = build(false, false, false);
         if (!cands.length) { cands = build(true, false, false); if (cands.length) why = 'relaxed cool-down'; }
         if (!cands.length) return silence('nothing eligible', { share });
@@ -246,7 +252,10 @@ export function createChooser(pack, { seed = 1, cadence = {}, preferTwin = false
         if (ID_KINDS.has(u.kind) || u.kind === 'sign_on') { st.lastIdSec = s; st.lastIdKind = u.kind; }
         for (const g of u.gags) {
           st.gagCount.set(g, (st.gagCount.get(g) || 0) + 1);
-          if (u.seq != null) { st.gagLastSec.set(g, s); if (!st.gagDone.has(g)) st.gagDone.set(g, new Set()); st.gagDone.get(g).add(u.seq); }
+          const b = u.gagBeats.get(g);
+          if (b && b.seq != null) { st.gagLastSec.set(g, s); if (!st.gagDone.has(g)) st.gagDone.set(g, new Set()); st.gagDone.get(g).add(b.seq); }
+          const lv = levels.get(g) || [];
+          if (b && (b.payoff || (b.seq != null && lv.length && b.seq >= lv[lv.length - 1]))) st.gagFinished.add(g);
         }
         if (u.bit) st.bits.push(s);
         if (u.kind === 'sign_on') st.signedOn = true;

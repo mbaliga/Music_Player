@@ -33,7 +33,7 @@ test('no segment repeats before its cool-down (thousands of draws); the cool-dow
     for (const b of r.sim.breaks) {
       if (b.kind === 'sign_on' || b.kind === 'sign_off') continue;
       draws++;
-      const need = ID_KINDS.has(b.kind) || kindCount[b.kind] <= CADENCE.rareUnits ? CADENCE.cooldownRareSec : CADENCE.cooldownSec;
+      const need = ID_KINDS.has(b.kind) ? CADENCE.cooldownRareSec : kindCount[b.kind] <= CADENCE.rareUnits ? CADENCE.hardFloorSec : CADENCE.cooldownSec;
       if (last.has(b.unit)) {
         const gap = b.startSec - last.get(b.unit);
         if (b.plan.why === 'relaxed cool-down') { relaxed++; assert.ok(gap >= CADENCE.hardFloorSec - 1, `${r.id}/${r.seed} ${b.unit} ${gap}`); }
@@ -61,12 +61,13 @@ function verifyGags(r) {
     for (const g of u.gags) {
       const lv = levels.get(g);
       const d = done.get(g) || new Set();
-      if (u.seq != null) {
-        for (const l of lv) if (l < u.seq) assert.ok(d.has(l), `${r.id}/${r.seed}: ${u.id} (${g} seq ${u.seq}) aired before level ${l}`);
-        if (d.size) assert.ok(u.seq >= Math.max(...d), `${r.id}/${r.seed}: ${u.id} stepped back in ${g}`);
+      const beat = u.gagBeats.get(g);
+      if (beat.seq != null) {
+        for (const l of lv) if (l < beat.seq) assert.ok(d.has(l), `${r.id}/${r.seed}: ${u.id} (${g} seq ${beat.seq}) aired before level ${l}`);
+        if (d.size) assert.ok(beat.seq >= Math.max(...d), `${r.id}/${r.seed}: ${u.id} stepped back in ${g}`);
         if (lastStart.has(g)) assert.ok(b.startSec - lastStart.get(g) >= CADENCE.gagGapSec - 1, `${r.id}/${r.seed}: ${g} beats ${b.startSec - lastStart.get(g)}s apart`);
-        d.add(u.seq); done.set(g, d); lastStart.set(g, b.startSec);
-      } else if (u.payoff) assert.ok((count.get(g) || 0) >= 1, `${r.id}/${r.seed}: payoff ${u.id} of ${g} with no set-up`);
+        d.add(beat.seq); done.set(g, d); lastStart.set(g, b.startSec);
+      } else if (beat.payoff) assert.ok((count.get(g) || 0) >= 1, `${r.id}/${r.seed}: payoff ${u.id} of ${g} with no set-up`);
       count.set(g, (count.get(g) || 0) + 1);
     }
   }

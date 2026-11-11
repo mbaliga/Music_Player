@@ -20,6 +20,8 @@ export const DAYPARTS = Object.freeze(['night', 'morning', 'day', 'evening', 'an
 const DAYPART_SET = new Set(DAYPARTS);
 export const WPS = 2.6;
 export const EST_TOL = 0.35;
+/** A unit longer than this (estSec) is never aired by the chooser (CADENCE.maxEstSec), so it cannot carry a gag beat. */
+export const GAG_MAX_EST_SEC = 140;
 
 const BANNED = [
   [/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}]/u, 'emoji'],
@@ -35,6 +37,30 @@ export const isStationId = (id) => typeof id === 'string' && /^[a-z0-9][a-z0-9-]
 export const wordCount = (t) => String(t ?? '').split(/\s+/).filter(Boolean).length;
 const isObj = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
 const arr = (v) => (Array.isArray(v) ? v : []);
+
+/**
+ * Per-gag beats of one tag list: gagTag -> { seq:number|null, payoff:boolean, dupSeq:boolean }.
+ * A `seq:n` / `payoff` tag belongs to the gag tag it FOLLOWS (to the first gag tag when it comes before any); further gag
+ * tags on the same unit are free flavour for those gags. (`gag:a, seq:3, payoff, gag:b` = beat 3 + payoff of a, flavour of b.)
+ */
+export function gagBeatsOf(tags) {
+  const m = new Map();
+  const list = arr(tags).filter((t) => typeof t === 'string');
+  const isGag = (t) => t.startsWith('gag:') || t.startsWith('serial:');
+  const first = list.find(isGag);
+  if (!first) return m;
+  let cur = first;
+  for (const t of list) {
+    if (isGag(t)) { cur = t; if (!m.has(t)) m.set(t, { seq: null, payoff: false, dupSeq: false }); continue; }
+    if (!m.has(cur)) m.set(cur, { seq: null, payoff: false, dupSeq: false });
+    const b = m.get(cur);
+    if (/^seq:\d+$/.test(t)) { if (b.seq != null) b.dupSeq = true; else b.seq = Number(t.slice(4)); } else if (t === 'payoff') b.payoff = true;
+  }
+  return m;
+}
+
+/** Can this raw segment ever be aired by the chooser? (bookends air only as the show's first/last break; silent and over-long never) */
+const airableSeg = (s) => s.kind !== 'sign_on' && s.kind !== 'sign_off' && arr(s.lines).some((l) => l && String(l.text || '').trim()) && !(s.estSec > GAG_MAX_EST_SEC);
 
 /** Estimated speaking seconds of a segment's lines (words / WPS), the same yardstick the content check uses. */
 export const estimateLinesSec = (lines) => arr(lines).reduce((n, l) => n + wordCount(l && l.text), 0) / WPS;
@@ -103,6 +129,19 @@ export function validatePackDoc(doc) {
       if (used.size) stats.slotSegs++; else stats.standalone++;
     }
     for (const s of segs) if (arr(s.usesSlots).length && !fallbackTargets.has(s.id)) err(s.id, 'slot segment has no fallback variant');
+    // running gags: every seq level must be held by at least one unit that can actually air, else the gag stalls for the whole show
+    const held = new Map(); // gag -> Map(level -> { airable, id })
+    for (const s of segs) {
+      if (s.fallbackOf != null) continue;
+      for (const [g, b] of gagBeatsOf(s.tags)) {
+        if (b.dupSeq) err(s.id, `two seq tags for ${g}`);
+        if (b.seq == null) continue;
+        if (!held.has(g)) held.set(g, new Map());
+        const lv = held.get(g), prev = lv.get(b.seq);
+        lv.set(b.seq, { airable: (prev && prev.airable) || airableSeg(s), id: prev ? prev.id : s.id });
+      }
+    }
+    for (const [g, lv] of held) for (const [seq, h] of lv) if (!h.airable) err(h.id, `${g} seq ${seq} is held only by units that can never air (sign_on/sign_off, silent or over ${GAG_MAX_EST_SEC}s)`);
   } catch (e) {
     err(null, `validator crashed: ${e && e.message}`);
   }
@@ -146,7 +185,7 @@ export function buildPack(doc) {
     const seqs = tags.filter((t) => /^seq:\d+$/.test(t)).map((t) => Number(t.slice(4)));
     units.push({
       id: s.id, kind: s.kind, seg: s, twins: twins.get(s.id) || [], tags,
-      gags, seq: seqs.length ? seqs[0] : null, payoff: tags.includes('payoff'), bit: tags.includes('bit'),
+      gags, gagBeats: gagBeatsOf(tags), seq: seqs.length ? seqs[0] : null, payoff: tags.includes('payoff'), bit: tags.includes('bit'),
       weight: s.weight, estSec: s.estSec, silent: !s.lines.some((l) => String(l.text || '').trim()),
       slots: arr(s.usesSlots),
     });
@@ -160,13 +199,20 @@ export function buildPack(doc) {
   };
 }
 
-/** Beats of each gag: gagTag -> sorted distinct seq levels (units with no seq are free flavour). */
-export function gagLevels(pack) {
+const BOOKEND_KINDS = new Set(['sign_on', 'sign_off']);
+
+/**
+ * Beats of each gag: gagTag -> sorted distinct seq levels (units with no seq are free flavour). Only units that can air count
+ * (not sign_on/sign_off, not silent, not longer than maxEstSec): a level held only by those would block the gag forever.
+ */
+export function gagLevels(pack, { maxEstSec = GAG_MAX_EST_SEC } = {}) {
   const m = new Map();
   for (const u of pack.units) {
+    const airable = !BOOKEND_KINDS.has(u.kind) && !u.silent && !(u.estSec > maxEstSec);
     for (const g of u.gags) {
       if (!m.has(g)) m.set(g, new Set());
-      if (u.seq != null) m.get(g).add(u.seq);
+      const b = u.gagBeats && u.gagBeats.get(g);
+      if (airable && b && b.seq != null) m.get(g).add(b.seq);
     }
   }
   return new Map([...m].map(([g, set]) => [g, [...set].sort((a, b) => a - b)]));
