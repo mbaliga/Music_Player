@@ -360,7 +360,7 @@ export class GridView {
 
   // Track list for one album/disc. Tapping a track plays it.
   _openDetail(alb) {
-    const host = this._container.closest('.lib-overlay') || document.body;
+    const host = this._container.closest('.page') || document.body;   // the Albums page: the sheet sits under its header
     host.querySelector('.alb-detail')?.remove();
     const d = document.createElement('div');
     d.className = 'alb-detail ' + alb.kind;

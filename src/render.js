@@ -34,8 +34,11 @@ const LAYOUTS = {
     return { W, H, cx: W * 0.47, cy: H * 0.45, R, armRot: 0 };
   },
 };
+// Compact (the default): the SAME composition as utilitarian; only the stage box is shorter (src/shell/pages.css), so the
+// geometry scales the record and arm down to fit it.
+LAYOUTS.compact = LAYOUTS.utilitarian;
 
-let _layoutName = 'cinematic';
+let _layoutName = 'compact';
 let _mat = null;
 
 export function setLayout(name) { if (LAYOUTS[name]) _layoutName = name; }

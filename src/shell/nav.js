@@ -1,0 +1,281 @@
+// nav.js — the navigation shell (DOM + gestures). The current section is a big rounded card that is pulled aside to the right
+// from the left edge; the section menu sits revealed behind it. Pure parts: drawer.js (physics/decisions), arbitration.js,
+// sections.js. This file only wires them to the DOM. Contract and tunables: docs/SHELL.md.
+//
+// Expected markup (index.html): #shell > #drawer (nav) > #drawerMenu, #card > #cardInner > #shellPages > section[data-section],
+// .minibar, .card-handle, #cardCover, #edgeStrip, .shell-peek. Section headers (hamburger + title) are created here.
+import {
+  DRAWER, openOffset, progress, cardScale, rubberBand, velocityFromSamples, settleTarget, classifyMove, springStep, isSettled,
+} from './drawer.js';
+import { drawerMayStart } from './arbitration.js';
+import { SECTIONS, loadSection, saveSection, resolveSection, stepMenu } from './sections.js';
+import { pickNowPlaying, miniBarVisible } from './nowplaying.js';
+
+const PAGE_MS = 300;   // the new page's slide/fade-in; the card's spring runs alongside (≈ 250-320 ms end to end)
+const OVERLAYS = '.wt-overlay:not(.hidden), .theme-overlay:not(.hidden), .tp:not(.hidden), .mt-dialog, .ed-ov, .bk-ov, .ed, #settingsPop:not(.hidden)';
+const HAMBURGER = '<svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>';
+
+const reduced = () => { try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return false; } };
+const storage = () => { try { return window.localStorage; } catch { return null; } };
+
+/**
+ * opts = {
+ *   hooks: { [sectionId]: { mount?(host) -> controller|Promise, onShow?(), onHide? () } }   controller may also return {onShow,onHide,unmount}
+ *   isPageGestureLive?: () => boolean     platter scrub / tonearm seek / pinch in progress (blocks the drawer)
+ *   onSection?: (id) => void
+ * }
+ */
+export function createShell(opts = {}) {
+  const $ = (id) => document.getElementById(id);
+  const shell = $('shell'), drawer = $('drawer'), card = $('card'), inner = $('cardInner'), cover = $('cardCover');
+  const strip = $('edgeStrip'), menu = $('drawerMenu'), peek = shell.querySelector('.shell-peek');
+  const handle = card.querySelector('.card-handle'), mini = shell.querySelector('.minibar');
+  const hooks = opts.hooks || {};
+
+  // ── sections / pages ────────────────────────────────────────────────────────────────────────────────────────────────
+  const pages = {}, mounted = {}, ctrls = {};
+  const hamburgers = [];
+  for (const s of SECTIONS) {
+    const page = shell.querySelector(`section[data-section="${s.id}"]`);
+    if (!page) continue;
+    page.classList.add('page'); page.id = page.id || `page-${s.id}`; page.setAttribute('aria-label', s.label); page.hidden = true;
+    const head = document.createElement('header');
+    head.className = 'page-head';
+    head.innerHTML = `<button class="hamburger" type="button" aria-label="Menu" aria-expanded="false" aria-controls="drawer">${HAMBURGER}</button><h1 class="page-title"></h1><div class="page-actions"></div>`;
+    head.querySelector('.page-title').textContent = s.label;
+    page.prepend(head);
+    hamburgers.push(head.querySelector('.hamburger'));
+    pages[s.id] = page;
+  }
+  const list = SECTIONS.filter((s) => pages[s.id]);
+
+  // ── menu ────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  const items = list.map((s) => {
+    const li = document.createElement('li');
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'drawer-item'; b.dataset.section = s.id; b.textContent = s.label;
+    b.addEventListener('click', () => go(s.id));
+    li.append(b); menu.append(li);
+    return b;
+  });
+
+  let cur = loadSection(storage(), list);
+  let shellH = 0, isOpen = false, x = 0, v = 0, target = 0, raf = 0, lastT = 0, off = 0, lastFocus = null;
+
+  // ── rendering: transforms (and the cheap opacities) only ───────────────────────────────────────────────────────────
+  function render() {
+    const p = progress(x, off);
+    card.style.transform = `translate3d(${x.toFixed(2)}px,0,0) scale(${cardScale(x, off).toFixed(4)})`;
+    cover.style.opacity = String(Math.min(1, p * 1.2));
+    handle.style.opacity = String(1 - Math.min(1, p * 3));
+    drawer.style.opacity = String(0.35 + 0.65 * p);
+    drawer.style.transform = `translate3d(${((p - 1) * 28).toFixed(2)}px,0,0)`;
+    peek.style.transform = `translate3d(${x.toFixed(2)}px,0,0) scale(${cardScale(x, off).toFixed(4)}) translateY(${(p * (shellH + 14)).toFixed(1)}px)`;
+    peek.style.opacity = String(Math.min(1, p * 2));
+  }
+  function measure() {
+    off = openOffset(shell.clientWidth);
+    shellH = shell.clientHeight;
+    shell.style.setProperty('--shell-h', shellH + 'px');
+    shell.style.setProperty('--open-w', off + 'px');
+    if (isOpen && !raf && !drag) { x = off; target = off; }
+    render();
+  }
+
+  function frame(now) {
+    const dt = Math.min(0.05, (now - lastT) / 1000 || 0.016);
+    lastT = now;
+    const s = springStep({ x, v }, target, dt);
+    x = s.x; v = s.v;
+    if (isSettled(s, target)) { x = target; v = 0; raf = 0; render(); settled(); return; }
+    render();
+    raf = requestAnimationFrame(frame);
+  }
+  function animateTo(t, v0 = 0) {
+    target = t; v = v0;
+    if (reduced()) { cancelAnimationFrame(raf); raf = 0; x = t; v = 0; render(); settled(); return; }
+    if (!raf) { lastT = performance.now(); raf = requestAnimationFrame(frame); }
+  }
+  function settled() {
+    if (!isOpen) { drawer.style.visibility = 'hidden'; drawer.inert = true; }   // closed: not painted, not tabbable, not read out
+    if (isOpen) { const a = menu.querySelector('.active') || items[0]; if (a && !drag) a.focus({ preventScroll: true }); }
+  }
+
+  // ── open / close ────────────────────────────────────────────────────────────────────────────────────────────────────
+  function setOpenState(b) {
+    if (b === isOpen) return;
+    isOpen = b;
+    if (b) { drawer.style.visibility = ''; drawer.inert = false; }
+    shell.dataset.open = String(b);
+    inner.inert = b;
+    cover.setAttribute('aria-hidden', String(!b));
+    for (const h of hamburgers) { h.setAttribute('aria-expanded', String(b)); }
+    if (b) { lastFocus = document.activeElement; }
+    else if (lastFocus && (drawer.contains(document.activeElement) || document.activeElement === document.body)) {
+      const hb = pages[cur] && pages[cur].querySelector('.hamburger');
+      (hb || lastFocus).focus?.({ preventScroll: true }); lastFocus = null;
+    }
+  }
+  function open(v0 = 0) { setOpenState(true); animateTo(off, v0); }
+  function close(v0 = 0) { setOpenState(false); animateTo(0, v0); }
+  function toggle() { isOpen ? close() : open(); }
+
+  // ── gestures ───────────────────────────────────────────────────────────────────────────────────────────────────────
+  const live = new Set();
+  window.addEventListener('pointerdown', (e) => live.add(e.pointerId), true);
+  for (const t of ['pointerup', 'pointercancel']) window.addEventListener(t, (e) => live.delete(e.pointerId), true);
+  const overlayOpen = () => !!document.querySelector(OVERLAYS);
+  let drag = null;
+
+  function attach(el, where) {
+    el.addEventListener('pointerdown', (e) => {
+      if (!e.isPrimary || (e.pointerType === 'mouse' && e.button !== 0)) return;
+      const others = [...live].filter((id) => id !== e.pointerId).length;
+      const ok = drawerMayStart({ open: isOpen, where, pageGestureLive: !!(opts.isPageGestureLive && opts.isPageGestureLive()), otherPointers: others, overlayOpen: overlayOpen() });
+      if (!ok) return;
+      cancelAnimationFrame(raf); raf = 0;
+      drag = { id: e.pointerId, el, where, x0: e.clientX, y0: e.clientY, pos0: x, go: false, samples: [{ x, t: e.timeStamp }], t0: e.timeStamp };
+      try { el.setPointerCapture(e.pointerId); } catch { /* synthetic pointer */ }
+    });
+    el.addEventListener('pointermove', (e) => {
+      if (!drag || e.pointerId !== drag.id) return;
+      const dx = e.clientX - drag.x0, dy = e.clientY - drag.y0;
+      if (!drag.go) {
+        const c = classifyMove(dx, dy);
+        if (c === 'wait') return;
+        if (c === 'reject') { release(e, false); animateTo(isOpen ? off : 0); return; }
+        drag.go = true; shell.classList.add('dragging');
+      }
+      x = rubberBand(drag.pos0 + dx, off);
+      drag.samples.push({ x, t: e.timeStamp }); if (drag.samples.length > 12) drag.samples.shift();
+      render();
+    });
+    const end = (e) => {
+      if (!drag || e.pointerId !== drag.id) return;
+      const d = drag, cancelled = e.type === 'pointercancel';
+      release(e, true);
+      if (d.go) {
+        const vel = velocityFromSamples(d.samples);
+        const t = settleTarget(x, cancelled ? 0 : vel, off);
+        t === off ? open(vel) : close(vel);
+      } else if (!cancelled) {
+        isOpen ? close() : open();     // a tap: on the strip/handle opens, on the covered card closes
+      } else animateTo(isOpen ? off : 0);
+    };
+    el.addEventListener('pointerup', end);
+    el.addEventListener('pointercancel', end);
+  }
+  function release(e, _final) {
+    try { drag.el.releasePointerCapture(drag.id); } catch { /* already released */ }
+    shell.classList.remove('dragging'); drag = null;
+  }
+  attach(strip, 'strip');
+  attach(cover, 'cover');
+
+  // ── keyboard: Esc closes, arrows + Enter in the menu, Tab trapped in the drawer while open ────────────────────────────
+  document.addEventListener('keydown', (e) => {
+    if (!isOpen) return;
+    if (e.key === 'Escape') { if (overlayOpen()) return; e.preventDefault(); close(); return; }
+    const fs = [...drawer.querySelectorAll('button:not([disabled])')];
+    if (e.key === 'Tab' && fs.length) {
+      const i = fs.indexOf(document.activeElement);
+      if (e.shiftKey && i <= 0) { e.preventDefault(); fs[fs.length - 1].focus(); }
+      else if (!e.shiftKey && (i === -1 || i === fs.length - 1)) { e.preventDefault(); fs[0].focus(); }
+      return;
+    }
+    const mi = items.indexOf(document.activeElement);
+    if (['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(e.key)) {
+      e.preventDefault();
+      const n = stepMenu(mi < 0 ? items.findIndex((b) => b.classList.contains('active')) : mi, e.key, items.length);
+      items[n].focus();
+    }
+  });
+  document.addEventListener('focusin', (e) => {
+    if (isOpen && !drawer.contains(e.target) && !overlayOpen()) { (menu.querySelector('.active') || items[0]).focus({ preventScroll: true }); }
+  });
+  for (const h of hamburgers) h.addEventListener('click', toggle);
+
+  // ── section switching ───────────────────────────────────────────────────────────────────────────────────────────────
+  function paintMenu() {
+    for (const b of items) {
+      const on = b.dataset.section === cur;
+      b.classList.toggle('active', on);
+      if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+    }
+  }
+  async function ensureMounted(id) {
+    if (mounted[id]) return mounted[id];
+    const host = pages[id];
+    const h = hooks[id] || {};
+    mounted[id] = (async () => {
+      let note = null;
+      if (h.mount) {
+        host.classList.add('loading');
+        try { ctrls[id] = (await h.mount(host)) || {}; }
+        catch (err) {
+          console.error('section mount failed', id, err);
+          note = document.createElement('p'); note.className = 'page-error';
+          note.textContent = 'This section could not load. '; const r = document.createElement('button');
+          r.type = 'button'; r.className = 'sort-chip'; r.textContent = 'Retry';
+          r.addEventListener('click', () => { note.remove(); mounted[id] = null; if (cur === id) show(id); });
+          note.append(r); host.append(note); ctrls[id] = {}; mounted[id] = null;
+        }
+        host.classList.remove('loading');
+      } else ctrls[id] = {};
+    })();
+    return mounted[id];
+  }
+  async function show(id) {
+    await ensureMounted(id);
+    if (cur !== id) return;
+    (ctrls[id].onShow || hooks[id]?.onShow)?.call(ctrls[id]);
+  }
+  function go(id, o = {}) {
+    id = resolveSection(id, list);
+    if (id !== cur) {
+      const prev = cur; cur = id;
+      saveSection(storage(), cur);
+      pages[prev].hidden = true; (ctrls[prev]?.onHide || hooks[prev]?.onHide)?.call(ctrls[prev]);
+      const pg = pages[cur]; pg.hidden = false;
+      if (!reduced()) { pg.classList.remove('enter'); void pg.offsetWidth; pg.classList.add('enter'); setTimeout(() => pg.classList.remove('enter'), PAGE_MS + 40); }
+      paintMenu(); show(cur);
+      opts.onSection && opts.onSection(cur);
+      updateMini();
+    }
+    if (o.close !== false && isOpen) close();
+  }
+
+  // ── now-playing mini bar (every section but the source's own) ──────────────────────────────────────────────────────
+  let np = null, npActions = {};
+  const miniMain = mini.querySelector('.minibar-main'), miniTitle = mini.querySelector('.minibar-title'), miniSub = mini.querySelector('.minibar-sub'), miniStop = mini.querySelector('.minibar-stop');
+  miniMain.addEventListener('click', () => { if (np) go(np.home); });
+  miniStop.addEventListener('click', () => npActions.stop && npActions.stop());
+  /** sources = { radio, mixtape, album } each null | {title, sub}; actions = { stop?() } for the radio session. */
+  function setNowPlaying(sources, actions = {}) { np = pickNowPlaying(sources); npActions = actions; updateMini(); }
+  function updateMini() {
+    const vis = miniBarVisible(np, cur);
+    mini.hidden = !vis;
+    card.dataset.mini = String(vis);
+    if (vis) {
+      miniTitle.textContent = np.title; miniSub.textContent = np.sub;
+      miniMain.setAttribute('aria-label', `Now playing ${np.title}. Go to ${np.home}`);
+      miniStop.hidden = !(np.source === 'radio' && npActions.stop);
+    }
+  }
+
+  // ── start ───────────────────────────────────────────────────────────────────────────────────────────────────────────
+  pages[cur].hidden = false;
+  paintMenu();
+  cover.setAttribute('aria-hidden', 'true');
+  drawer.style.visibility = 'hidden'; drawer.inert = true;
+  window.addEventListener('resize', measure);
+  if (typeof ResizeObserver !== 'undefined') new ResizeObserver(measure).observe(shell);
+  measure();
+  show(cur);
+
+  return {
+    go, open, close, toggle, setNowPlaying,
+    get current() { return cur; }, get isOpen() { return isOpen; },
+    page: (id) => pages[id], el: shell,
+  };
+}

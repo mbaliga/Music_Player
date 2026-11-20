@@ -61,8 +61,9 @@ function bootGraph() {
 
 test('boot path: no canned (or other radio) code but the flag module is statically reachable; the doors are two dynamic imports in radio-player.js', () => {
   const g = bootGraph();
-  assert.deepEqual(g.files.filter((f) => f.startsWith(`src${sep}radio${sep}`)), [`src${sep}radio${sep}flag.js`]);
-  const toCanned = g.dyn.filter((d) => /radio\/canned/.test(d.spec)).map((d) => `${d.from} -> ${d.spec}`).sort();
+  assert.deepEqual(g.files.filter((f) => f.startsWith(`src${sep}radio${sep}`)), []);   // radio-player.js (and with it the flag) is loaded lazily by the Radio section
+  assert.ok(!g.files.includes(`src${sep}radio-player.js`));
+  const toCanned = dynamicImports(code(read(resolve(root, 'src/radio-player.js')))).filter((s) => /radio\/canned/.test(s)).map((s) => `src${sep}radio-player.js -> ${s}`).sort();
   assert.deepEqual(toCanned, [`src${sep}radio-player.js -> ./radio/canned/dial.js`, `src${sep}radio-player.js -> ./radio/canned/index.js`]);
   // stations.js (boot path) never names the canned code
   assert.doesNotMatch(code(read(resolve(root, 'src/stations.js'))), /radio\/canned/);

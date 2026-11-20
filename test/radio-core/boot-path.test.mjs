@@ -38,7 +38,10 @@ function bootGraph() {
 test('boot graph: starts at index.html, includes the station seam and the flag, and never the core', () => {
   const g = bootGraph();
   assert.deepEqual(g.entries, [`src${sep}main.js`]);
-  for (const f of ['main.js', 'stations.js', 'radio-player.js', `radio${sep}flag.js`]) assert.ok(g.files.includes(`src${sep}${f}`), f);
+  // The navigation shell (src/shell) is boot; the whole radio stack (radio-player, stations, flag, store, session) is NOT: the Radio
+  // section fetches radio-player.js with one dynamic import on its first visit (see the lazy-door test below).
+  for (const f of ['main.js', `shell${sep}nav.js`, `shell${sep}drawer.js`, `shell${sep}sections.js`, `shell${sep}booth.js`]) assert.ok(g.files.includes(`src${sep}${f}`), f);
+  for (const f of ['radio-player.js', 'stations.js', 'radio-store.js', 'radio-session.js', 'radio.js']) assert.ok(!g.files.includes(`src${sep}${f}`), `${f} must be lazy`);
   assert.ok(g.files.length > 10);
   const leaked = g.files.filter((f) => f.startsWith(CORE) || f.includes(`${sep}radio${sep}core`));
   assert.deepEqual(leaked, [], 'radio core is statically reachable from the boot path');
@@ -46,14 +49,16 @@ test('boot graph: starts at index.html, includes the station seam and the flag, 
 
 test('the only door to the core is one dynamic import in radio-player.js, behind the flag', () => {
   const g = bootGraph();
-  const toCore = g.dyn.filter((d) => /radio\/core/.test(d.spec));
+  // radio-player.js is itself lazy (loaded by the Radio section), so its dynamic imports are read from the file, not from the boot graph
+  const toCore = dynamicImports(code(read(resolve(root, 'src/radio-player.js')))).filter((s) => /radio\/core/.test(s)).map((spec) => ({ from: `src${sep}radio-player.js`, spec }));
   assert.deepEqual(toCore, [{ from: `src${sep}radio-player.js`, spec: './radio/core/index.js' }]);
+  assert.deepEqual(g.dyn.filter((d) => /radio/.test(d.spec)), [{ from: `src${sep}main.js`, spec: './radio-player.js' }], 'main.js opens exactly one door: the Radio section');
   const flagIdx = read(resolve(root, 'src/radio-player.js'));
   assert.match(flagIdx, /registerAiStationTypes\(\{[\s\S]*isEnabled:[\s\S]*loadCore: \(\) => import\('\.\/radio\/core\/index\.js'\)/);
   // stations.js never names the core
   assert.doesNotMatch(code(read(resolve(root, 'src/stations.js'))), /radio\/core|radio-core/);
-  // the flag module is the only radio/ file on the boot path and has no imports at all
-  assert.deepEqual(g.files.filter((f) => f.startsWith(`src${sep}radio${sep}`)), [`src${sep}radio${sep}flag.js`]);
+  // no radio/ file at all is on the boot path any more (the flag module comes in with radio-player.js, lazily) and the flag has no imports
+  assert.deepEqual(g.files.filter((f) => f.startsWith(`src${sep}radio${sep}`)), []);
   assert.deepEqual(staticImports(read(resolve(root, 'src/radio/flag.js'))), []);
 });
 

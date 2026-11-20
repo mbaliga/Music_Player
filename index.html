@@ -2,10 +2,15 @@
 <html lang="en" data-theme="dark" data-mode="casual">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#000000" />
 <meta name="build-id" content="__BUILD_ID__" />
 <title>Runout</title>
+<link rel="icon" type="image/png" sizes="32x32" href="./assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="./assets/apple-touch-icon.png">
 <link rel="stylesheet" href="./src/cassette/cassette.css">
+<link rel="stylesheet" href="./src/shell/shell.css">
+<link rel="stylesheet" href="./src/shell/pages.css">
 <style>
   /* ── Design tokens ─────────────────────────────────────────────────────────── */
   :root {
@@ -48,26 +53,6 @@
     overscroll-behavior: none;
   }
 
-  /* ── Toolbar ────────────────────────────────────────────────────────────────── */
-  .toolbar {
-    position: sticky; top: 0; z-index: 20;
-    height: var(--toolbar-h);
-    display: flex; align-items: center; gap: 8px;
-    padding: 0 14px;
-    background: var(--bg);
-    border-bottom: 1px solid var(--border);
-  }
-  .logo {
-    flex: 1; font-size: 15px; font-weight: 700;
-    letter-spacing: .07em;
-    /* The logo sits directly on --bg (not --surface), so it's the one place
-       onBackground (rather than onSurface/--ink) applies. --ink-bg is only
-       ever set by a custom theme (src/theme.js); falls back to --ink
-       otherwise, so the built-in theme needs no new default. */
-    color: var(--ink-bg, var(--ink));
-  }
-  .logo span { color: var(--violet); }
-
   .tb-btn {
     width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
     background: var(--surface2);
@@ -94,27 +79,7 @@
     box-shadow: 0 2px 12px var(--violet-glow);
   }
 
-  /* ── App layout ─────────────────────────────────────────────────────────────── */
-  /* Mobile: single column, page scrolls */
-  .app {
-    display: flex; flex-direction: column;
-    transform-origin: 50% 40%;   /* zoom toward the disc on pinch */
-    will-change: transform, opacity;
-  }
-  .lib-overlay { will-change: opacity; }
-  .toolbar { will-change: opacity; }
-  /* Desktop: two-column, each column scrolls independently */
-  @media (min-width: 820px) {
-    body { overflow: hidden; }
-    .app {
-      flex-direction: row;
-      height: calc(100dvh - var(--toolbar-h));
-      overflow: hidden;
-    }
-    .stage { flex: 1; min-width: 0; }
-    .panel { width: 300px; overflow-y: auto; }
-  }
-
+  /* ── Deck block (turntable + now-line) lives in the Albums page; see src/shell/pages.css ── */
   /* ── Turntable stage ────────────────────────────────────────────────────────── */
   /* Geometry adapts to the canvas box (see render.js), so the stage can be any
      size and the disc stays circular. Portrait: a tall area; landscape (row): fills. */
@@ -126,9 +91,6 @@
     overflow: hidden;
   }
   [data-layout="cinematic"] .stage { height: 66svh; }
-  @media (min-width: 820px) {
-    .stage { flex: 1; height: 100%; width: auto; }
-  }
   .stage #disc,
   .stage #arm {
     position: absolute; inset: 0;
@@ -167,18 +129,6 @@
   .cd-list li::before { content: counter(cdt, decimal-leading-zero) "  "; font-variant-numeric: tabular-nums; opacity: .6; }
   .cd-list { counter-reset: cdt; }
   .cd-list li.cur { background: var(--violet-glow); color: var(--ink); font-weight: 600; }
-
-  /* ── Panel ──────────────────────────────────────────────────────────────────── */
-  .panel {
-    background: var(--surface);
-    padding: 16px 16px 32px;
-    display: flex; flex-direction: column; gap: 20px;
-    -webkit-overflow-scrolling: touch;
-    border-top: 1px solid var(--border);
-  }
-  @media (min-width: 820px) {
-    .panel { border-top: none; border-left: 1px solid var(--border); }
-  }
 
   .section { display: flex; flex-direction: column; gap: 10px; }
   .section-sep {
@@ -286,9 +236,15 @@
     background: rgba(0,0,0,0.82);
     backdrop-filter: blur(10px);
     display: flex; align-items: center; justify-content: center;
-    padding: 20px;
+    padding: calc(72px + env(safe-area-inset-top, 0px)) 20px 20px;   /* the top 72 px stay clear: the hamburger is never covered by the card */
   }
   .wt-overlay.hidden { display: none; }
+  .wt-logo { width: 64px; height: 64px; border-radius: 14px; display: block; margin-bottom: 12px; }
+  .wt-ring { position: fixed; z-index: 201; border-radius: 14px; pointer-events: none; border: 2px solid var(--violet);
+    box-shadow: 0 0 0 4px var(--violet-glow), 0 0 24px var(--violet-glow); animation: wtPulse 1.4s ease-in-out infinite; }
+  .wt-ring.hidden { display: none; }
+  @keyframes wtPulse { 50% { box-shadow: 0 0 0 9px rgba(142,123,255,0), 0 0 24px var(--violet-glow); } }
+  @media (prefers-reduced-motion: reduce) { .wt-ring { animation: none; } }
 
   .wt-card {
     background: var(--surface);
@@ -296,7 +252,7 @@
     border-radius: 22px;
     padding: 28px 24px 20px;
     max-width: 400px; width: 100%;
-    max-height: 80dvh; overflow-y: auto;
+    max-height: calc(100dvh - 120px); overflow-y: auto;
     position: relative;
     box-shadow:
       0 40px 90px rgba(0,0,0,0.92),
@@ -349,23 +305,6 @@
   /* ══════════════════════════════════════════════════════════════════════════════
      Library overlay
      ══════════════════════════════════════════════════════════════════════════════ */
-  .lib-overlay {
-    position: fixed; inset: 0; z-index: 100;
-    background: var(--bg);
-    display: flex; flex-direction: column;
-    overflow: hidden;
-  }
-  .lib-overlay.hidden { display: none; }
-
-  .lib-header {
-    display: flex; align-items: center; gap: 10px;
-    padding: 0 16px;
-    height: var(--toolbar-h);
-    border-bottom: 1px solid var(--border);
-    flex-shrink: 0;
-  }
-  .lib-title { font-size: 15px; font-weight: 700; flex: 1; }
-
   .lib-toolbar {
     display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
     padding: 10px 14px;
@@ -521,7 +460,7 @@
   .kind-chips { display: flex; gap: 6px; }
 
   .alb-detail {
-    position: absolute; inset: 0; z-index: 5; background: var(--bg);
+    position: absolute; left: 0; right: 0; bottom: 0; top: calc(var(--head-h) + var(--safe-top)); z-index: 5; background: var(--card-bg, var(--bg));
     display: flex; flex-direction: column;
   }
   .alb-detail-head {
@@ -538,15 +477,6 @@
   }
   .alb-detail-list li::before { content: counter(n) '  '; color: var(--ink2); font-variant-numeric: tabular-nums; }
   .alb-detail.cd .alb-detail-list li::before { color: #9fb4ff; }
-
-  /* ── Library tabs / panes ─────────────────────────────────────────────── */
-  .lib-tabs { display: flex; gap: 6px; padding: 8px 14px 0; border-bottom: 1px solid var(--border); flex-shrink: 0; }
-  .lib-tab {
-    padding: 8px 14px; font-size: 13px; font-weight: 700; cursor: pointer;
-    background: none; border: none; color: var(--ink2); border-bottom: 2px solid transparent;
-  }
-  .lib-tab.active { color: var(--ink); border-bottom-color: var(--secondary); }
-  .lib-pane { flex: 1; display: flex; flex-direction: column; min-height: 0; }
 
   /* ── Mixtapes: the cassette system styles live in src/cassette/cassette.css ── */
   .mt-name {
@@ -637,9 +567,9 @@
 
   /* ── Settings popover (layout switcher) ─────────────────────────────────────── */
   .settings-pop {
-    position: fixed; z-index: 30;
-    top: calc(var(--toolbar-h) + 6px); right: 12px;
-    width: 260px; padding: 14px;
+    position: fixed; z-index: 300;
+    left: 12px; bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+    width: min(260px, calc(100vw - 24px)); padding: 14px;
     background: var(--surface); border: 1px solid var(--border);
     border-radius: 14px;
     box-shadow: 0 20px 50px rgba(0,0,0,0.85), 0 0 0 1px rgba(255,255,255,0.04);
@@ -659,6 +589,7 @@
   .sp-opt-d { font-size: 11px; color: var(--ink2); }
   .sp-opt:hover { border-color: rgba(142,123,255,0.5); }
   /* highlight the active layout */
+  [data-layout="compact"]     .sp-opt[data-layout="compact"],
   [data-layout="utilitarian"] .sp-opt[data-layout="utilitarian"],
   [data-layout="cinematic"]   .sp-opt[data-layout="cinematic"] {
     border-color: var(--violet);
@@ -759,23 +690,17 @@
 </head>
 <body>
 
-<!-- ── Toolbar ─────────────────────────────────────────────────────────────── -->
-<header class="toolbar">
-  <span class="logo"><span>Runout</span></span>
-  <button class="tb-btn" id="btnWalkthrough" title="How to use">?</button>
-  <button class="tb-btn" id="btnMode"        title="Audiophile / Casual">◦</button>
-  <button class="tb-btn" id="btnTheme"       title="Switch theme">☾</button>
-  <button class="tb-btn" id="btnSettings"    title="Settings">⚙</button>
-  <button class="tb-btn" id="btnLibrary"     title="Music library">≡</button>
-</header>
-
 <!-- ── Settings popover ────────────────────────────────────────────────────── -->
 <div class="settings-pop hidden" id="settingsPop" role="dialog" aria-label="Settings">
   <div class="sp-label">Layout</div>
   <div class="sp-seg">
+    <button class="sp-opt" data-layout="compact">
+      <span class="sp-opt-t">Compact</span>
+      <span class="sp-opt-d">Default · whole record + arm on top, shelf below</span>
+    </button>
     <button class="sp-opt" data-layout="utilitarian">
       <span class="sp-opt-t">Utilitarian</span>
-      <span class="sp-opt-d">Vertical · whole record visible</span>
+      <span class="sp-opt-d">Tall · whole record visible</span>
     </button>
     <button class="sp-opt" data-layout="cinematic">
       <span class="sp-opt-t">Cinematic</span>
@@ -792,24 +717,47 @@
   </div>
 </div>
 
-<!-- ── Main app ───────────────────────────────────────────────────────────── -->
-<div class="app">
+<!-- ── Shell: the drawer menu sits behind; the current section is the rounded card in front (src/shell/nav.js, docs/SHELL.md) ── -->
+<div class="shell" id="shell" data-open="false">
 
-  <div class="stage">
-    <canvas id="disc" width="760" height="1000"></canvas>
-    <!-- CD playing view (shown instead of the platter for CD albums) -->
-    <div class="cd-view hidden" id="cdView">
-      <div class="cd-title" id="cdTitle"></div>
-      <canvas id="cdCanvas"></canvas>
-      <div class="cd-meta"><span id="cdNum">Track 1 of 1</span><span id="cdTime">0:00 / 0:00</span></div>
-      <div class="cd-ctl">
-        <button id="cdPrev" type="button" aria-label="Previous track">⏮</button>
-        <button id="cdPlay" class="cd-play" type="button" aria-label="Play / pause">❚❚</button>
-        <button id="cdNext" type="button" aria-label="Next track">⏭</button>
-      </div>
-      <ol class="cd-list" id="cdList"></ol>
+  <nav class="drawer" id="drawer" role="navigation" aria-label="Sections">
+    <div class="drawer-brand">
+      <img class="drawer-mark" src="./assets/icon-192.png" alt="" width="44" height="44">
+      <span class="drawer-name">Runout</span>
     </div>
-    <svg id="arm" viewBox="0 0 760 1000" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Turntable tonearm">
+    <ul class="drawer-menu" id="drawerMenu"></ul>
+    <div class="drawer-foot">
+      <button class="tb-btn" id="btnWalkthrough" type="button" title="How to use" aria-label="How to use">?</button>
+      <button class="tb-btn" id="btnMode"        type="button" title="Audiophile / Casual" aria-label="Audiophile or casual mode">◦</button>
+      <button class="tb-btn" id="btnTheme"       type="button" title="Switch theme" aria-label="Switch theme">☾</button>
+      <button class="tb-btn" id="btnSettings"    type="button" title="Settings" aria-label="Settings">⚙</button>
+    </div>
+  </nav>
+
+  <div class="shell-peek" aria-hidden="true"></div>
+
+  <div class="card" id="card" data-mini="false">
+    <div class="card-inner" id="cardInner">
+      <div id="shellPages">
+
+        <!-- Albums: the compact turntable on top, a tight now-line, then the shelf -->
+        <section data-section="albums" id="pageAlbums">
+          <div class="app deck">
+            <div class="stage">
+              <canvas id="disc" width="760" height="1000"></canvas>
+              <!-- CD playing view (shown instead of the platter for CD albums) -->
+              <div class="cd-view hidden" id="cdView">
+                <div class="cd-title" id="cdTitle"></div>
+                <canvas id="cdCanvas"></canvas>
+                <div class="cd-meta"><span id="cdNum">Track 1 of 1</span><span id="cdTime">0:00 / 0:00</span></div>
+                <div class="cd-ctl">
+                  <button id="cdPrev" type="button" aria-label="Previous track">⏮</button>
+                  <button id="cdPlay" class="cd-play" type="button" aria-label="Play / pause">❚❚</button>
+                  <button id="cdNext" type="button" aria-label="Next track">⏭</button>
+                </div>
+                <ol class="cd-list" id="cdList"></ol>
+              </div>
+              <svg id="arm" viewBox="0 0 760 1000" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Turntable tonearm">
       <defs>
         <linearGradient id="cwGrad" x1="0" y1="0" x2="1" y2="0">
           <stop offset="0" stop-color="#202125"/><stop offset="0.16" stop-color="#6f7177"/>
@@ -947,131 +895,111 @@
         </g>
       </g>
     </svg>
+            </div>
+
+            <div class="nowline">
+              <div class="nowline-info">
+                <span class="track-name" id="trackName">…</span>
+                <div class="trk-nav hidden" id="trkNav">
+                  <button id="btnPrevTrk" type="button" aria-label="Previous track">⏮</button>
+                  <span class="trk-idx" id="trkIdx"></span>
+                  <button id="btnNextTrk" type="button" aria-label="Next track">⏭</button>
+                </div>
+              </div>
+              <div class="nowline-ctl vinyl-only">
+                <div class="rpms" role="group" aria-label="Speed">
+                  <button data-rpm="33.333">33⅓</button>
+                  <button data-rpm="45">45</button>
+                  <button data-rpm="78">78</button>
+                </div>
+                <div id="brakePad" class="brake" title="Hold to brake (space bar)">BRAKE</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="shelf" id="albShelf">
+            <div class="lib-toolbar">
+              <button class="lib-scan" id="libScan">Scan music folder…</button>
+              <div class="sort-chips kind-chips" id="kindChips">
+                <button class="sort-chip active" data-kind="all">All</button>
+                <button class="sort-chip" data-kind="vinyl">Vinyl</button>
+                <button class="sort-chip" data-kind="cd">CD</button>
+              </div>
+              <div class="sort-chips" id="sortChips">
+                <button class="sort-chip active" data-sort="artist">Artist</button>
+                <button class="sort-chip" data-sort="album">Album</button>
+                <button class="sort-chip" data-sort="genre">Genre</button>
+                <button class="sort-chip" data-sort="color">Colour</button>
+              </div>
+            </div>
+            <div class="lib-grid-wrap" id="libGridWrap">
+              <div class="album-grid" id="albumGrid"></div>
+            </div>
+
+            <!-- Everything that used to sit in the side panel: nothing was removed -->
+            <details class="deck-more">
+              <summary>Deck details</summary>
+              <aside class="panel">
+                <div class="section vinyl-only">
+                  <div class="section-title">Fine speed</div>
+                  <input id="rpmSlider" type="range" min="8" max="100" step="0.5" value="33.3" />
+                  <div class="stat"><span class="lbl">target rpm</span><span class="val" id="rpmReadout">33</span></div>
+                  <p class="hint">Drag the disc to scratch. Start at the outer edge to swing the tonearm (silent seek): drop it in the gap between tracks to start the next one, or flick sideways there for next / previous. Hold BRAKE (or the space bar) to stop the platter.</p>
+                </div>
+                <div class="section">
+                  <div class="stat"><span class="lbl">rate</span><span class="val" id="rate">0.00×</span></div>
+                  <div class="stat"><span class="lbl">position</span><span class="val" id="pos">0 / 0 s</span></div>
+                  <div class="stat"><span class="lbl">wear</span><span class="val" id="wear">0 plays</span></div>
+                </div>
+                <div class="section-sep"></div>
+                <div class="section audiophile-only" id="feelSection">
+                  <div class="section-title">Feel knobs</div>
+                  <div class="knob"><span class="lbl">J · inertia</span><span class="val" id="knobJVal"></span><input id="knobJ" type="range" min="0.05" max="2" step="0.01"></div>
+                  <div class="knob"><span class="lbl">k · motor pull</span><span class="val" id="knobKVal"></span><input id="knobK" type="range" min="1" max="30" step="0.1"></div>
+                  <div class="knob"><span class="lbl">c · friction</span><span class="val" id="knobCVal"></span><input id="knobC" type="range" min="0" max="4" step="0.01"></div>
+                  <div class="knob"><span class="lbl">brake damp</span><span class="val" id="knobBrakeVal"></span><input id="knobBrake" type="range" min="2" max="40" step="0.1"></div>
+                </div>
+                <div class="section audiophile-only" id="latencySection">
+                  <div class="section-title">Latency gate</div>
+                  <div id="latency">measuring…</div>
+                </div>
+                <div class="section">
+                  <div class="section-title">Load track</div>
+                  <input id="fileInput" type="file" accept="audio/*" />
+                  <p class="hint">Or drop a file anywhere. Local only — no streaming.</p>
+                </div>
+                <p class="hint" id="buildId" style="opacity:.5">build: dev</p>
+              </aside>
+            </details>
+          </div>
+        </section>
+
+        <!-- Mixtapes: the stack of cassettes is the page (src/mixtape-ui.js) -->
+        <section data-section="mixtapes" id="pageMixtapes">
+          <div class="mt-bar" id="mtBar">
+            <button class="lib-scan" id="mtNew" type="button">+ New</button>
+            <button class="sort-chip" id="mtImport" type="button">Import</button>
+          </div>
+          <div class="mt-body"><div class="mt-shelf" id="mtList"></div></div>
+        </section>
+
+        <!-- Radio: mounted lazily on first visit (src/radio-player.js) -->
+        <section data-section="radio" id="pageRadio"><div class="pane-fill" id="paneRadio"></div></section>
+
+        <!-- Booth: the DJ / FX section, mounted lazily on first visit (src/shell/booth.js) -->
+        <section data-section="booth" id="pageBooth"><div class="pane-fill booth-host" id="boothHost"></div></section>
+      </div>
+
+      <div class="minibar" hidden>
+        <button class="minibar-main" type="button"><span class="minibar-title"></span><span class="minibar-sub"></span></button>
+        <button class="minibar-stop" type="button" aria-label="Stop radio" hidden>■</button>
+      </div>
+    </div>
+    <div class="card-handle" aria-hidden="true"></div>
+    <div class="card-cover" id="cardCover" aria-hidden="true"></div>
   </div>
 
-  <aside class="panel">
-
-    <!-- Now playing -->
-    <div class="section">
-      <div class="section-title">Now playing</div>
-      <div class="track-name" id="trackName">…</div>
-      <div class="trk-nav hidden" id="trkNav">
-        <button id="btnPrevTrk" type="button" aria-label="Previous track">⏮</button>
-        <span class="trk-idx" id="trkIdx"></span>
-        <button id="btnNextTrk" type="button" aria-label="Next track">⏭</button>
-      </div>
-    </div>
-
-    <!-- Speed dial -->
-    <div class="section vinyl-only">
-      <div class="section-title">Speed dial</div>
-      <div class="rpms">
-        <button data-rpm="33.333">33⅓</button>
-        <button data-rpm="45">45</button>
-        <button data-rpm="78">78</button>
-      </div>
-      <input id="rpmSlider" type="range" min="8" max="100" step="0.5" value="33.3" />
-      <div class="stat">
-        <span class="lbl">target rpm</span>
-        <span class="val" id="rpmReadout">33</span>
-      </div>
-    </div>
-
-    <!-- Palm brake -->
-    <div class="section vinyl-only">
-      <div class="section-title">Palm brake</div>
-      <div id="brakePad" class="brake">HOLD TO BRAKE · ⎵</div>
-      <p class="hint">Drag the disc to scratch. Start at the outer edge to swing the tonearm (silent seek): drop it in the gap between tracks to start the next one, or flick sideways there for next / previous.</p>
-    </div>
-
-    <!-- Live stats -->
-    <div class="section">
-      <div class="stat"><span class="lbl">rate</span><span class="val" id="rate">0.00×</span></div>
-      <div class="stat"><span class="lbl">position</span><span class="val" id="pos">0 / 0 s</span></div>
-      <div class="stat"><span class="lbl">wear</span><span class="val" id="wear">0 plays</span></div>
-    </div>
-
-    <div class="section-sep"></div>
-
-    <!-- Feel knobs — hidden in casual mode -->
-    <div class="section audiophile-only" id="feelSection">
-      <div class="section-title">Feel knobs</div>
-      <div class="knob">
-        <span class="lbl">J · inertia</span><span class="val" id="knobJVal"></span>
-        <input id="knobJ" type="range" min="0.05" max="2" step="0.01">
-      </div>
-      <div class="knob">
-        <span class="lbl">k · motor pull</span><span class="val" id="knobKVal"></span>
-        <input id="knobK" type="range" min="1" max="30" step="0.1">
-      </div>
-      <div class="knob">
-        <span class="lbl">c · friction</span><span class="val" id="knobCVal"></span>
-        <input id="knobC" type="range" min="0" max="4" step="0.01">
-      </div>
-      <div class="knob">
-        <span class="lbl">brake damp</span><span class="val" id="knobBrakeVal"></span>
-        <input id="knobBrake" type="range" min="2" max="40" step="0.1">
-      </div>
-    </div>
-
-    <!-- Latency — hidden in casual mode -->
-    <div class="section audiophile-only" id="latencySection">
-      <div class="section-title">Latency gate</div>
-      <div id="latency">measuring…</div>
-    </div>
-
-    <!-- Load a track directly -->
-    <div class="section">
-      <div class="section-title">Load track</div>
-      <input id="fileInput" type="file" accept="audio/*" />
-      <p class="hint">Or drop a file anywhere. Local only — no streaming.</p>
-    </div>
-
-    <p class="hint" id="buildId" style="opacity:.5">build: dev</p>
-
-  </aside>
-</div><!-- /.app -->
-
-<!-- ── Library overlay ─────────────────────────────────────────────────────── -->
-<div class="lib-overlay hidden" id="libOverlay">
-  <div class="lib-header">
-    <span class="lib-title">Library</span>
-    <button class="btn-close" id="libClose">✕</button>
-  </div>
-  <div class="lib-tabs" id="libTabs">
-    <button class="lib-tab active" data-tab="albums" type="button">Albums</button>
-    <button class="lib-tab" data-tab="mixtapes" type="button">Mixtapes</button>
-    <button class="lib-tab" data-tab="radio" type="button">Radio</button>
-  </div>
-  <div class="lib-pane" id="paneAlbums">
-  <div class="lib-toolbar">
-    <button class="lib-scan" id="libScan">Scan music folder…</button>
-    <div class="sort-chips kind-chips" id="kindChips">
-      <button class="sort-chip active" data-kind="all">All</button>
-      <button class="sort-chip" data-kind="vinyl">Vinyl</button>
-      <button class="sort-chip" data-kind="cd">CD</button>
-    </div>
-    <div class="sort-chips" id="sortChips">
-      <button class="sort-chip active" data-sort="artist">Artist</button>
-      <button class="sort-chip" data-sort="album">Album</button>
-      <button class="sort-chip" data-sort="genre">Genre</button>
-      <button class="sort-chip" data-sort="color">Colour</button>
-    </div>
-  </div>
-  <div class="lib-grid-wrap" id="libGridWrap">
-    <div class="album-grid" id="albumGrid"></div>
-  </div>
-  </div><!-- /#paneAlbums -->
-
-  <div class="lib-pane hidden" id="paneMixtapes">
-    <div class="lib-toolbar">
-      <button class="lib-scan" id="mtNew" type="button">+ New mixtape</button>
-      <button class="sort-chip" id="mtImport" type="button">Import JSON</button>
-    </div>
-    <div class="mt-shelf" id="mtList"></div>
-  </div>
-
-  <div class="lib-pane hidden" id="paneRadio"></div>
+  <div class="edge-strip" id="edgeStrip" aria-hidden="true"></div>
 </div>
 
 <!-- ── Custom theme overlay: paste JSON → verbatim preview → Apply ─────────── -->

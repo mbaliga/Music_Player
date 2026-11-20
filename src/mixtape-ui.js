@@ -105,9 +105,10 @@ export class MixtapeUI {
     newBtn.addEventListener('click', () => this.edit(null));
     importBtn.addEventListener('click', () => this.importDialog());
     const bar = newBtn.parentNode;
+    bar.append(h('span', { class: 'mt-bar-sp' }));
     this.viewStack = h('button', { class: 'sort-chip', type: 'button', onclick: () => this.setView('stack') }, 'Stack');
     this.viewSpines = h('button', { class: 'sort-chip', type: 'button', onclick: () => this.setView('spines') }, 'Spines');
-    this.editSel = h('button', { class: 'sort-chip', type: 'button', disabled: '', onclick: () => { const m = this.byId(this.sel); if (m) this.edit(m); } }, 'Edit selected');
+    this.editSel = h('button', { class: 'sort-chip', type: 'button', disabled: '', onclick: () => { const m = this.byId(this.sel); if (m) this.edit(m); } }, 'Edit');
     bar.append(this.viewStack, this.viewSpines, this.editSel);
     this.render();
   }
@@ -134,7 +135,10 @@ export class MixtapeUI {
     const host = h('div', {});
     el.append(host);
     if (this.view === 'stack') {
-      mountStack(host, items, { selected: this.sel, onSelect, onOpen: (it) => { const m = this.byId(it.id); if (m) this.startPlayback(m); } });
+      // the top tape is the one on top of the stack: tap it to play, tap another to bring it up; Edit acts on the top tape
+      const top = this.byId(this.sel) ? this.sel : (this.list.length ? this.list[this.list.length - 1].id : null);
+      if (!this.sel && top) { this.sel = top; if (this.editSel) this.editSel.disabled = false; }
+      mountStack(host, items, { selected: top, bringToTop: true, step: this.list.length <= 4 ? 0.45 : this.list.length <= 6 ? 0.36 : 0.24, onSelect, onOpen: (it) => { const m = this.byId(it.id); if (m) this.startPlayback(m); } });
     } else {
       mountLibrary(host, items, { selected: this.sel, onSelect, onOpen: (it) => { const m = this.byId(it.id); if (m) this.back(m); } });
     }

@@ -18,36 +18,55 @@ let uid = 0;
     opts = opts || {};
     var step = opts.step || 0.24;
     var selected = opts.selected || null, cards = {};
+    // bringToTop (the Mixtapes page): the stack has a TOP tape (the last in `order`, drawn lowest and in front). Tapping the top tape
+    // opens it (onOpen); tapping any other tape brings it to the top (animated by the card transitions) and selects it.
+    var bringToTop = !!opts.bringToTop;
+    var order = items.map(function (i) { return i.id; });
+    if (bringToTop && selected && order.indexOf(selected) >= 0) { order = order.filter(function (id) { return id !== selected; }).concat(selected); }
     el.classList.add('cs-stack');
     function ratio(it) { var st = Cassette.style(it.cfg.style) || {}, vb = st.vb || [808, 495]; return vb[1] / vb[0]; }
     function layout() {
       var w = el.clientWidth || 360, ch = w * 495 / 808;
       var n = items.length, total = ch + (n - 1) * ch * step;
       el.style.height = total + 'px';
-      items.forEach(function (it, i) {
-        var b = cards[it.id], isSel = it.id === selected, jig = ((i * 37) % 7 - 3) * 0.5, lx = ((i * 53) % 9 - 4) * 1.2;
+      items.forEach(function (it, idx) {
+        var i = bringToTop ? order.indexOf(it.id) : idx;
+        var b = cards[it.id], isSel = !bringToTop && it.id === selected, jig = ((i * 37) % 7 - 3) * 0.5, lx = ((i * 53) % 9 - 4) * 1.2;
         b.style.top = (i * ch * step) + 'px';
         b.style.zIndex = isSel ? 100 : i + 1;
         b.style.transform = isSel ? 'translate(18px,-8px) rotate(0deg) scale(1.02)' : 'translate(' + lx + 'px,0) rotate(' + jig + 'deg)';
-        b.setAttribute('aria-pressed', String(isSel));
+        b.setAttribute('aria-pressed', String(bringToTop ? i === n - 1 : isSel));
       });
     }
     function build() {
       el.textContent = ''; cards = {};
+      order = order.filter(function (id) { return items.some(function (i) { return i.id === id; }); });
+      items.forEach(function (it) { if (order.indexOf(it.id) < 0) order.push(it.id); });
       items.forEach(function (it) {
         var b = document.createElement('button'); b.type = 'button'; b.className = 'cs-card'; b.setAttribute('aria-label', 'Mixtape: ' + ((it.cfg.text && it.cfg.text.title) || 'Untitled'));
         var holder = document.createElement('div'); b.appendChild(holder);
         Cassette.mount(holder, Object.assign({}, it.cfg, { static: true }));
-        b.addEventListener('click', function () { api.select(it.id); opts.onOpen && opts.onOpen(it); });
-        b.addEventListener('mouseenter', function () { if (it.id !== selected) b.style.transform += ' translateY(-10px)'; });
+        b.addEventListener('click', function () {
+          if (bringToTop) {
+            if (order[order.length - 1] === it.id) { selected = it.id; opts.onOpen && opts.onOpen(it); return; }
+            api.select(it.id); return;
+          }
+          api.select(it.id); opts.onOpen && opts.onOpen(it);
+        });
+        b.addEventListener('mouseenter', function () { if (!bringToTop && it.id !== selected) b.style.transform += ' translateY(-10px)'; });
         b.addEventListener('mouseleave', layout);
         el.appendChild(b); cards[it.id] = b;
       });
       layout();
     }
     var api = {
-      select: function (id) { selected = id; layout(); opts.onSelect && opts.onSelect(items.filter(function (i) { return i.id === id; })[0]); return api; },
+      select: function (id) {
+        selected = id;
+        if (bringToTop) order = order.filter(function (x) { return x !== id; }).concat(id);
+        layout(); opts.onSelect && opts.onSelect(items.filter(function (i) { return i.id === id; })[0]); return api;
+      },
       get selected() { return selected; },
+      get top() { return order[order.length - 1]; },
       update: function (next) { items = next; build(); return api; },
       add: function (it) { items.push(it); build(); return api; }
     };

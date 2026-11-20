@@ -1,0 +1,134 @@
+/* shell.css — the navigation shell: drawer menu behind, the current section as a big rounded card in front.
+   Everything that moves is a transform (+ opacity). Tunables mirrored from drawer.js are noted; docs/SHELL.md lists them all. */
+:root {
+  --shell-bg: var(--bg);
+  --card-bg: var(--surface);
+  --card-r: 28px;                      /* the big corner radius (reference ~28-32 px) */
+  --card-veil: rgba(0,0,0,.22);        /* scrim tint over the pulled-aside card */
+  --peek: var(--surface2);
+  --shell-accent: var(--violet);       /* active-state accent (handle focus, menu focus ring). Logo orange is #FE5031; see docs/SHELL.md */
+  --head-h: 56px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+@supports (background: color-mix(in srgb, red, blue)) {
+  :root { --peek: color-mix(in srgb, var(--violet) 38%, var(--bg)); }
+}
+/* Light theme, built-in palette only (a custom theme sets --bg inline and brings its own colours): the reference's soft grey. */
+:root[data-theme="light"]:not([style*="--bg"]) {
+  --shell-bg: linear-gradient(165deg, #e9eaed 0%, #d6d8dc 100%);
+  --card-bg: #fbfbfc;
+  --card-veil: rgba(40,42,50,.07);
+  --peek: #7fa58a;
+}
+
+.shell {
+  position: fixed; top: 0; bottom: 0; left: 0; right: 0; margin: 0 auto;
+  width: min(100%, 560px);                      /* landscape / tablets: the frame is capped and centred */
+  overflow: hidden; z-index: 1;
+  background: var(--shell-bg);
+  color: var(--ink-bg, var(--ink));
+  touch-action: manipulation;
+}
+
+/* ── the menu behind the card ── */
+.drawer {
+  position: absolute; inset: 0; display: flex; flex-direction: column; will-change: transform, opacity;
+  padding-top: var(--safe-top);
+}
+.drawer[hidden] { display: none; }
+.drawer-brand { display: flex; align-items: center; gap: 12px; padding: 18px 24px 0; }
+.drawer-mark { width: 44px; height: 44px; border-radius: 10px; display: block; flex: none; }
+.drawer-name { font-size: 15px; font-weight: 700; letter-spacing: .06em; color: var(--ink-bg, var(--ink)); }
+.drawer-menu {
+  list-style: none; flex: 1; display: flex; flex-direction: column; justify-content: center;
+  gap: 2px; padding: 6% 0 0 28px; width: var(--open-w, 56%);
+}
+.drawer-item {
+  display: block; width: 100%; text-align: left; background: none; border: 0; cursor: pointer;
+  font: inherit; font-size: 19px; font-weight: 400; letter-spacing: -.005em; line-height: 1.2;
+  padding: 11px 0; min-height: 44px; color: var(--ink2);
+  transition: color .2s var(--ease), font-size .2s var(--ease), font-weight .2s;
+}
+.drawer-item.active { font-size: 28px; font-weight: 600; color: var(--ink-bg, var(--ink)); }
+.drawer-item:focus-visible, .hamburger:focus-visible, .minibar button:focus-visible, .drawer-foot .tb-btn:focus-visible {
+  outline: 2px solid var(--shell-accent); outline-offset: 3px; border-radius: 10px;
+}
+.drawer-foot { display: flex; flex-wrap: wrap; gap: 6px; padding: 14px 0 calc(18px + var(--safe-bottom)) 24px; width: var(--open-w, 56%); }
+.drawer-foot .tb-btn { width: 38px; height: 38px; font-size: 14px; }
+
+/* the next card peeking at the bottom while the drawer is open (a hint that there is more, as in the reference) */
+.shell-peek {
+  position: absolute; inset: 0; border-radius: var(--card-r); background: var(--surface2); background: var(--peek);
+  transform-origin: 0 50%; opacity: 0; pointer-events: none; will-change: transform, opacity;
+}
+
+/* ── the card ── */
+.card {
+  position: absolute; inset: 0; border-radius: var(--card-r); overflow: hidden;
+  background: var(--card-bg); color: var(--ink);
+  box-shadow: -14px 0 44px rgba(0,0,0,.38), 0 0 0 1px var(--border);
+  transform-origin: 0 50%; will-change: transform;
+}
+[data-theme="light"] .card { box-shadow: -10px 0 40px rgba(30,32,40,.16), 0 0 0 1px rgba(0,0,0,.04); }
+.card-inner { position: absolute; inset: 0; display: flex; flex-direction: column; }
+.card-handle {
+  position: absolute; left: 6px; top: 50%; width: 4px; height: 46px; margin-top: -23px; border-radius: 2px;
+  background: var(--ink2); pointer-events: none; z-index: 3;
+}
+.card-cover {
+  position: absolute; inset: 0; z-index: 6; opacity: 0; background: var(--card-veil);
+  pointer-events: none; touch-action: none; cursor: pointer;
+}
+.shell[data-open="true"] .card-cover { pointer-events: auto; }
+/* The grab strip: a real element above the card, 24 px wide (DRAWER.EDGE_STRIP_PX), starting below the page header
+   so the hamburger stays tappable. Only presses that start in it can open the drawer. */
+.edge-strip {
+  position: absolute; left: 0; top: calc(var(--head-h) + var(--safe-top)); bottom: 0; width: 24px; z-index: 7;
+  touch-action: none;
+}
+.shell[data-open="true"] .edge-strip { pointer-events: none; }
+
+/* ── pages ── */
+#shellPages { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.page { position: absolute; inset: 0; display: flex; flex-direction: column; min-height: 0; background: var(--card-bg); }
+.page[hidden] { display: none; }
+.page.enter { animation: pageIn 300ms var(--ease) both; }
+@keyframes pageIn { from { opacity: 0; transform: translate3d(28px, 0, 0); } to { opacity: 1; transform: none; } }
+.page.loading::after { content: 'Loading…'; display: block; padding: 40px; text-align: center; color: var(--ink2); font-size: 14px; }
+.page-error { padding: 40px 24px; text-align: center; color: var(--ink2); font-size: 14px; }
+.page-head {
+  flex: none; display: flex; align-items: center; gap: 2px; position: relative; z-index: 2;
+  min-height: calc(var(--head-h) + var(--safe-top)); padding: var(--safe-top) 12px 0 6px;
+}
+.hamburger {
+  width: 48px; height: 48px; flex: none; display: flex; align-items: center; justify-content: center;
+  background: none; border: 0; border-radius: 12px; color: var(--ink); cursor: pointer;
+}
+.hamburger:active { transform: scale(.92); }
+.page-title { font-size: 20px; font-weight: 600; letter-spacing: -.01em; color: var(--ink); }
+.page-actions { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+
+/* ── now-playing mini bar ── */
+.minibar {
+  position: absolute; left: 12px; right: 12px; bottom: calc(10px + var(--safe-bottom)); z-index: 4;
+  display: flex; align-items: center; gap: 6px; padding: 4px 6px 4px 4px;
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 20px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.35);
+}
+.minibar[hidden] { display: none; }
+.minibar-main { flex: 1; min-width: 0; min-height: 48px; display: flex; flex-direction: column; justify-content: center; gap: 1px;
+  text-align: left; background: none; border: 0; color: var(--ink); font: inherit; cursor: pointer; padding: 0 12px; }
+.minibar-title { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.minibar-sub { font-size: 12px; color: var(--ink2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.minibar-sub::before { content: ''; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #5ad18a; margin-right: 6px; }
+.minibar-stop { width: 44px; height: 44px; border-radius: 50%; border: 0; background: var(--surface); color: var(--ink); cursor: pointer; font-size: 14px; }
+.minibar-stop[hidden] { display: none; }
+.card[data-mini="true"] .page { padding-bottom: calc(72px + var(--safe-bottom)); }
+/* the radio's own floating pill is replaced by the mini bar */
+.radio-pill { display: none !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  .page.enter { animation: none; }
+  .drawer-item { transition: none; }
+}

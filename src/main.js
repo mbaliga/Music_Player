@@ -27,7 +27,8 @@ import { NeedleFX } from './needle-fx.js';
 import { CdView } from './cd-view.js';
 import { CD_KNOBS, formatTime } from './cd.js';
 import { MixtapeUI } from './mixtape-ui.js';
-import { RadioUI } from './radio-player.js';
+import { createShell } from './shell/nav.js';
+import { mountBooth } from './shell/booth.js';
 import { createEngineGate } from './engine-gate.js';
 import { LibraryManager, GridView } from './library.js';
 import {
@@ -92,30 +93,35 @@ async function boot() {
   await loadTrack(synthesizeTrack(state.engine.sampleRate, 24));
   sizeCanvas();
   window.addEventListener('resize', sizeCanvas);
+  // the stage resizes with the card (landscape, layout switch) and reappears with size 0 -> real size when Albums is shown again
+  if (typeof ResizeObserver !== 'undefined') new ResizeObserver(() => sizeCanvas()).observe(canvas);
   installInput();
   installControls();
   installAlbumNav();
-  installToolbar();
-  installLibrary();
+  installLibrary();     // albums shelf, mixtapes, the lazy radio / booth hooks and the shell itself
+  installToolbar();     // the drawer footer: walkthrough, mode, theme
   installLayout();
   installCustomTheme();
-  installPinchTransition();
   requestAnimationFrame(loop);
   updateLatencyReadout();
   showBuildId();
 }
 
 // ── Layout: Utilitarian (full disc, vertical) vs Cinematic (cropped, immersive)
+// 'compact' (default) is the Utilitarian composition scaled to the top ~42% of the Albums card (see src/shell/pages.css).
+// The preference key is new ('runout.layout.v2'): the old key was written with 'cinematic' on every first run, so it could not tell
+// a choice from a default, and the owner asked for compact to be the new default.
 function applyLayout(name) {
   setLayout(name);
   document.documentElement.dataset.layout = name;
-  localStorage.setItem('runout.layout', name);
+  try { localStorage.setItem('runout.layout.v2', name); } catch { /* private mode */ }
   sizeCanvas();   // recomputes geometry + re-points the SVG arm transform
 }
 
 function installLayout() {
-  const saved = localStorage.getItem('runout.layout') || 'cinematic';
-  applyLayout(saved);
+  let saved = 'compact';
+  try { saved = localStorage.getItem('runout.layout.v2') || 'compact'; } catch { /* private mode */ }
+  applyLayout(['compact', 'utilitarian', 'cinematic'].includes(saved) ? saved : 'compact');
 
   const pop = el('settingsPop');
   const gear = el('btnSettings');
@@ -124,9 +130,10 @@ function installLayout() {
     pop.classList.toggle('hidden', !open);
     gear.classList.toggle('active', open);
   };
-  gear.addEventListener('click', (e) => { e.stopPropagation(); toggle(); });
+  gear.addEventListener('click', (e) => { e.stopPropagation(); toggle(); if (!pop.classList.contains('hidden')) pop.querySelector('.sp-opt')?.focus(); });
   pop.addEventListener('click', (e) => e.stopPropagation());
   document.addEventListener('click', () => { if (!pop.classList.contains('hidden')) toggle(false); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !pop.classList.contains('hidden')) { toggle(false); gear.focus(); } });
 
   pop.querySelectorAll('.sp-opt').forEach((b) => {
     // The custom-theme entry (#btnCustomTheme) is also an .sp-opt but opens
@@ -302,7 +309,8 @@ function sizeCanvas() {
   // same CSS-px coordinate space via its viewBox, so it always lines up.
   const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
   const rect = canvas.getBoundingClientRect();
-  const W = Math.max(1, rect.width), H = Math.max(1, rect.height);
+  if (rect.width < 2 || rect.height < 2) return;   // the Albums page is hidden (another section is showing): keep the last geometry
+  const W = rect.width, H = rect.height;
   canvas.width = Math.round(W * dpr);
   canvas.height = Math.round(H * dpr);
   state.geom = makeGeometry(W, H);
@@ -428,7 +436,7 @@ function radialDist(client) {
 
 function installInput() {
   canvas.addEventListener('pointerdown', async (e) => {
-    if (pinch.active) return;            // a two-finger pinch owns this gesture
+    if (!e.isPrimary) return;            // one finger drives the disc; a second finger never starts a second gesture
     canvas.setPointerCapture(e.pointerId);
     await state.engine.resume();
     state.pointer = { x: e.clientX, y: e.clientY };
@@ -607,7 +615,7 @@ function setView(v) {
   state._viewSet = true;
   state.view = v;
   document.querySelector('.stage').dataset.view = v;
-  appEl().dataset.view = v;
+  appEl().dataset.view = v;   // .app = the deck block of the Albums page
   state.cd?.show(v === 'cd');
   if (v === 'cd') state.cdPlaying = true;
 }
@@ -732,142 +740,17 @@ function updateHud(rate, t) {
   el('wear').textContent = `${state.playCount} plays`;
 }
 
-// ── Library open / close + pinch transition ──────────────────────────────────
-// The whole app screen lives in `.app`; the library is a fixed full-screen
-// overlay above it. Pinch OUT zooms `.app` down while the library fades in
-// (zoom out of one record into the crate); pinch IN reverses it.
-
 const appEl = () => document.querySelector('.app');
-const libEl = () => el('libOverlay');
-const barEl = () => document.querySelector('.toolbar');
+let shell = null;   // the navigation shell (src/shell/nav.js), created by installLibrary
 
-// Shared pinch state, read by the canvas pointerdown guard above.
-const pinch = { active: false, mode: null, d0: 0, progress: 0 };
-
-function clearTransientStyles() {
-  const a = appEl(), l = libEl(), b = barEl();
-  a.style.transition = ''; a.style.transform = ''; a.style.opacity = '';
-  l.style.transition = ''; l.style.opacity = '';
-  b.style.transition = ''; b.style.opacity = '';
-}
-
-function openLibrary() {
-  clearTransientStyles();
-  libEl().classList.remove('hidden');
-}
-
-function closeLibrary() {
-  clearTransientStyles();
-  libEl().classList.add('hidden');
-}
-
-function installPinchTransition() {
-  const touchDist = (t) => Math.hypot(
-    t[0].clientX - t[1].clientX,
-    t[0].clientY - t[1].clientY,
-  );
-
-  // NON-PASSIVE touch listeners. The instant a 2nd finger lands we call
-  // preventDefault() so the Android WebView never starts its own scroll/zoom —
-  // which would otherwise fire pointercancel and kill the gesture. This is THE
-  // fix: a passive listener can't preventDefault, so the pinch never survived.
-  document.addEventListener('touchstart', (e) => {
-    if (e.touches.length === 2 && !pinch.active) {
-      e.preventDefault();
-      beginPinch(touchDist(e.touches));
-    }
-  }, { passive: false });
-
-  document.addEventListener('touchmove', (e) => {
-    if (pinch.active && e.touches.length === 2) {
-      e.preventDefault();
-      updatePinch(touchDist(e.touches));
-    }
-  }, { passive: false });
-
-  const end = (e) => { if (pinch.active && e.touches.length < 2) endPinch(); };
-  document.addEventListener('touchend', end);
-  document.addEventListener('touchcancel', end);
-
-  function beginPinch(d0) {
-    // Cancel any in-progress disc gesture so it doesn't fight the pinch.
-    state.touchingPlatter = false;
-    state.seeking = false;
-    state.fingerOmega = 0;
-
-    pinch.active = true;
-    pinch.progress = 0;
-    pinch.d0 = d0 || 1;
-    pinch.mode = libEl().classList.contains('hidden') ? 'open' : 'close';
-
-    const a = appEl(), l = libEl();
-    a.style.transition = 'none';
-    l.style.transition = 'none';
-    if (pinch.mode === 'open') {
-      l.classList.remove('hidden');
-      l.style.opacity = '0';
-    }
-  }
-
-  function updatePinch(d) {
-    const a = appEl(), l = libEl(), b = barEl();
-    if (pinch.mode === 'open') {
-      const t = clamp((d / pinch.d0 - 1) * 2.2, 0, 1); // spread → t
-      pinch.progress = t;
-      a.style.transform = `scale(${1 - t * 0.4})`;
-      a.style.opacity = String(1 - t * 0.5);
-      b.style.opacity = String(1 - t);
-      l.style.opacity = String(t);
-    } else {
-      const t = clamp((pinch.d0 / d - 1) * 2.2, 0, 1); // squeeze → t
-      pinch.progress = t;
-      l.style.opacity = String(1 - t);
-      a.style.transform = `scale(${0.6 + t * 0.4})`;
-      a.style.opacity = String(0.5 + t * 0.5);
-      b.style.opacity = String(t);
-    }
-  }
-
-  function endPinch() {
-    const a = appEl(), l = libEl(), b = barEl();
-    const commit = pinch.progress > 0.4;
-    const wantLib = pinch.mode === 'open' ? commit : !commit;
-
-    const T = 'transform .3s cubic-bezier(.4,0,.2,1), opacity .3s';
-    a.style.transition = T;
-    b.style.transition = 'opacity .3s';
-    l.style.transition = 'opacity .3s';
-
-    requestAnimationFrame(() => {
-      if (wantLib) {
-        l.style.opacity = '1';
-        a.style.transform = 'scale(0.4)';
-        a.style.opacity = '0';
-        b.style.opacity = '0';
-      } else {
-        l.style.opacity = '0';
-        a.style.transform = '';
-        a.style.opacity = '';
-        b.style.opacity = '';
-      }
-      setTimeout(() => {
-        if (wantLib) openLibrary(); else closeLibrary();
-      }, 320);
-    });
-
-    pinch.active = false;
-    pinch.mode = null;
-  }
-}
-
-// ── Toolbar: walkthrough, mode, theme ────────────────────────────────────────
+// ── Drawer footer: walkthrough, mode, theme ────────────────────────────────────────
 function installToolbar() {
   const root = document.documentElement;
   const walkthrough = new Walkthrough();
 
   // Show walkthrough on first run.
   walkthrough.showIfFirstRun();
-  el('btnWalkthrough').addEventListener('click', () => walkthrough.show(0));
+  el('btnWalkthrough').addEventListener('click', () => { shell?.close(); walkthrough.show(0); });
 
   // Audiophile / Casual mode toggle.
   const btnMode = el('btnMode');
@@ -896,10 +779,14 @@ function installToolbar() {
     applyTheme(root.dataset.theme === 'dark' ? 'light' : 'dark');
   });
 
-  // Library open handled in installLibrary (needs grid refresh).
 }
 
-// ── Library overlay ───────────────────────────────────────────────────────────
+// ── Albums shelf, Mixtapes, Radio, Booth + the shell ─────────────────────────────────────────────────────────────────
+// The old library overlay is gone: its three tabs are now the sections Albums / Mixtapes / Radio (+ Booth), see src/shell/.
+// Boot work is the shell, the Albums shelf and the Mixtapes stack. Radio code (src/radio-player.js and everything it lazy-loads)
+// is fetched on the first visit to Radio, and the FX component on the first visit to Booth.
+let radio = null;   // RadioUI, once the Radio section has been opened
+
 function installLibrary() {
   const library = new LibraryManager();
   const gridEl  = el('albumGrid');
@@ -910,41 +797,22 @@ function installLibrary() {
   el('libGridWrap').insertBefore(progressEl, gridEl);
 
   const grid = new GridView(gridEl, library, async (file, _album, _artist, trackObj) => {
-    el('libOverlay').classList.add('hidden');
+    el('pageAlbums').querySelector('.alb-detail')?.remove();   // the track list sheet closes; the turntable is right above it
     await state.engine.resume();
     const track = await loadFile(file, state.engine.ctx);
     await loadTrack(track, queueFor(library, trackObj));
+    el('albShelf').scrollTop = 0;
   });
 
-  // Render the grid immediately so it's ready when the pinch transition opens it.
   grid.render();
   // Persisted library metadata (tags only, no audio) -> albums + mixtape refs
   // resolve before any re-scan; those tracks show "needs re-link" until then.
   library.restore().then((n) => { if (n) { grid.render(); state.mixtapes?.refresh?.(); } }).catch(() => {});
 
-  // Radio: real stations via an <audio> element. While one plays the vinyl bus is
-  // muted (a live stream has no spiral to scrub); stopping restores it.
-  const radio = new RadioUI({
-    onActive: (on) => { state.radioOn = on; state.engine.setPlaying(!on); },
-    aiHost: makeAiHost(library), // You Radio (src/radio/offline) plays your library through this engine
-  });
-  radio.mount(el('paneRadio'));
-  foreignPlaybackHook = () => radio.foreignPlayback();
-
-  // Tabs: Albums | Mixtapes | Radio.
-  const panes = { albums: el('paneAlbums'), mixtapes: el('paneMixtapes'), radio: el('paneRadio') };
-  el('libTabs').addEventListener('click', (e) => {
-    const tab = e.target.closest('[data-tab]');
-    if (!tab) return;
-    el('libTabs').querySelectorAll('.lib-tab').forEach((b) => b.classList.toggle('active', b === tab));
-    for (const [k, p] of Object.entries(panes)) p.classList.toggle('hidden', k !== tab.dataset.tab);
-    if (tab.dataset.tab === 'radio') radio.activate();
-  });
-
   // Mixtapes: custom playlists (pure model in mixtape.js; this is wiring only).
   state.mixtapes = new MixtapeUI({
     getLibraryTracks: () => library.tracks,
-    closeLibrary,
+    closeLibrary: () => { /* the player opens over the page; nothing to close */ },
     playFile: async (file) => {
       await state.engine.resume();
       const track = await loadFile(file, state.engine.ctx);
@@ -987,9 +855,6 @@ function installLibrary() {
   });
   state.mixtapes.mount(el('mtList'), el('mtNew'), el('mtImport'));
 
-  el('btnLibrary').addEventListener('click', () => { openLibrary(); grid.render(); });
-  el('libClose').addEventListener('click', closeLibrary);
-
   scanBtn.addEventListener('click', async () => {
     scanBtn.disabled = true;
     scanBtn.textContent = 'Scanning…';
@@ -1022,6 +887,75 @@ function installLibrary() {
     chip.classList.add('active');
     grid.setSort(chip.dataset.sort);
   });
+
+  // ── the shell ──
+  shell = createShell({
+    isPageGestureLive: () => state.touchingPlatter || state.seeking,
+    hooks: {
+      albums: { onShow: () => grid.render() },
+      mixtapes: { onShow: () => state.mixtapes.refresh() },
+      radio: {
+        // Lazy: the radio code is fetched here, on the first visit. The session lives on after the user leaves the section.
+        async mount(host) {
+          const { RadioUI } = await import('./radio-player.js');
+          radio = new RadioUI({
+            onActive: (on) => { state.radioOn = on; state.engine.setPlaying(!on); },
+            aiHost: makeAiHost(library), // You Radio (src/radio/offline) plays your library through this engine
+          });
+          radio.mount(host.querySelector('#paneRadio'));
+          foreignPlaybackHook = () => radio.foreignPlayback();
+          return { onShow: () => radio.activate() };
+        },
+      },
+      booth: {
+        // Lazy: Workstream X's FX component (src/shell/booth.js has the one-line mount point). deps are what it can use of the app.
+        mount: (host) => mountBooth(host.querySelector('#boothHost'), boothDeps()),
+      },
+    },
+  });
+  setInterval(refreshNowPlaying, 500);
+}
+
+// What the Booth (FX) component may use of the app. `blocked()` is the reason the engine is owned by a radio or mixtape session
+// (null when free); the component shows a plain message and stays disabled while it is set.
+function boothDeps() {
+  return {
+    engine: state.engine,
+    storage: (() => { try { return window.localStorage; } catch { return null; } })(),
+    host: {
+      getTrack: () => state.track,
+      nominalRate: () => rateFromOmega(omegaNominal(state.rpm), REFERENCE_RPM),
+      omegaNominal: () => omegaNominal(state.rpm),
+      sampleRate: () => state.engine.sampleRate,
+      blocked: () => engineOwner(),
+    },
+    blocked: () => engineOwner(),
+  };
+}
+
+// Which radio / mixtape session owns the engine right now, or null.
+function engineOwner() {
+  if (radio && radio.station) return 'radio';
+  const p = state.mixtapes && state.mixtapes.play;
+  if (p && !p.ended) return 'mixtape';
+  return null;
+}
+
+// The now-playing mini bar: whatever plays from any source, on every section but its own.
+function refreshNowPlaying() {
+  if (!shell) return;
+  const src = {};
+  if (radio && radio.station) {
+    const ph = radio.session?.state?.phase;
+    src.radio = { title: radio.station.name, sub: ph === 'playing' ? 'Radio · on air' : ph === 'error' ? 'Radio · error' : 'Radio · connecting' };
+  }
+  const p = state.mixtapes && state.mixtapes.play;
+  if (p && !p.ended && !p.paused) src.mixtape = { title: p.mix.name || 'Mixtape', sub: `Mixtape · track ${Math.max(1, p.idx + 1)} of ${p.files.length}` };
+  const q = state.queue;
+  if (q && !state.radioOn && (state.view === 'cd' ? state.cdPlaying : state.platter.omega > 0.5)) {
+    src.album = { title: q.items[q.index].title || (state.track && state.track.name) || 'Album', sub: `${q.kind === 'cd' ? 'CD' : 'Vinyl'} · track ${q.index + 1} of ${q.items.length}` };
+  }
+  shell.setNowPlaying(src, { stop: () => radio && radio.stop() });
 }
 
 // ── You Radio host port (src/radio/offline/station-session.js) ────────────────
