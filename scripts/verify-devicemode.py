@@ -105,7 +105,8 @@ def run_size(p, w, h):
 
     # ── 1. keys exist, lock + visuals ─────────────────────────────────────────────────────────────────────────────────────────
     n = page.evaluate("document.querySelectorAll('.page-head .dm-key').length")
-    check(n == 4, f'{tag}: a lock key in every section header ({n})')
+    np_ = page.evaluate("document.querySelectorAll('.page-head').length")
+    check(n == np_ and n >= 4, f'{tag}: a lock key in every section header ({n} of {np_})')
     x, y, kw, kh = key_center(page)
     check(kw >= 44 and kh >= 44, f'{tag}: lock key target is {kw:.0f}x{kh:.0f} px (>=44)')
     check(page.evaluate("document.querySelector('.page:not([hidden]) .dm-key').getAttribute('aria-pressed')") == 'false', f'{tag}: aria-pressed false when unlocked')

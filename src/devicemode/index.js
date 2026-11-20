@@ -250,7 +250,7 @@ export function initDeviceMode(opts = {}) {
     for (const k of keys) k.setLocked();
   }
 
-  settings.subscribe(() => { paintFace(); paintVars(); machine.refresh(); if (aodApplied) { applyNative(true); applyShift(true); } keep.set(machine.state.wake && machine.state.locked); schedule(); });
+  settings.subscribe(() => { _setGuard({ locked: machine.state.locked, aod: aodApplied, fxPadWhileLocked: S().fxPadWhileLocked }); paintFace(); paintVars(); machine.refresh(); if (aodApplied) { applyNative(true); applyShift(true); } keep.set(machine.state.wake && machine.state.locked); schedule(); });
 
   // initial state: a fresh launch is UNLOCKED unless the user asked for persistence
   try { let saved = null; try { saved = JSON.parse((storage && storage.getItem(LOCK_KEY)) || 'null'); } catch { /* */ } machine.restore(saved); } catch { /* */ }
