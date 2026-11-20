@@ -118,7 +118,7 @@ function stationDoc(x) {
     ref: {
       type: 'station', id: s(x.id, 120), stationType: s(x.stationType || x.type, 40), key: s(x.key, 200), title: name,
       subtitle: s(x.subtitle) || s(x.tagline) || s(x.country), dial: s(x.dial, 12), source: s(x.source, 20),
-      disabled: !!x.disabled, note: s(x.note, 80), station: x.station && typeof x.station === 'object' ? x.station : null,
+      disabled: !!x.disabled, note: s(x.note, 80), fav: !!x.fav, station: x.station && typeof x.station === 'object' ? x.station : null,
     },
     plays: num(x.plays), last: num(x.lastPlayed),
   };
