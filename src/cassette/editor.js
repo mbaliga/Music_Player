@@ -24,6 +24,7 @@ import {
   TAPES, TAPE_IDS, MAX_SONGS_PER_SIDE, MAX_NAME, MAX_TAGLINE, MAX_NOTE, MAX_AUTHOR,
 } from '../mixtape.js';
 import { createPicker } from '../mixtape-pick.js';
+import { globalSearch } from '../mixtape-search.js';   // the global search core behind the picker's adapter shape (swap to defaultSearch to go back)
 import { createAddTab, createTracksTab } from './editor-songs.js';
 
 function hashS(s) { let x = 2166136261; for (let i = 0; i < s.length; i++) { x ^= s.charCodeAt(i); x = Math.imul(x, 16777619); } return x >>> 0; }
@@ -152,7 +153,7 @@ export function openEditor(ctx) {
     lib,
     picker() {
       const l = lib(), sig = l.length + ':' + (l[0] ? l[0].id : '') + ':' + (l.length ? l[l.length - 1].id : '');
-      if (!picker || sig !== pickerSig) { pickerSig = sig; picker = createPicker(l); }
+      if (!picker || sig !== pickerSig) { pickerSig = sig; picker = createPicker(l, { search: globalSearch }); }
       return picker;
     },
     toast, announce, goTab: (t) => goTab(t), ctx,

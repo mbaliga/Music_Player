@@ -84,12 +84,13 @@ def to_section(page, sec):
     time.sleep(0.6)
 
 def scan(page):
-    to_section(page, 'albums')
+    """Scan the generated folder through Settings > Library (the folder-input fallback: no File System Access in this browser)."""
+    to_section(page, 'settings'); page.wait_for_selector('.st-page')
+    page.evaluate('document.querySelector(\'.st-group[data-group="library"]\').open = true')
     with page.expect_file_chooser() as fc:
-        page.click('#libScan')
+        page.click('.st-group[data-group="library"] .st-btn.primary')
     fc.value.set_files(LIB)
-    page.wait_for_function('document.querySelectorAll("#albumGrid .alb-card").length >= 4', timeout=30000)
-    page.wait_for_timeout(1200)
+    page.wait_for_timeout(5000)
 
 def blob_v3_old():
     return {'version': 3, 'mixtapes': [{'id': 'old1', 'name': 'Old Road Trip', 'author': 'me', 'cfg': {'style': 'brass', 'pen': 'marker', 'wear': 0.2, 'gloss': 0.5, 'text': {'subtitle': 'v3 tape', 'note': '', 'side': 'A'}},

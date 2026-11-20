@@ -34,7 +34,7 @@ export function tapeKeys(m) {
 export const isOnTape = (set, t) => !!t && ((t.id && set.has(t.id)) || set.has(trackKey(t)));
 
 function buildIndex(tracks) {
-  const albums = groupTracks(tracks);
+  const albums = groupTracks((Array.isArray(tracks) ? tracks : []).filter((t) => t && typeof t === 'object' && typeof t.title === 'string' && t.title));
   const rows = [], albumOf = new Map();
   albums.forEach((a, ai) => {
     a.tracks.forEach((t, ti) => {

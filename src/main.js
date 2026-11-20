@@ -297,7 +297,12 @@ function searchActionsImpl() {
       radio.play(station);
       return true;
     },
-    // addToMixtape(trackIds): SEAM for Workstream D's mixtape creator. Not bound today, so the overlay hides "Add to mixtape".
+    // addToMixtape(trackIds): opens the mixtape editor on a NEW unsaved draft holding these library tracks (Workstream D: MixtapeUI.startFrom).
+    async addToMixtape(ids) {
+      if (!state.mixtapes || !Array.isArray(ids) || !ids.length) return false;
+      await gotoSection('mixtapes');
+      return !!state.mixtapes.startFrom({ trackIds: ids });
+    },
   };
 }
 
