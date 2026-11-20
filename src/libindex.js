@@ -58,6 +58,8 @@ export function snapshotTrack(t) {
     color: typeof t.color === 'string' && /^#[0-9a-f]{6}$/i.test(t.color) ? t.color : '#222233',
   };
   if (Number.isFinite(t.durationSec) && t.durationSec > 0) rec.durationSec = Math.round(t.durationSec * 1000) / 1000;
+  if (Number.isInteger(t.year) && t.year >= 1000 && t.year < 3000) rec.year = t.year;       // for the decade tape / search; survives a restart
+  if (Number.isFinite(t.added) && t.added > 0) rec.added = Math.trunc(t.added);              // date added (epoch ms) for 'Fresh Finds'
   const tn = posInt(t.trackNo), dn = posInt(t.discNo);
   if (tn) rec.trackNo = tn;
   if (dn) rec.discNo = dn;
@@ -72,6 +74,8 @@ export function restoreTrack(rec) {
     hue: rec.hue, color: rec.color, coverUrl: null, file: null, relink: true,
   };
   if (rec.durationSec) t.durationSec = rec.durationSec;
+  if (Number.isInteger(rec.year) && rec.year > 0) t.year = rec.year;
+  if (Number.isFinite(rec.added) && rec.added > 0) t.added = rec.added;
   if (rec.trackNo) t.trackNo = rec.trackNo;
   if (rec.discNo) t.discNo = rec.discNo;
   return t;

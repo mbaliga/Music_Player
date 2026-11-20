@@ -29,6 +29,16 @@ export function folderMatches(folder, pattern) {
   return false;
 }
 
+/**
+ * The extra fields every library track carries for the mixtape suggestions and search (the same names for BOTH sources):
+ *   year   4-digit year from the tags (0 = unknown)
+ *   added  "date added" in epoch ms: folder scan = file.lastModified (ms); device = MediaStore date_modified (seconds -> ms). 0 = unknown.
+ * Pure; never throws.
+ */
+export function yearOf(v) { const y = Number(v); return Number.isFinite(y) && y >= 1000 && y < 3000 ? Math.trunc(y) : 0; }
+export function addedMs(v, unit = 'ms') { const n = Number(v); if (!Number.isFinite(n) || n <= 0) return 0; return Math.trunc(unit === 's' ? n * 1000 : n); }
+export function folderTrackFields(meta, file) { return { year: yearOf(meta && meta.year), added: addedMs(file && file.lastModified) }; }
+
 /** Folder of a track: device tracks carry `folder`; folder-scan tracks derive it from `path`. */
 export function folderOfTrack(t) {
   if (typeof t.folder === 'string') return t.folder;

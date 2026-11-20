@@ -17,7 +17,7 @@ import { readFileTags } from './tags.js';
 import { trackId, serializeIndex, parseIndex, mergeScanned, linkSummary } from './libindex.js';
 import { saveIndex, loadIndex, saveHandle, loadHandles } from './library-store.js';
 import { libraryPrefs } from './library-prefs.js';
-import { trackSource, filterDeviceTracks, mergeSources, deriveArtists, deriveGenres } from './library-model.js';
+import { trackSource, filterDeviceTracks, mergeSources, deriveArtists, deriveGenres, folderTrackFields } from './library-model.js';
 
 // ── Dominant hue extraction from album art ───────────────────────────────────
 async function dominantHue(imageUrl) {
@@ -103,7 +103,7 @@ async function processFile(file) {
   const color = hueToHex(hue);
   const id = trackId({ title, artist, album, trackNo, discNo, size, durationSec });
 
-  return { id, file, title, artist, albumArtist, album, path, genre, trackNo, discNo, durationSec, size, coverUrl, hue, color };
+  return { id, file, title, artist, albumArtist, album, path, genre, trackNo, discNo, durationSec, size, coverUrl, hue, color, ...folderTrackFields(meta, file) };
 }
 
 // ── Library manager ──────────────────────────────────────────────────────────

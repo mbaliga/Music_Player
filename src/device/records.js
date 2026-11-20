@@ -12,6 +12,7 @@
 // (foldersOf / classifyAlbum / groupTracks) applies the CD1 / Disc N rule from real folder names.
 // ─────────────────────────────────────────────────────────────────────────────
 import { hashHue, hueToHex } from '../library.js';
+import { addedMs } from '../library-model.js';
 
 export const SOURCE_DEVICE = 'device';
 export const UNKNOWN_ARTIST = 'Unknown Artist';   // the same bucket name library.js / albums.js already use
@@ -91,7 +92,7 @@ export function mapRow(row, { makeFile } = {}) {
   const t = {
     id: deviceTrackId(row), source: SOURCE_DEVICE, mediaId: row.id, uri: deviceUri(row.id),
     title, artist, albumArtist, album: albumTag, path, folder, genre,
-    size: Number(row.size) || 0, modified: Number(row.modified) || 0, mime: String(row.mime || ''), volume: String(row.volume || ''),
+    size: Number(row.size) || 0, modified: Number(row.modified) || 0, added: addedMs(row.modified, 's'),   // date added = MediaStore date_modified (seconds) in epoch ms, same unit as a folder file's lastModified mime: String(row.mime || ''), volume: String(row.volume || ''),
     year, kind: kindOf(row), albumMediaId: Number(row.albumId) || 0,
     coverUrl: null, hue, color: hueToHex(hue), file: null,
     // MediaStore had nothing for artist AND album: worth reading the file's own tags.
@@ -136,6 +137,7 @@ export function toStored(t) {
 export function fromStored(rec, { makeFile } = {}) {
   if (!rec || typeof rec !== 'object' || typeof rec.id !== 'string' || !Number.isFinite(rec.mediaId) || typeof rec.title !== 'string') return null;
   const t = { ...rec, coverUrl: null, file: null };
+  if (!(t.added > 0) && t.modified > 0) t.added = addedMs(t.modified, 's');   // rows stored before `added` existed
   if (makeFile) t.file = makeFile(t);
   return t;
 }
