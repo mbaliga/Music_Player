@@ -81,6 +81,16 @@ def boot(b, w, h, tag, seed_mix=True, speech=False, light=False):
     page.wait_for_timeout(600)
     return ctx, page, errs
 
+def scan_albums(page, folder, n=1):
+    """the library is the stage's zoomed-out view: scan through its toolbar button"""
+    page.evaluate('window.__rt.setZ(1)'); page.wait_for_timeout(800)
+    with page.expect_file_chooser() as fc:
+        page.click('.tl-scan')
+    fc.value.set_files(folder)
+    page.wait_for_function('n => window.__rt.app().albums.filter(a => !a.builtin).length >= n', arg=n, timeout=30000)
+    page.wait_for_timeout(900)
+    page.evaluate('window.__rt.setZ(0)'); page.wait_for_timeout(700)
+
 def scan(page):
     scan_albums(page, LIB, 1)
 
