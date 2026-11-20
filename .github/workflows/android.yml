@@ -54,6 +54,12 @@ jobs:
           pip install --quiet pillow
           python3 scripts/apply-icon.py
 
+      # Runout's own native plugins (the phone's audio library: MediaStore scan + byte reads).
+      # Copies native/android/*.java into the generated project, adds the narrow audio permissions
+      # to the manifest and registers the plugin in MainActivity. Fails the build if an anchor moved.
+      - name: Install Runout native plugins (device audio library)
+        run: node scripts/apply-android-plugins.mjs android
+
       - name: Sync web assets into the Android project
         run: npx --no-install cap sync android
 
