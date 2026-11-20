@@ -23,6 +23,7 @@
 
 import {
   C_TARGET_RATE, C_READ_POS, C_SEEK_POS, C_SEEK_GEN, C_PLAYING, CONTROL_SLOTS,
+  C_FX_MODE, C_FX_ENGAGE, C_FX_LEN, C_FX_RATE, C_FX_GATE, C_FX_AMOUNT, C_FX_RESUME,
 } from './control-layout.js';
 
 export class AudioEngine {
@@ -231,6 +232,21 @@ export class AudioEngine {
   setPlaying(on) {
     if (this.usingSAB) this.control[C_PLAYING] = on ? 1 : 0;
     else this.node.port.postMessage({ type: 'playing', value: !!on });
+  }
+
+  /**
+   * FX section hook (src/fx/controller.js). `p` = { mode 0..3, engage, len, rate, gate, amount, resume }; all-zero / mode 0 = off,
+   * and the worklet then runs its original loop. Never called unless the FX section is open, so the plain path is untouched.
+   */
+  setFx(p) {
+    if (!this._deck) return;
+    if (this.usingSAB) {
+      const c = this.control;
+      c[C_FX_MODE] = p.mode | 0; c[C_FX_ENGAGE] = p.engage ? 1 : 0; c[C_FX_LEN] = p.len || 0; c[C_FX_RATE] = p.rate ?? 1;
+      c[C_FX_GATE] = p.gate ?? 1; c[C_FX_AMOUNT] = p.amount || 0; c[C_FX_RESUME] = p.resume ? 1 : 0;
+    } else {
+      this.node.port.postMessage({ type: 'fx', mode: p.mode | 0, engage: p.engage ? 1 : 0, len: p.len || 0, rate: p.rate ?? 1, gate: p.gate ?? 1, amount: p.amount || 0, resume: p.resume ? 1 : 0 });
+    }
   }
 
   /** Hard jump (tonearm set-down). `frames` is the new readPosition. */
