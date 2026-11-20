@@ -351,6 +351,218 @@ def run_size(p, w, h):
     check(not errs, f'{tag}: no page errors {errs[:3]}')
     b.close()
 
+
+# ── NEW UI (Workstream I): the lock faces against the Albums vinyl stage, the coverflow library and the cassette player ───────────────────────────
+APP = 'window.__rt.app()'
+def stage_pt(page, x, y):
+    return page.evaluate(f"""(() => {{ const t = document.querySelector('.tt-top'), g = document.getElementById('tt-topRot'); const p = t.createSVGPoint(); p.x = {x}; p.y = {y};
+      const q = p.matrixTransform(g.getScreenCTM()); return [q.x, q.y]; }})()""")
+def scan_via_settings(page):
+    to_section(page, 'settings'); page.wait_for_selector('.st-page')
+    page.evaluate('document.querySelector(\'.st-group[data-group="library"]\').open = true')
+    with page.expect_file_chooser() as fc: page.click('.st-group[data-group="library"] .st-btn.primary')
+    fc.value.set_files(LIB)
+    page.wait_for_function(f'{APP}.albums.length >= 3 && {APP}.albums.every(a => !a.builtin)', timeout=30000); time.sleep(1.0)
+    to_section(page, 'albums')
+
+def new_ui_albums(p, w, h):
+    tag = f'{w}x{h} albums'
+    b = launch(p); ctx, page, errs = boot(b, w, h, seed=False); T = Touch(page)
+    page.evaluate("() => { window.__sel = 0; window.__cov = 0; }")
+    scan_via_settings(page)
+    page.evaluate(f"() => {{ const t = {APP}.tlib; t.on('selectTrack', () => window.__sel++); t.on('tapCover', () => window.__cov++); }}")
+    cx0, cy0 = stage_pt(page, 700, 300)          # a point on the groove annulus (r ~ 450 from the spindle)
+    inside = 0 <= cx0 <= w and 0 <= cy0 <= h
+    check(inside, f'{tag}: [setup] a disc point is on screen ({cx0:.0f},{cy0:.0f})')
+    def scratching_during():
+        T.down((cx0, cy0)); time.sleep(0.05); T.move((cx0 + 8, cy0 + 20)); time.sleep(0.05); T.move((cx0 + 12, cy0 + 40)); time.sleep(0.05)
+        v = page.evaluate(f'{APP}.stage.isScratching()'); T.up(); time.sleep(0.2); return v
+    def braking_during():
+        bx, by = stage_pt(page, 278, 457)
+        T.down((bx, by)); time.sleep(0.1); v = page.evaluate(f'{APP}.state.braking'); T.up(); time.sleep(0.2); return v
+    def arm_during():
+        gx, gy = center(page, '#tt-grab'); T.down((gx, gy)); time.sleep(0.1); T.move((gx + 4, gy + 4)); v = page.evaluate(f'{APP}.stage.player.dragging'); T.up(); time.sleep(0.3); return v
+    def pinch_z():
+        T.pinch(w / 2, h / 2, 90, 20); time.sleep(0.9); z = page.evaluate(f'{APP}.stage.zoom'); return z
+    # play first so the arm is down (dimple drag needs it)
+    px, py = center(page, '#tt-playBtn'); T.tap(px, py); time.sleep(2.2)
+    check(page.evaluate(f'{APP}.stage.player.playing'), f'{tag}: [control] Play starts the record')
+    check(scratching_during(), f'{tag}: [control] a drag on the disc scratches when unlocked')
+    check(braking_during(), f'{tag}: [control] a hold on the label brakes when unlocked')
+    check(arm_during(), f'{tag}: [control] the dimple drag starts when unlocked')
+    z = pinch_z(); check(z > 0.3, f'{tag}: [control] pinch zooms out when unlocked (z {z:.2f})')
+    # coverflow control (unlocked): swipe moves focus, a row tap picks a track, a cover tap fires
+    title0 = page.evaluate("document.querySelector('.tl-title').textContent")
+    fl = page.evaluate("() => { const r = document.querySelector('.tl-flow').getBoundingClientRect(); return [r.x, r.y, r.width, r.height]; }")
+    fy = fl[1] + fl[3] * 0.4
+    T.drag(T.line(w * 0.75, fy, w * 0.2, fy, 8)); time.sleep(1.2)
+    title1 = page.evaluate("document.querySelector('.tl-title').textContent")
+    check(title1 != title0, f'{tag}: [control] a coverflow swipe changes the focused album when unlocked ("{title0}" -> "{title1}")')
+    rx, ry = center(page, '.tl-trk'); T.tap(rx, ry); time.sleep(0.8)
+    check(page.evaluate('window.__sel') >= 1, f'{tag}: [control] a track-row tap selects a track when unlocked')
+    T.pinch(w / 2, h / 2, 20, 120); time.sleep(0.9)            # spread: back to the player (still unlocked)
+    page.evaluate(f'{APP}.stage.dispatch({{type: "zoomTo", z: 0}})'); time.sleep(1.2)
+    check(page.evaluate(f'{APP}.stage.zoom') == 0, f'{tag}: [setup] back on the player')
+
+    # ── LOCK
+    lock(page, T)
+    check(dm(page)['locked'], f'{tag}: locked')
+    page.evaluate("() => { window.__sel = 0; window.__cov = 0; }")
+    check(not scratching_during(), f'{tag}: LOCKED: a drag on the disc does not scratch')
+    check(not braking_during(), f'{tag}: LOCKED: a hold on the label does not brake')
+    check(not arm_during(), f'{tag}: LOCKED: the dimple drag does not start')
+    z = pinch_z(); check(z == 0, f'{tag}: LOCKED: pinch does not zoom (z {z:.2f})')
+    page.evaluate("document.querySelector('.tt-wrap').dispatchEvent(new WheelEvent('wheel', {ctrlKey: true, deltaY: 80, bubbles: true, cancelable: true}))"); time.sleep(0.9)
+    check(page.evaluate(f'{APP}.stage.zoom') == 0, f'{tag}: LOCKED: Ctrl+wheel does not zoom')
+    page.keyboard.press('Space'); time.sleep(0.2)
+    check(not page.evaluate(f'{APP}.state.braking'), f'{tag}: LOCKED: Space does not brake')
+    for kk in ['Escape', 'ArrowLeft']: page.keyboard.press(kk)
+    # live keys while the record plays: speed, -/+, Stop, Play
+    rpm0 = page.evaluate(f'{APP}.state.rpm')
+    px_, py_ = center(page, '#tt-bp'); T.tap(px_, py_); time.sleep(0.3)
+    rpm1 = page.evaluate(f'{APP}.state.rpm'); check(rpm1 != rpm0, f'{tag}: LOCKED: the + speed key works ({rpm0} -> {rpm1})')
+    for sid in ['b78', 'b33', 'b45']:
+        sx, sy = center(page, '#tt-' + sid); T.tap(sx, sy); time.sleep(0.25)
+        check(page.evaluate(f"document.getElementById('tt-{sid}').getAttribute('aria-pressed')") == 'true', f'{tag}: LOCKED: the {sid[1:]} key works')
+    px, py = center(page, '#tt-playBtn'); T.tap(px, py); time.sleep(1.2)
+    check(not page.evaluate(f'{APP}.stage.player.playing'), f'{tag}: LOCKED: Stop works')
+    T.tap(px, py); time.sleep(2.0)
+    check(page.evaluate(f'{APP}.stage.player.playing') and rms_now(page) > 0.005, f'{tag}: LOCKED: Play works again and the record is audible (rms {rms_now(page):.3f})')
+    # coverflow, frozen: show the library through the test hook (the zoom gesture itself is frozen), then swipe / tap
+    page.evaluate('window.__rt.setZ(1)'); time.sleep(1.0)
+    t_before = page.evaluate("document.querySelector('.tl-title').textContent")
+    fl = page.evaluate("() => { const r = document.querySelector('.tl-flow').getBoundingClientRect(); return [r.x, r.y, r.width, r.height]; }")
+    T.drag(T.line(w * 0.75, fl[1] + fl[3] * 0.4, w * 0.2, fl[1] + fl[3] * 0.4, 8)); time.sleep(1.0)
+    check(page.evaluate("document.querySelector('.tl-title').textContent") == t_before, f'{tag}: LOCKED: a coverflow swipe does nothing')
+    rx, ry = center(page, '.tl-trk'); T.tap(rx, ry); time.sleep(0.5)
+    cvx, cvy = center(page, '.tl-cv[aria-selected="true"], .tl-cv'); T.tap(cvx, cvy); time.sleep(0.5)
+    check(page.evaluate('window.__sel') == 0 and page.evaluate('window.__cov') == 0, f'{tag}: LOCKED: track-row and cover taps do nothing (sel {page.evaluate("window.__sel")}, cover {page.evaluate("window.__cov")})')
+    chip = page.evaluate("document.querySelector('.tl-f[aria-pressed=false], .tl-f') && document.querySelector('.tl-f:not([aria-pressed=true])') ? 1 : 0")
+    page.evaluate('window.__rt.setZ(0)'); time.sleep(0.8)
+    # header chips and the drawer are frozen
+    for sel, what in [('.page:not([hidden]) .page-actions button[aria-label*="earch"]', 'search chip'), ('#btnDeck', 'Deck details chip')]:
+        if page.evaluate(f"!!document.querySelector('{sel}')"):
+            sx, sy = center(page, sel); T.tap(sx, sy); time.sleep(0.5)
+            check(not page.evaluate("!!document.querySelector('.srch-overlay:not([hidden]), .srch:not([hidden])')") and page.evaluate("document.getElementById('deckSheet') ? document.getElementById('deckSheet').hidden : true"), f'{tag}: LOCKED: the {what} is frozen')
+    check(not errs, f'{tag}: no page errors {errs[:3]}')
+    b.close()
+
+def stray_point(page, w, h):
+    """a screen point that is not on any live control and not on a lock key (so a double-tap there is a stray touch that wakes the AOD)"""
+    return page.evaluate("""([w, h]) => { for (let y = h * 0.3; y < h * 0.9; y += 17) for (let x = w * 0.2; x < w * 0.8; x += 19) { const e = document.elementFromPoint(x, y); if (e && !runoutDeviceMode.isAllowed(e)) return [x, y]; } return [w / 2, h / 2]; }""", [w, h])
+
+def rms_now(page):
+    return max([page.evaluate('window.__rms()') for _ in range(5) if time.sleep(0.05) is None])
+
+def new_ui_cassette(p, w, h):
+    tag = f'{w}x{h} cassette'
+    b = launch(p); ctx, page, errs = boot(b, w, h, seed=False); T = Touch(page)
+    scan_via_settings(page); to_section(page, 'mixtapes'); page.wait_for_timeout(500)
+    page.tap('#mtNew'); page.wait_for_selector('.ed'); page.wait_for_timeout(300)
+    page.fill('.ed-tape-tab input[aria-label="Title"]', 'Lockable'); page.tap('#edtab-add'); page.wait_for_timeout(300)
+    def add(title):
+        page.fill('.pk-q', title); page.wait_for_timeout(350); page.locator('.pk-rowbtn', has_text=title).first.tap(); page.wait_for_timeout(250)
+    add('Harbor Lights'); add('Paper Moon'); page.locator('.pk-sidebtn').nth(1).tap(); add('Slow Window')
+    page.tap('.ed-bar .sv'); page.wait_for_selector('.ed', state='detached'); page.wait_for_timeout(600)
+    card = page.locator('.cs-card[aria-label^="Mixtape: Lockable"]').first; card.tap(); page.wait_for_timeout(700)
+    if page.locator('.tp:not(.hidden)').count() == 0: card.tap()
+    page.wait_for_selector('.tp:not(.hidden)'); page.wait_for_timeout(1500)
+    side = lambda: page.evaluate("""() => { const d = document.querySelector('.sk-deck .side-panel'); const l = d && [...d.querySelectorAll('text[data-side]')].find(t => t.getAttribute('fill') === '#ffb347'); return l ? l.getAttribute('data-side') : ''; }""")
+    auto = lambda: page.evaluate("document.querySelector('.sk-deck .side-key[data-key=auto]').classList.contains('down')")
+    playing = lambda: page.evaluate("document.querySelector('.sk-deck .key[data-key=play]').classList.contains('down')")
+    # control (unlocked): tape tap reveals the song list
+    tx, ty = center(page, '.tp-host'); T.tap(tx, ty - 40); time.sleep(0.4)
+    shown = page.evaluate("!document.querySelector('.tp-list').classList.contains('hidden')")
+    check(shown, f'{tag}: [control] tapping the tape reveals the song list when unlocked')
+    T.tap(tx, ty - 40); time.sleep(0.3)
+    a0 = auto(); s0 = side()
+    fk = page.evaluate("() => { const r = document.querySelector('.dm-key-float').getBoundingClientRect(); return [r.x + r.width / 2, r.y + r.height / 2]; }")
+    T.tap(*fk); time.sleep(0.3)
+    check(dm(page)['locked'], f'{tag}: locked with the cassette player open')
+    page.evaluate("document.querySelector('.tp-list').classList.add('hidden')")
+    T.tap(tx, ty - 40); time.sleep(0.4)
+    check(page.evaluate("document.querySelector('.tp-list').classList.contains('hidden')"), f'{tag}: LOCKED: the tape-tap song-list reveal is frozen (decision: it is a reveal, not a key)')
+    # shelf + editor frozen: the player covers the shelf; the editor entry points refuse
+    page.evaluate("window.__ed = 0; const o = document.querySelector('#mtNew'); o && o.addEventListener('click', () => window.__ed++)")
+    ex = page.evaluate("(() => { try { const ui = window.__rt.app().state.mixtapes; ui.edit(null); return !!document.querySelector('.ed'); } catch (e) { return 'err ' + e; } })()")
+    check(ex is False, f'{tag}: LOCKED: the editor refuses to open ({ex})')
+    # live keys: AUTO, FLIP, transport, wind
+    ax, ay = center(page, '.sk-deck .side-key[data-key=auto]'); T.tap(ax, ay); time.sleep(0.4)
+    check(auto() != a0, f'{tag}: LOCKED: AUTO toggles ({a0} -> {auto()})')
+    T.tap(ax, ay); time.sleep(0.3)
+    fx_, fy_ = center(page, '.sk-deck .side-key[data-key=flip]'); T.tap(fx_, fy_); time.sleep(1.3)
+    check(side() != s0 and side() in ('A', 'B'), f'{tag}: LOCKED: FLIP turns the tape ({s0} -> {side()})')
+    T.tap(fx_, fy_); time.sleep(1.3)
+    pkx, pky = center(page, '.sk-deck .key[data-key=play]'); T.tap(pkx, pky); time.sleep(1.8)
+    check(playing() and rms_now(page) > 0.005, f'{tag}: LOCKED: PLAY plays the tape (rms {rms_now(page):.3f})')
+    ffx, ffy = center(page, '.sk-deck .key[data-key=ff]'); T.down((ffx, ffy)); time.sleep(0.9); wind = page.evaluate(f'!!{APP}.state.mixtapes.play && !!{APP}.state.mixtapes.play.wind'); T.up(); time.sleep(0.4)
+    check(wind, f'{tag}: LOCKED: holding the wind key winds the tape')
+    stx, sty = center(page, '.sk-deck .key[data-key=stop]'); T.tap(stx, sty); time.sleep(0.8)
+    check(not playing(), f'{tag}: LOCKED: STOP stops the tape')
+    # chips frozen
+    before = page.evaluate("[...document.querySelectorAll('.tp-chip')].map(c => c.getAttribute('aria-pressed')).join()")
+    cx, cy = center(page, '.tp-chip'); T.tap(cx, cy); time.sleep(0.3)
+    check(before == page.evaluate("[...document.querySelectorAll('.tp-chip')].map(c => c.getAttribute('aria-pressed')).join()"), f'{tag}: LOCKED: the skin chips are frozen')
+    ejx, ejy = center(page, '.sk-deck .key[data-key=eject]'); T.tap(ejx, ejy); time.sleep(1.4)
+    check(dm(page)['locked'], f'{tag}: LOCKED: eject works and the device stays locked')
+    check(not errs, f'{tag}: no page errors {errs[:3]}')
+    b.close()
+
+def locked_hint_card(p):
+    tag = 'hint'
+    b = launch(p); ctx, page, errs = boot(b, 412, 915, seed=False); T = Touch(page)
+    lock(page, T); time.sleep(0.4)
+    vis = lambda: page.evaluate("(() => { const h = document.querySelector('.dm-hint'); return !!h && !h.hidden; })()")
+    check(vis(), f'{tag}: the locked hint card shows after locking')
+    hx, hy = center(page, '.dm-hint'); T.tap(hx, hy); time.sleep(0.3)
+    check(not vis(), f'{tag}: a tap dismisses the hint card')
+    unlock_hold(page, T, 1000); lock(page, T); t0 = time.time(); time.sleep(0.2)
+    while vis() and time.time() - t0 < 6: time.sleep(0.1)
+    check(time.time() - t0 <= 4.3 and not vis(), f'{tag}: the hint card auto-dismisses within 4 s ({time.time() - t0:.1f} s)')
+    jump(page, 61000); time.sleep(0.4)
+    page.evaluate("history.back()"); time.sleep(0.5)       # a hint-raising event while in AOD
+    check(dm(page)['aod'] and not vis(), f'{tag}: no hint card while in AOD')
+    check(not errs, f'{tag}: no page errors {errs[:3]}')
+    b.close()
+
+def aod_new_ui(p, w, h):
+    """AOD on every section: rAF rate <= 1/s, no visible canvases except the Albums outline, audio keeps running across enter/exit, scratching works afterwards."""
+    tag = f'{w}x{h} aod'
+    b = launch(p); ctx, page, errs = boot(b, w, h, seed=False); T = Touch(page)
+    page.evaluate("() => { window.__min = 1; }"); audio_gaps = []
+    px, py = center(page, '#tt-playBtn'); T.tap(px, py); time.sleep(2.0)
+    page.evaluate("""() => { window.__gaps = 0; window.__t = setInterval(() => { const r = window.__rms(); if (r >= 0 && r < 0.002) window.__gaps++; }, 25); }""")
+    for sec in ['albums', 'mixtapes', 'radio', 'booth', 'settings']:
+        to_section(page, sec); time.sleep(0.4)
+        page.evaluate("() => { const a = window.__rt.app(), e = a.state.engine; if (a.state.T - e.position / e.sampleRate < 18) window.__rt.goTo({ index: 0, time: 1 }, true); }"); time.sleep(1.0)   # the synthesized record is only 24 s long: keep it playing
+        was_playing = rms_now(page) > 0.005          # audio keeps running through lock + AOD only if it was playing (navigating to some sections stops the vinyl: not an AOD effect)
+        page.evaluate('window.__gaps = 0'); lock(page, T); jump(page, 61000); time.sleep(0.5)
+        check(dm(page)['aod'], f'{tag}: {sec}: AOD on')
+        cnt = page.evaluate("""() => new Promise((res) => { let n = 0; const loop = () => { n++; requestAnimationFrame(loop); }; requestAnimationFrame(loop); setTimeout(() => res(n), 5200); })""")
+        check(cnt <= 7, f'{tag}: {sec}: rAF callbacks in 5.2 s of AOD: {cnt} (<= 1 per second)')
+        vis = page.evaluate("[...document.querySelectorAll('canvas')].filter(c => { const r = c.getBoundingClientRect(); return r.width > 4 && getComputedStyle(c).visibility !== 'hidden' && getComputedStyle(c).display !== 'none'; }).map(c => c.className || c.id)")
+        check(vis == ([ 'tt-layer tt-disc' ] if sec == 'albums' else []), f'{tag}: {sec}: visible canvases in AOD: {vis}')
+        if sec == 'albums': page.screenshot(path=f'{SHOTS}/{tag}-albums-aod-outline.png')
+        sx, sy = stray_point(page, w, h); T.tap(sx, sy); time.sleep(0.12); T.tap(sx, sy + 2); time.sleep(0.6)
+        check(not dm(page)['aod'] and dm(page)['locked'], f'{tag}: {sec}: wake')
+        g_ = page.evaluate('window.__gaps')
+        if was_playing: audio_gaps.append(g_)
+        check(not was_playing or g_ <= 2, f'{tag}: {sec}: audio ran through lock + AOD + wake without a dropout (near-silent samples {g_}; audio was {"playing" if was_playing else "not playing here"})')
+        unlock_hold(page, T, 1000)
+        check(not dm(page)['locked'], f'{tag}: {sec}: unlocked')
+    page.evaluate("clearInterval(window.__t)")
+    check(len(audio_gaps) >= 1 and max(audio_gaps) <= 2, f'{tag}: the AudioContext kept running across the enter/exit cycles where audio played ({audio_gaps})')
+    to_section(page, 'albums'); time.sleep(0.8)
+    # leaving AOD restored the stage: the disc canvas draws again, scratching still works
+    check(page.evaluate(f"{APP}.stage.outline") is False, f'{tag}: the stage left outline mode')
+    cx0, cy0 = stage_pt(page, 700, 300)
+    T.down((cx0, cy0)); time.sleep(0.05); T.move((cx0 + 8, cy0 + 20)); time.sleep(0.05); T.move((cx0 + 12, cy0 + 40)); time.sleep(0.05)
+    check(page.evaluate(f'{APP}.stage.isScratching()'), f'{tag}: scratching works after lock / AOD / unlock cycles'); T.up()
+    px_ = page.evaluate("(() => { const c = document.querySelector('canvas.tt-disc'); const g = c.getContext('2d'); const d = g.getImageData(0, 0, c.width, c.height).data; let n = 0; for (let i = 3; i < d.length; i += 4 * 97) if (d[i] > 0) n++; return n; })()")
+    check(px_ > 200, f'{tag}: the disc canvas is painted again after AOD ({px_} sampled opaque pixels)')
+    check(not errs, f'{tag}: no page errors {errs[:3]}')
+    b.close()
+
 def audio_across_aod(p):
     """Audio must not glitch across AOD enter/exit: sample the master bus RMS every 25 ms while the synthesized track plays."""
     b = launch(p); ctx, page, errs = boot(b, 412, 915, seed=False); T = Touch(page)
@@ -371,5 +583,8 @@ if __name__ == '__main__' or True:
         for (w, h) in [(412, 915), (360, 780)]:
             run_size(p, w, h)
         audio_across_aod(p)
+        for (w, h) in [(412, 915), (360, 780)]:
+            new_ui_albums(p, w, h); new_ui_cassette(p, w, h); aod_new_ui(p, w, h)
+        locked_hint_card(p)
     print('\nFAILED: %d' % len(fails)); [print(' -', f) for f in fails]
     sys.exit(1 if fails else 0)

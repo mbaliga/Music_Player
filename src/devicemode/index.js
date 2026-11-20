@@ -177,8 +177,11 @@ export function initDeviceMode(opts = {}) {
     }
     if (st.aod && allowed && e.target.closest && e.target.closest('.dm-key') && S().aodWake === 'lockkey') { /* wake on release (tap), below */ }
     machine.activity(allowed ? 'button' : 'touch'); schedule();
-    if (allowed && e.target.closest && e.target.closest('[data-lock-surface]')) {       // a live button inside a gesture surface must not reach the surface
-      const stop = (ev) => ev.stopPropagation(); e.target.addEventListener('pointerdown', stop, { once: true });
+    const surf = allowed && e.target.closest && e.target.closest('[data-lock-surface]');
+    if (surf && e.target !== surf) {       // a live button inside a gesture surface must not reach the surface: stop the press at the surface's child on the path
+      // (not at the target: a control's own ancestors, such as the cassette's key group, still need to see their pointerdown)
+      let n = e.target; while (n.parentElement && n.parentElement !== surf) n = n.parentElement;
+      n.addEventListener('pointerdown', (ev) => ev.stopPropagation(), { once: true });
     }
   }
   function endLong(e) { if (longT) { clearTimeout(longT); longT = 0; } }
