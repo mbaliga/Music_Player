@@ -1,6 +1,6 @@
 # The navigation shell (Workstream S)
 
-The app is four sections. The current one is a big rounded **card**; the section menu sits **behind** it. Pulling the card aside to the
+The app is five sections (Albums, Mixtapes, Radio, Booth, Settings; Settings and Search are described in `docs/SETTINGS.md` / `docs/SEARCH.md`). The current one is a big rounded **card**; the section menu sits **behind** it. Pulling the card aside to the
 right (from the left edge, or with the hamburger) reveals the menu: logo mark on top, the four names vertically around the middle, the active
 one large and dark, the others small and grey, the old header buttons in the footer. The layout is the owner's phone mock-up
 (`/root/.claude/uploads/.../4eaad674-image.jpg`).
@@ -21,7 +21,7 @@ one large and dark, the others small and grey, the old header buttons in the foo
 
 ## Sections
 
-Menu order: **Albums, Mixtapes, Radio, Booth**. First run opens Albums; the last section is remembered in `localStorage['runout.section']`.
+Menu order: **Albums, Mixtapes, Radio, Booth, Settings** (Settings last, with a gear glyph; a magnifier button in the drawer header and in every page header opens Search: `createShell({ onSearch })`; `shell.ensure(id)` mounts a lazy section without showing it). First run opens Albums; the last section is remembered in `localStorage['runout.section']`.
 
 * **Albums** - the compact turntable on top (the Utilitarian composition, stage height `42%` of the card, `clamp(236px, 42% .. 420px)`; the whole
   record and the tonearm are visible; CD albums swap in the CD view and the stage grows to 50%), then the title line with track nav and speed

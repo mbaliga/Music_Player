@@ -15,7 +15,7 @@ is the go/no-go gate: *does a hand-scrub feel like it is **on** the sound?*
 
 ## Navigation
 
-Four sections — **Albums, Mixtapes, Radio, Booth** — each a full page on a rounded card. Tap the menu button (top left) or drag the page aside from
+Five sections — **Albums, Mixtapes, Radio, Booth, Settings** — each a full page on a rounded card. Tap the menu button (top left) or drag the page aside from
 the left edge to reveal the menu behind it; tap a name to go there. Details, gestures and tunables: [`docs/SHELL.md`](docs/SHELL.md).
 
 ## Run it
@@ -154,3 +154,6 @@ Source-available, free for noncommercial use under the [PolyForm Noncommercial L
 
 ## Track jumping and the CD view
 Vinyl albums are one record with a band per track: hold the tonearm (outer edge) to see a ghost needle, drop it in the gap between grooves to start the next track, or flick sideways for next/previous. CD albums get a separate player (rainbow disc, track ring, tap to skip; no scrubbing). Details and tuning knobs: HANDOFF.md.
+
+## Search and Settings
+The magnifier (drawer header and every page header, Ctrl/Cmd+K, "/") searches your songs, albums, artists, mixtapes and radio stations; it works offline, and the one thing that touches the network is a row you tap yourself (the internet radio directory). **Settings** (last in the drawer) holds the theme (Dark, OLED black, Light, custom JSON theme with a plain-text preview), accent colour, text size, reduce motion, library options, default speed, radio, device mode and privacy. Docs: [`docs/SEARCH.md`](docs/SEARCH.md), [`docs/SETTINGS.md`](docs/SETTINGS.md); code: `src/search/`, `src/settings/`.
