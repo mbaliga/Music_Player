@@ -136,7 +136,7 @@ def tour(b, w, h, tag, landscape=False):
     def shot(page, name):
         n['i'] += 1; fn = f'{tag}-{n["i"]:02d}-{name}.png'
         page.screenshot(path=os.path.join(SHOTS, fn), scale='css')
-        if PUBLISH: shutil.copy(os.path.join(SHOTS, fn), os.path.join(DOCSHOTS, fn))
+        if PUBLISH and not tag.startswith('360'): shutil.copy(os.path.join(SHOTS, fn), os.path.join(DOCSHOTS, fn))     # 360x780 shots stay in the outdir (repo size)
     ctx, page, t_load = boot(b, w, h, tag, wt_done=False)
     T = Touch(page)
     state = {}
@@ -532,7 +532,7 @@ def phase_5k(b):
     page.locator('.pk-addall').first.tap(); page.wait_for_timeout(300)
     page.tap('#edtab-tape'); page.locator('.ed-len', has_text='C90').tap(); page.tap('#edtab-add'); page.wait_for_timeout(300)
     page.fill('.pk-q', ''); page.wait_for_timeout(400)
-    for i in range(3): page.locator('.pk-addall').nth(i).tap(); page.wait_for_timeout(250)
+    for i in range(3): page.locator('.pk-addall:not([disabled])').first.tap(); page.wait_for_timeout(250)
     t = page.inner_text('.ed-toast') if page.locator('.ed-toast:not(.hidden)').count() else ''
     check('20 songs' in t or '20' in ' '.join(page.eval_on_selector_all('.ed-gauge', 'els => els.map(e => e.innerText)')), f'5k: the 20-song side cap holds on a big library ("{t}")')
     ctx.close()
@@ -564,7 +564,7 @@ def phase_native(b):
     nalb = page.evaluate(f'{APP}.albums.length'); check(nalb == 3, f'native: three device albums reach the coverflow ({nalb})')
     zoom_to_library(page, T, 412, 860)
     lab = page.inner_text('.tl-scan')
-    check('Scan phone' in lab, f'native: the library toolbar button says "{lab.strip()}"')
+    check('scan phone' in lab.lower(), f'native: the library toolbar button says "{lab.strip()}"')
     check('phone' in page.inner_text('.tl-hint').lower() or page.evaluate("document.querySelector('.tl-hint').hidden || getComputedStyle(document.querySelector('.tl-hint')).display === 'none'"), 'native: the empty-shelf hint (if shown) talks about the phone, not a folder')
     page.screenshot(path=os.path.join(SHOTS, 'native-library.png'), scale='css')
     if PUBLISH: shutil.copy(os.path.join(SHOTS, 'native-library.png'), os.path.join(DOCSHOTS, 'native-library.png'))
@@ -577,11 +577,11 @@ def phase_native(b):
     page.tap('#edtab-add'); page.wait_for_timeout(500); page.fill('.pk-q', 'heat wave'); page.wait_for_timeout(500)
     check(page.locator('.pk-addall').count() >= 1, 'native: device songs are in the mixtape picker')
     page.locator('.pk-addall').first.tap(); page.wait_for_timeout(300)
-    page.tap('.ed-bar .sv'); page.wait_for_selector('.ed', state='detached'); page.wait_for_timeout(500)
-    # suggested tapes read year / added from device rows
-    ks = page.evaluate("() => (JSON.parse(localStorage.getItem('runout.mixtapes')||'null')||{mixtapes:[]}).mixtapes.length")
-    sug = page.evaluate("() => [...document.querySelectorAll('.sg-card, .mt-sugg, [data-suggest]')].map(e => e.textContent.slice(0, 40))")
-    print('     suggested-tape cards on the shelf:', sug[:6], flush=True)
+    page.tap('.ed-bar .sv'); page.wait_for_selector('.ed', state='detached'); page.wait_for_timeout(700)
+    # suggested tapes read year / added / genre from the device rows (the same fields a folder scan produces)
+    sug = page.evaluate("() => [...document.querySelectorAll('.mt-sug-chip .mt-sug-open b')].map(e => e.textContent)")
+    print('     suggested tapes from device rows:', sug, flush=True)
+    check('Fresh Finds' in sug and any(x.startswith('The 199') for x in sug), f'native: device rows feed Fresh Finds and the decade tape ({sug})')
     ctx.close()
 
 def measure_ttI(b):
@@ -629,7 +629,10 @@ def main():
     if not only or 'bytes' in only: bytes_shipped()
     # ── the console / network log of the WHOLE tour ──
     def known(u): return any(k in u for k in NOISE)
+    n404_console = sum(1 for c in CONSOLE if '404' in c[2] and 'Failed to load resource' in c[2])      # the message carries no URL: match them to the known requests instead
+    n404_known = sum(1 for n in NETFAIL if known(n[1]) and n[2] == 'HTTP 404')
     cons = [c for c in CONSOLE if not known(c[2]) and not ('404' in c[2] and 'Failed to load resource' in c[2])]
+    if n404_console > n404_known: cons.append(('*', 'error', f'{n404_console} console 404 messages but only {n404_known} known stations/ 404 responses'))
     net = [n for n in NETFAIL if not known(n[1])]
     print(f'\nconsole errors/warnings: {len(CONSOLE)} total, {len(cons)} beyond the known stations/ noise; failed requests: {len(NETFAIL)} total, {len(net)} beyond it; page errors: {len(PAGEERR)}', flush=True)
     for c in cons[:20]: print('   console', c)
