@@ -1,5 +1,8 @@
 # STATE — Runout
 
+## Navigation shell (Workstream S)
+The library overlay is gone: the app is a rounded card pulled aside from the left edge over a section menu (**Albums, Mixtapes, Radio, Booth**; "Booth" is an unapproved working name, one constant). Compact turntable is the Albums default; the Mixtapes page is the cassette stack; Radio and Booth load lazily on first visit; a now-playing mini bar follows you across sections. Desktop-Chromium (touch emulation) verified only; edge-gesture feel vs the Android back gesture, frame rate and safe-area insets need the RedMagic. See `docs/SHELL.md`.
+
 ## Current state
 v0 pre-release, gated on a hardware feel-test on the RedMagic 11 Pro.
 Beyond the v0 instrument, the library overlay now has **Albums** (Vinyl vs CD, by `CD1`/`Disc 2` labels), **Mixtapes** (custom playlists as the owner's 37-style cassettes with a label editor, two player skins and reel physics driven by real playback; localStorage) and **Radio** (real Radio Browser stations). Desktop-Chromium verified only; see HANDOFF.md "Albums, Mixtapes, Radio".

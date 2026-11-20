@@ -1,3 +1,5 @@
+<p align="center"><img src="assets/icon.png" alt="Runout" width="128" height="128"></p>
+
 # Runout — v0
 
 > **Constellation** · `state: seeded` · public · [registry: `Personal-Tracker/CONSTELLATION.md`](https://github.com/mbaliga/Personal-Tracker/blob/main/CONSTELLATION.md)
@@ -10,6 +12,11 @@ position in the sound, with no progress bar in between.
 This is **v0 — "prove the feel"** (spec §10). The single job of this milestone
 is the go/no-go gate: *does a hand-scrub feel like it is **on** the sound?*
 (< 30 ms perceived target, < 50 ms ceiling.) Everything else waits behind it.
+
+## Navigation
+
+Four sections — **Albums, Mixtapes, Radio, Booth** — each a full page on a rounded card. Tap the menu button (top left) or drag the page aside from
+the left edge to reveal the menu behind it; tap a name to go there. Details, gestures and tunables: [`docs/SHELL.md`](docs/SHELL.md).
 
 ## Run it
 

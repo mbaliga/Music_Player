@@ -7,6 +7,10 @@ APK (latest): https://github.com/mbaliga/Music_Player/releases/download/v0-lates
 
 ---
 
+## Navigation shell (Workstream S)
+
+`src/shell/` (+ `docs/SHELL.md`) replaced the library overlay (the old pinch-to-open-library gesture went with it). `index.html` holds the four `section[data-section]` pages inside `#shell`; `main.js` only creates the shell (`installLibrary`) and hands it hooks. Pure parts (`drawer.js`, `arbitration.js`, `sections.js`, `nowplaying.js`) have node tests; `scripts/verify-shell.py` drives it with real touch events. Header buttons moved to the drawer footer (`?`, mode, theme, gear; same ids). Boot path rule changed: `radio-player.js` is now lazy (dynamic import from the Radio section), the boot graph tests were updated accordingly. FX: `src/shell/booth.js` has a one-line mount point for `mountFxSection`.
+
 ## What's built
 
 ### Core architecture (all files in `src/`)

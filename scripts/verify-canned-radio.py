@@ -33,6 +33,15 @@ SPECS = [('Harbor Lights', 'Mara Quill', 'Night Shift', 220, 'Jazz'), ('Paper Mo
          ('Static Orchard', 'Static Orchard', 'Orchard Hum', 392, 'Electronic'), ('Salt and Ember', 'Hollis Reed', 'Orchard Hum', 440, 'Rock')]
 SONG_SEC = 40
 
+def to_section(page, sec):
+    """Navigate with the real UI: hamburger -> drawer item (the library overlay and its tabs no longer exist; see docs/SHELL.md)."""
+    if page.evaluate('document.querySelector(".page:not([hidden])").dataset.section') == sec: return
+    page.click('.page:not([hidden]) .hamburger')
+    page.click(f'.drawer-item[data-section="{sec}"]')
+    page.wait_for_function('s => { const p = document.querySelector(`.page[data-section="${s}"]`); return p && !p.hidden }', arg=sec)
+    time.sleep(0.5)   # the card's spring settles
+
+
 def make_fixtures():
     os.makedirs(LIB, exist_ok=True)
     for i, (t, a, al, f, g) in enumerate(SPECS, 1):
@@ -93,18 +102,17 @@ def open_radio(page):
     page.goto(URL)
     page.wait_for_function('document.getElementById("latency") && !/boot error/.test(document.getElementById("latency").textContent)')
     time.sleep(0.4)
-    page.click('#btnLibrary')
-    page.click('.lib-tab[data-tab="radio"]')
+    to_section(page, 'radio')
     page.wait_for_selector('.dial-card', timeout=10000)
 
 def scan(page):
-    page.click('.lib-tab[data-tab="albums"]')
+    to_section(page, 'albums')
     with page.expect_file_chooser() as fc:
         page.click('#libScan')
     fc.value.set_files(LIB)
     page.wait_for_function('document.querySelectorAll("#albumGrid > *").length >= 2', timeout=20000)
     time.sleep(0.8)
-    page.click('.lib-tab[data-tab="radio"]')
+    to_section(page, 'radio')
     page.wait_for_selector('.dial-card')
 
 def launch(p):
@@ -246,7 +254,7 @@ def run():
         # ---- persistence across reload, rescan, Resume
         page.reload()
         page.wait_for_function('document.getElementById("latency") && !/boot error/.test(document.getElementById("latency").textContent)')
-        time.sleep(0.4); page.click('#btnLibrary'); page.click('.lib-tab[data-tab="radio"]'); page.wait_for_selector('.dial-card')
+        time.sleep(0.4); to_section(page, 'radio'); page.wait_for_selector('.dial-card')
         out['E0_fav_after_reload'] = page.get_attribute('.dial-card[data-station="meridian-91-5"] .dial-star', 'aria-pressed')
         out['E0_saved_sections'] = page.eval_on_selector_all('.radio-saved .radio-sec-head span', 'els => els.map(e => e.textContent)')
         out['E0_resume_text'] = page.inner_text('.radio-resume')

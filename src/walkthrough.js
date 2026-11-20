@@ -2,35 +2,53 @@
 // Shows a full-screen card overlay step by step, explaining every concept
 // in plain English — including latency and how to feel-test it on-device.
 
+import { BOOTH_LABEL } from './shell/sections.js';
+
+// highlight: 'hamburger' draws a ring around the menu button (above the dim backdrop; the card never covers it, see .wt-overlay padding).
 const STEPS = [
   {
-    icon: '⏺',
+    logo: true,
     title: 'Welcome to Runout',
-    body: 'A vinyl turntable for your phone. The disc IS the sound — drag it to scratch through the music, swing the arm to jump ahead, hold the brake to stop. No progress bar. Everything is direct manipulation.',
+    body: 'A vinyl turntable, a cassette stack and a radio dial for your phone. The disc IS the sound — drag it to scratch through the music, swing the arm to jump ahead, hold the brake to stop. No progress bar. Everything is direct manipulation.',
+  },
+  {
+    icon: '☰',
+    title: 'Pull the page aside',
+    body: `Runout has four sections: Albums, Mixtapes, Radio and ${BOOTH_LABEL}.\n\nTap the menu button at the top left — or drag the page to the right from the very left edge — and the page slides aside to show the list. Tap a name to go there. Tap the page, or press Esc, to put it back.\n\nMusic keeps playing while you move around; a small bar at the bottom shows what is playing and takes you back to it.`,
+    highlight: 'hamburger',
   },
   {
     icon: '↺',
-    title: 'Drag to scratch',
-    body: "Grab anywhere on the disc and drag it like a DJ.\n\nYour hand sets the motor speed — drag backward for reverse playback. Release and the motor winds back up to playing speed. That pitch-rising sound you hear is real platter physics.",
+    title: 'Albums: drag to scratch',
+    body: "The turntable sits at the top of Albums, your shelf of albums below it. Grab anywhere on the disc and drag it like a DJ.\n\nYour hand sets the motor speed — drag backward for reverse playback. Release and the motor winds back up to playing speed. That pitch-rising sound you hear is real platter physics.",
     highlight: 'disc',
   },
   {
     icon: '↗',
     title: 'Move the needle (silent seek)',
-    body: "To jump to a different part of the track without hearing anything: start dragging from the very OUTER EDGE of the disc, then slide inward.\n\nThe tonearm lifts silently (you hear nothing) and drops back down when you release.\n\n💡 If scrubbing activates instead, start your drag further outside the disc edge.",
+    body: "To jump to a different part of the track without hearing anything: start dragging from the very OUTER EDGE of the disc, then slide inward.\n\nThe tonearm lifts silently (you hear nothing) and drops back down when you release. Drop it in the gap between tracks to start the next one, or flick sideways there for next / previous.\n\n💡 If scrubbing activates instead, start your drag further outside the disc edge.",
     highlight: 'disc',
   },
   {
     icon: '◎',
-    title: 'Speed and pitch',
-    body: "33⅓, 45, and 78 change the motor speed — just like real RPM settings.\n\nAt 45, the track plays FASTER and HIGHER-PITCHED at the same time. That's the authentic vinyl transform: pitch and tempo are always locked together, never stretched apart.",
+    title: 'Speed and palm brake',
+    body: "33⅓, 45, and 78 change the motor speed — just like real RPM settings. At 45, the track plays FASTER and HIGHER-PITCHED at the same time: pitch and tempo are always locked together, never stretched apart.\n\nHold BRAKE (or the space bar) to cut the motor. The disc slows with real momentum and winds back up when you let go.",
     highlight: 'rpmButtons',
   },
   {
-    icon: '⏸',
-    title: 'Palm brake',
-    body: "Hold BRAKE (or spacebar) to cut the motor. The disc slows with real momentum — you hear it pitch down to a stop. Release and it winds back up.\n\nThe motor cooperates with the brake: it drops its own target to zero so both forces work together.",
-    highlight: 'brakePad',
+    icon: '▭',
+    title: 'Mixtapes: the stack',
+    body: 'Your mixtapes are a stack of cassettes. Tap the one on top to play it; tap any other to bring it to the top. New, Import and Edit are the small buttons above the stack. Tap the cassette in the player to see its songs.',
+  },
+  {
+    icon: '📻',
+    title: 'Radio',
+    body: 'Internet stations, pre-written shows with talking hosts that work offline, and your favourites and recents. Start one and keep browsing — it plays on while you visit the other sections.',
+  },
+  {
+    icon: '🎚',
+    title: `${BOOTH_LABEL}: the DJ side`,
+    body: `${BOOTH_LABEL} is where the effects live. It works on the record you are playing; while a radio station or a mixtape has the sound, it is switched off and tells you so.`,
   },
   {
     icon: '✓',
@@ -45,8 +63,8 @@ const STEPS = [
   },
   {
     icon: '⚙',
-    title: 'Feel knobs + library',
-    body: "Switch to Audiophile mode (♦ above) to unlock four physics dials:\n• J — disc inertia. Higher = heavier, takes longer to spin up.\n• k — motor pull. Higher = snappier return to speed.\n• c — friction. Higher = coast dies faster.\n• brake damp — stopping power.\n\nDial these by hand on-device until it feels right. They are the product.\n\nTap ≡ to scan your phone's music and browse it as an album grid.",
+    title: 'Feel knobs, layout and theme',
+    body: "Open the menu and tap ♦ to unlock four physics dials (they appear under Albums → Deck details):\n• J — disc inertia. Higher = heavier, takes longer to spin up.\n• k — motor pull. Higher = snappier return to speed.\n• c — friction. Higher = coast dies faster.\n• brake damp — stopping power.\n\nDial these by hand on-device until it feels right. They are the product.\n\nThe gear in the same place switches the turntable layout (Compact, Utilitarian, Cinematic) and opens the custom theme; ☾ flips light and dark; ? brings this tour back.",
   },
 ];
 
@@ -71,7 +89,18 @@ export class Walkthrough {
     this._el.querySelector('.wt-card').scrollTop = 0;
   }
 
+  /** A pulsing ring around the visible hamburger (above the backdrop) for the step that explains it. */
+  _ring(on) {
+    if (!this._ringEl) { this._ringEl = document.createElement('div'); this._ringEl.className = 'wt-ring hidden'; document.body.appendChild(this._ringEl); }
+    const hb = document.querySelector('.page:not([hidden]) .hamburger');
+    if (!on || !hb) { this._ringEl.classList.add('hidden'); return; }
+    const r = hb.getBoundingClientRect();
+    Object.assign(this._ringEl.style, { left: r.left + 'px', top: r.top + 'px', width: r.width + 'px', height: r.height + 'px' });
+    this._ringEl.classList.remove('hidden');
+  }
+
   hide() {
+    this._ringEl?.classList.add('hidden');
     this._el?.classList.add('hidden');
     localStorage.setItem('runout.wtDone', '1');
   }
@@ -122,7 +151,10 @@ export class Walkthrough {
   _render() {
     const s = STEPS[this._step];
     const card = this._el.querySelector('.wt-card');
-    card.querySelector('.wt-icon').textContent = s.icon;
+    const icon = card.querySelector('.wt-icon');
+    if (s.logo) { icon.replaceChildren(Object.assign(document.createElement('img'), { className: 'wt-logo', src: './assets/icon-192.png', alt: 'Runout', width: 64, height: 64 })); }
+    else icon.textContent = s.icon;
+    this._ring(s.highlight === 'hamburger');
     card.querySelector('.wt-title').textContent = s.title;
     card.querySelector('.wt-body').textContent = s.body;
 

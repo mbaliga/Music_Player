@@ -25,6 +25,15 @@ SPECS = [('Harbor Lights', 'Mara Quill', 'Night Shift', 220, 'Jazz'), ('Paper Mo
          ('Slow Window', 'Low Tide Orchestra', 'Tidal', 294, 'Ambient'), ('Copper Rain', 'June Parlor', 'Tidal', 330, 'Folk'),
          ('Static Orchard', 'Static Orchard', 'Orchard Hum', 392, 'Electronic'), ('Salt and Ember', 'Hollis Reed', 'Orchard Hum', 440, 'Rock')]
 
+def to_section(page, sec):
+    """Navigate with the real UI: hamburger -> drawer item (the library overlay and its tabs no longer exist; see docs/SHELL.md)."""
+    if page.evaluate('document.querySelector(".page:not([hidden])").dataset.section') == sec: return
+    page.click('.page:not([hidden]) .hamburger')
+    page.click(f'.drawer-item[data-section="{sec}"]')
+    page.wait_for_function('s => { const p = document.querySelector(`.page[data-section="${s}"]`); return p && !p.hidden }', arg=sec)
+    time.sleep(0.5)   # the card's spring settles
+
+
 def make_fixtures():
     os.makedirs(LIB, exist_ok=True)
     for i, (t, a, al, f, g) in enumerate(SPECS, 1):
@@ -100,8 +109,7 @@ def run():
         time.sleep(0.5)
 
         # --- Phase A: flag off
-        page.click('#btnLibrary')
-        page.click('.lib-tab[data-tab="radio"]')
+        to_section(page, 'radio')
         page.wait_for_selector('#aiStationsToggle')
         out['A_toggle_label'] = page.inner_text('.radio-setting b')
         out['A_toggle_checked'] = page.is_checked('#aiStationsToggle')
@@ -110,7 +118,7 @@ def run():
         page.screenshot(path=SHOTS + '/01-radio-tab-flag-off.png')
 
         # --- Phase B: scan the generated library via the file-input fallback
-        page.click('.lib-tab[data-tab="albums"]')
+        to_section(page, 'albums')
         with page.expect_file_chooser() as fc:
             page.click('#libScan')
         fc.value.set_files(LIB)
@@ -120,7 +128,7 @@ def run():
         page.screenshot(path=SHOTS + '/02-library-scanned.png')
 
         # --- Phase C: enable the toggle, start You Radio
-        page.click('.lib-tab[data-tab="radio"]')
+        to_section(page, 'radio')
         page.check('#aiStationsToggle')
         page.wait_for_selector('.radio-ai-sec .radio-row')
         out['C_flag_in_storage'] = page.evaluate('localStorage.getItem("runout.flag.radio.ai")')
@@ -251,7 +259,7 @@ def run():
         # --- Phase G: reload: flag persisted; toggle off removes the row
         page.reload()
         page.wait_for_function('document.getElementById("latency") && !/boot error/.test(document.getElementById("latency").textContent)')
-        page.click('#btnLibrary'); page.click('.lib-tab[data-tab="radio"]')
+        to_section(page, 'radio')
         page.wait_for_selector('#aiStationsToggle')
         out['G_checked_after_reload'] = page.is_checked('#aiStationsToggle')
         out['G_row_after_reload'] = page.locator('.radio-ai-sec .radio-row').count()
