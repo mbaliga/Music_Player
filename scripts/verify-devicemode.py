@@ -326,7 +326,7 @@ def run_size(p, w, h):
     # Booth: the FX pad frozen unless allowed
     to_section(page, 'booth'); page.wait_for_selector('.fx-row', timeout=10000)
     shot('booth-normal')
-    page.locator('.fx-row').first.click(); time.sleep(0.8)
+    page.locator('.fx-row[data-id="bandpass"]').click(); time.sleep(0.8)
     page.wait_for_selector('.fx-pad', timeout=5000)
     shot('booth-pad')
     pxy = center(page, '.fx-pad')
