@@ -242,3 +242,78 @@ export function loadStoredTheme() {
 export function clearStoredTheme() {
   localStorage.removeItem(STORAGE_KEY);
 }
+
+// ── Accent colour (Settings → Appearance) ────────────────────────────────────────────────────────────────────────────────
+// A single accent replaces --violet (and the glow derived from it) when NO custom theme is active; a custom theme brings its own
+// primary and wins. The helpers are pure, like the parser above; only setAccentVars/clearAccentVars touch `document`.
+
+/** id -> hex. 'violet' is the built-in accent, 'orange' is the logo colour. */
+export const ACCENT_PRESETS = Object.freeze([
+  Object.freeze({ id: 'violet', label: 'Violet', hex: '#8E7BFF' }),
+  Object.freeze({ id: 'orange', label: 'Logo orange', hex: '#FE5031' }),
+  Object.freeze({ id: 'teal', label: 'Teal', hex: '#2EC4B6' }),
+  Object.freeze({ id: 'blue', label: 'Blue', hex: '#4C9AFF' }),
+  Object.freeze({ id: 'green', label: 'Green', hex: '#3DDC84' }),
+  Object.freeze({ id: 'pink', label: 'Pink', hex: '#FF5FA2' }),
+  Object.freeze({ id: 'amber', label: 'Amber', hex: '#FFB020' }),
+]);
+export const DEFAULT_ACCENT = 'violet';
+
+/** A preset id, or "#rrggbb" (any case) -> { id, hex } (id is the preset id or the lower-case hex), else null. Never throws. */
+export function resolveAccent(value) {
+  if (typeof value !== 'string') return null;
+  const p = ACCENT_PRESETS.find((a) => a.id === value);
+  if (p) return { id: p.id, hex: p.hex };
+  if (/^#[0-9a-fA-F]{6}$/.test(value)) {
+    const hex = value.toUpperCase();
+    const q = ACCENT_PRESETS.find((a) => a.hex === hex);
+    return { id: q ? q.id : value.toLowerCase(), hex };
+  }
+  return null;
+}
+
+/** WCAG relative luminance of "#rrggbb" / "#aarrggbb" (alpha ignored). */
+export function relativeLuminance(hex) {
+  const { r, g, b } = hexToRgb(hex);
+  const lin = (c) => { const s = c / 255; return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4); };
+  return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+}
+/** WCAG contrast ratio between two hex colours (1..21). */
+export function contrastRatio(a, b) {
+  const la = relativeLuminance(a), lb = relativeLuminance(b);
+  return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
+}
+/** Text colour ('#FFFFFF' or '#111111') that reads best on an accent-coloured button. */
+export function onAccent(hex) { return contrastRatio(hex, '#FFFFFF') >= contrastRatio(hex, '#111111') ? '#FFFFFF' : '#111111'; }
+
+export const ACCENT_CSS_VARS = ['--violet', '--violet-glow', '--on-accent'];
+
+/** The custom properties an accent sets, for a mode ('light'|'dark'). Pure. null for an invalid accent. */
+export function accentVars(value, mode = 'dark') {
+  const a = resolveAccent(value);
+  if (!a) return null;
+  return { '--violet': a.hex, '--violet-glow': withAlpha(a.hex, GLOW_ALPHA[mode === 'light' ? 'light' : 'dark']), '--on-accent': onAccent(a.hex) };
+}
+export function setAccentVars(value, mode) {
+  const v = accentVars(value, mode);
+  const style = document.documentElement.style;
+  if (!v) { for (const k of ACCENT_CSS_VARS) style.removeProperty(k); return false; }
+  for (const [k, val] of Object.entries(v)) style.setProperty(k, val);
+  return true;
+}
+export function clearAccentVars() { const style = document.documentElement.style; for (const k of ACCENT_CSS_VARS) style.removeProperty(k); }
+
+// ── Export / starter template ────────────────────────────────────────────────────────────────────────────────────────────
+// The built-in palettes written in the shared schema, so "Export" always has something to hand over and the owner has a valid
+// starting point to edit. parseTheme() accepts it unchanged (test/settings-theme.test.mjs).
+export function builtinThemeTemplate(name = 'Runout built-in') {
+  return {
+    version: SCHEMA_VERSION, name,
+    colors: {
+      dark:  { primary: '#8E7BFF', secondary: '#8E7BFF', tertiary: '#8E7BFF', background: '#000000', surface: '#0D0D12', surfaceVariant: '#16161E', onBackground: '#E8E8F0', onSurface: '#E8E8F0' },
+      light: { primary: '#8E7BFF', secondary: '#8E7BFF', tertiary: '#8E7BFF', background: '#EBEBF2', surface: '#FFFFFF', surfaceVariant: '#E0E0EA', onBackground: '#0E0E1A', onSurface: '#0E0E1A' },
+    },
+  };
+}
+/** A validated theme -> the exact JSON text Export shows (2-space indent, canonical key order). */
+export function exportThemeText(theme) { return JSON.stringify(theme, null, 2); }
