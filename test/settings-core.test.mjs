@@ -8,17 +8,17 @@ test('defaults: every field has one, and the defaults validate to themselves', (
   const d = defaults();
   assert.equal(d.v, 1); assert.deepEqual(validate(d), d);
   for (const p of PATHS) assert.notEqual(checkField(p, p.split('.').reduce((a, k) => a[k], d)), undefined, p);
-  assert.equal(d.appearance.theme, 'oled'); assert.equal(d.appearance.accent, 'violet'); assert.equal(d.turntable.layout, 'compact');
+  assert.equal(d.appearance.theme, 'oled'); assert.equal(d.appearance.accent, 'violet');
   assert.equal(d.privacy.rememberSearches, true); assert.equal(d.radio.aiStations, false);
 });
 test('validate: junk, wrong types, unknown keys, prototype pollution', () => {
-  const v = validate({ v: 1, appearance: { theme: 'neon', accent: 'nope', textSize: 'huge', reduceMotion: 3 }, turntable: { layout: 'x' }, haptics: 'yes', playback: { defaultRpm: 50 }, __proto__: { polluted: 1 }, extra: 1 });
+  const v = validate({ v: 1, appearance: { theme: 'neon', accent: 'nope', textSize: 'huge', reduceMotion: 3 }, haptics: 'yes', playback: { defaultRpm: 50 }, __proto__: { polluted: 1 }, extra: 1 });
   assert.deepEqual(v, defaults());
   for (const bad of [null, undefined, 4, 'x', [], () => 1]) assert.deepEqual(validate(bad), defaults());
   assert.equal(({}).polluted, undefined);
-  const ok = validate({ appearance: { theme: 'light', accent: '#fe5031', textSize: 'large', reduceMotion: 'reduce' }, turntable: { layout: 'cinematic' }, haptics: false, playback: { defaultRpm: '45', audiophile: true }, radio: { aiStations: true }, privacy: { rememberSearches: false } });
+  const ok = validate({ appearance: { theme: 'light', accent: '#fe5031', textSize: 'large', reduceMotion: 'reduce' }, haptics: false, playback: { defaultRpm: '45', audiophile: true }, radio: { aiStations: true }, privacy: { rememberSearches: false } });
   assert.equal(ok.appearance.theme, 'light'); assert.equal(ok.appearance.accent, 'orange'); assert.equal(ok.playback.defaultRpm, 45);
-  assert.equal(ok.haptics, false); assert.equal(ok.turntable.layout, 'cinematic'); assert.equal(ok.privacy.rememberSearches, false);
+  assert.equal(ok.haptics, false); assert.equal(ok.privacy.rememberSearches, false);
 });
 test('checkField: accent accepts presets and #rrggbb only; rpm accepts 33, 33.3, 45, 78', () => {
   assert.equal(checkField('appearance.accent', 'teal'), 'teal');
@@ -31,17 +31,17 @@ test('checkField: accent accepts presets and #rrggbb only; rpm accepts 33, 33.3,
 });
 
 test('migrate: old keys become settings (an old dark theme was the OLED black palette)', () => {
-  const st = mem({ 'runout.theme': 'dark', 'runout.layout.v2': 'cinematic', 'runout.cassette.haptics': '0', 'runout.flag.radio.ai': '1' });
+  const st = mem({ 'runout.theme': 'dark', 'runout.cassette.haptics': '0', 'runout.flag.radio.ai': '1' });
   const { settings, changed } = migrate(null, (k) => st.getItem(k));
-  assert.equal(settings.appearance.theme, 'oled'); assert.equal(settings.turntable.layout, 'cinematic');
+  assert.equal(settings.appearance.theme, 'oled');
   assert.equal(settings.haptics, false); assert.equal(settings.radio.aiStations, true);
-  assert.deepEqual(changed.sort(), ['haptics', 'radio.aiStations', 'turntable.layout'].sort());   // theme: oled is also the default, so nothing "changed"
+  assert.deepEqual(changed.sort(), ['haptics', 'radio.aiStations'].sort());   // theme: oled is also the default, so nothing "changed"
   const light = migrate(null, (k) => ({ 'runout.theme': 'light' }[k] ?? null));
   assert.equal(light.settings.appearance.theme, 'light');
 });
 test('migrate: garbage in the old keys is ignored', () => {
   const { settings } = migrate(null, () => 'garbage'.repeat(50));
-  assert.deepEqual(settings, { ...defaults(), radio: { aiStations: false } });
+  assert.deepEqual(settings, defaults());
   assert.deepEqual(migrate({ v: 1 }, () => { throw new Error('x'); }).settings, defaults());
 });
 test('read-through: the new "Dark" tone survives while the old key says dark; the old key flipping to light wins', () => {
@@ -61,11 +61,11 @@ test('parseBlob: wrong version, garbage, oversized -> null', () => {
 });
 
 test('store: first run imports old keys, writes the blob and mirrors them back (so old readers keep working)', () => {
-  const st = mem({ 'runout.theme': 'light', 'runout.layout.v2': 'utilitarian' });
+  const st = mem({ 'runout.theme': 'light' });
   const s = createSettingsStore({ storage: st });
-  assert.equal(s.get('appearance.theme'), 'light'); assert.equal(s.get('turntable.layout'), 'utilitarian');
+  assert.equal(s.get('appearance.theme'), 'light');
   const blob = JSON.parse(st.m.get(SETTINGS_KEY)); assert.equal(blob.v, 1); assert.equal(blob.appearance.theme, 'light');
-  assert.equal(st.m.get('runout.theme'), 'light'); assert.equal(st.m.get('runout.layout.v2'), 'utilitarian');
+  assert.equal(st.m.get('runout.theme'), 'light'); assert.equal(st.m.has('runout.layout.v2'), false);
   assert.equal(st.m.get('runout.cassette.haptics'), '1');          // default haptics = on, mirrored for MixtapeUI
   assert.equal(st.m.has('runout.flag.radio.ai'), false);           // flag off = key absent, as the flag module expects
 });
@@ -92,9 +92,9 @@ test('store.refresh picks up a change made by old code (radio panel flips the fl
 });
 test('store.reset restores defaults (one path or all) and mirrors them', () => {
   const st = mem(); const s = createSettingsStore({ storage: st });
-  s.set('turntable.layout', 'cinematic'); s.set('appearance.accent', 'teal'); s.set('appearance.theme', 'light');
-  s.reset('turntable.layout'); assert.equal(s.get('turntable.layout'), 'compact'); assert.equal(st.m.get('runout.layout.v2'), 'compact');
-  s.reset(); assert.deepEqual(s.get(), defaults() && { ...defaults(), radio: { aiStations: false } }); assert.equal(st.m.get('runout.theme'), 'dark');
+  s.set('haptics', false); s.set('appearance.accent', 'teal'); s.set('appearance.theme', 'light');
+  s.reset('haptics'); assert.equal(s.get('haptics'), true); assert.equal(st.m.get('runout.cassette.haptics'), '1'); assert.equal(s.get('appearance.theme'), 'light');
+  s.reset(); assert.deepEqual(s.get(), defaults()); assert.equal(st.m.get('runout.theme'), 'dark');
 });
 test('store never throws: missing, throwing and full storage; throwing subscribers; get returns copies', () => {
   const boom = { getItem() { throw new Error('a'); }, setItem() { throw new Error('b'); }, removeItem() { throw new Error('c'); } };
@@ -107,9 +107,9 @@ test('store never throws: missing, throwing and full storage; throwing subscribe
   assert.equal(s.subscribe(5)(), undefined);
 });
 test('a corrupt or foreign-version blob falls back to defaults + old keys, then heals', () => {
-  const st = mem({ [SETTINGS_KEY]: '{"v":9,"appearance":{"theme":"light"}}', 'runout.layout.v2': 'cinematic' });
+  const st = mem({ [SETTINGS_KEY]: '{"v":9,"appearance":{"theme":"light"}}', 'runout.cassette.haptics': '0' });
   const s = createSettingsStore({ storage: st });
-  assert.equal(s.get('appearance.theme'), 'oled'); assert.equal(s.get('turntable.layout'), 'cinematic');
+  assert.equal(s.get('appearance.theme'), 'oled'); assert.equal(s.get('haptics'), false);
   assert.equal(JSON.parse(st.m.get(SETTINGS_KEY)).v, 1);
 });
 test('every field has a legacy-free or declared legacy mapping, and the table is consistent', () => {

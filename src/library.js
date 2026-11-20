@@ -412,6 +412,14 @@ export class GridView {
     return card;
   }
 
+  /** Open an album's track list by shelf id (used by global search). false when it is not on the shelf. */
+  openAlbum(id) {
+    const a = this._lib.albums().find((x) => x.id === id);
+    if (!a) return false;
+    this._openDetail(a);
+    return true;
+  }
+
   // Track list for one album/disc. Tapping a track plays it.
   _openDetail(alb) {
     const host = this._container.closest('.page') || document.body;   // the Albums page: the sheet sits under its header

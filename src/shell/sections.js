@@ -11,6 +11,7 @@ export const SECTIONS = Object.freeze([
   Object.freeze({ id: 'mixtapes', label: 'Mixtapes' }),
   Object.freeze({ id: 'radio', label: 'Radio' }),
   Object.freeze({ id: 'booth', label: BOOTH_LABEL }),
+  Object.freeze({ id: 'settings', label: 'Settings', icon: 'gear' }),   // last, and the only one with a glyph (a simple gear)
 ]);
 
 export const DEFAULT_SECTION = 'albums';

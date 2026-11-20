@@ -1,0 +1,90 @@
+/* settings.css — theme tones, text size, motion override, accent follow-ups, and the Settings page. Tokens only: every colour is a var. */
+
+/* "Dark" (soft): a dark palette that is not pure black. "OLED black" is the original palette in index.html (no data-tone). A custom theme sets
+   --bg etc. inline and always wins over these. */
+:root[data-theme="dark"][data-tone="soft"] {
+  --bg: #14141a; --surface: #1d1d26; --surface2: #282833; --border: rgba(255,255,255,.09);
+  --ink: #ececf4; --ink2: rgba(236,236,244,.55);
+}
+
+/* accent follow-ups: the few places that hard-coded the violet gradient follow --violet now (default look unchanged) */
+.rpms button.active, .rpms button:hover, .brake.active {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--violet) 78%, #fff) 0%, var(--violet) 100%);
+  color: var(--on-accent, #fff);
+}
+.tb-btn.active, .cd-ctl button.cd-play, .wt-next { color: var(--on-accent, #fff) !important; }
+.sort-chip.active, .lib-scan { color: var(--on-accent, #fff); }
+
+/* text size: layout-safe zoom on the text-heavy surfaces only (the turntable, cassettes and Booth are fixed-geometry instruments) */
+:root[data-text="small"] { --st-zoom: .92; }
+:root[data-text="large"] { --st-zoom: 1.14; }
+:root[data-text] .st-page, :root[data-text] .search-ov .so-card, :root[data-text] .drawer-menu, :root[data-text] .page[data-section="radio"] { zoom: var(--st-zoom); }
+
+/* reduce motion override (matchMedia is answered in apply.js for scripts; this covers the CSS) */
+:root[data-motion="reduce"] *, :root[data-motion="reduce"] *::before, :root[data-motion="reduce"] *::after {
+  animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important;
+}
+
+/* ── the Settings page ── */
+.st-page { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; padding: 4px 14px calc(28px + var(--safe-bottom, 0px)); user-select: text; -webkit-user-select: text; }
+.card[data-mini="true"] .st-page { padding-bottom: calc(84px + var(--safe-bottom, 0px)); }
+.st-group { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; margin: 0 0 12px; }
+.st-group > summary { list-style: none; display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 16px; font-size: 16px; font-weight: 600; color: var(--ink); cursor: pointer; border-radius: 18px; }
+.st-group > summary::-webkit-details-marker { display: none; }
+.st-group > summary::after { content: ''; margin-left: auto; width: 8px; height: 8px; border-right: 2px solid var(--ink2); border-bottom: 2px solid var(--ink2); transform: rotate(45deg); transition: transform .2s var(--ease); }
+.st-group[open] > summary::after { transform: rotate(-135deg); }
+.st-group > summary:focus-visible { outline: 2px solid var(--violet); outline-offset: -2px; }
+.st-sub { font-size: 12px; font-weight: 400; color: var(--ink2); }
+.st-body { padding: 2px 16px 16px; display: flex; flex-direction: column; gap: 14px; }
+.st-row { display: flex; flex-direction: column; gap: 8px; }
+.st-row.inline { flex-direction: row; align-items: center; gap: 12px; }
+.st-label { font-size: 14px; font-weight: 600; color: var(--ink); }
+.st-hint { font-size: 12px; line-height: 1.55; color: var(--ink2); }
+.st-text { font-size: 13px; line-height: 1.65; color: var(--ink2); }
+.st-text b { color: var(--ink); font-weight: 600; }
+.st-grow { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+
+.st-seg { display: flex; gap: 6px; flex-wrap: wrap; }
+.st-seg button { flex: 1 1 0; min-width: 84px; min-height: 44px; padding: 8px 10px; font: inherit; font-size: 13px; font-weight: 600; color: var(--ink2); background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; cursor: pointer; text-align: center; }
+.st-seg button small { display: block; font-size: 10.5px; font-weight: 400; opacity: .8; margin-top: 1px; }
+.st-seg button[aria-checked="true"] { color: var(--on-accent, #fff); background: var(--violet); border-color: var(--violet); box-shadow: 0 2px 12px var(--violet-glow); }
+.st-seg button:focus-visible, .st-btn:focus-visible, .st-switch:focus-visible, .st-sw:focus-visible, .st-hex:focus-visible { outline: 2px solid var(--violet); outline-offset: 2px; }
+
+.st-switch { display: flex; align-items: center; gap: 12px; min-height: 48px; width: 100%; background: none; border: 0; padding: 0; font: inherit; color: var(--ink); text-align: left; cursor: pointer; border-radius: 12px; }
+.st-switch .st-track { flex: none; width: 48px; height: 28px; border-radius: 14px; background: var(--surface2); border: 1px solid var(--border); position: relative; transition: background .2s var(--ease); }
+.st-switch .st-track::after { content: ''; position: absolute; top: 2px; left: 2px; width: 22px; height: 22px; border-radius: 50%; background: var(--ink2); transition: transform .2s var(--ease), background .2s; }
+.st-switch[aria-checked="true"] .st-track { background: var(--violet); border-color: var(--violet); }
+.st-switch[aria-checked="true"] .st-track::after { transform: translateX(20px); background: var(--on-accent, #fff); }
+
+.st-swatches { display: flex; flex-wrap: wrap; gap: 8px; }
+.st-sw { width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--border); background: var(--sw); cursor: pointer; padding: 0; position: relative; }
+.st-sw[aria-checked="true"] { border-color: var(--ink); box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--sw); }
+.st-sw[aria-checked="true"]::after { content: ''; position: absolute; left: 14px; top: 8px; width: 9px; height: 17px; border-right: 3px solid var(--sw-ink); border-bottom: 3px solid var(--sw-ink); transform: rotate(40deg); }
+.st-hexrow { display: flex; gap: 8px; align-items: center; }
+.st-hex { width: 112px; min-height: 44px; padding: 0 12px; font: inherit; font-size: 14px; font-family: ui-monospace, monospace; color: var(--ink); background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; user-select: text; }
+.st-hex[aria-invalid="true"] { border-color: #e5484d; }
+
+.st-btn { min-height: 44px; padding: 0 16px; font: inherit; font-size: 13px; font-weight: 600; color: var(--ink); background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; cursor: pointer; }
+.st-btn.primary { background: var(--violet); border-color: var(--violet); color: var(--on-accent, #fff); }
+.st-btn.danger[data-armed="true"] { background: #e5484d; border-color: #e5484d; color: #fff; }
+.st-btn:disabled { opacity: .5; cursor: default; }
+.st-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.st-preview { border: 1px solid var(--border); border-radius: 16px; background: var(--card-bg, var(--surface)); padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.st-pv-title { font-size: 15px; font-weight: 600; color: var(--ink); }
+.st-pv-sub { font-size: 12px; color: var(--ink2); }
+.st-pv-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.st-pv-chip { padding: 6px 12px; border-radius: 16px; font-size: 12px; font-weight: 600; color: var(--on-accent, #fff); background: var(--violet); }
+.st-pv-chip.off { color: var(--ink2); background: var(--surface2); border: 1px solid var(--border); }
+.st-pv-bar { flex: 1; min-width: 80px; height: 6px; border-radius: 3px; background: var(--surface2); position: relative; overflow: hidden; }
+.st-pv-bar::after { content: ''; position: absolute; inset: 0 55% 0 0; background: var(--violet); }
+
+.st-pre { margin: 0; padding: 10px; max-height: 180px; overflow: auto; font: 11.5px/1.5 ui-monospace, monospace; color: var(--ink); background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; white-space: pre-wrap; word-break: break-all; user-select: text; -webkit-user-select: text; }
+.st-brand { display: flex; align-items: center; gap: 12px; }
+.st-brand img { width: 48px; height: 48px; border-radius: 11px; display: block; }
+.st-note { padding: 10px 12px; border-radius: 12px; background: var(--surface2); border: 1px solid var(--border); font-size: 12.5px; line-height: 1.6; color: var(--ink2); }
+.st-list { margin: 0; padding-left: 18px; font-size: 12.5px; line-height: 1.8; color: var(--ink2); }
+.st-list code { font-size: 12px; color: var(--ink); }
+.st-area { width: 100%; min-height: 76px; padding: 10px 12px; font: inherit; font-size: 13px; color: var(--ink); background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; resize: vertical; user-select: text; -webkit-user-select: text; }
+.st-area:focus-visible { outline: 2px solid var(--violet); outline-offset: 2px; }
+.st-scancard { display: block; }

@@ -1,10 +1,11 @@
 // settings.js — the one place the app's preferences are described, validated, migrated and stored. Pure: storage is injected, every
 // access is try/caught, nothing here touches the DOM.
 //
-// STORAGE. One versioned blob, localStorage['runout.settings.v1'] = { v: 1, ...settings }. Four preferences already had their own keys
+// STORAGE. One versioned blob, localStorage['runout.settings.v1'] = { v: 1, ...settings }. Three preferences already had their own keys
 // that other modules read directly (the radio flag, the cassette haptics key, the layout key, the old theme key). Those stay in
 // step by WRITE-THROUGH ("mirror"): setting one here writes the blob AND the old key. On load the old keys are read back
 // ("read-through") so a change made by the old code path (e.g. the radio panel's own AI toggle) is not lost. See LEGACY below.
+// (The old turntable layout key runout.layout.v2 is not migrated: the compact/utilitarian/cinematic modes no longer exist.)
 //
 //   createSettingsStore({ storage }) -> { get(path?), set(path, value), reset(path?), refresh(), subscribe(fn), snapshot() }
 //   defaults(), validate(raw), migrate(blob, legacyReader), PATHS, ACCENT_PRESETS (re-exported from theme.js)
@@ -15,7 +16,6 @@ export const SETTINGS_VERSION = 1;
 export { ACCENT_PRESETS };
 
 const THEMES = ['dark', 'oled', 'light'];
-const LAYOUTS = ['compact', 'utilitarian', 'cinematic'];
 const TEXT = ['small', 'default', 'large'];
 const MOTION = ['system', 'reduce'];
 const RPMS = [33.333, 45, 78];
@@ -26,7 +26,6 @@ export const FIELDS = Object.freeze({
   'appearance.accent':     { type: 'accent', default: 'violet' },
   'appearance.textSize':   { type: 'enum', values: TEXT, default: 'default' },
   'appearance.reduceMotion': { type: 'enum', values: MOTION, default: 'system' },
-  'turntable.layout':      { type: 'enum', values: LAYOUTS, default: 'compact' },
   'haptics':               { type: 'bool', default: true },
   'playback.defaultRpm':   { type: 'rpm', values: RPMS, default: 33.333 },
   'playback.audiophile':   { type: 'bool', default: false },
@@ -69,7 +68,6 @@ export const LEGACY = Object.freeze([
   { path: 'appearance.theme', key: 'runout.theme',
     read: (raw, cur) => (raw === 'light' ? 'light' : raw === 'dark' ? (modeOf(cur) === 'dark' ? cur : 'oled') : undefined),   // an old 'dark' was the OLED black palette
     write: (v) => modeOf(v) },
-  { path: 'turntable.layout', key: 'runout.layout.v2', read: (raw) => (LAYOUTS.includes(raw) ? raw : undefined), write: (v) => v },
   { path: 'haptics', key: 'runout.cassette.haptics', read: (raw) => (raw === '1' ? true : raw === '0' ? false : undefined), write: (v) => (v ? '1' : '0') },
   { path: 'radio.aiStations', key: 'runout.flag.radio.ai', authoritative: true, read: (raw) => raw === '1', write: (v) => (v ? '1' : null) },
 ]);

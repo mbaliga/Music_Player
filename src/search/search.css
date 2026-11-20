@@ -1,0 +1,77 @@
+/* search.css — the Search overlay. Same card language as the shell (rounded, --card-bg), tokens only so every theme works. */
+.search-ov { position: fixed; inset: 0; z-index: 150; display: flex; justify-content: center; background: var(--card-veil, rgba(0,0,0,.4)); animation: soIn .16s var(--ease) both; }
+.search-ov.hidden { display: none; }
+@keyframes soIn { from { opacity: 0; } to { opacity: 1; } }
+.so-card { width: min(100%, 560px); height: calc(100% - 8px - env(safe-area-inset-top, 0px)); margin-top: calc(8px + env(safe-area-inset-top, 0px)); display: flex; flex-direction: column; min-height: 0;
+  background: var(--card-bg, var(--surface)); color: var(--ink); border-radius: var(--card-r, 28px) var(--card-r, 28px) 0 0; box-shadow: 0 -10px 40px rgba(0,0,0,.35), 0 0 0 1px var(--border); overflow: hidden; animation: soUp .2s var(--ease) both; }
+@keyframes soUp { from { transform: translateY(24px); } to { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .search-ov, .so-card { animation: none; } }
+.so-head { flex: none; display: flex; align-items: center; gap: 6px; padding: 10px 12px 6px 6px; }
+.so-back { width: 48px; height: 48px; flex: none; display: flex; align-items: center; justify-content: center; background: none; border: 0; border-radius: 12px; color: var(--ink); cursor: pointer; }
+.so-field { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; height: 48px; padding: 0 6px 0 14px; background: var(--surface2); border: 1px solid var(--border); border-radius: 24px; color: var(--ink2); }
+.so-field:focus-within { border-color: var(--violet); box-shadow: 0 0 0 3px var(--violet-glow); }
+.so-input { flex: 1; min-width: 0; height: 100%; background: none; border: 0; outline: 0; color: var(--ink); font: inherit; font-size: 16px; -webkit-appearance: none; appearance: none; user-select: text; -webkit-user-select: text; }
+.so-input::-webkit-search-cancel-button { display: none; }
+.so-input::placeholder { color: var(--ink2); }
+.so-clear { width: 40px; height: 40px; flex: none; border: 0; border-radius: 50%; background: none; color: var(--ink2); font-size: 22px; line-height: 1; cursor: pointer; }
+.so-clear[hidden], .so-more[hidden] { display: none; }
+.so-back:focus-visible, .so-clear:focus-visible, .so-chip:focus-visible, .so-more:focus-visible, .so-act:focus-visible, .so-dirbtn:focus-visible, .so-rec-go:focus-visible, .so-rec-x:focus-visible { outline: 2px solid var(--violet); outline-offset: 2px; }
+
+.so-chips { flex: none; display: flex; gap: 6px; padding: 4px 12px 8px; overflow-x: auto; scrollbar-width: none; }
+.so-chips[hidden] { display: none; }
+.so-chip { flex: none; min-height: 44px; padding: 0 14px; display: inline-flex; align-items: center; gap: 6px; font: inherit; font-size: 13px; font-weight: 600; color: var(--ink2); background: var(--surface2); border: 1px solid var(--border); border-radius: 22px; cursor: pointer; }
+.so-chip.on { color: var(--on-accent, #fff); background: var(--violet); border-color: var(--violet); }
+.so-n { font-size: 11px; font-weight: 700; opacity: .8; font-variant-numeric: tabular-nums; }
+.so-n:empty { display: none; }
+.so-status { flex: none; padding: 0 16px 6px; font-size: 12px; color: var(--ink2); }
+.so-status[hidden] { display: none; }
+.so-live { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.so-body { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; padding: 0 8px calc(24px + env(safe-area-inset-bottom, 0px)); }
+.so-sec { display: flex; align-items: center; gap: 8px; padding: 14px 10px 6px; font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--ink2); }
+.so-sec-n { font-variant-numeric: tabular-nums; opacity: .8; }
+.so-more { margin-left: auto; min-height: 44px; padding: 0 10px; background: none; border: 0; font: inherit; font-size: 12px; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--violet); cursor: pointer; }
+.so-row { display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 6px 10px; border-radius: 14px; cursor: pointer; color: var(--ink); }
+.so-row.on { background: var(--surface2); box-shadow: inset 0 0 0 1px var(--border); }
+.so-row:active { background: var(--surface2); }
+.so-row.off { opacity: .55; cursor: default; }
+.so-ico { flex: none; width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: var(--surface2); color: var(--violet); border: 1px solid var(--border); }
+.so-row[data-type="artist"] .so-ico { border-radius: 50%; }
+.so-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.so-t { font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.so-s, .so-d { font-size: 12.5px; color: var(--ink2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.so-d { font-style: italic; }
+.so-t mark, .so-s mark, .so-d mark { background: var(--violet-glow); color: inherit; border-radius: 3px; padding: 0 1px; font-weight: 800; text-decoration: underline; text-decoration-color: var(--violet); text-underline-offset: 2px; }
+.so-tags { display: flex; gap: 4px; flex: none; }
+.so-tag { font-size: 10.5px; font-weight: 700; padding: 3px 8px; border-radius: 10px; background: var(--surface2); border: 1px solid var(--border); color: var(--ink2); }
+.so-tag.fav { color: var(--violet); }
+.so-empty { padding: 44px 24px; text-align: center; color: var(--ink2); font-size: 14px; line-height: 1.7; }
+.so-empty b { display: block; color: var(--ink); font-size: 17px; margin-bottom: 6px; }
+.so-tip { padding: 12px 12px 0; font-size: 12px; color: var(--ink2); line-height: 1.6; }
+.so-tip code { font-size: 12px; color: var(--ink); background: var(--surface2); padding: 1px 5px; border-radius: 5px; }
+.so-note { padding: 10px 12px; margin: 4px 2px; border-radius: 12px; background: var(--surface2); border: 1px solid var(--border); font-size: 13px; line-height: 1.55; color: var(--ink2); }
+.so-toast { position: sticky; top: 0; z-index: 2; margin: 6px 4px; padding: 10px 14px; border-radius: 12px; background: var(--ink); color: var(--card-bg, var(--surface)); font-size: 13px; line-height: 1.5; }
+
+.so-dir { margin-top: 10px; border-top: 1px solid var(--border); padding-top: 6px; }
+.so-dirbtn { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; padding: 6px 10px; text-align: left; background: none; border: 0; border-radius: 14px; font: inherit; color: var(--ink); cursor: pointer; }
+.so-dirbtn:active { background: var(--surface2); }
+.so-dirbtn .so-t { white-space: normal; }
+
+.so-recents { display: flex; flex-direction: column; }
+.so-rec { display: flex; align-items: center; }
+.so-rec-go { flex: 1; min-width: 0; min-height: 48px; display: flex; align-items: center; gap: 12px; padding: 0 10px; background: none; border: 0; border-radius: 12px; font: inherit; color: var(--ink); text-align: left; cursor: pointer; }
+.so-rec-go .so-ico { width: 32px; height: 32px; border-radius: 50%; }
+.so-rec-go .so-t { font-weight: 500; }
+.so-rec-x { width: 44px; height: 44px; flex: none; background: none; border: 0; color: var(--ink2); font-size: 20px; cursor: pointer; }
+
+.so-drill-title { padding: 6px 12px 8px; display: flex; flex-direction: column; gap: 2px; }
+.so-drill-title[hidden] { display: none; }
+.so-drill-title b { font-size: 20px; font-weight: 700; color: var(--ink); overflow-wrap: anywhere; }
+.so-drill-title span { font-size: 13px; color: var(--ink2); }
+.so-actions { display: flex; gap: 8px; flex-wrap: wrap; padding: 4px 10px 6px; }
+.so-act { min-height: 44px; padding: 0 16px; font: inherit; font-size: 13px; font-weight: 600; color: var(--ink); background: var(--surface2); border: 1px solid var(--border); border-radius: 22px; cursor: pointer; }
+.so-act.primary { color: var(--on-accent, #fff); background: var(--violet); border-color: var(--violet); }
+.so-act:disabled { opacity: .45; cursor: default; }
+
+/* the search buttons: drawer header + every page header */
+.page-search svg { display: block; }

@@ -37,8 +37,13 @@
   padding-top: var(--safe-top);
 }
 .drawer[hidden] { display: none; }
-.drawer-brand { display: flex; align-items: center; gap: 12px; padding: 18px 24px 0; }
+.drawer-brand { display: flex; align-items: center; gap: 12px; padding: 18px 24px 0; width: var(--open-w, 56%); box-sizing: border-box; }
 .drawer-mark { width: 44px; height: 44px; border-radius: 10px; display: block; flex: none; }
+.drawer-search { margin-left: auto; width: 44px; height: 44px; flex: none; display: flex; align-items: center; justify-content: center; background: var(--surface2); color: var(--ink); border: 1px solid var(--border); border-radius: 50%; cursor: pointer; }
+.drawer-search:active { transform: scale(.92); }
+.drawer-search:focus-visible { outline: 2px solid var(--shell-accent); outline-offset: 3px; }
+.drawer-glyph { display: inline-flex; vertical-align: -2px; margin-left: 10px; opacity: .7; }
+.drawer-item.active .drawer-glyph { opacity: 1; }
 .drawer-name { font-size: 15px; font-weight: 700; letter-spacing: .06em; color: var(--ink-bg, var(--ink)); }
 .drawer-menu {
   list-style: none; flex: 1; display: flex; flex-direction: column; justify-content: center;

@@ -5,11 +5,11 @@ import {
 } from '../src/shell/sections.js';
 
 test('four sections in the owner\'s order; Booth reads the single label constant', () => {
-  assert.deepEqual(ids(), ['albums', 'mixtapes', 'radio', 'booth']);
-  assert.deepEqual(SECTIONS.map((s) => s.label), ['Albums', 'Mixtapes', 'Radio', BOOTH_LABEL]);
+  assert.deepEqual(ids(), ['albums', 'mixtapes', 'radio', 'booth', 'settings']);
+  assert.deepEqual(SECTIONS.map((s) => s.label), ['Albums', 'Mixtapes', 'Radio', BOOTH_LABEL, 'Settings']);
   assert.equal(labelOf('booth'), BOOTH_LABEL);
   assert.equal(labelOf('nope'), '');
-  assert.equal(new Set(ids()).size, 4);
+  assert.equal(new Set(ids()).size, 5);
 });
 
 test('resolveSection falls back to the default for anything unknown', () => {

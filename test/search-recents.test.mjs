@@ -47,6 +47,6 @@ test('searchActions: unbound seams answer false; bound ones are awaited; throwin
   assert.equal(await a.playTrack('t1'), true); assert.equal(await a.openAlbum('A'), false); assert.equal(await a.playStation('x|y'), false);
   assert.deepEqual(calls, [['t', 't1'], ['s', 'x|y']]);
   assert.ok(a.has('playTrack') && !a.has('addToMixtape'));
-  assert.deepEqual([...ACTION_NAMES], ['playTrack', 'openAlbum', 'openArtist', 'openMixtape', 'playStation', 'addToMixtape']);
+  assert.deepEqual([...ACTION_NAMES], ['playTrack', 'openAlbum', 'openArtist', 'openMixtape', 'playStation', 'addToMixtape', 'playTracks']);
   assert.equal(searchActions.has('playTrack'), false); bindSearchActions({ playTrack: () => true }); assert.equal(await searchActions.playTrack('z'), true);
 });

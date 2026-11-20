@@ -12,7 +12,9 @@ import { SECTIONS, loadSection, saveSection, resolveSection, stepMenu } from './
 import { pickNowPlaying, miniBarVisible } from './nowplaying.js';
 
 const PAGE_MS = 300;   // the new page's slide/fade-in; the card's spring runs alongside (≈ 250-320 ms end to end)
-const OVERLAYS = '.wt-overlay:not(.hidden), .theme-overlay:not(.hidden), .tp:not(.hidden), .mt-dialog, .ed-ov, .bk-ov, .ed, #settingsPop:not(.hidden)';
+const OVERLAYS = '.wt-overlay:not(.hidden), .theme-overlay:not(.hidden), .tp:not(.hidden), .mt-dialog, .ed-ov, .bk-ov, .ed, .search-ov:not(.hidden)';
+const GEAR = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M12 3v2.6M12 18.4V21M3 12h2.6M18.4 12H21M5.6 5.6l1.9 1.9M16.5 16.5l1.9 1.9M18.4 5.6l-1.9 1.9M7.5 16.5l-1.9 1.9" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>';
+const SEARCH = '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><circle cx="10.5" cy="10.5" r="6" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M15 15l5 5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>';
 const HAMBURGER = '<svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>';
 
 const reduced = () => { try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return false; } };
@@ -23,6 +25,7 @@ const storage = () => { try { return window.localStorage; } catch { return null;
  *   hooks: { [sectionId]: { mount?(host) -> controller|Promise, onShow?(), onHide? () } }   controller may also return {onShow,onHide,unmount}
  *   isPageGestureLive?: () => boolean     platter scrub / tonearm seek / pinch in progress (blocks the drawer)
  *   onSection?: (id) => void
+ *   onSearch?: () => void                 adds a search button to every page header (Search overlay, src/search/)
  * }
  */
 export function createShell(opts = {}) {
@@ -43,6 +46,12 @@ export function createShell(opts = {}) {
     head.className = 'page-head';
     head.innerHTML = `<button class="hamburger" type="button" aria-label="Menu" aria-expanded="false" aria-controls="drawer">${HAMBURGER}</button><h1 class="page-title"></h1><div class="page-actions"></div>`;
     head.querySelector('.page-title').textContent = s.label;
+    if (opts.onSearch) {
+      const sb = document.createElement('button');
+      sb.type = 'button'; sb.className = 'hamburger page-search'; sb.setAttribute('aria-label', 'Search'); sb.innerHTML = SEARCH;
+      sb.addEventListener('click', () => opts.onSearch());
+      head.querySelector('.page-actions').append(sb);
+    }
     page.prepend(head);
     hamburgers.push(head.querySelector('.hamburger'));
     pages[s.id] = page;
@@ -54,6 +63,7 @@ export function createShell(opts = {}) {
     const li = document.createElement('li');
     const b = document.createElement('button');
     b.type = 'button'; b.className = 'drawer-item'; b.dataset.section = s.id; b.textContent = s.label;
+    if (s.icon === 'gear') { const g = document.createElement('span'); g.className = 'drawer-glyph'; g.setAttribute('aria-hidden', 'true'); g.innerHTML = GEAR; b.append(g); }
     b.addEventListener('click', () => go(s.id));
     li.append(b); menu.append(li);
     return b;
@@ -275,6 +285,8 @@ export function createShell(opts = {}) {
 
   return {
     go, open, close, toggle, setNowPlaying,
+    /** Resolves when the section's page is mounted (lazy sections: Radio, Booth). Used by search to start a station. */
+    ensure: (id) => ensureMounted(resolveSection(id, list)).then(() => ctrls[id] || {}),
     get current() { return cur; }, get isOpen() { return isOpen; },
     page: (id) => pages[id], el: shell,
   };

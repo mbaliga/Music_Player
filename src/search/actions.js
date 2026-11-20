@@ -8,10 +8,11 @@
 //   openArtist(name)        show an artist's albums / songs                          today: the overlay's own drill-down; Albums may filter by artist
 //   openMixtape(id)         open a mixtape in the Mixtapes section                   today: MixtapeUI.startPlayback
 //   playStation(station)    start a radio station (a Station object, or 'type|id')   today: RadioUI.play via the existing stations flow
+//   playTracks(trackIds)    play these library songs in order (artist "Play all")     today: a queue of the picked songs in main.js
 //   addToMixtape(trackIds)  offer these songs to the mixtape creator                 seam for Workstream D: no binding today, the UI hides the button
 //
 // `has(name)` tells the UI whether a seam is bound (so it can hide an action that has no behaviour yet).
-export const ACTION_NAMES = Object.freeze(['playTrack', 'openAlbum', 'openArtist', 'openMixtape', 'playStation', 'addToMixtape']);
+export const ACTION_NAMES = Object.freeze(['playTrack', 'openAlbum', 'openArtist', 'openMixtape', 'playStation', 'addToMixtape', 'playTracks']);
 
 export function createSearchActions(impl = {}) {
   const bound = {};
