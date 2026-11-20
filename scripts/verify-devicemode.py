@@ -502,6 +502,16 @@ def new_ui_cassette(p, w, h):
     check(playing() and rms_now(page) > 0.005, f'{tag}: LOCKED: PLAY plays the tape (rms {rms_now(page):.3f})')
     ffx, ffy = center(page, '.sk-deck .key[data-key=ff]'); T.down((ffx, ffy)); time.sleep(0.9); wind = page.evaluate(f'!!{APP}.state.mixtapes.play && !!{APP}.state.mixtapes.play.wind'); T.up(); time.sleep(0.4)
     check(wind, f'{tag}: LOCKED: holding the wind key winds the tape')
+    # the reels: turning while the tape plays, frozen in the always-on display, turning again after the wake
+    reels = lambda: page.evaluate("[...document.querySelectorAll('.tp [transform^=\"rotate(\"]')].map(e => e.getAttribute('transform')).join('|')")
+    r0 = reels(); time.sleep(0.8); r1 = reels()
+    check(r0 != r1 and r0 != '', f'{tag}: [control] the reels turn while the tape plays (locked, awake)')
+    jump(page, 61000); time.sleep(0.4)
+    r0 = reels(); time.sleep(1.8); r1 = reels()
+    check(dm(page)['aod'] and r0 == r1, f'{tag}: AOD: the reels are frozen')
+    sx, sy = stray_point(page, w, h); T.tap(sx, sy); time.sleep(0.12); T.tap(sx, sy + 2); time.sleep(0.8)
+    r0 = reels(); time.sleep(0.8); r1 = reels()
+    check(not dm(page)['aod'] and r0 != r1, f'{tag}: after the wake the reels turn again')
     stx, sty = center(page, '.sk-deck .key[data-key=stop]'); T.tap(stx, sty); time.sleep(0.8)
     check(not playing(), f'{tag}: LOCKED: STOP stops the tape')
     # chips frozen
