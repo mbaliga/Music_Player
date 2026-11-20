@@ -288,7 +288,17 @@ def run_viewport(b, w, h):
     # skins: the Player skin with AUTO
     page.locator('.tp-chip', has_text='Player').tap(); page.wait_for_timeout(1700)
     shot(page, 'player-skin-player')
-    check(side_state(page)[1] in (True, False), f'{tag}: the Player skin has the AUTO key')
+    check(side_state(page) == ['A', True] or side_state(page)[1] is True, f'{tag}: the Player skin has the AUTO key engaged {side_state(page)}')
+    shot(page, 'player-skin-player-auto-on')
+    page.locator('.sk-player [aria-label^="Auto-reverse"]').click(); page.wait_for_timeout(300)
+    check(side_state(page)[1] is False, f'{tag}: the Player skin AUTO key releases')
+    shot(page, 'player-skin-player-auto-off')
+    page.locator('.sk-player [aria-label^="Auto-reverse"]').click(); page.wait_for_timeout(300)
+    check(side_state(page)[1] is True, f'{tag}: ...and latches again')
+    page.locator('.sk-player [aria-label^="Flip the tape"]').click(); page.wait_for_timeout(900)
+    check(side_state(page)[0] == 'B', f'{tag}: the Player skin FLIP key turns the tape (LCD shows side {side_state(page)[0]})')
+    shot(page, 'player-skin-player-side-b')
+    page.locator('.sk-player [aria-label^="Flip the tape"]').click(); page.wait_for_timeout(900)
     page.locator('.tp-chip', has_text='Deck').tap(); page.wait_for_timeout(1700)
     # AUTO off via the key: persisted on the mixtape and as the default
     page.locator('.sk-deck .side-key[data-key=auto]').click(); page.wait_for_timeout(400)
@@ -329,6 +339,20 @@ def run_viewport(b, w, h):
     check(errs == [], f'{tag}: no page errors {errs[:3]}')
     ctx.close()
 
+def run_reduced(b):
+    print('--- reduced motion', flush=True)
+    blob = {'version': 4, 'mixtapes': [{'id': 'b1', 'name': 'Blips', 'author': '', 'cfg': {'style': 'clear', 'pen': 'marker', 'wear': 0.1, 'gloss': 0.5, 'text': {'subtitle': '', 'note': '', 'side': 'A'}}, 'tape': {'length': 'C30'}, 'autoReverse': True,
+        'sides': {'A': [{'title': 'Blip One', 'artist': 'Tiny Tapes', 'album': 'Short Cuts'}, {'title': 'Blip Two', 'artist': 'Tiny Tapes', 'album': 'Short Cuts'}], 'B': [{'title': 'Blip Three', 'artist': 'Tiny Tapes', 'album': 'Short Cuts'}, {'title': 'Blip Four', 'artist': 'Tiny Tapes', 'album': 'Short Cuts'}]}}]}
+    ctx, page, errs = boot(b, 360, 780, blob, reduced=True)
+    scan(page); to_section(page, 'mixtapes'); page.wait_for_timeout(500)
+    card = page.locator('.cs-card').first; card.tap(); page.wait_for_timeout(700)
+    if page.locator('.tp:not(.hidden)').count() == 0: card.tap()
+    page.wait_for_selector('.tp:not(.hidden)'); page.wait_for_timeout(1500)
+    page.locator('.sk-deck .side-key[data-key=flip]').click(); page.wait_for_timeout(120)
+    check(side_state(page)[0] == 'B', 'reduced motion: FLIP swaps the side at once (no animation to wait for)')
+    check(page.evaluate('document.querySelector(".cp-flip").getAnimations().length') == 0, 'reduced motion: no flip animation runs')
+    ctx.close()
+
 def run_5k(b):
     print('--- 5,000 tracks', flush=True)
     ctx, page, errs = boot(b, 360, 780)
@@ -351,13 +375,16 @@ def run_5k(b):
     page.evaluate('document.querySelector(".pk-scroll").scrollTop = 20000'); page.wait_for_timeout(300)
     check(page.locator('.pk-alb, .pk-row').count() < 60 and page.locator('.pk-alb').first.inner_text() != '', '5k: scrolling deep re-windows the rows')
     page.screenshot(path=f'{SHOTS}/5k-picker.png')
-    # the hard cap: 20 songs a side, then refusal, on a C90 (so time is not the limit)
+    # the hard cap: 20 songs a side (a C90 side has the minutes for far more), then the refusal says so
     page.tap('#edtab-tape'); page.locator('.ed-len', has_text='C90').tap()
-    page.tap('#edtab-add'); page.wait_for_timeout(300)
-    page.fill('.pk-q', 'artist 0'); page.wait_for_timeout(400)
-    page.locator('.pk-addall').first.tap(); page.wait_for_timeout(300)
-    for i in range(30):
-        page.fill('.pk-q', f'song {i}0 ') ; page.wait_for_timeout(120)
+    page.tap('#edtab-add'); page.wait_for_timeout(400)
+    page.locator('.pk-addall').nth(0).tap(); page.wait_for_timeout(250)
+    page.locator('.pk-addall').nth(1).tap(); page.wait_for_timeout(300)
+    t = toast_text(page); check('20 songs' in t or 'did not fit' in t, f'5k: the second album only partly fits ({t})')
+    g = gauges(page); check('20 songs' in g[0] or '0 left' in g[0], f'5k: side A holds at most 20 songs ({g[0]})')
+    page.locator('.pk-addall').nth(2).tap(); page.wait_for_timeout(250)
+    t = toast_text(page); check('20 songs' in t, f'5k: the 21st song is refused for count, not time ({t})')
+    page.screenshot(path=f'{SHOTS}/5k-cap.png')
     errs2 = [e for e in errs]
     ctx.close()
     check(errs2 == [], f'5k: no page errors {errs2[:3]}')
@@ -368,6 +395,7 @@ def main():
         b = launch(p)
         for (w, h) in [(360, 780), (412, 915)]:
             run_viewport(b, w, h)
+        run_reduced(b)
         run_5k(b)
         b.close()
     print('\nFAILED:' if fails else '\nall checks passed', *fails, sep='\n  ' if fails else '')
