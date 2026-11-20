@@ -39,9 +39,13 @@ import { FINISHED } from './turntable/state.js';
 import { mountTurntableLibrary } from './turntable/library.js';
 import { albumsToCoverflow, builtinTestPressing, TEST_PRESSING_ID } from './turntable/library-layout.js';
 import {
-  parseTheme, setThemeVars, clearThemeVars,
-  storeTheme, loadStoredTheme, clearStoredTheme,
+  parseTheme, clearThemeVars,
+  storeTheme, loadStoredTheme, clearStoredTheme, builtinThemeTemplate, exportThemeText,
 } from './theme.js';
+import { initSettings } from './settings/wire.js';
+import { createSearchLauncher } from './search/wire.js';
+import { bindSearchActions } from './search/actions.js';
+import { libraryPrefs, clearLibraryCache } from './library-prefs.js';
 
 // The track is mastered for one fixed reference speed. The needle plays it
 // correctly at this RPM (rate = 1). Moving the speed dial above/below it shifts
@@ -102,6 +106,15 @@ let shelf = [];            // library.albums() rows, index-aligned with `albums`
 let albums = [];           // album objects for the library component (albumsToCoverflow)
 const view = { kind: 'all', sort: 'artist' };
 
+// ── settings: read before first paint (theme, accent, text size, motion), see src/settings/ and docs/SETTINGS.md ──────────────
+const settings = initSettings();
+const lsOk = () => { try { return window.localStorage; } catch { return null; } };
+// the radio-side reads (saved stations, the flag, the canned index) and fx/persist.js are fetched on demand: the boot path stays free of
+// radio and FX code (test/radio-core/boot-path, test/fx-ship). The bridge module is the single door for everything radio Search/Settings read.
+let radioStoreMod = null, fxPersistMod = null;
+const loadRadioStore = () => (radioStoreMod ? Promise.resolve(radioStoreMod) : import('./search/stations-bridge.js').then((m) => (radioStoreMod = m)));
+const loadFxPersist = () => (fxPersistMod ? Promise.resolve(fxPersistMod) : import('./fx/persist.js').then((m) => (fxPersistMod = m)));
+
 // ── boot ─────────────────────────────────────────────────────────────────────
 async function boot() {
   deviceMode = initDeviceMode(); window.runoutDeviceMode = deviceMode;   // first: its capture-phase guards must come before the shell's and the stage's listeners
@@ -115,27 +128,177 @@ async function boot() {
   installLibrary();     // albums (the zoom-out library), mixtapes, the lazy radio / booth hooks and the shell itself
   installDetails();     // needs the page headers the shell creates
   installToolbar();     // the drawer footer: walkthrough, mode, theme
-  installSettings();
   installCustomTheme();
+  installSettingsAndSearch();
   requestAnimationFrame(loop);
   updateLatencyReadout();
   showBuildId();
 }
 
-function installSettings() {
-  const pop = el('settingsPop');
-  const gear = el('btnSettings');
-  const toggle = (show) => {
-    const open = show ?? pop.classList.contains('hidden');
-    pop.classList.toggle('hidden', !open);
-    gear.classList.toggle('active', open);
+// ── Settings section + global Search ─────────────────────────────────────────────────────────────────────────────────────
+// The gear popover is gone: the Settings section (src/settings/page.js) has its functions. Search (src/search/) opens from the magnifier
+// in the drawer and in every page header, Ctrl/Cmd+K and "/". What the app does for a setting / a search result is bound here.
+let search = null;
+const customThemeApi = { open: () => {}, subscribe: (fn) => settings.onCustomTheme(fn) };
+function installSettingsAndSearch() {
+  const S = settings.store;
+  // haptics: the cassette player reads it live; the platter's gap buzz checks it in the loop
+  const applyHaptics = () => { if (state.mixtapes) state.mixtapes.haptics = !!S.get('haptics'); };
+  applyHaptics();
+  // default speed: applied at once when changed here; at boot only when the turntable has no remembered speed of its own
+  const RPM_ID = (v) => (v >= 77 ? '78' : v >= 44 ? '45' : '33');
+  if (!lsGet(LS.speed) && RPM_ID(S.get('playback.defaultRpm')) !== state.speedBase) setSpeed(RPM_ID(S.get('playback.defaultRpm')));
+  // audiophile mode (the old diamond button): persisted now
+  const btnMode = el('btnMode');
+  const applyMode = () => {
+    const on = !!S.get('playback.audiophile');
+    document.documentElement.dataset.mode = on ? 'audiophile' : 'casual';
+    btnMode.textContent = on ? '♦' : '◦'; btnMode.classList.toggle('active', on);
   };
-  gear.addEventListener('click', (e) => { e.stopPropagation(); toggle(); if (!pop.classList.contains('hidden')) pop.querySelector('.sp-opt')?.focus(); });
-  pop.addEventListener('click', (e) => e.stopPropagation());
-  document.addEventListener('click', () => { if (!pop.classList.contains('hidden')) toggle(false); });
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !pop.classList.contains('hidden')) { toggle(false); gear.focus(); } });
+  applyMode();
+  btnMode.addEventListener('click', () => S.set('playback.audiophile', !S.get('playback.audiophile')));
+  S.subscribe((all, path) => {
+    if (path === 'haptics' || path === '*') applyHaptics();
+    if (path === 'playback.audiophile' || path === '*') applyMode();
+    if (path === 'playback.defaultRpm') setSpeed(RPM_ID(all.playback.defaultRpm));
+    if (path === 'radio.aiStations' && radio && radio._aiOn() !== all.radio.aiStations) radio._setAi(all.radio.aiStations);
+  });
+  el('btnTheme').addEventListener('click', () => settings.toggleLightDark());
+
+  // Search
+  search = createSearchLauncher({
+    storage: lsOk(),
+    remember: () => S.get('privacy.rememberSearches'),
+    getSources: () => ({
+      library,
+      mixtapes: state.mixtapes ? state.mixtapes.list : [],
+      radioModel: radio ? radio.store : (radioStoreMod ? radioStoreMod.loadModel(lsOk()) : null),
+      aiOn: (settings.store.refresh(), !!settings.store.get('radio.aiStations')),
+    }),
+    getCannedIndex: async () => (await loadRadioStore()).loadCannedIndex(document.baseURI),
+    prepare: () => loadRadioStore().catch(() => {}),
+    onOpen: () => { shell && shell.close(); },
+  });
+  el('btnSearch').addEventListener('click', () => search.open());
+  library.onChange?.(() => search.invalidate());
+  bindSearchActions(searchActionsImpl());
 }
 
+// What the Settings page needs of the app (src/settings/page.js documents the shape).
+function settingsDeps(devLib) {
+  const stored = () => { try { return loadStoredTheme(); } catch { return null; } };
+  const model = () => (radio ? radio.store : (radioStoreMod ? radioStoreMod.loadModel(lsOk()) : { favs: [], recents: [] }));
+  const commit = (m) => { if (radio) { radio._commit(m); radio._renderSaved(); } else if (radioStoreMod) radioStoreMod.saveModel(lsOk(), m); };
+  return {
+    store: settings.store,
+    customTheme: {
+      status: () => { const s = stored(); return s ? `Custom: ${s.name}` : 'Built-in (default)'; },
+      open: () => customThemeApi.open(),
+      exportText: () => exportThemeText(stored() || builtinThemeTemplate()),
+      reset: () => { clearStoredTheme(); clearThemeVars(); settings.customThemeChanged(); },
+      subscribe: (fn) => settings.onCustomTheme(fn),
+    },
+    layouts: [],   // the old compact / utilitarian / cinematic turntable layouts no longer exist (T1/T2's single stage): the row is hidden
+    library: {
+      prefs: libraryPrefs,
+      deviceAvailable: () => !!(devLib && devLib.isAvailable()),
+      mountScanCard: (c) => { if (devLib && devLib.isAvailable() && devLib.mountScanCard) devLib.mountScanCard(c); },
+      scanNow: async () => { if (devLib && devLib.isAvailable() && libraryPrefs.get().sources.device) await devLib.allowAndScan(); else await scanLibrary(); },
+      clearCache: async () => { await clearLibraryCache(); flash('CACHE CLEARED'); },
+    },
+    playback: { openDeckDetails: () => { shell.go('albums'); const s = el('deckSheet'); if (s && s.hidden) el('btnDeck').click(); } },
+    radio: {
+      favouriteCount: () => model().favs.length, recentCount: () => model().recents.length,
+      clearFavourites: () => commit({ ...model(), favs: [] }), clearRecents: () => commit(radioStoreMod ? radioStoreMod.clearRecents(model()) : model()),
+      resetVoices: () => loadRadioStore().then((m) => m.resetHostVoices(lsOk())).catch(() => {}),
+    },
+    booth: { ringOn: () => { try { return fxPersistMod ? !!fxPersistMod.loadFx(lsOk()).ring : null; } catch { return null; } } },
+    privacy: { clearSearches: () => search && search.clearRecents() },
+    about: { build: (el('buildId') && el('buildId').textContent) || 'build: dev', walkthrough: () => { shell.close(); walkthrough && walkthrough.show(0); } },
+  };
+}
+
+// What a search result does. Each returns true when handled. Seams for the coverflow (T1/T2) and the mixtape maker (D) are marked.
+function searchActionsImpl() {
+  const gotoSection = async (id) => { shell.go(id, { close: true }); await shell.ensure(id); };
+  const trackObj = (id) => (library.tracks || []).find((t) => t.id === id) || null;
+  const locate = (id) => {   // { index into `albums`, trackIndex } of the library track, making the album visible if a filter hides it
+    for (let pass = 0; pass < 2; pass++) {
+      for (let i = 0; i < shelf.length; i++) { const k = shelf[i].tracks.findIndex((t) => t.id === id); if (k >= 0) return { index: i, trackIndex: k }; }
+      if (view.kind === 'all') break;
+      view.kind = 'all'; tlib.setFilter && tlib.setFilter('all'); rebuildAlbums();
+    }
+    return null;
+  };
+  const albumIndex = (albumId) => { let i = shelf.findIndex((a) => a.id === albumId); if (i < 0 && view.kind !== 'all') { view.kind = 'all'; tlib.setFilter && tlib.setFilter('all'); rebuildAlbums(); i = shelf.findIndex((a) => a.id === albumId); } return i; };
+  // play the library track `id` the way a tap in the library does (album queue, CD view for CDs)
+  async function playLibraryTrack(id) {
+    const at = locate(id);
+    if (!at) return false;
+    const a = albums[at.index];
+    await gotoSection('albums');
+    await state.engine.resume();
+    stage.dispatch({ type: 'zoomTo', z: 0 });
+    if (a.kind === 'cd') { delete el('pageAlbums').dataset.lib; if (await loadAlbum(at.index, at.trackIndex)) { state.cdPlaying = true; return true; } return false; }
+    stage.dispatch({ type: 'stop', s: 0 });
+    if (!(await loadAlbum(at.index, at.trackIndex))) return false;
+    stage.setDisplay({ lit: true });
+    playTarget({ index: at.trackIndex, time: 0 }, { needle: false });
+    return true;
+  }
+  return {
+    playTrack: (id) => playLibraryTrack(id),
+    // SEAM (T1/T2): focus the album on the coverflow and zoom out to it. Uses tlib.focus + the stage's zoomTo (docs/TURNTABLE_LIBRARY.md).
+    async openAlbum(albumId) {
+      const i = albumIndex(albumId);
+      if (i < 0) return false;
+      await gotoSection('albums');
+      tlib.focus(i, { animate: false });
+      stage.dispatch({ type: 'zoomTo', z: 1 });
+      return true;
+    },
+    // artist "Play all": the artist's songs as one queue
+    async playTracks(ids) {
+      const list = ids.map(trackObj).filter(Boolean);
+      const first = list.findIndex((t) => t.file);
+      if (first < 0) { flash('RE-LINK FILES'); return false; }
+      await gotoSection('albums');
+      await state.engine.resume();
+      stage.dispatch({ type: 'zoomTo', z: 0 }); stage.dispatch({ type: 'stop', s: 0 });
+      const track = await loadFile(list[first].file, state.engine.ctx);
+      state.albumId = null;
+      await loadTrack(track, queueFor({ kind: 'vinyl', id: null, tracks: list }, first));
+      stage.setDisplay({ lit: true });
+      playTarget({ index: first, time: 0 }, { needle: false });
+      syncDisplay(); syncAlbumUI();
+      return true;
+    },
+    // artist drill-down lives in the search overlay; Albums has no artist filter yet (SEAM: sort 'artist' + focus the first album)
+    async openArtist(name) {
+      const lk = (library.albums('artist') || []).findIndex((a) => String(a.artist).toLowerCase() === String(name).toLowerCase());
+      if (lk < 0) return false;
+      await gotoSection('albums'); tlib.focus(lk, { animate: false }); stage.dispatch({ type: 'zoomTo', z: 1 });
+      return true;
+    },
+    async openMixtape(id) {
+      const m = state.mixtapes && state.mixtapes.byId(id);
+      if (!m) return false;
+      await gotoSection('mixtapes');
+      await state.mixtapes.startPlayback(m);
+      return true;
+    },
+    async playStation(s) {
+      await gotoSection('radio').catch(() => {});
+      if (!radio) return false;
+      let station = s;
+      if (typeof s === 'string') { const [type, ...rest] = s.split('|'); const id = rest.join('|'); station = [...radio.store.favs, ...radio.store.recents].map((e) => ({ ...e.snap, type: e.type, id: e.id })).find((x) => x.type === type && x.id === id); }
+      if (!station || !station.type) return false;
+      radio.play(station);
+      return true;
+    },
+    // addToMixtape(trackIds): SEAM for Workstream D's mixtape creator. Not bound today, so the overlay hides "Add to mixtape".
+  };
+}
 
 // `q` is the album context when the track was picked from an album/CD; every other caller (file picker, drop, mixtape) passes none
 // and gets a plain single-track record.
@@ -394,7 +557,7 @@ function updateGhost(s) {
   const loc = locateS(L, s), tgt = seekTargetS(L, s);
   const multi = L.bands.length > 1, gap = loc.zone === 'gap';
   const label = gap ? `▸ track ${tgt.index + 1}` : (multi ? `${tgt.index + 1} · ` : '') + formatTime(tgt.time);
-  if (gap && !state._inGap) { try { navigator.vibrate?.(8); } catch { /* no haptics */ } }
+  if (gap && !state._inGap && settings.store.get('haptics')) { try { navigator.vibrate?.(8); } catch { /* no haptics */ } }
   state._inGap = gap;
   state.ghost = { s: gap ? gapCentreS(loc.gap) : s, label, gap };
   stage.setGhost(state.ghost);
@@ -825,6 +988,7 @@ function installLibrary() {
 
   // ── the shell ──
   shell = createShell({
+    onSearch: () => search && search.open(),
     isPageGestureLive: () => state.touchingPlatter || state.seeking || (stage && stage.isGestureLive()),
     hooks: {
       albums: { onShow: () => { stage.resize(); stage.kick(); } },
@@ -852,6 +1016,17 @@ function installLibrary() {
         },
         onShow: () => boothShown(),
       },
+      settings: {
+        // Lazy: src/settings/page.js is fetched on the first visit. Deps are what the page needs of the app (docs/SETTINGS.md).
+        async mount(host) {
+          const { mountSettings } = await import('./settings/page.js');
+          const dev = await import('./device/index.js').catch(() => null);
+          await Promise.all([loadRadioStore(), loadFxPersist()]).catch(() => {});
+          const lib = dev && dev.deviceLibrary;
+          const page = mountSettings(host.querySelector('#settingsHost'), settingsDeps(lib));
+          return { onShow: () => page.onShow(), onHide: () => page.onHide() };
+        },
+      },
     },
   });
   deviceMode.mountKeys();   // the lock key goes into every section header the shell just built
@@ -874,41 +1049,15 @@ function restoreLast() {
 }
 
 // ── Drawer footer: walkthrough, mode, theme ────────────────────────────────────────
+let walkthrough = null;
 function installToolbar() {
-  const root = document.documentElement;
-  const walkthrough = new Walkthrough();
+  walkthrough = new Walkthrough();
 
   // Show walkthrough on first run.
   walkthrough.showIfFirstRun();
   el('btnWalkthrough').addEventListener('click', () => { shell?.close(); walkthrough.show(0); });
 
-  // Audiophile / Casual mode toggle.
-  const btnMode = el('btnMode');
-  let mode = 'casual';
-  btnMode.addEventListener('click', () => {
-    mode = mode === 'casual' ? 'audiophile' : 'casual';
-    root.dataset.mode = mode;
-    btnMode.textContent = mode === 'audiophile' ? '♦' : '◦';
-    btnMode.classList.toggle('active', mode === 'audiophile');
-  });
-
-  // Light / dark theme toggle. Persist choice. Independent of the custom
-  // palette (installCustomTheme below) — this only ever flips which of the
-  // two color sets (built-in, or a custom theme's light/dark colors) is
-  // showing, never which colors those are.
-  const btnTheme = el('btnTheme');
-  const applyTheme = (t) => {
-    root.dataset.theme = t;
-    btnTheme.textContent = t === 'dark' ? '☾' : '☀';
-    localStorage.setItem('runout.theme', t);
-    applyActiveCustomTheme(t);
-  };
-  const savedTheme = localStorage.getItem('runout.theme') || 'dark';
-  applyTheme(savedTheme);
-  btnTheme.addEventListener('click', () => {
-    applyTheme(root.dataset.theme === 'dark' ? 'light' : 'dark');
-  });
-
+  // The ◦/♦ audiophile button, the ☾/☀ theme button and the settings they stand for: installSettingsAndSearch() below.
 }
 
 
@@ -921,11 +1070,6 @@ function installToolbar() {
 // built-in default) — for the given mode ('dark'|'light'). Called at boot and
 // every time the dark/light toggle flips, so a custom theme's own light/dark
 // pair tracks that toggle exactly like the built-in colors do.
-function applyActiveCustomTheme(mode) {
-  const stored = loadStoredTheme();
-  if (stored) setThemeVars(stored, mode);
-  else clearThemeVars();
-}
 
 function installCustomTheme() {
   const overlay = el('themeOverlay');
@@ -936,23 +1080,13 @@ function installCustomTheme() {
   const errorBox = el('themeError');
   const okBox = el('themeOk');
   const applyBtn = el('themeApplyBtn');
-  const statusEl = el('customThemeStatus');
 
   // The last successfully parsed theme from the CURRENT preview screen, or
   // null. Apply only ever commits this — never re-parses on click — so
   // there's no window where a malformed paste could sneak through.
   let pendingParsed = null;
 
-  function refreshStatus() {
-    const stored = loadStoredTheme();
-    if (stored) {
-      statusEl.textContent = `Custom: ${stored.name}`;
-      statusEl.classList.add('theme-current');
-    } else {
-      statusEl.textContent = 'Built-in (default)';
-      statusEl.classList.remove('theme-current');
-    }
-  }
+  function refreshStatus() { settings.customThemeChanged(); }   // re-applies the palette and repaints the Settings page
 
   function showEdit() {
     stepPreview.classList.add('hidden');
@@ -999,12 +1133,7 @@ function installCustomTheme() {
     overlay.classList.add('hidden');
   }
 
-  el('btnCustomTheme').addEventListener('click', (e) => {
-    e.stopPropagation();
-    el('settingsPop').classList.add('hidden');
-    el('btnSettings').classList.remove('active');
-    openOverlay();
-  });
+  customThemeApi.open = openOverlay;   // the Settings page's "Import JSON..." button
 
   el('themePreviewBtn').addEventListener('click', showPreview);
   el('themeBack').addEventListener('click', showEdit);
@@ -1022,8 +1151,7 @@ function installCustomTheme() {
   applyBtn.addEventListener('click', () => {
     if (!pendingParsed) return; // guard: never apply a malformed theme
     storeTheme(pendingParsed);
-    setThemeVars(pendingParsed, document.documentElement.dataset.theme);
-    refreshStatus();
+    refreshStatus();   // applies it for the current light/dark mode (src/settings/wire.js)
     closeOverlay();
   });
 

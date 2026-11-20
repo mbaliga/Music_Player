@@ -14,7 +14,7 @@ const STEPS = [
   {
     icon: '☰',
     title: 'Pull the page aside',
-    body: `Runout has four sections: Albums, Mixtapes, Radio and ${BOOTH_LABEL}.\n\nTap the menu button at the top left — or drag the page to the right from the very left edge — and the page slides aside to show the list. Tap a name to go there. Tap the page, or press Esc, to put it back.\n\nMusic keeps playing while you move around; a small bar at the bottom shows what is playing and takes you back to it.`,
+    body: `Runout has five sections: Albums, Mixtapes, Radio, ${BOOTH_LABEL} and Settings (the gear, last in the list).\n\nTap the menu button at the top left — or drag the page to the right from the very left edge — and the page slides aside to show the list. Tap a name to go there. The magnifier at the top searches your songs, albums, artists, mixtapes and radio stations. Tap the page, or press Esc, to put it back.\n\nMusic keeps playing while you move around; a small bar at the bottom shows what is playing and takes you back to it.`,
     highlight: 'hamburger',
   },
   {
@@ -64,7 +64,7 @@ const STEPS = [
   {
     icon: '⚙',
     title: 'Feel knobs, layout and theme',
-    body: "Open the menu and tap ♦ to unlock four physics dials (they appear under Albums → Deck details):\n• J — disc inertia. Higher = heavier, takes longer to spin up.\n• k — motor pull. Higher = snappier return to speed.\n• c — friction. Higher = coast dies faster.\n• brake damp — stopping power.\n\nDial these by hand on-device until it feels right. They are the product.\n\nThe gear in the same place switches the turntable layout (Compact, Utilitarian, Cinematic) and opens the custom theme; ☾ flips light and dark; ? brings this tour back.",
+    body: "Open the menu and tap ♦ to unlock four physics dials (they appear under Albums → Deck details):\n• J — disc inertia. Higher = heavier, takes longer to spin up.\n• k — motor pull. Higher = snappier return to speed.\n• c — friction. Higher = coast dies faster.\n• brake damp — stopping power.\n\nDial these by hand on-device until it feels right. They are the product.\n\nSettings (last in the list) holds the theme, accent colour, custom theme and the rest of the options; ☾ flips light and dark; ? brings this tour back.",
   },
 ];
 

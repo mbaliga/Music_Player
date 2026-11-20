@@ -12,6 +12,8 @@
 <link rel="stylesheet" href="./src/shell/shell.css">
 <link rel="stylesheet" href="./src/shell/pages.css">
 <link rel="stylesheet" href="./src/devicemode/devicemode.css">
+<link rel="stylesheet" href="./src/settings/settings.css">
+<link rel="stylesheet" href="./src/search/search.css">
 <link rel="stylesheet" href="./src/turntable/turntable.css">
 <style>
   /* ── Design tokens ─────────────────────────────────────────────────────────── */
@@ -607,17 +609,6 @@
 </head>
 <body>
 
-<!-- ── Settings popover ────────────────────────────────────────────────────── -->
-<div class="settings-pop hidden" id="settingsPop" role="dialog" aria-label="Settings">
-  <div class="sp-label">Theme</div>
-  <div class="sp-seg">
-    <button class="sp-opt" id="btnCustomTheme" type="button">
-      <span class="sp-opt-t">Custom theme…</span>
-      <span class="sp-opt-d" id="customThemeStatus">Built-in (default)</span>
-    </button>
-  </div>
-</div>
-
 <!-- ── Shell: the drawer menu sits behind; the current section is the rounded card in front (src/shell/nav.js, docs/SHELL.md) ── -->
 <div class="shell" id="shell" data-open="false">
 
@@ -625,13 +616,15 @@
     <div class="drawer-brand">
       <img class="drawer-mark" src="./assets/icon-192.png" alt="" width="44" height="44">
       <span class="drawer-name">Runout</span>
+      <button class="drawer-search" id="btnSearch" type="button" title="Search" aria-label="Search songs, albums, artists, mixtapes and radio">
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><circle cx="10.5" cy="10.5" r="6" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M15 15l5 5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+      </button>
     </div>
     <ul class="drawer-menu" id="drawerMenu"></ul>
     <div class="drawer-foot">
       <button class="tb-btn" id="btnWalkthrough" type="button" title="How to use" aria-label="How to use">?</button>
       <button class="tb-btn" id="btnMode"        type="button" title="Audiophile / Casual" aria-label="Audiophile or casual mode">◦</button>
       <button class="tb-btn" id="btnTheme"       type="button" title="Switch theme" aria-label="Switch theme">☾</button>
-      <button class="tb-btn" id="btnSettings"    type="button" title="Settings" aria-label="Settings">⚙</button>
     </div>
   </nav>
 
@@ -718,6 +711,9 @@
 
         <!-- Booth: the DJ / FX section, mounted lazily on first visit (src/shell/booth.js) -->
         <section data-section="booth" id="pageBooth"><div class="pane-fill booth-host" id="boothHost"></div></section>
+
+        <!-- Settings: mounted lazily on first visit (src/settings/page.js) -->
+        <section data-section="settings" id="pageSettings"><div class="pane-fill" id="settingsHost"></div></section>
       </div>
 
       <div class="minibar" hidden>

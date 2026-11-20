@@ -116,7 +116,7 @@ export function mountSettings(host, deps) {
 
   const appearance = group('Appearance', null,
     row('Theme', null, theme), row('Accent colour', 'Violet is the default; the orange is the logo colour. A custom theme, when one is set, brings its own.', swatches),
-    h('div', { class: 'st-hexrow' }, hex, hexMsg), preview, row('Text size', 'Applies to this page, search, the menu and Radio. The turntable and cassettes keep their drawn size.', textSize),
+    h('div', { class: 'st-row' }, h('div', { class: 'st-hint' }, 'Or type your own colour (a hex code)'), h('div', { class: 'st-hexrow' }, hex, hexMsg)), preview, row('Text size', 'Applies to this page, search, the menu and Radio. The turntable and cassettes keep their drawn size.', textSize),
     row('Reduce motion', 'Always on follows your phone’s setting plus this switch; it never forces motion on.', motion), customRow, layoutRow, haptics);
 
   // ── Library ── (driven by src/library-prefs.js; the scan itself belongs to the library / device source)
