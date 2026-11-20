@@ -76,3 +76,22 @@ test('the search adapter reads the very same track objects (raw kept: year / add
   const ix = searchBuild(data);
   assert.ok(ix);
 });
+
+test('one read model: the picker, the shelf (coverflow / Albums) and the suggestions group the SAME tracks into the SAME albums (CD1 / CD2, multi-artist)', async () => {
+  const { groupTracks, shelfItems } = await import('../src/albums.js');
+  const { defaultSearch } = await import('../src/mixtape-pick.js');
+  const mk = (id, album, artist, path, trackNo) => ({ id, title: 't' + id, artist, album, albumArtist: '', path, trackNo, durationSec: 200 });
+  const lib = [];
+  for (let i = 1; i <= 3; i++) lib.push(mk('a' + i, 'Double Set', 'Band', `Double Set CD1/${i}.mp3`, i));
+  for (let i = 1; i <= 3; i++) lib.push(mk('b' + i, 'Double Set', 'Band', `Double Set CD2/${i}.mp3`, i));
+  for (let i = 1; i <= 4; i++) lib.push(mk('c' + i, 'Split Single', i % 2 ? 'Duo A' : 'Duo B', `Split/${i}.mp3`, i));
+  lib.push(...folderTracks(3), ...deviceRows(3).map((r) => mapRow(r)));
+  const groups = groupTracks(lib), shelf = shelfItems(groups);
+  const ix = defaultSearch.buildIndex(lib);
+  assert.equal(ix.albums.length, groups.length, 'the picker groups exactly like the library');
+  assert.equal(ix.rows.length, lib.length);
+  assert.deepEqual(ix.albums.map((a) => a.tracks.length).sort(), groups.map((a) => a.tracks.length).sort());
+  // the shelf shows each CD of a set as its own case (by design), but not one track is lost or doubled
+  assert.equal(shelf.reduce((n, a) => n + a.tracks.length, 0), lib.length);
+  assert.ok(shelf.length >= groups.length);
+});
