@@ -60,6 +60,11 @@ jobs:
       - name: Install Runout native plugins (device audio library)
         run: node scripts/apply-android-plugins.mjs android
 
+      # Device mode (docs/DEVICE_MODE.md): the DeviceDisplay plugin (keep-screen-on, AOD brightness, preferred refresh rate).
+      # No permissions needed. Fails the build if the MainActivity anchor moved.
+      - name: Install Runout display plugin (Device mode)
+        run: node scripts/apply-android-display.mjs android
+
       - name: Sync web assets into the Android project
         run: npx --no-install cap sync android
 
