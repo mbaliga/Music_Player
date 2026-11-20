@@ -192,9 +192,9 @@ def run_viewport(b, w, h):
     page.reload(); page.wait_for_function('document.getElementById("latency") && !/boot error/.test(document.getElementById("latency").textContent)'); page.wait_for_timeout(700)
     goto(page, 'settings')
     page.wait_for_selector('.st-page'); page.wait_for_timeout(400)
-    check(page.locator('.st-group').count() == 6, f'{tag}: six groups')
+    check(page.locator('.st-group').count() == 7, f'{tag}: seven groups')
     groups = page.evaluate('[...document.querySelectorAll(".st-group > summary")].map(s => s.firstChild.textContent)')
-    check(groups == ['Appearance', 'Library', 'Playback', 'Radio', 'Booth', 'Privacy & about'], f'{tag}: groups {groups}')
+    check(groups == ['Appearance', 'Library', 'Playback', 'Radio', 'Booth', 'Device mode', 'Privacy & about'], f'{tag}: groups {groups}')
     shot('settings-appearance')
     # theme
     page.click('.st-seg[aria-label="Theme"] [data-v="light"]'); page.wait_for_timeout(300)
@@ -239,7 +239,7 @@ def run_viewport(b, w, h):
     goto(page, 'settings'); page.click('.st-btn:has-text("Reset")'); page.wait_for_timeout(300)
     check(page.evaluate('document.documentElement.style.getPropertyValue("--bg")') == '', f'{tag}: reset returns to the built-in palette')
     # other groups
-    for g in ('library', 'playback', 'radio', 'booth', 'privacy-about'):
+    for g in ('library', 'playback', 'radio', 'booth', 'device-mode', 'privacy-about'):
         sdet('appearance', False); sdet(g); page.wait_for_timeout(250)
         page.evaluate(f'document.querySelector(\'.st-group[data-group="{g}"]\').scrollIntoView()'); page.wait_for_timeout(150); shot('settings-' + g)
     sdet('radio'); page.click('.st-group[data-group="radio"] .st-switch'); page.wait_for_timeout(300)

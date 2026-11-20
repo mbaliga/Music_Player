@@ -1,4 +1,4 @@
-// default-faces.js — the shipped lock faces for the four sections (docs/DEVICE_MODE.md "What is frozen per section"). Selectors target the
+// default-faces.js — the shipped lock faces for the shell sections (docs/DEVICE_MODE.md "What is frozen per section"). Selectors target the
 // DOM as of this commit; controls added later should carry `data-lock-ok` instead of editing this list. Section authors may also call
 // registerLockFace() themselves from their own mount code: a later registration replaces the default.
 import { registerLockFace } from './faces.js';
@@ -27,6 +27,12 @@ export const DEFAULT_FACES = Object.freeze({
     buttons: ['#boothHost .fx-row', '#boothHost .fx-chip', '#boothHost .fx-btn', '#boothHost .fx-switch input'],
     aodText: ['#boothHost .fx-title'],
     notes: 'Booth: the mode buttons are live. The FX pad is locked (Settings can allow it).',
+  },
+  settings: {
+    // Settings is not a playing surface: nothing on it stays live while locked (a control that should be live carries `data-lock-ok`).
+    buttons: ['#settingsHost [data-lock-ok]'],
+    aodText: [],
+    notes: 'Settings: locked. Unlock to change an option.',
   },
 });
 

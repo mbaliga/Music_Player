@@ -10,6 +10,7 @@
 //     playback: { openDeckDetails?() },
 //     radio: { favouriteCount(), recentCount(), clearFavourites(), clearRecents(), resetVoices() },
 //     booth: { ringOn(): boolean | null },
+//     deviceMode: { open() },                          Device mode's own options sheet (src/devicemode/sheet.js); omit to hide the group
 //     privacy: { clearSearches() },
 //     about: { build: string, walkthrough?() },
 //   }
@@ -189,6 +190,11 @@ export function mountSettings(host, deps) {
   painters.push(boothPaint); boothPaint();
   const booth = group('Booth', 'effects', h('div', { class: 'st-text' }, 'The light ring and latch (tap to switch an effect on and off) are in the Booth: open its menu and choose Settings…. Reduce motion above also quiets the ring.'), ringLine);
 
+  // ── Device mode ── (the lock key, always-on display and keep-awake live in src/devicemode/; its own options sheet is opened from here)
+  const dm = deps.deviceMode;
+  const device = dm ? group('Device mode', 'lock & always-on', h('div', { class: 'st-text' }, 'Lock the screen so stray touches do nothing while music plays, keep the screen awake, and show a dim always-on face. The lock key is in the top bar of every page.'),
+    h('div', { class: 'st-btns' }, h('button', { type: 'button', class: 'st-btn', onclick: () => dm.open && dm.open() }, 'Device mode options\u2026'))) : null;
+
   // ── Privacy & about ──
   const pv = deps.privacy || {};
   const remember = reg(sw('Remember my searches', 'The last few searches are kept on this phone so you can repeat them. Switch off to stop saving them.', S('privacy.rememberSearches'), (v) => { const ok = store.set('privacy.rememberSearches', v); if (!v && pv.clearSearches) pv.clearSearches(); return ok; }));
@@ -201,7 +207,7 @@ export function mountSettings(host, deps) {
     h('div', { class: 'st-text' }, h('b', {}, 'Documents '), '(in the project folder, not fetched by the app):',
       h('ul', { class: 'st-list' }, ...['README.md', 'docs/SHELL.md', 'docs/SEARCH.md', 'docs/SETTINGS.md', 'docs/FX.md', 'docs/RADIO_ARCHITECTURE.md'].map((d) => h('li', {}, h('code', {}, d))))));
 
-  const page = h('div', { class: 'st-page', role: 'region', 'aria-label': 'Settings' }, appearance, library, playback, radio, booth, privacy);
+  const page = h('div', { class: 'st-page', role: 'region', 'aria-label': 'Settings' }, appearance, library, playback, radio, booth, device, privacy);
   appearance.open = true;
   host.append(page);
 

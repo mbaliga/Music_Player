@@ -213,6 +213,7 @@ function settingsDeps(devLib) {
       resetVoices: () => loadRadioStore().then((m) => m.resetHostVoices(lsOk())).catch(() => {}),
     },
     booth: { ringOn: () => { try { return fxPersistMod ? !!fxPersistMod.loadFx(lsOk()).ring : null; } catch { return null; } } },
+    deviceMode: deviceMode ? { open: () => import('./devicemode/sheet.js').then((m) => m.openSheet({ settings: deviceMode.settings })).catch(() => {}) } : null,
     privacy: { clearSearches: () => search && search.clearRecents() },
     about: { build: (el('buildId') && el('buildId').textContent) || 'build: dev', walkthrough: () => { shell.close(); walkthrough && walkthrough.show(0); } },
   };
