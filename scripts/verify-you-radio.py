@@ -34,6 +34,16 @@ def to_section(page, sec):
     time.sleep(0.5)   # the card's spring settles
 
 
+def scan_via_settings(page):
+    """The folder-picker scan from Settings > Library > Scan now (the old #libScan button went away with the new Albums library)."""
+    to_section(page, 'settings')
+    page.wait_for_selector('.st-group[data-group="library"]', state='attached')   # the page mounts on its first visit
+    page.evaluate("document.querySelector('.st-group[data-group=\"library\"]').open = true")
+    with page.expect_file_chooser() as fc:
+        page.click('.st-group[data-group="library"] .st-btn.primary')
+    fc.value.set_files(LIB)
+    time.sleep(3.5)
+
 def make_fixtures():
     os.makedirs(LIB, exist_ok=True)
     for i, (t, a, al, f, g) in enumerate(SPECS, 1):
@@ -118,13 +128,8 @@ def run():
         page.screenshot(path=SHOTS + '/01-radio-tab-flag-off.png')
 
         # --- Phase B: scan the generated library via the file-input fallback
-        to_section(page, 'albums')
-        with page.expect_file_chooser() as fc:
-            page.click('#libScan')
-        fc.value.set_files(LIB)
-        page.wait_for_function('document.querySelectorAll("#albumGrid > *").length >= 2', timeout=20000)
-        time.sleep(1.0)
-        out['B_albums'] = page.locator('#albumGrid > *').count()
+        scan_via_settings(page)
+        out['B_albums'] = 'scanned via Settings'
         page.screenshot(path=SHOTS + '/02-library-scanned.png')
 
         # --- Phase C: enable the toggle, start You Radio

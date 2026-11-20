@@ -105,13 +105,18 @@ def open_radio(page):
     to_section(page, 'radio')
     page.wait_for_selector('.dial-card', timeout=10000)
 
-def scan(page):
-    to_section(page, 'albums')
+def scan_via_settings(page):
+    """The folder-picker scan, started from Settings > Library > Scan now (the old #libScan button went away with the new Albums library)."""
+    to_section(page, 'settings')
+    page.wait_for_selector('.st-group[data-group="library"]', state='attached')   # the page mounts on its first visit
+    page.evaluate("document.querySelector('.st-group[data-group=\"library\"]').open = true")
     with page.expect_file_chooser() as fc:
-        page.click('#libScan')
+        page.click('.st-group[data-group="library"] .st-btn.primary')
     fc.value.set_files(LIB)
-    page.wait_for_function('document.querySelectorAll("#albumGrid > *").length >= 2', timeout=20000)
-    time.sleep(0.8)
+    time.sleep(3.5)   # tags are read and the library is persisted; there is no shelf element to wait on any more
+
+def scan(page):
+    scan_via_settings(page)
     to_section(page, 'radio')
     page.wait_for_selector('.dial-card')
 
