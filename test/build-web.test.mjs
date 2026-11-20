@@ -118,13 +118,16 @@ test('the logo renditions linked from index.html (and used by the shell) ship; t
   const out = await build('logo');
   const files = await listFiles(out);
   for (const f of WEB_ASSETS) assert.ok(files.includes(f), f);
+  assert.ok(WEB_ASSETS.includes('assets/mat.jpg') && files.includes('assets/mat.jpg'), 'the turntable mat ships');
+  assert.deepEqual(await readFile(resolve(out, 'assets/mat.jpg')), await readFile(resolve(root, 'assets/mat.jpg')));
   assert.equal(files.includes('assets/logo.png'), false);
   assert.equal(files.includes('assets/icon.png'), false);
   // every relative asset URL index.html and the shell/walkthrough sources reference resolves inside the build
   const refs = new Set();
-  for (const f of ['index.html', 'src/shell/nav.js', 'src/walkthrough.js']) {
+  for (const f of ['index.html', 'src/shell/nav.js', 'src/walkthrough.js', 'src/turntable/stage-svg.js']) {
     const text = await readFile(resolve(out, f), 'utf8').catch(() => '');
     for (const m of text.matchAll(/(?:href|src)=["'`]\.\/(assets\/[^"'`]+)["'`]/g)) refs.add(m[1]);
+    for (const m of text.matchAll(/MAT_URL\s*=\s*['"`]\.\/(assets\/[^'"`]+)['"`]/g)) refs.add(m[1]);
   }
   assert.ok(refs.size >= 2, 'index.html links the favicon and the apple-touch icon');
   for (const r of refs) assert.ok(files.includes(r), `${r} is referenced but not shipped`);

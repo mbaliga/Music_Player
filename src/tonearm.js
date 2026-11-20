@@ -186,3 +186,54 @@ export function classifyFlick(points, centre, knobs = TONEARM_KNOBS) {
     && speed >= knobs.flickMinSpeed && radial <= knobs.flickMaxRadialPx;
   return { dir: ok ? (sweep > 0 ? 'next' : 'prev') : null, arc, ms, speed, radial };
 }
+
+// ── the linear-tracking tonearm (src/turntable/): arm position s in 0..1 (0 = outer groove, 1 = inner) ───────────────────────────
+// The old disc used a RADIUS (outer = start). The carriage arm slides along a chord, and the chord position s maps to the groove
+// radius monotonically (turntable/geometry.js rOf), so the album layout is built in the unit interval: the layout's "radius" IS
+// 1 - s (rOut = 1, rIn = 0). Everything below is a thin, exact re-expression of the functions above on that unit disc; the band /
+// gap / snap logic is not duplicated. Knob units: gapGrabPx is in layout units, so for the unit layout we scale it (see
+// ARM_KNOBS) and the flick is judged on the arm's travel in stage units instead of an arc.
+
+export const ARM_KNOBS = Object.freeze({
+  ...TONEARM_KNOBS,
+  gapGrab: 0.04,         // the gap is hit over at least this much of s (fingers are fat): ~16 stage units of carriage travel
+  flickMinTravel: 70,    // stage units of dimple travel along the rail
+  flickMaxMs: 280,
+  flickMinSpeed: 0.45,   // stage units / ms
+  flickMaxDrift: 90,     // stage units of finger drift off the rail axis (rejects diagonal sweeps)
+  flickMaxTotal: 200,    // the whole gesture moved the dimple no further than this: a longer fast drag is a seek, not a flick
+});
+
+/** Album layout on the unit interval: bands/gaps carry rA/rB (= 1 - s) and uA/uB (= s). */
+export function buildArmLayout(durations, knobs = TONEARM_KNOBS) { return buildLayout(durations, 1, 0, knobs); }
+const rOfS = (s) => 1 - clamp(s, 0, 1);
+const armKnobs = (k) => ({ ...k, gapGrabPx: ARM_KNOBS.gapGrab });
+/** locate / seekTarget at arm position s. */
+export function locateS(layout, s, knobs = ARM_KNOBS) { return locate(layout, rOfS(s), armKnobs(knobs)); }
+export function seekTargetS(layout, s, knobs = ARM_KNOBS) { return seekTarget(layout, rOfS(s), armKnobs(knobs)); }
+/** arm position for time t seconds into track `index` (inverse of seekTargetS) */
+export function sFor(layout, index, t) { return 1 - radiusFor(layout, index, t); }
+/** s at the centre of the gap before track `index` (the ghost marker sits there) */
+export function gapCentreS(gap) { return 1 - gap.r; }
+
+/**
+ * Flick on the arm: a quick sweep of the held dimple ALONG the rail. Toward the inner groove (s rising = to the LEFT on screen) = next,
+ * toward the outer groove = previous. points = [{x, y, t}] in stage units / ms; `dir` = +1 when moving toward the inner groove is
+ * increasing stage -x (always, for this carriage), kept explicit so a mirrored stage still works.
+ */
+export function classifyArmFlick(points, knobs = ARM_KNOBS) {
+  const none = { dir: null, travel: 0, ms: 0, speed: 0, drift: 0 };
+  if (!points || points.length < 2) return none;
+  const last = points[points.length - 1];
+  let i0 = points.length - 1;
+  while (i0 > 0 && last.t - points[i0 - 1].t <= knobs.flickMaxMs) i0--;
+  const a = points[i0];
+  const ms = last.t - a.t, dx = a.x - last.x;   // left travel is positive (toward the inner groove)
+  let yMin = Infinity, yMax = -Infinity;
+  for (let i = i0; i < points.length; i++) { yMin = Math.min(yMin, points[i].y); yMax = Math.max(yMax, points[i].y); }
+  const travel = Math.abs(dx), drift = yMax - yMin, speed = ms > 0 ? travel / ms : 0;
+  const total = Math.abs(points[0].x - last.x);
+  const ok = ms > 0 && ms <= knobs.flickMaxMs && travel >= knobs.flickMinTravel && speed >= knobs.flickMinSpeed
+    && drift <= knobs.flickMaxDrift && total <= knobs.flickMaxTotal;
+  return { dir: ok ? (dx > 0 ? 'next' : 'prev') : null, travel, ms, speed, drift };
+}

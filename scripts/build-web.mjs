@@ -32,7 +32,8 @@ export const ITEMS = ['index.html', 'src'];
 
 // Web renditions of the logo, linked from index.html (favicon, apple-touch icon) and used as the in-app mark (drawer, walkthrough).
 // Made by scripts/make-web-icons.py. The 1100 px original and the 1024 launcher icon stay out of the web build.
-export const WEB_ASSETS = Object.freeze(['assets/favicon-32.png', 'assets/apple-touch-icon.png', 'assets/icon-192.png']);
+// assets/mat.jpg is the owner's own "Runout" lettered slipmat artwork (1500x1502 JPEG, ~221 KB): the stage's mat (src/turntable/stage-svg.js).
+export const WEB_ASSETS = Object.freeze(['assets/favicon-32.png', 'assets/apple-touch-icon.png', 'assets/icon-192.png', 'assets/mat.jpg']);
 
 // DATA SHIPPED BESIDE src/ (fetched lazily from the app's own origin by src/radio/canned, never imported):
 //   content/stations/<id>.json  -> www/stations/<id>.json     the canned station packs (validated here; an invalid pack fails the build)
