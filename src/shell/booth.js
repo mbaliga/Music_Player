@@ -7,7 +7,7 @@
 import { BOOTH_LABEL } from './sections.js';
 
 // MOUNT POINT (one line): null = placeholder.
-const loadFxSection = null;
+const loadFxSection = () => import('../fx/section.js');
 
 /** deps: whatever the FX component needs from the app (engine, host accessors, storage, a blocked() probe); built in main.js. */
 export async function mountBooth(host, deps = {}) {

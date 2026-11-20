@@ -1,37 +1,40 @@
 # FX: performance effects on the platter
 
-FX is the last section of the control panel (below "Load track"). Tap **FX** to open it. Everything plays your own local records and CDs. It is
+FX is the **Booth** section of the drawer. Everything plays your own local records and CDs. It is
 inspired by hardware DJ scratch controllers in general (a touch platter, a small mode menu, a ring of light); nothing of any product's name,
 artwork or layout is used. The code is original and lives in `src/fx/`.
 
 ## Where it lives, and why
 
-The app has two top-level lists: the **Library overlay tabs** (Albums | Mixtapes | Radio) and the **main control panel** (Now playing, Speed
-dial, Palm brake, Stats, Feel knobs, Latency, Load track). FX is about performing on the platter, so it belongs with the platter controls, in
-the panel. It is the final `.section` of the panel (a test pins this). It is not a Library tab because the library is about choosing what to
-play, and an effect needs the platter and its waveform on screen at the same time.
+FX is the **Booth** section of the navigation shell (the last item in the drawer: Albums, Mixtapes, Radio, Booth; `src/shell/booth.js` mounts it lazily
+the first time the section is shown, never at boot). It first lived as the last section of the old control panel, before the shell workstream
+replaced the library overlay with the drawer; the component was built to be placement-independent, so only the mount line changed.
+
+The Booth screen has no platter, so **the FX pad is the touch surface** (a round pad with the same gestures and its own light ring). That also
+makes FX work the same for vinyl and CD tracks. **Blend scratch needs the platter** (you scratch it), so it is greyed out unless the shell passes
+`hasPlatter: true` and forwards the platter's pointer events and rate to `handle.platter` (see the contract below); the worklet and controller
+support is built and tested.
 
 ## Component contract (for the shell)
 
-`src/fx/ui.js` exports one entry point:
+`src/fx/section.js` (re-exporting `src/fx/ui.js`) is the one entry point:
 
 ```js
 const fx = mountFxSection(container, deps);   // -> { unmount, onShow, onHide, onTrack, platter, controller }
 ```
 
-`deps = { engine, host, resume, stage?, close? }` where `engine` is the `AudioEngine` (`ctx`, `musicBus`, `setFx`), `host` carries the accessors
-(`getTrack, envelope, durationSec, positionSec, nominalRate, omegaNominal, sampleRate, blocked, view, geom`), `resume()` resumes the audio
-context, `stage` (optional) is the platter stage element for the light ring and HUD overlay, `close` (optional) adds a "Back" row. The component
-makes no assumption about its placement, lays out in any container (checked at 360 x 780), keeps all CSS under `.fx-` (`src/fx/fx.css`, loaded
-lazily) and runs its own animation loop between `onShow()` and `onHide()`. `platter` is what the shell wires to its platter (pointer events and
-the playback rate); without it the pad inside the section still works. Call `onTrack()` whenever a track is loaded or adopted.
+`deps` (everything optional except `engine`): `engine` (the `AudioEngine`: `ctx`, `musicBus`, `setFx`, `position`, `frames`, `sampleRate`),
+`storage` (localStorage-like, for the saved mode), `blocked()` (or `host.blocked()`), returning `'radio'`, `'mixtape'`, another reason string or null,
+`host` with `getTrack, nominalRate, omegaNominal, sampleRate, blocked` (and optionally `envelope, durationSec, positionSec, view, geom`; missing
+ones are derived from the engine), `resume()`, `hasPlatter` (enables Blend scratch), `stage` (platter stage element: adds the ring and HUD over it),
+`close` (adds a "Back" row). The component makes no assumption about where it sits, lays out in any container (checked at 360 x 780), keeps all CSS
+under `.fx-` (`src/fx/fx.css`, loaded lazily) and runs its own animation loop between `onShow()` and `onHide()`. It notices a new track by itself
+(`host.getTrack()` identity). `onHide()` releases any held effect and stops the loop; `unmount()` removes everything and the bus chain.
+`platter` = `{ wantsPlatter, grabsPlatter, pointerDown(p, surface, t), pointerMove(p, t), pointerUp(), rateFor(rate) }` is for a shell that wants
+the real platter to drive FX (hold effects, Blend scratch); it is not needed for the pad.
 
-**Temporary mount in the old shell** (one block in `src/main.js`, "FX section"; plus `#fxSection` at the end of `aside.panel` and a few `.fx-head`
-CSS lines in index.html). To relocate into the drawer: `openFx()` with the new container, `fx.onShow()/onHide()` as the section is shown or
-hidden, keep `fx.platter.*` in the canvas pointer handlers and the rate line in the frame loop, keep `fx?.onTrack()`, delete the old markup.
-
-The section is collapsed by default in the old shell. Opening it loads `src/fx/ui.js` (lazy `import()`; nothing under `src/fx/` is loaded at app boot).
-Closing it tears everything down: the effects bus is removed and the worklet's FX block is zeroed.
+**One edit in the shell:** `src/shell/booth.js` line `const loadFxSection = () => import('../fx/section.js');` (it was `null`, the placeholder).
+Nothing else in the shell was touched.
 
 ## Ownership: radio, canned shows and mixtapes
 
@@ -56,11 +59,10 @@ the section is opened.
 
 ## Surfaces: the platter and the pad
 
-* **Vinyl view:** the real platter is the surface. A finger on the groove area is routed to FX when a mode other than Scratch is selected. The
-  tonearm area (outer 10 %) keeps working as before.
-* **The pad** (inside the FX section): a round touch surface with the same gestures. It is the only surface in the **CD view** (a CD has no
-  platter and no scrub), and a convenient one on a phone when the platter is scrolled out of view. Blend scratch needs a vinyl record, so it
-  is greyed out on a CD.
+* **The pad** (inside the Booth): a round touch surface; spin is measured about its centre, slide is radial or x/y. It works for vinyl and CD tracks
+  alike. Blend scratch is greyed out on a CD and without a platter.
+* **The platter** (only if the shell forwards it through `handle.platter`): a finger on the groove area is routed to FX when a mode other than Scratch is
+  selected; the tonearm area keeps working as before. This was verified on the old panel layout (earlier run) but is not wired in the drawer shell.
 
 ## The six modes (interpretations; see "Guesses" below)
 
@@ -144,7 +146,7 @@ unity gain node in front of the destination.
 * **Spin -> rate:** a finger at 2.0x nominal gives +136 % and the loop period shrinks to 4387 samples (expected 4386.4); 4.0x gives +306 %
   (2550 vs 2549.8); backward 1.5x gives -38 % (16821 vs 16832.5). A 10.5x spin reads `+858 %` (the +900 % clamp is unit tested).
 * **Stutter** at 1/4, gate 50 %: period 5176 samples (expected 5176.1), silent fraction 0.51.
-* **Blend scratch** with the platter held still: blend 100 % output RMS 0.0295 (the song itself 0.0315), blend 50 % 0.0158 (about half).
+* **Blend scratch** (measured on the previous panel layout, where the platter was on screen) with the platter held still: blend 100 % output RMS 0.0295 (the song itself 0.0315), blend 50 % 0.0158 (about half).
   (A plain held-still scratch was silent in four of five runs and not in one; the platter-stop timing was not investigated, it is the existing path.)
 * **Band pass** on 300 Hz + 3 kHz: finger right (centre 2990 Hz) gives +32.5 dB for 3 kHz over 300 Hz, finger left (300 Hz) gives -32.6 dB;
   the passed tone is within 0.1 dB of the unfiltered level. The Q mapping (0.9 to 12.1 here) is unit tested; the quality factor itself is the
@@ -156,13 +158,13 @@ unity gain node in front of the destination.
 * **FX off / idle:** a sample-aligned A/B of `musicBus` against the final output over 131072 samples has maximum difference **0**; the same after a
   band-pass chain was built, used and released (0 over 65536 samples, hub removed). The worklet golden-hash test covers the worklet itself.
 * **Persistence:** mode and parameters restored after a reload; corrupt storage falls back to Scratch without an error.
-* **Teardown:** closing the section removes the ring, the HUD and every bus node (destination has one input again).
+* **Teardown:** `onHide()` releases a held effect and removes the bus chain; `unmount()` removes the DOM and every node (destination has one input again).
 * **CD track:** repeat from the pad on a CD album track: 10352 samples (expected 10352.1); Blend scratch is disabled on a CD.
 * **Lazy loading:** zero requests under `src/fx/` before the section is opened.
-* **Layout at 360 x 780:** no horizontal scroll; rows, chips and buttons measure 44 px or more.
+* **Layout at 360 x 780** (the Booth page of the drawer shell): no horizontal scroll; rows, chips and buttons measure 44 px or more.
 * Not run: the postMessage (no SharedArrayBuffer) path in the browser (unit test compares its output with the SAB path).
 
-Screenshots: `docs/screenshots/fx-menu.png`, `fx-repeat-1-1.png`, `fx-repeat-1-16.png` (with the `+n%` readout), `fx-ring.png`, `fx-bandpass.png`.
+Screenshots: `docs/screenshots/fx-menu.png`, `fx-repeat-1-1.png`, `fx-repeat-1-16.png` (with the `+n%` readout), `fx-bandpass.png`, `fx-cd-pad.png` (the light ring is the coloured rim of the pad; an earlier platter-ring capture was from the old panel layout and is not kept).
 
 ## Limits and honesty
 

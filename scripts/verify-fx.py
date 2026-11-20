@@ -147,14 +147,18 @@ def spike_ratio(x, w=96, d=None):
 def max_step(x, d=None): return float(np.max(np.abs(np.diff(x)) if d is None else d)) if len(x) > 1 else 0.0
 
 # ── page helpers ──────────────────────────────────────────────────────────────────────────────────────────────────────
-def geom(page):
-    return page.evaluate("""() => { const r = document.getElementById('disc').getBoundingClientRect(); const g = window.__runoutFx.controller.host.geom();
-      return { cx: r.left + g.cx, cy: r.top + g.cy, rIn: g.rIn, rOut: g.rOut }; }""")
+def to_section(page, sec):
+    """Navigate with the real UI: hamburger -> drawer item (docs/SHELL.md)."""
+    if page.evaluate('document.querySelector(".page:not([hidden])").dataset.section') == sec: return
+    page.click('.page:not([hidden]) .hamburger'); page.click(f'.drawer-item[data-section="{sec}"]')
+    page.wait_for_function('s => { const p = document.querySelector(`.page[data-section="${s}"]`); return p && !p.hidden }', arg=sec)
+    time.sleep(0.6)
 
 def platter_down(page, u=0.55):
-    page.evaluate("window.scrollTo(0,0)"); time.sleep(0.15)
-    g = geom(page); lo, hi = g['rIn'] * 0.9, g['rOut'] * 0.9; r = lo + (hi - lo) * u
-    page.mouse.move(g['cx'], g['cy'] - r); page.mouse.down(); return g, lo, hi
+    """The FX pad is the surface in the Booth (no platter on that screen). u: 0 spindle ... 1 rim of the playable area."""
+    pad = page.locator('.fx-pad'); pad.scroll_into_view_if_needed(); time.sleep(0.15); bb = pad.bounding_box()
+    R0 = bb['width'] / 2; g = {'cx': bb['x'] + R0, 'cy': bb['y'] + R0}; lo, hi = R0 * 0.1, R0 * 0.96
+    page.mouse.move(g['cx'], g['cy'] - (lo + (hi - lo) * u)); page.mouse.down(); return g, lo, hi
 
 def platter_up(page): page.mouse.up()
 
@@ -163,17 +167,18 @@ def ctl(page, js): return page.evaluate(f'(() => {{ const c = window.__runoutFx.
 def load_track(page, name):
     page.evaluate("document.getElementById('fileInput').value = ''")   # same file again must still fire 'change'
     page.set_input_files('#fileInput', os.path.join(FIX, name)); time.sleep(1.6)
-    page.evaluate("document.querySelector('#disc').scrollIntoView()")
 
 def select_mode(page, mid):
     if page.query_selector('.fx-view[data-view="perform"]'): page.click('.fx-top .fx-btn')
     page.click(f'.fx-row[data-id="{mid}"]'); time.sleep(1.1)
 
+def page_has_back(page): return bool(page.query_selector('.fx-view[data-view="perform"]'))
+
 def fresh(page, name, settle=1.2):
     load_track(page, name); wait_play(page, settle)
 
 def wait_play(page, sec=3.0):
-    page.evaluate("window.scrollTo(0,0)"); time.sleep(sec)   # the motor spins the platter up to the song speed
+    time.sleep(sec)   # the motor spins the platter up to the song speed
 
 def run():
     make_fixtures()
@@ -201,16 +206,16 @@ def _run():
         # ── A. lazy loading + layout ─────────────────────────────────────────────────────────────────────────────────
         before = [u for u in reqs if '/src/fx/' in u]
         R['A_lazy_no_fx_requests_at_boot'] = (len(before) == 0)
-        R['A_fx_is_last_panel_section'] = pg.evaluate("""() => { const s = [...document.querySelectorAll('aside.panel > .section')]; return s[s.length - 1].id === 'fxSection'; }""")
+        R['A_booth_is_last_drawer_section'] = pg.evaluate("(() => { const s = [...document.querySelectorAll('.drawer-item')]; return s[s.length - 1].dataset.section; })()")
         load_track(pg, 'click128.wav')
-        pg.click('#fxHead'); pg.wait_for_selector('.fx-row'); time.sleep(0.4)
+        to_section(pg, 'booth'); pg.wait_for_selector('.fx-row'); time.sleep(0.4)
         R['A_fx_requests_after_open'] = sorted({u.split('/src/fx/')[1] for u in reqs if '/src/fx/' in u})
         R['A_no_horizontal_scroll_360'] = pg.evaluate('document.documentElement.scrollWidth <= window.innerWidth + 0')
         R['A_menu_rows'] = pg.evaluate("[...document.querySelectorAll('.fx-row')].map(r => r.querySelector('.fx-row-t').textContent)")
         R['A_min_target_px'] = pg.evaluate("Math.min(...[...document.querySelectorAll('.fx-row,.fx-head')].map(e => e.getBoundingClientRect().height))")
-        pg.locator('#fxSection').scroll_into_view_if_needed(); pg.screenshot(path=os.path.join(SHOTS, '01-menu.png'))
+        pg.screenshot(path=os.path.join(SHOTS, '01-menu.png'))
         # keyboard: arrow keys move through the list, Enter selects
-        pg.focus('.fx-row[aria-selected="true"]'); pg.keyboard.press('ArrowDown'); pg.keyboard.press('Enter'); time.sleep(0.3)
+        pg.focus('.fx-row[aria-selected="true"]'); pg.keyboard.press('ArrowDown'); pg.keyboard.press('ArrowDown'); pg.keyboard.press('Enter'); time.sleep(0.3)
         R['A_keyboard_select'] = ctl(pg, 'c.mode')
         pg.click('.fx-top .fx-btn'); pg.click('.fx-row[data-id="scratch"]'); time.sleep(1.0)
 
@@ -243,7 +248,7 @@ def _run():
             per, strength = autocorr_period(x[:int(SR * 1.2)], S * .7, S * 1.3) if S * 1.3 < SR * 1.2 / 1.5 else autocorr_period(x, S * .7, S * 1.3)
             R['C_division_periods'][div] = {'expected_samples': round(S, 1), 'measured_samples': round(per, 1), 'err_pct': round(100 * (per - S) / S, 3), 'autocorr': round(strength, 3), 'held_div': held['div'], 'pct': held['pct'], 'vs_true_beat_pct': round(100 * (frac * R['C_true_beat_sec'] * SR - per) / per, 2)}
             if div == '1/1':
-                pg.evaluate('void window.__spinDrive(2.2, 1600)'); time.sleep(0.9); pg.locator('#fxSection').scroll_into_view_if_needed(); pg.screenshot(path=os.path.join(SHOTS, '02-repeat-1-1-spin.png')); time.sleep(0.9); pg.evaluate("window.scrollTo(0,0)")
+                pg.evaluate('void window.__spinDrive(2.2, 1600)'); time.sleep(0.9); pg.screenshot(path=os.path.join(SHOTS, '02-repeat-1-1-spin.png')); time.sleep(0.9); pg.evaluate("window.scrollTo(0,0)")
             platter_up(pg); time.sleep(0.4)
         # radial drag steps the division (start on 1/1, drag inward across the platter)
         pg.click('.fx-chips[aria-label^="Slice length"] [data-div="1/1"]')
@@ -280,14 +285,13 @@ def _run():
             lo_l, hi_l = S * .8, S * 1.2
             per, strength = autocorr_period(x[:int(min(len(x), SR * 1.4))], lo_l, hi_l)
             R['C_spin'][str(s)] = {'rate_applied': round(info['rate'], 3), 'readout': info['text'], 'expected_period': round(S, 1), 'measured_period': round(per, 1), 'err_pct': round(100 * (per - S) / S, 2), 'autocorr': round(strength, 3)}
-            if s == 4.0: pg.locator('#fxSection').scroll_into_view_if_needed(); pg.screenshot(path=os.path.join(SHOTS, '03-repeat-1-2-spin.png'))
+            if s == 4.0: pg.screenshot(path=os.path.join(SHOTS, '03-repeat-1-2-spin.png'))
             platter_up(pg); time.sleep(0.4)
         # 1/16 with a hard spin: the "+n%" readout and the ring
         fresh(pg, 'click128.wav'); pg.click('.fx-chips[aria-label^="Slice length"] [data-div="1/16"]')
         g, lo, hi = platter_down(pg, 0.6); pg.evaluate('void window.__spinDrive(10.5, 3200)'); time.sleep(1.2)
         R['C_hard_spin_readout'] = ctl(pg, 'c.out.readout.text'); R['C_hard_spin_percent'] = ctl(pg, 'c.out.readout.percent')
-        pg.screenshot(path=os.path.join(SHOTS, '05-ring-rainbow-stage.png'))
-        pg.locator('#fxSection').scroll_into_view_if_needed(); pg.screenshot(path=os.path.join(SHOTS, '04-repeat-1-16-hard-spin.png')); time.sleep(2.0)
+        pg.screenshot(path=os.path.join(SHOTS, '04-repeat-1-16-hard-spin.png')); time.sleep(2.0)
         platter_up(pg); time.sleep(0.3)
         R['C_ring_rainbow_flag_when_fast'] = True
 
@@ -317,14 +321,9 @@ def _run():
         platter_up(pg); time.sleep(0.3)
 
         # ── F. blend scratch: the song continues under a held platter ────────────────────────────────────────────────
-        select_mode(pg, 'scratch'); fresh(pg, 'click128.wav')
-        g, lo, hi = platter_down(pg, 0.55); time.sleep(1.0); rms_scratch = float(np.sqrt(np.mean(record(pg, 1.5) ** 2))); platter_up(pg); time.sleep(0.3)
-        res = {'plain_scratch_platter_held_still': round(rms_scratch, 4)}
-        for amt in (100, 50):
-            select_mode(pg, 'blend'); fresh(pg, 'click128.wav')
-            pg.evaluate(f"(() => {{ const i = document.getElementById('fxBlend'); i.value = {amt}; i.dispatchEvent(new Event('input', {{bubbles: true}})); }})()")
-            g, lo, hi = platter_down(pg, 0.55); time.sleep(1.0); res[f'blend_{amt}_platter_held_still'] = round(float(np.sqrt(np.mean(record(pg, 1.5) ** 2))), 4); platter_up(pg); time.sleep(0.3)
-        R['F_blend'] = res; R['F_blend']['song_rms_for_reference'] = round(R['B_signal_rms'], 4)
+        if page_has_back(pg): pg.click('.fx-top .fx-btn')
+        R['F_blend'] = {'row_disabled_without_platter': pg.evaluate("document.querySelector('.fx-row[data-id=\"blend\"]').getAttribute('aria-disabled')"),
+                        'note': 'Blend scratch needs the platter, which the Booth screen does not have; the worklet blend is covered by test/fx-worklet.test.mjs (an earlier run of this script on the old panel measured blend 100 % RMS 0.0295 vs song 0.0315, blend 50 % 0.0158)'}
 
         # ── G. band pass on the two-tone file ───────────────────────────────────────────────────────────────────────
         load_track(pg, 'twotone.wav'); wait_play(pg, 2.5); select_mode(pg, 'bandpass')
@@ -384,9 +383,8 @@ def _run():
         fresh(pg, 'sweep.wav'); select_mode(pg, 'scratch'); time.sleep(0.3)
         base_x = record(pg, 3.0)[4096:]; bd = mask_steps(base_x, last_gaps(pg)); nat = max_step(base_x, bd); R['I_clicks']['baseline_max_step'] = round(nat, 5); R['I_clicks']['baseline_spike_ratio'] = round(spike_ratio(base_x, d=bd), 2); R['I_clicks']['baseline_recorder_gaps'] = len(last_gaps(pg))
         bound = nat * 1.6 + 0.01
-        for mid, how in (('repeat', 'platter'), ('stutter', 'platter'), ('blend', 'platter'), ('bandpass', 'pad'), ('echo', 'pad')):
+        for mid, how in (('repeat', 'platter'), ('stutter', 'platter'), ('bandpass', 'pad'), ('echo', 'pad')):
             load_track(pg, 'sweep.wav'); wait_play(pg, 2.0); select_mode(pg, mid)
-            if mid == 'blend': pg.evaluate("(() => { const i = document.getElementById('fxBlend'); i.value = 50; i.dispatchEvent(new Event('input', {bubbles: true})); })()")
             if how == 'pad':
                 pad = pg.locator('.fx-pad'); pad.scroll_into_view_if_needed(); bb = pad.bounding_box(); cx, cy, R0 = bb['x'] + bb['width'] / 2, bb['y'] + bb['height'] / 2, bb['width'] / 2
             pg.evaluate('window.__tap(0, true)')
@@ -407,21 +405,14 @@ def _run():
         select_mode(pg, 'repeat'); pg.click('.fx-chips[aria-label^="Slice length"] [data-div="1/8"]')
         stored = pg.evaluate("localStorage.getItem('runout.fx.v1')")
         pg.reload(); pg.wait_for_function('document.getElementById("latency") && !/measuring/.test(document.getElementById("latency").textContent)')
-        pg.evaluate('window.__tapInit()'); pg.click('#fxHead'); pg.wait_for_selector('.fx-view'); time.sleep(0.5)
+        pg.evaluate('window.__tapInit()'); to_section(pg, 'booth'); pg.wait_for_selector('.fx-view'); time.sleep(0.5)
         R['J_persist'] = {'stored': stored, 'restored_mode': ctl(pg, 'c.mode'), 'restored_div': ctl(pg, 'c.state.repeat.div'), 'view_after_open': pg.evaluate("document.querySelector('.fx-view').dataset.view")}
         # corrupt storage never throws
         pg.evaluate("localStorage.setItem('runout.fx.v1', '{broken')"); pg.reload(); pg.wait_for_function('document.getElementById("latency") && !/measuring/.test(document.getElementById("latency").textContent)')
-        pg.evaluate('window.__tapInit()'); pg.click('#fxHead'); pg.wait_for_selector('.fx-view'); R['J_persist']['corrupt_storage_mode'] = ctl(pg, 'c.mode')
-
-        # ── K. close tears everything down ──────────────────────────────────────────────────────────────────────────
-        select_mode(pg, 'bandpass'); pad = pg.locator('.fx-pad'); pad.scroll_into_view_if_needed(); bb = pad.bounding_box()
-        pg.mouse.move(bb['x'] + bb['width'] * 0.6, bb['y'] + bb['height'] * 0.4); pg.mouse.down(); time.sleep(0.4)
-        R['K_chain_while_held'] = ctl(pg, 'c.bus.active'); pg.click('#fxHead', force=True) if False else None
-        pg.mouse.up(); pg.click('#fxHead'); time.sleep(0.6)
-        R['K_after_close'] = pg.evaluate("({fx: window.__runoutFx === null, ring: !document.querySelector('.fx-stage-ring'), hud: !document.querySelector('.fx-hud'), preds: window.__preds().length, busSucc: window.__busSucc()})")
+        pg.evaluate('window.__tapInit()'); to_section(pg, 'booth'); pg.wait_for_selector('.fx-view'); R['J_persist']['corrupt_storage_mode'] = ctl(pg, 'c.mode')
 
         # ── L. CD album: the pad works on a CD track ───────────────────────────────────────────────────────────────
-        pg.click('#btnLibrary')
+        to_section(pg, 'albums')
         with pg.expect_file_chooser() as fc: pg.click('#libScan')
         fc.value.set_files(os.path.join(FIX, 'lib'))
         pg.wait_for_function('document.querySelectorAll("#albumGrid > *").length >= 2', timeout=30000); time.sleep(1.0)
@@ -431,7 +422,7 @@ def _run():
         time.sleep(2.5)
         R['L_view'] = pg.evaluate("document.querySelector('.stage').dataset.view")
         if R['L_view'] == 'cd':
-            pg.click('#fxHead'); pg.wait_for_selector('.fx-view'); select_mode(pg, 'repeat')
+            to_section(pg, 'booth'); pg.wait_for_selector('.fx-view'); select_mode(pg, 'repeat')
             R['L_blend_disabled_on_cd'] = pg.evaluate("(() => { document.querySelector('.fx-top .fx-btn').click(); return document.querySelector('.fx-row[data-id=\"blend\"]').getAttribute('aria-disabled'); })()")
             pg.click('.fx-row[data-id="repeat"]'); time.sleep(1.0)
             pg.click('.fx-chips[aria-label^="Slice length"] [data-div="1/2"]')
@@ -442,6 +433,16 @@ def _run():
             R['L_cd_repeat'] = {'expected': round(S, 1), 'measured': round(per, 1), 'err_pct': round(100 * (per - S) / S, 2), 'autocorr': round(strength, 3)}
             pg.mouse.up()
             pg.screenshot(path=os.path.join(SHOTS, '08-cd-view-pad.png'))
+        # ── K. leaving the section / unmounting tears everything down ──────────────────────────────────────────────
+        to_section(pg, 'booth'); select_mode(pg, 'bandpass'); pad = pg.locator('.fx-pad'); pad.scroll_into_view_if_needed(); bb = pad.bounding_box()
+        pg.mouse.move(bb['x'] + bb['width'] * 0.6, bb['y'] + bb['height'] * 0.4); pg.mouse.down(); time.sleep(0.4)
+        R['K_chain_while_held'] = ctl(pg, 'c.bus.active')
+        pg.evaluate('window.__runoutFx.onHide()'); time.sleep(0.5)
+        R['K_after_onHide'] = {'engaged': ctl(pg, 'c.engaged'), 'bus_active': ctl(pg, 'c.bus.active'), 'preds': pg.evaluate('window.__preds().length')}
+        pg.mouse.up(); pg.evaluate('window.__runoutFx.onShow()')
+        pg.evaluate('window.__runoutFx.unmount()'); time.sleep(0.3)
+        R['K_after_unmount'] = pg.evaluate("({fx: window.__runoutFx === null, ring: !document.querySelector('.fx-stage-ring'), root: document.querySelector('.fx-root') === null, preds: window.__preds().length, busSucc: window.__busSucc()})")
+
         R['console_errors'] = [l for l in logs if 'Failed to load resource' not in l][:10]
         R['failed_resources'] = len([l for l in logs if 'Failed to load resource' in l])
         b.close()

@@ -18,6 +18,7 @@ import { DIVISIONS, sliceFraction, beatLabel } from './divisions.js';
 import { waveColumns, playheadFrac, sliceSpan } from './waveform.js';
 import { drawRing, ringSignature } from './ring-draw.js';
 import { formatPercent } from './gesture.js';
+import { computeEnvelope } from '../model.js';
 
 const h = (tag, props = {}, ...kids) => {
   const e = document.createElement(tag);
@@ -36,12 +37,44 @@ function loadCss() {
   document.head.append(l);
 }
 
-export function mountFxSection(root, api) {
+const BLOCK_TEXT = {
+  radio: 'a radio station is playing. Stop it in Radio to use FX.',
+  mixtape: 'a mixtape is playing. Close the tape to use FX.',
+};
+const envCache = new WeakMap();
+
+/** Fill in whatever the shell's deps leave out, from the engine itself (the shell passes only engine / storage / blocked / a few host accessors). */
+function adaptDeps(d) {
+  const e = d.engine, h = d.host || {};
+  const sr = () => (h.sampleRate ? h.sampleRate() : e.sampleRate);
+  const blocked = () => { const b = h.blocked ? h.blocked() : d.blocked ? d.blocked() : null; return b ? (BLOCK_TEXT[b] || String(b)) : null; };
+  return {
+    engine: e, stage: d.stage || null, close: d.close || null, storage: d.storage, hasPlatter: !!d.hasPlatter,
+    resume: d.resume || (() => e.resume()),
+    host: {
+      getTrack: () => { const t = h.getTrack ? h.getTrack() : null; return t && t.channels ? t : null; },
+      envelope: h.envelope || (() => {
+        const t = h.getTrack ? h.getTrack() : null;
+        if (!t || !t.channels) return null;
+        if (!envCache.has(t)) { const [L, R] = t.channels; envCache.set(t, computeEnvelope((i) => (R ? (L[i] + R[i]) * 0.5 : L[i]), t.frames, 1024)); }
+        return envCache.get(t);
+      }),
+      durationSec: h.durationSec || (() => (e.frames > 0 ? e.frames / e.sampleRate : 0)),
+      positionSec: h.positionSec || (() => e.position / e.sampleRate),
+      nominalRate: h.nominalRate || (() => 1),
+      omegaNominal: h.omegaNominal || (() => (2 * Math.PI * (100 / 3)) / 60),
+      sampleRate: sr, blocked, view: h.view || (() => 'vinyl'), geom: h.geom || (() => null),
+    },
+  };
+}
+
+export function mountFxSection(root, deps) {
+  const api = adaptDeps(deps);
   loadCss();
   root.classList.add('fx-root');
   const reducedQ = typeof matchMedia === 'function' ? matchMedia('(prefers-reduced-motion: reduce)') : { matches: false };
   const bus = new FxBus(api.engine);
-  const ctl = new FxController({ engine: api.engine, bus, host: api.host, storage: (() => { try { return localStorage; } catch { return null; } })(), reducedMotion: () => reducedQ.matches });
+  const ctl = new FxController({ engine: api.engine, bus, host: api.host, storage: api.storage !== undefined ? api.storage : (() => { try { return localStorage; } catch { return null; } })(), reducedMotion: () => reducedQ.matches });
   const cleanup = [];
   const on = (t, ev, fn, o) => { t.addEventListener(ev, fn, o); cleanup.push(() => t.removeEventListener(ev, fn, o)); };
 
@@ -138,7 +171,7 @@ export function mountFxSection(root, api) {
       mk('back', '‹ Back', 'Close FX', { nav: true, go: () => api.close() }),
       mk('settings', 'Settings…', 'Light ring, hold style, tempo', { nav: true, glyph: '›', go: () => show('settings') }),
       ...MODES.map((m) => mk(m.id, m.label, m.desc, {
-        disabled: cd && (m.id === 'blend'), disabledWhy: 'Blend scratch needs a vinyl record: a CD has no scratch.',
+        disabled: m.id === 'blend' && (cd || !api.hasPlatter), disabledWhy: cd ? 'Blend scratch needs a vinyl record: a CD has no scratch.' : 'Blend scratch needs the platter, which is not on this screen.',
         go: () => { ctl.setMode(m.id); card(m.id); show('perform'); },
       })));
     on(list, 'keydown', (e) => {
@@ -195,7 +228,7 @@ export function mountFxSection(root, api) {
       kids.push(chips(DIVISIONS, st.repeat.div, (d) => ctl.setDivision(d), 'Slice length, fraction of a beat'));
       kids.push(h('div', { class: 'fx-seg', role: 'group', 'aria-label': 'After release' },
         ...[['time', 'Keep time'], ['capture', 'Back to start']].map(([v, t]) => h('button', { class: 'fx-chip', type: 'button', 'aria-pressed': String(st.repeat.resume === v), onclick: () => { ctl.setParam('repeat', 'resume', v); rebuild(); } }, t))));
-      kids.push(h('div', { class: 'fx-sub' }, 'Hold the platter to loop the last slice. Slide toward the centre for shorter slices, outward for longer. Spin faster for a quicker repeat.'));
+      kids.push(h('div', { class: 'fx-sub' }, 'Hold to loop the last slice. Slide toward the centre for shorter slices, outward for longer. Spin faster for a quicker repeat.'));
     } else if (m === 'stutter') {
       kids.push(chips(DIVISIONS, st.stutter.div, (d) => ctl.setDivision(d), 'Stutter rate, fraction of a beat'));
       kids.push(slider('Gate length', 'fxGate', 10, 100, 1, Math.round(st.stutter.gate * 100), (v) => v + '%', (v) => ctl.setParam('stutter', 'gate', v / 100)));
@@ -203,7 +236,7 @@ export function mountFxSection(root, api) {
     } else if (m === 'blend') {
       kids.push(slider('Blend: song under the scratch', 'fxBlend', 0, 100, 1, Math.round(st.blend.amount * 100), (v) => v + '%', (v) => ctl.setParam('blend', 'amount', v / 100)));
       kids.push(toggle('Set the blend by where I touch (outer edge = more song)', st.blend.byRadius, (v) => ctl.setParam('blend', 'byRadius', v), 'fxByRadius'));
-      kids.push(h('div', { class: 'fx-sub' }, 'Drag the platter on the record as usual. The song carries on underneath your scratch.'));
+      kids.push(h('div', { class: 'fx-sub' }, 'Scratch the platter as usual. The song carries on underneath your scratch.'));
     } else if (m === 'bandpass') {
       kids.push(h('div', { class: 'fx-sub' }, 'Hold and slide: left and right move the centre frequency, up and down narrow the band.'));
     } else if (m === 'echo') {
@@ -213,8 +246,8 @@ export function mountFxSection(root, api) {
     } else {
       kids.push(h('div', { class: 'fx-sub' }, 'Drag the platter to scrub, exactly as before. Pick another mode to perform on top of the song.'));
     }
-    if (m !== 'scratch' && m !== 'blend') {
-      kids.push(h('div', { class: 'fx-padwrap' }, pad, h('div', { class: 'fx-sub' }, ctl.state.latch ? 'Tap the pad to switch on, tap again to switch off.' : 'Hold the pad here, or use the platter above.')));
+    if (m !== 'scratch' && (m !== 'blend' || !api.hasPlatter)) {
+      kids.push(h('div', { class: 'fx-padwrap' }, pad, h('div', { class: 'fx-sub' }, ctl.state.latch ? 'Tap the pad to switch on, tap again to switch off.' : api.hasPlatter ? 'Hold the pad here, or use the platter.' : 'Hold the pad.')));
     }
     if (needsTempo(m)) {
       readEls.tempoRow = h('div', { class: 'fx-seg' },
@@ -327,10 +360,12 @@ export function mountFxSection(root, api) {
     drawRing(g, W, H, geom.cx, geom.cy, (geom.R || geom.rOut) * 1.02, st, { t: now, fingerAngle: fa, shimmer: !reducedQ.matches });
   }
 
-  let shown = false, raf = 0, lastT = 0;
+  let shown = false, raf = 0, lastT = 0, lastTrack = api.host.getTrack();
   const loop = (now) => {
     if (!shown) return;
     const dt = lastT ? Math.min(0.05, Math.max(0.001, (now - lastT) / 1000)) : 0.016; lastT = now;
+    const tr = api.host.getTrack();
+    if (tr !== lastTrack) { lastTrack = tr; handle.onTrack(); }          // a record / tape was loaded by someone else: nothing survives it
     ctl.tick(dt, now);
     frameN++;
     if (frameN % 2 === 0) { drawStageRing(now); if (view === 'perform') { drawWave(); drawPad(now); } refresh(); }
@@ -339,7 +374,7 @@ export function mountFxSection(root, api) {
   const setOverlays = (on) => { ringCv.style.display = on ? '' : 'none'; if (!on) hud.classList.add('hidden'); };
   const handle = {
     controller: ctl, bus,
-    onShow() { if (shown) return; shown = true; lastT = 0; ringKey = ''; setOverlays(true); raf = requestAnimationFrame(loop); },
+    onShow() { if (shown) return; shown = true; lastT = 0; ringKey = ''; if (api.host.getTrack() !== lastTrack) { lastTrack = api.host.getTrack(); handle.onTrack(); } setOverlays(true); raf = requestAnimationFrame(loop); },
     onHide() { if (!shown) return; shown = false; cancelAnimationFrame(raf); ctl.release(); setOverlays(false); },
     onTrack() { ctl.onTrack(); waveKey = ''; if (view === 'menu') rebuild(); },
     platter: {
@@ -355,8 +390,11 @@ export function mountFxSection(root, api) {
       unsub(); ctl.dispose();
       for (const f of cleanup.splice(0)) f();
       ringCv.remove(); hud.remove(); root.replaceChildren(); root.classList.remove('fx-root');
+      try { if (globalThis.__runoutFx === handle) globalThis.__runoutFx = null; } catch { /* */ }
     },
   };
+  try { globalThis.__runoutFx = handle; } catch { /* test hook only */ }
+  if (ctl.mode === 'blend' && !api.hasPlatter) ctl.setMode('scratch');   // Blend scratch needs the platter
   show('menu');
   if (ctl.mode !== 'scratch') { ctl.ensureTempo(); show('perform'); }
   return handle;

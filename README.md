@@ -131,7 +131,7 @@ The library overlay (`≡`) has three tabs:
 
 ## FX (performance effects)
 
-The last section of the panel (collapsed until opened; its code loads on first open). Six modes on the platter or a touch pad: Scratch (default, unchanged), Blend scratch, Beat repeat (1/1 to 1/16 of a beat, `+n%` rate from spin), Stutter, Band pass, Reverb / delay, plus a light ring that follows mode and hand speed. Works on vinyl and CD tracks, switches itself off while a radio station or mixtape owns the engine, and with FX off the audio path is byte-identical. Docs: [`docs/FX.md`](docs/FX.md); code: `src/fx/`.
+The **Booth** section of the drawer (its code loads the first time it is shown). Six modes on a touch pad (or the platter, when the shell forwards it): Scratch (default, unchanged), Blend scratch, Beat repeat (1/1 to 1/16 of a beat, `+n%` rate from spin), Stutter, Band pass, Reverb / delay, plus a light ring that follows mode and hand speed. Works on vinyl and CD tracks, switches itself off while a radio station or mixtape owns the engine, and with FX off the audio path is byte-identical. Docs: [`docs/FX.md`](docs/FX.md); code: `src/fx/`.
 
 ## Not in v0 (later phases)
 

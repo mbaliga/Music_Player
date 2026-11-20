@@ -24,20 +24,24 @@ test('the build ships every FX module and its stylesheet; the app reaches them o
   } finally { await rm(tmp, { recursive: true, force: true }); }
 });
 
-test('main.js (the boot path) has NO static import of src/fx and one dynamic import of the FX UI', async () => {
-  const src = strip(await readFile(resolve(root, 'src/main.js'), 'utf8'));
-  assert.equal(/^\s*import[^;]*from\s+['"]\.\/fx\//m.test(src), false, 'static import of ./fx/ from main.js');
-  assert.equal((src.match(/import\(\s*['"]\.\/fx\/ui\.js['"]\s*\)/g) || []).length, 1);
-  // and no other boot module reaches into fx
-  for (const f of ['audio-engine.js', 'render.js', 'library.js', 'mixtape-ui.js', 'radio-player.js']) assert.equal(/\.\/fx\//.test(strip(await readFile(resolve(root, 'src', f), 'utf8'))), false, f);
+test('the boot path has NO static import of src/fx; the shell reaches the FX component through one lazy import in src/shell/booth.js', async () => {
+  const booth = strip(await readFile(resolve(root, 'src/shell/booth.js'), 'utf8'));
+  assert.equal((booth.match(/import\(\s*['"]\.\.\/fx\/section\.js['"]\s*\)/g) || []).length, 1, 'one dynamic import of fx/section.js');
+  for (const f of ['main.js', 'audio-engine.js', 'render.js', 'library.js', 'mixtape-ui.js', 'radio-player.js', 'shell/booth.js', 'shell/nav.js', 'shell/sections.js']) {
+    assert.equal(/^\s*import[^;]*from\s+['"][^'"]*\/fx\//m.test(strip(await readFile(resolve(root, 'src', f), 'utf8'))), false, `${f} statically imports src/fx`);
+  }
 });
 
-test('the FX section is the LAST section of the panel and the page boots without any FX markup besides it', async () => {
+test('the Booth page exists in the shell and the old panel no longer carries FX markup', async () => {
   const html = await readFile(resolve(root, 'index.html'), 'utf8');
-  const panel = html.slice(html.indexOf('<aside class="panel">'), html.indexOf('</aside>'));
-  const sections = [...panel.matchAll(/<div class="section[^"]*"[^>]*?(?:id="([^"]+)")?[^>]*>/g)].map((m) => m[0]);
-  assert.match(sections[sections.length - 1], /fx-section/);
-  assert.equal((panel.match(/class="section fx-section"/g) || []).length, 1);
+  assert.match(html, /id="boothHost"/);
+  assert.equal(/fx-section|id="fxHead"/.test(html), false);
+});
+
+test('mountFxSection is exported by the entry module with the documented return shape (checked statically)', async () => {
+  assert.match(await readFile(resolve(root, 'src/fx/section.js'), 'utf8'), /export \{ mountFxSection \} from '\.\/ui\.js'/);
+  const ui = await readFile(resolve(root, 'src/fx/ui.js'), 'utf8');
+  for (const k of ['unmount()', 'onShow()', 'onHide()', 'onTrack()', 'platter:']) assert.ok(ui.includes(k), k);
 });
 
 test('FX worklet slots exist in the control layout and the worklet duplicates them verbatim', async () => {
