@@ -126,7 +126,7 @@ test('decodeBase64Into refuses to overflow its destination', () => {
 test('tags.js reads an ID3 tag through the DeviceFile head window (the real code path, unchanged)', async () => {
   const bytes = withId3({ TIT2: 'Heat Wave', TPE1: 'Martha', TALB: 'Reeling' }, pattern(200000), 300);
   const { file, fake } = rig({ bytes, chunkBytes: 16 * 1024 });
-  const meta = await readFileTags(file);
+  const meta = await readFileTags(file, { duration: false });   // what the device source passes: MediaStore already has the duration, so no MP3 frame read
   assert.equal(meta.title, 'Heat Wave'); assert.equal(meta.artist, 'Martha'); assert.equal(meta.album, 'Reeling');
   assert.ok(fake.calls.read <= 3, `tag read used ${fake.calls.read} native reads`);
   assert.ok(fake.bytesServed < 2000, 'only the tag was transferred, not the 200 KB of audio');

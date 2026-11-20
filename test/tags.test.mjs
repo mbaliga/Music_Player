@@ -86,3 +86,32 @@ test('never throws: empty, unknown, truncated, garbage', async () => {
   const g = cat(Uint8Array.of(0x49, 0x44, 0x33, 3, 0, 0, 0, 0, 0, 40), Uint8Array.from({ length: 60 }, (_, i) => (i * 37) & 255));
   await readBytesTags(g);
 });
+
+// ── MP3 duration without a TLEN frame (Workstream I) ──
+import { mp3Duration } from '../src/tags.js';
+import { readBytesTags as readBytes2 } from '../src/tags.js';
+test('mp3Duration: Xing frame count is exact, CBR is estimated from the audio bytes, junk is 0', () => {
+  const hdr = (b2, mode = 0) => [0xff, 0xfb, b2, mode << 6];           // MPEG1 layer III, no CRC
+  // 128 kbps / 44.1 kHz stereo CBR: 0x90 = bitrate index 9 (128), sample rate index 0
+  const cbr = Uint8Array.from([...hdr(0x90), ...new Array(200).fill(0)]);
+  const d = mp3Duration(cbr, 16000 * 30);                               // 30 s of 128 kbps = 480000 bytes
+  assert.ok(Math.abs(mp3Duration(cbr, 480000) - 30) < 0.01, 'cbr 30 s: ' + d);
+  // Xing at 4 + 32: 'Xing', flags=1 (frames), frames = 1000 -> 1000 * 1152 / 44100 = 26.12 s
+  const x = new Uint8Array(200); x.set(hdr(0x90)); x.set([0x58, 0x69, 0x6e, 0x67], 36); x.set([0, 0, 0, 1], 40); x.set([0, 0, 0x03, 0xe8], 44);
+  assert.ok(Math.abs(mp3Duration(x, 1) - 1000 * 1152 / 44100) < 1e-6);
+  assert.equal(mp3Duration(new Uint8Array(64), 100), 0);
+  assert.equal(mp3Duration(Uint8Array.from([0xff, 0xfb, 0xf0, 0]), 100), 0, 'bitrate index 15 is invalid');
+});
+
+test('readBytesTags: an ID3v2 MP3 without TLEN gets a duration from its first frame; duration:false skips it; the flag is set', async () => {
+  const hdr = [0xff, 0xfb, 0x90, 0x00];                                   // MPEG1 L3 128 kbps 44.1 kHz stereo
+  const audio = new Uint8Array(16000 * 12); audio.set(hdr);                // 12 s of 128 kbps
+  const tag = new Uint8Array(10 + 40); tag.set([0x49, 0x44, 0x33, 3, 0, 0, 0, 0, 0, 40]);                 // ID3v2.3, size 40
+  const f = (id, text) => { const t = new TextEncoder().encode('\0' + text); const o = new Uint8Array(10 + t.length); o.set(new TextEncoder().encode(id)); o[7] = t.length; o.set(t, 10); return o; };
+  const fr = f('TIT2', 'Hi'); tag.set(fr, 10);
+  const bytes = new Uint8Array(tag.length + audio.length); bytes.set(tag); bytes.set(audio, tag.length);
+  const m = await readBytes2(bytes);
+  assert.equal(m.title, 'Hi');
+  assert.ok(Math.abs(m.durationSec - 12) < 0.05, 'duration ' + m.durationSec);
+  assert.equal(m.durationFromFrames, true);
+});

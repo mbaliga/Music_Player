@@ -101,7 +101,8 @@ async function processFile(file) {
 
   const hue = coverUrl ? await dominantHue(coverUrl) : hashHue(artist + (album || path || name));
   const color = hueToHex(hue);
-  const id = trackId({ title, artist, album, trackNo, discNo, size, durationSec });
+  // a duration derived from MP3 frames is new information: keep it out of the id so libraries scanned before it existed keep their ids (and their mixtape links)
+  const id = trackId({ title, artist, album, trackNo, discNo, size, durationSec: meta?.durationFromFrames ? undefined : durationSec });
 
   return { id, file, title, artist, albumArtist, album, path, genre, trackNo, discNo, durationSec, size, coverUrl, hue, color, ...folderTrackFields(meta, file) };
 }

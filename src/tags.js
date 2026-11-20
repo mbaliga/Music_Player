@@ -166,7 +166,33 @@ function unsync(d) {
   return out.subarray(0, n);
 }
 
-async function parseId3(reader) {
+
+// ── MP3 duration (ID3 files carry no length unless a TLEN frame exists) ─────────────────────────────────────────────
+// Xing / Info / VBRI header = exact frame count; otherwise a constant-bitrate estimate from the audio byte count. Layer III and II only.
+const BR = { '1-3': [0, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320], '1-2': [0, 32, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320, 384], '2-3': [0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160] };
+const SR = { 1: [44100, 48000, 32000], 2: [22050, 24000, 16000], 0: [11025, 12000, 8000] };
+export function mp3Duration(buf, audioBytes) {
+  for (let i = 0; i + 4 <= buf.length && i < 4096; i++) {
+    if (buf[i] !== 0xff || (buf[i + 1] & 0xe0) !== 0xe0) continue;
+    const vb = (buf[i + 1] >> 3) & 3, layer = (buf[i + 1] >> 1) & 3;                 // vb: 3 = MPEG1, 2 = MPEG2, 0 = MPEG2.5; layer: 1 = III, 2 = II
+    const bi = buf[i + 2] >> 4, si = (buf[i + 2] >> 2) & 3;
+    if (vb === 1 || layer === 0 || layer === 3 || bi === 0 || bi === 15 || si === 3) continue;
+    const mpeg1 = vb === 3, key = (mpeg1 ? '1' : '2') + '-' + (layer === 1 ? '3' : '2');
+    const table = BR[key]; if (!table) continue;
+    const kbps = table[bi], rate = SR[vb === 3 ? 1 : vb][si];
+    const spf = layer === 1 && !mpeg1 ? 576 : 1152;
+    const mono = (buf[i + 3] >> 6) === 3;
+    const side = mpeg1 ? (mono ? 17 : 32) : (mono ? 9 : 17);
+    const x = i + 4 + side, tag = latin1(buf.subarray(x, x + 4));
+    if ((tag === 'Xing' || tag === 'Info') && x + 12 <= buf.length && (buf[x + 7] & 1)) { const frames = u32be(buf, x + 8); if (frames > 0) return frames * spf / rate; }
+    const v = i + 4 + 32;
+    if (latin1(buf.subarray(v, v + 4)) === 'VBRI' && v + 18 <= buf.length) { const frames = u32be(buf, v + 14); if (frames > 0) return frames * spf / rate; }
+    return kbps > 0 && audioBytes > 0 ? (audioBytes * 8) / (kbps * 1000) : 0;
+  }
+  return 0;
+}
+
+async function parseId3(reader, opts = {}) {
   const head = await reader.read(0, 10);
   if (head.length < 10 || head[0] !== 0x49 || head[1] !== 0x44 || head[2] !== 0x33) return null;
   const ver = head[3];
@@ -225,6 +251,17 @@ async function parseId3(reader) {
         break;
       default: break;
     }
+  }
+  if (!(out.durationSec > 0) && opts.duration !== false) {            // no TLEN: read the first audio frame (Xing / VBRI frame count, else a CBR estimate)
+    try {
+      const start = 10 + tagSize + (flags & 0x10 ? 10 : 0);
+      if (start < reader.size) {
+        const buf = await reader.read(start, Math.min(4200, reader.size - start));
+        let tail = reader.size; try { const t = await reader.read(reader.size - 128, 3); if (t.length === 3 && t[0] === 0x54 && t[1] === 0x41 && t[2] === 0x47) tail -= 128; } catch { /* */ }
+        const dur = mp3Duration(buf, tail - start);
+        if (dur > 0.2 && dur < 36000) { out.durationSec = Math.round(dur * 1000) / 1000; out.durationFromFrames = true; }   // flag: library.js keeps it OUT of the stable track id (ids of existing libraries must not change)
+      }
+    } catch { /* a missing duration is fine: the mixtape gauges estimate */ }
   }
   for (const k of Object.keys(out)) if (out[k] === undefined || out[k] === '') delete out[k];
   return out;
@@ -440,11 +477,11 @@ async function parseMp4(reader) {
 // ── entry points ─────────────────────────────────────────────────────────────
 
 /** Read tags from `reader`, picking the parser by magic bytes. Never throws. */
-export async function readTags(reader) {
+export async function readTags(reader, opts = {}) {
   const attempts = [parseId3, parseFlac, parseOgg, parseMp4];
   for (const fn of attempts) {
     try {
-      const r = await fn(reader);
+      const r = await fn(reader, opts);
       if (r) {
         for (const k of Object.keys(r)) if (r[k] === undefined) delete r[k];
         return r;
@@ -454,5 +491,6 @@ export async function readTags(reader) {
   return {};
 }
 
-export const readFileTags = (file) => readTags(fileReader(file));
+/** opts.duration === false skips the MP3 frame read (the device source gets exact durations from MediaStore and keeps native reads to a minimum) */
+export const readFileTags = (file, opts) => readTags(fileReader(file), opts);
 export const readBytesTags = (u8) => readTags(bytesReader(u8));

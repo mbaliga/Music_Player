@@ -305,7 +305,7 @@ export function createDeviceSource({
         const t = todo[next++];
         const before = t.file.reads;
         let meta = null;
-        try { meta = await readTags(t.file); } catch { meta = null; }
+        try { meta = await readTags(t.file, { duration: false }); } catch { meta = null; }
         stats.tagFiles++; stats.tagReads += t.file.reads - before;
         if (index.get(t.mediaId) === t) index.set(t.mediaId, applyTags(t, meta || {}));
         done++;
