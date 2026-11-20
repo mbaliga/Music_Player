@@ -152,3 +152,19 @@ test('getSlotRect returns the slot placeholder rect', () => {
   const { lib } = setup();
   assert.equal(typeof lib.getSlotRect().width, 'number');
 });
+
+test('scan chip wording: web default, scanLabel dep and setScanLabel (native Android says Scan phone)', () => {
+  const d = makeDom();
+  const web = mountTurntableLibrary(d.container, d.deps);
+  assert.equal(find(web.el, 'tl-long')[0].textContent, 'Scan music folder');
+  assert.equal(find(web.el, 'tl-hint')[0].textContent, 'Scan your music folder to fill the shelf');
+  web.setScanLabel({ long: 'Scan phone', hint: 'Scan your phone to fill the shelf' });
+  assert.equal(find(web.el, 'tl-long')[0].textContent, 'Scan phone');
+  assert.equal(find(web.el, 'tl-short')[0].textContent, 'Scan');
+  assert.equal(find(web.el, 'tl-hint')[0].textContent, 'Scan your phone to fill the shelf');
+  web.destroy();
+  const d2 = makeDom();
+  const nat = mountTurntableLibrary(d2.container, { ...d2.deps, scanLabel: { long: 'Scan phone', short: 'Scan', hint: 'Scan your phone to fill the shelf' } });
+  assert.equal(find(nat.el, 'tl-long')[0].textContent, 'Scan phone');
+  nat.destroy();
+});

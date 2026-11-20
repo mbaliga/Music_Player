@@ -54,8 +54,8 @@ export function mountTurntableLibrary(container, deps = {}) {
   bar.setAttribute('role', 'toolbar'); bar.setAttribute('aria-label', 'Library controls');
   const row1 = el('div', 'tl-row tl-row1', bar), row2 = el('div', 'tl-row tl-row2', bar);
   const scanBtn = chip(row1, 'tl-scan', null);
-  const scanLong = el('span', 'tl-long', scanBtn.pill); scanLong.textContent = 'Scan music folder';
-  const scanShort = el('span', 'tl-short', scanBtn.pill); scanShort.textContent = 'Scan';
+  const scanLong = el('span', 'tl-long', scanBtn.pill); scanLong.textContent = (deps.scanLabel && deps.scanLabel.long) || 'Scan music folder';
+  const scanShort = el('span', 'tl-short', scanBtn.pill); scanShort.textContent = (deps.scanLabel && deps.scanLabel.short) || 'Scan';
   const filterGrp = el('div', 'tl-grp', row1); filterGrp.setAttribute('role', 'group'); filterGrp.setAttribute('aria-label', 'Show');
   const sortGrp = el('div', 'tl-grp', row2); sortGrp.setAttribute('role', 'group'); sortGrp.setAttribute('aria-label', 'Sort by');
   const sortLbl = el('span', 'tl-lbl', sortGrp); sortLbl.textContent = 'Sort'; sortLbl.setAttribute('aria-hidden', 'true');
@@ -68,7 +68,7 @@ export function mountTurntableLibrary(container, deps = {}) {
   flow.setAttribute('role', 'listbox'); flow.setAttribute('aria-label', 'Albums'); flow.setAttribute('tabindex', '0');
   const slot = el('div', 'tl-slot', flow); slot.setAttribute('aria-hidden', 'true');
   const hint = el('button', 'tl-hint', scroll); hint.setAttribute('type', 'button');
-  hint.textContent = 'Scan your music folder to fill the shelf'; hint.__tl = { kind: 'scan' };
+  hint.textContent = (deps.scanLabel && deps.scanLabel.hint) || 'Scan your music folder to fill the shelf'; hint.__tl = { kind: 'scan' };
   const meta = el('div', 'tl-meta', scroll);
   const titleEl = el('div', 'tl-title', meta), subEl = el('div', 'tl-sub', meta);
   const list = el('ol', 'tl-tracks', scroll);
@@ -453,6 +453,8 @@ export function mountTurntableLibrary(container, deps = {}) {
       return () => { const i = handlers[event].indexOf(fn); if (i >= 0) handlers[event].splice(i, 1); };
     },
     // additive (not in the T1 contract): keep the toolbar chips in step with the app's own filter / sort state; the root element
+    /** platform wording of the Scan chip (native Android: 'Scan phone'); the web keeps the folder picker wording */
+    setScanLabel(o = {}) { if (o.long) scanLong.textContent = o.long; if (o.short) scanShort.textContent = o.short; if (o.hint) hint.textContent = o.hint; if (o.aria) scanBtn.btn.setAttribute('aria-label', o.aria); },
     setFilter(f) { if (FILTERS.includes(f)) { filterState = f; paintChips(); } },
     setSort(s) { if (SORTS.includes(s)) { sortState = s; paintChips(); } },
     get el() { return root; },

@@ -478,7 +478,7 @@ function installTurntable() {
     beginAudio: onBeginAudio,
     analyser: () => getAnalyser(),
   });
-  stage.setLibrary(tlib = mountTurntableLibrary(stage.libHost, libraryDeps()));
+  stage.setLibrary(tlib = mountTurntableLibrary(stage.libHost, { ...libraryDeps(), scanLabel: deviceLibrary.isAvailable() ? { long: 'Scan phone', short: 'Scan', hint: 'Scan your phone to fill the shelf' } : undefined }));
   wireLibrary();
   stage.setSpeedUI(state.speedBase);
   // rt test hooks (the prototype's window.__rt, plus the app handle for scripts/verify-turntable.py)
