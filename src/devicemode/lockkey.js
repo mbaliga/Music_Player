@@ -23,7 +23,7 @@ export function createLockKey(deps) {
   el.type = 'button'; el.className = 'dm-key' + (deps.floating ? ' dm-key-float' : '');
   el.innerHTML = `${RING}<span class="dm-housing"><span class="dm-thumb">${LOCK}</span></span><span class="dm-led" aria-hidden="true"></span>`;
   const thumb = el.querySelector('.dm-thumb'), fg = el.querySelector('.dm-ring-fg');
-  let holdT = 0, lastTap = NaN, slide = null, space = false;
+  let holdT = 0, lastTap = NaN, slide = null, space = false, fired = false;   // fired: the press that just unlocked must not re-lock on release
 
   const paint = () => {
     const l = deps.getLocked();
@@ -41,11 +41,12 @@ export function createLockKey(deps) {
   const stopHold = () => { if (holdT) { clearTimeout(holdT); holdT = 0; } ring(false); };
   const startHold = () => {
     stopHold(); ring(false); void el.getBoundingClientRect(); ring(true);
-    holdT = setTimeout(() => { holdT = 0; ring(false); deps.onUnlock(); }, HOLD_MS);
+    holdT = setTimeout(() => { holdT = 0; ring(false); fired = true; deps.onUnlock(); }, HOLD_MS);
   };
 
   el.addEventListener('pointerdown', (e) => {
     if (!e.isPrimary || (e.pointerType === 'mouse' && e.button !== 0)) return;
+    fired = false;
     if (!deps.getLocked()) return;                    // locking happens on release (a tap)
     const m = deps.getMethod();
     if (m === 'hold') startHold();
@@ -53,11 +54,12 @@ export function createLockKey(deps) {
   });
   el.addEventListener('pointermove', (e) => {
     if (!slide || e.pointerId !== slide.id) return;
-    const p = slideProgress(e.clientX - slide.x0); thumb.style.transform = `translateX(${-SLIDE_PX * p}px)`;
-    if (p >= 1) { slide = null; deps.onUnlock(); }
+    const p = slideProgress(slide.x0 - e.clientX); thumb.style.transform = `translateX(${12 * (1 - p)}px)`;   // the thumb follows the finger toward the unlocked end
+    if (p >= 1) { slide = null; fired = true; deps.onUnlock(); }
   });
   const up = (e) => {
     if (e.type === 'pointercancel') { stopHold(); slide = null; paint(); return; }
+    if (fired) { fired = false; return; }
     const wasHolding = !!holdT, hadSlide = !!slide;
     stopHold(); if (slide) { slide = null; paint(); }
     if (!e.isPrimary) return;
