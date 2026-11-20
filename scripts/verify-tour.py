@@ -226,7 +226,7 @@ def tour(b, w, h, tag, landscape=False):
         check(pstate(page)['view'] == 'cd' and page.evaluate("!document.getElementById('cdView').classList.contains('hidden')"), f'{tag}: a CD track opens the CD view')
         shot(page, 'cd-view')
         page.tap('#cdLibBtn'); page.wait_for_timeout(900)
-        check(page.evaluate("document.getElementById('cdView').classList.contains('hidden')") and pstate(page)['z'] == 1, f'{tag}: its Library button shows the library again')
+        check(page.evaluate("document.getElementById('pageAlbums').dataset.lib") == '1' and pstate(page)['z'] == 1, f'{tag}: its Library button shows the library over the CD view')
         # spread back to the player
         T.pinch(w / 2, h / 2, 20, 120); page.wait_for_timeout(1300)
         check(pstate(page)['z'] == 0, f'{tag}: spreading brings the player back (z {pstate(page)["z"]})')
@@ -443,12 +443,12 @@ def tour(b, w, h, tag, landscape=False):
             x, y, _, _ = center(page, '#tt-playBtn')
             if not pstate(page)['playing']: T.tap(x, y); time.sleep(2.0)
             page.evaluate("""() => { const s = window.__rt.app().stage; const o = s.update; window.__upd = { n: 0, sum: 0, max: 0 }; s.update = function(...a) { const t = performance.now(); const r = o.apply(this, a); const d = performance.now() - t; window.__upd.n++; window.__upd.sum += d; if (d > window.__upd.max) window.__upd.max = d; return r; };
-              window.__fr = { n: 0, long: 0 }; let last = performance.now(); const loop = (t) => { window.__fr.n++; if (t - last > 33) window.__fr.long++; last = t; window.__fr.on && requestAnimationFrame(loop); }; window.__fr.on = true; requestAnimationFrame(loop); }""")
+              window.__fr = { n: 0, long: 0 }; let last = performance.now(); const loop = (t) => { window.__fr.n++; if (t - last > 50) window.__fr.long++; last = t; window.__fr.on && requestAnimationFrame(loop); }; window.__fr.on = true; requestAnimationFrame(loop); }""")
             time.sleep(6)
             u = page.evaluate('({ ...window.__upd, fr: window.__fr.n, long: window.__fr.long })'); page.evaluate('window.__fr.on = false')
             METRICS['stage_update_ms_avg'] = round(u['sum'] / max(1, u['n']), 3); METRICS['stage_update_ms_max'] = round(u['max'], 2)
-            METRICS['frames_per_s_playing'] = round(u['fr'] / 6, 1); METRICS['frames_over_33ms'] = u['long']
-            print(f"     rAF cost on the Albums stage while playing: avg {METRICS['stage_update_ms_avg']} ms/frame, max {METRICS['stage_update_ms_max']} ms, {METRICS['frames_per_s_playing']} frames/s, {u['long']} frames > 33 ms (headless CPU renderer)", flush=True)
+            METRICS['frames_per_s_playing'] = round(u['fr'] / 6, 1); METRICS['frames_over_50ms'] = u['long']
+            print(f"     rAF cost on the Albums stage while playing: avg {METRICS['stage_update_ms_avg']} ms/frame, max {METRICS['stage_update_ms_max']} ms, {METRICS['frames_per_s_playing']} frames/s, {u['long']} frames > 50 ms (headless CPU renderer; the frame rate here is the machine's, not a phone's)", flush=True)
             check(METRICS['stage_update_ms_avg'] < 8, f'{tag}: the Albums stage costs {METRICS["stage_update_ms_avg"]} ms per frame on average (< 8 ms budget on this machine)')
             cdp.send('HeapProfiler.enable'); cdp.send('HeapProfiler.collectGarbage'); time.sleep(0.5)
             h_ = cdp.send('Runtime.getHeapUsage'); METRICS['js_heap_used_mb_after_tour'] = round(h_['usedSize'] / 1048576, 1); METRICS['js_heap_total_mb'] = round(h_['totalSize'] / 1048576, 1)
