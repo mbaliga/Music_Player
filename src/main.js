@@ -33,6 +33,7 @@ let deviceMode = null;
 import { mountBooth } from './shell/booth.js';
 import { createEngineGate } from './engine-gate.js';
 import { LibraryManager } from './library.js';
+import { deviceLibrary, installDeviceLibrary } from './device/index.js';   // the phone's own audio library (Android app only; docs/DEVICE_LIBRARY.md)
 import { createStage } from './turntable/stage.js';
 import { FINISHED } from './turntable/state.js';
 import { mountTurntableLibrary } from './turntable/library.js';
@@ -746,6 +747,14 @@ async function scanLibrary() {
   if (scanning) return;
   scanning = true;
   try {
+    if (deviceLibrary.isAvailable()) {   // Android app: the toolbar's Scan means "scan the phone" (permission first, never a folder picker)
+      const ph = deviceLibrary.status.get().phase;
+      if (ph === 'blocked') await deviceLibrary.source.openSettings();
+      else if (ph === 'needs-permission' || ph === 'denied') await deviceLibrary.allowAndScan();
+      else await deviceLibrary.scan({ force: true });
+      rebuildAlbums();
+      return;
+    }
     const pending = library.linkSummary?.needsRelink || 0;
     const onProgress = (done, total) => { flash(`SCANNING ${done}/${total}`); if (done % 25 === 0 || done === total) rebuildAlbums(); };
     if (pending) await library.relink(onProgress); else await library.scan(onProgress);
@@ -759,6 +768,13 @@ function installLibrary() {
   // those tracks show "needs re-link" until then.
   library.restore().then((n) => { if (n) { rebuildAlbums(); state.mixtapes?.refresh?.(); restoreLast(); } }).catch(() => {});
   rebuildAlbums();
+  if (deviceLibrary.isAvailable()) {   // Android app only: device tracks stream into the same library; the card explains / asks / shows progress
+    let t = 0;
+    library.onChange(() => { clearTimeout(t); t = setTimeout(() => { rebuildAlbums(); state.mixtapes?.refresh?.(); }, 400); });
+    installDeviceLibrary(library).then(() => { rebuildAlbums(); restoreLast(); }).catch(() => {});
+    const host = document.createElement('div'); host.className = 'dv-host'; el('pageAlbums').appendChild(host);
+    deviceLibrary.mountScanCard(host);
+  }
 
   // Mixtapes: custom playlists (pure model in mixtape.js; this is wiring only).
   state.mixtapes = new MixtapeUI({
