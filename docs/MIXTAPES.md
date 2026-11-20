@@ -134,9 +134,14 @@ Save / discard guard / delete / export / duplicate are kept. 44 px targets, labe
   unsaved **draft** that already holds those library tracks (split across the sides by time, caps honoured; the
   editor says how many did not fit). Returns `false` when the Mixtapes UI is not up. For the global search's
   "add to mixtape". It never saves by itself.
-* **Search adapter**: the picker only calls `{ buildIndex(tracks), query(index, text, opts) -> {groups, total,
-  truncated}, browse(index) }` (`defaultSearch` in `src/mixtape-pick.js`). To use the global search module, wrap its
-  index/query in that shape and pass `createPicker(tracks, { search })`: one line in `editor.js` (`createPicker(l)`).
+* **Search**: the picker runs on the global search core (`src/search/index.js`, typo-tolerant, diacritic-insensitive) through
+  the thin adapter `src/mixtape-search.js` (`globalSearch`), which keeps the picker's own `{ buildIndex, query, browse }`
+  shape: results are mapped back to library tracks and grouped by album (album order inside a group, ranked groups
+  first); an empty query browses by album; if the global core ever throws the built-in search (`defaultSearch` in
+  `src/mixtape-pick.js`) answers instead. Going back to the built-in search is one line in `editor.js`
+  (`createPicker(l, { search: globalSearch })` -> `createPicker(l)`).
+* **Search -> mixtape**: `main.js` binds `searchActions.addToMixtape(ids)` to `MixtapeUI.startFrom({ trackIds })`
+  (goes to Mixtapes, opens the editor on an unsaved draft). That is the only edit outside the section's own files.
 * **Durations**: tracks carry `durationSec`; when the device library supplies reliable durations (MediaStore) every
   new ref gets an exact `dur` and the 4:00 estimate never appears. Library tracks may also carry `year` and
   `added` (ms): the suggested-tape generators use them when present.
@@ -171,6 +176,13 @@ A generator with no data returns nothing. Tapping a suggestion opens it in the e
 
 The row re-reads these every time the Mixtapes section is shown (`refresh()`), so a Settings page only needs to
 write the key.
+
+## Screenshots
+
+`docs/screenshots/mixtapes/` (360x780 unless named otherwise, half size): the editor's Tape / Add / Tracks / Style
+tabs, the refusal toast, drag-to-reorder, a suggestion opened as a draft, the shelf (stack, spines, suggestions),
+the Deck and Player skins with AUTO on / off, the flip mid-turn, "FLIP TAPE", and the 20-song cap on a 5,000-track
+library.
 
 ## Verification
 
