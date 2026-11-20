@@ -7,7 +7,7 @@ import {
   sideInfo, sideDuration, remaining, canAdd, tryAdd, addTrack, addMany, removeFromSide, removeTrack, moveInSide, moveTrack,
   moveAcross, autoFill, fillTape, withTape, canResize, withDurations, withAutoReverse, tapeSeconds, songCount, isOverCap,
   fmtDur, locate, sideProgress, sideDurations, flatIndex, sideOfFlat, autoNote, cassetteCfg, serializeMixtape, parseMixtape,
-  serializeCollection, parseCollection, parseImport, resolveTracks, sidesFromLegacy,
+  serializeCollection, parseCollection, parseImport, resolveTracks, sidesFromLegacy, withRefDuration,
 } from '../src/mixtape.js';
 
 const tk = (title, dur, extra = {}) => ({ title, artist: 'A', album: 'X', ...(dur ? { durationSec: dur } : {}), ...extra });
@@ -233,4 +233,14 @@ test('resolveTracks still works on the flat list (A then B)', () => {
   const lib = [{ id: 'i-x', title: 'x', artist: 'A', album: 'X' }, { id: 'i-y', title: 'y', artist: 'A', album: 'X' }];
   const r = resolveTracks(m, lib);
   assert.equal(r[0].id, 'i-y'); assert.equal(r[1].id, 'i-x');
+});
+
+test('withRefDuration learns a real duration by flat index (either side), same object when unchanged', () => {
+  let m = empty('C60');
+  m = addMany(m, 'A', [tk('a'), tk('b')]).mixtape; m = addMany(m, 'B', [tk('c')]).mixtape;
+  const a = withRefDuration(m, 1, 199.2);
+  assert.equal(a.sides.A[1].dur, 200); assert.equal(a.tracks[1].dur, 200); assert.equal(m.sides.A[1].dur, undefined);
+  assert.equal(withRefDuration(a, 1, 199.2), a);
+  assert.equal(withRefDuration(m, 2, 61).sides.B[0].dur, 61);
+  assert.equal(withRefDuration(m, 9, 61), m); assert.equal(withRefDuration(m, 0, NaN), m);
 });

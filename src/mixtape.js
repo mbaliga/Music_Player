@@ -379,6 +379,17 @@ export function withDurations(m, resolved) {
   return changed ? withSides(m, A, B) : m;
 }
 
+/** Learn one song's real duration (flat index, seconds): the hint is replaced; same object when unchanged. */
+export function withRefDuration(m, flat, sec) {
+  const d = cleanDur(sec);
+  if (!d || !(flat >= 0 && flat < m.tracks.length)) return m;
+  const { side, index } = sideOfFlat(m, flat);
+  const list = sideRefs(m, side);
+  if (list[index].dur === d) return m;
+  const next = list.map((r, i) => (i === index ? { ...r, dur: d } : r));
+  return side === 'B' ? withSides(m, m.sides.A, next) : withSides(m, next, m.sides.B);
+}
+
 /**
  * Legacy list -> sides on the smallest tape that holds it in side A; when even a C90 side A can't,
  * A is filled to its caps and the REST stays on B (even past B's caps): nothing is ever dropped.

@@ -91,6 +91,57 @@ function deckSkin(X) {
     sv('rect', { class: 'ring', x: k.x + 4, y: KY + 4, width: k.w - 8, height: KH - 8, rx: 16 }, cap);
     keyEls[k.id] = g;
   });
+  // ── side panel (right of the window): SIDE A/B lamps, AUTO latching key with a lit lamp, FLIP key ──
+  const PX = 1196, PW = 296, PC = PX + PW / 2;
+  const sideG = sv('g', { class: 'side-panel' }, host);
+  sv('rect', { x: PX, y: 150, width: PW, height: 330, rx: 18, fill: '#0d0d0e', stroke: '#2b2b2e', 'stroke-width': 4 }, sideG);
+  sv('rect', { x: PX + 14, y: 164, width: PW - 28, height: 302, rx: 10, fill: '#101011' }, sideG);
+  sv('text', { x: PC, y: 232, 'text-anchor': 'middle', 'font-family': UI, 'font-weight': 700, 'font-size': 44, fill: '#6c6d75', 'letter-spacing': 8 }, sideG).textContent = 'SIDE';
+  const letter = (ch, x) => {
+    const t = sv('text', { x, y: 410, 'text-anchor': 'middle', 'font-family': UI, 'font-weight': 800, 'font-size': 172, fill: '#2a2a2e', 'data-side': ch }, sideG);
+    t.textContent = ch; return t;
+  };
+  const sideLetters = { A: letter('A', PC - 76), B: letter('B', PC + 76) };
+  const sideMsg = sv('text', { x: PC, y: 548, 'text-anchor': 'middle', 'font-family': UI, 'font-weight': 800, 'font-size': 50, fill: '#ffb347', 'letter-spacing': 4 }, sideG);
+  const mkKey = (id, y, h, label, aria) => {
+    const g = sv('g', { class: 'key side-key', tabindex: 0, role: 'button', 'aria-label': aria, 'data-key': id }, sideG);
+    sv('rect', { x: PX, y: y + 6, width: PW, height: h, rx: 18, fill: '#0b0b0d' }, g);
+    const cap = sv('g', { class: 'cap' }, g);
+    sv('rect', { class: 'face', x: PX, y, width: PW, height: h, rx: 18, fill: X.url('gKey'), stroke: '#0e0e10', 'stroke-width': 3 }, cap);
+    sv('path', { d: 'M' + (PX + 14) + ' ' + (y + 3) + ' H' + (PX + PW - 14), stroke: 'rgba(255,255,255,.10)', 'stroke-width': 3, 'stroke-linecap': 'round' }, cap);
+    sv('rect', { class: 'ring', x: PX + 4, y: y + 4, width: PW - 8, height: h - 8, rx: 16 }, cap);
+    sv('text', { x: PC, y: y + h - 52, 'text-anchor': 'middle', 'font-family': UI, 'font-weight': 800, 'font-size': 58, fill: '#d8d8da', 'letter-spacing': 5 }, cap).textContent = label;
+    return { g, cap };
+  };
+  // AUTO: a latching push key, the lamp above it lights while engaged
+  const autoLamp = sv('circle', { cx: PC, cy: 624, r: 20, fill: '#3a2a10', stroke: '#0b0b0c', 'stroke-width': 4 }, sideG);
+  const autoKey = mkKey('auto', 668, 300, 'AUTO', 'Auto-reverse (latching): flips to side B by itself at the end of side A');
+  autoKey.g.setAttribute('aria-pressed', 'false');
+  sv('text', { x: PC, y: 1022, 'text-anchor': 'middle', 'font-family': UI, 'font-weight': 600, 'font-size': 32, fill: '#6c6d75', 'letter-spacing': 3 }, sideG).textContent = 'AUTO REVERSE';
+  const flipKey = mkKey('flip', 1090, 300, 'FLIP', 'Flip the tape to the other side');
+  const fi = sv('g', { fill: 'none', stroke: '#d8d8da', 'stroke-width': 13, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', transform: 'translate(' + PC + ' ' + (1090 + 112) + ')' }, flipKey.cap);
+  sv('path', { d: 'M-62 -6A62 62 0 0 1 36 -50M62 6A62 62 0 0 1 -36 50' }, fi);
+  sv('path', { d: 'M20 -70L40 -48L14 -34M-20 70L-40 48L-14 34' }, fi);
+  sv('text', { x: PC, y: 1438, 'text-anchor': 'middle', 'font-family': UI, 'font-weight': 600, 'font-size': 32, fill: '#6c6d75', 'letter-spacing': 3 }, sideG).textContent = 'FLIP TAPE';
+  const pressKey = (k) => { k.g.classList.add('down'); };
+  autoKey.g.addEventListener('pointerdown', (e) => { e.preventDefault(); api.auto(!X.state.auto); });
+  flipKey.g.addEventListener('pointerdown', (e) => { e.preventDefault(); pressKey(flipKey); api.flip(); });
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach((t) => flipKey.g.addEventListener(t, () => flipKey.g.classList.remove('down')));
+  for (const [k, fn] of [[autoKey, () => api.auto(!X.state.auto)], [flipKey, () => { pressKey(flipKey); api.flip(); setTimeout(() => flipKey.g.classList.remove('down'), 140); }]]) {
+    k.g.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fn(); } });
+  }
+  let lastSide = null, lastAuto = null, lastSideMsg = null;
+  function paintSide(now) {
+    const st = X.state, side = st.loaded ? st.side : '';
+    if (side !== lastSide) { lastSide = side; for (const k of ['A', 'B']) { const on = side === k; sideLetters[k].setAttribute('fill', on ? '#ffb347' : '#2a2a2e'); sideLetters[k].style.filter = on ? 'drop-shadow(0 0 14px rgba(255,179,71,.55))' : ''; } }
+    if (st.auto !== lastAuto) {
+      lastAuto = st.auto;
+      autoKey.g.classList.toggle('down', !!st.auto); autoKey.g.setAttribute('aria-pressed', String(!!st.auto));
+      autoLamp.setAttribute('fill', st.auto ? '#ffb347' : '#3a2a10'); autoLamp.style.filter = st.auto ? 'drop-shadow(0 0 12px rgba(255,179,71,.9))' : '';
+    }
+    const msg = st.loaded && st.msg ? (Math.floor(now / 550) % 2 === 0 ? st.msg : '') : '';
+    if (msg !== lastSideMsg) { lastSideMsg = msg; sideMsg.textContent = msg; }
+  }
   let heldKey = null;
   const release = () => { if (heldKey) { heldKey.classList.remove('down'); heldKey = null; api.release(); } };
   const blip = (g) => { g.classList.add('down'); setTimeout(() => { g.classList.remove('down'); paint(true); }, 140); };
@@ -112,6 +163,7 @@ function deckSkin(X) {
   function paint(force) {
     const st = X.state, now = performance.now();
     setTime(st.loaded ? st.time : 0);
+    paintSide(now);
     const blink = st.playing ? (Math.floor(now / 500) % 2 === 0) : true;
     if (blink !== lastBlink) { lastBlink = blink; colon.forEach((c) => c.setAttribute('class', blink ? 'seg on' : 'seg')); }
     if (st.playing !== lastPlaying || force) { lastPlaying = st.playing; keyEls.play.classList.toggle('down', !!st.playing); }
@@ -144,10 +196,13 @@ function playerSkin(X) {
     { id: 'play', x: 958, y: 1775, w: 308, h: 150, fill: X.url('red'), label: 'Play or pause', icon: (c, m) => (X.state.playing ? '<path d="M' + (c - 30) + ' ' + (m - 44) + 'h24v88h-24zM' + (c + 6) + ' ' + (m - 44) + 'h24v88h-24z" fill="#dcdcdc"/>' : tri((c - 28) + ',' + (m - 46) + ' ' + (c - 28) + ',' + (m + 46) + ' ' + (c + 44) + ',' + m)) },
     // plus / minus: the original were volume keys; Runout has no master gain (device volume
     // buttons own it), so they skip 15 s forward / back through the real playback instead.
-    { id: 'plus', x: 868, y: 2065, w: 190, h: 150, fill: X.url('key'), label: 'Skip forward 15 seconds', k: 1, icon: (c, m) => '<path d="M' + (c - 34) + ' ' + m + 'H' + (c + 34) + 'M' + c + ' ' + (m - 34) + 'V' + (m + 34) + '" stroke="#e8e8e4" stroke-width="10"/>' },
-    { id: 'minus', x: 1104, y: 2065, w: 190, h: 150, fill: X.url('key'), label: 'Skip back 15 seconds', k: 1, icon: (c, m) => '<path d="M' + (c - 34) + ' ' + m + 'H' + (c + 34) + '" stroke="#e8e8e4" stroke-width="10"/>' },
-    { id: 'eject', x: 868, y: 2268, w: 190, h: 150, fill: X.url('key'), label: 'Close the player', k: 1, icon: (c, m) => tri(c + ',' + (m - 34) + ' ' + (c - 36) + ',' + (m + 6) + ' ' + (c + 36) + ',' + (m + 6), '#e8e8e4') + '<rect x="' + (c - 36) + '" y="' + (m + 18) + '" width="72" height="13" fill="#e8e8e4"/>' },
-    { id: 'power', x: 1104, y: 2268, w: 190, h: 150, fill: X.url('key'), label: 'Power', k: 1, icon: (c, m) => '<path d="M' + (c - 26) + ' ' + (m - 30) + 'A40 40 0 1 0 ' + (c + 26) + ' ' + (m - 30) + '" fill="none" stroke="#e8e8e4" stroke-width="8" stroke-linecap="round"/><path d="M' + c + ' ' + (m - 50) + 'V' + (m - 8) + '" stroke="#e8e8e4" stroke-width="8" stroke-linecap="round"/>' },
+    // AUTO (latching, lamp lit while engaged) and FLIP (momentary): the tape's two sides
+    { id: 'auto', x: 868, y: 2062, w: 190, h: 122, fill: X.url('key'), label: 'Auto-reverse (latching): flips to side B by itself at the end of side A', k: 1, icon: (c, m) => '<circle cx="' + (c - 62) + '" cy="' + (m - 38) + '" r="11" fill="' + (X.state.auto ? '#ffb347' : '#3a2a10') + '"' + (X.state.auto ? ' style="filter:drop-shadow(0 0 7px rgba(255,179,71,.9))"' : '') + '/><text x="' + c + '" y="' + (m + 22) + '" text-anchor="middle" font-family="' + UI + '" font-weight="800" font-size="42" letter-spacing="3" fill="' + (X.state.auto ? '#ffb347' : '#e8e8e4') + '">AUTO</text>' },
+    { id: 'flip', x: 1104, y: 2062, w: 190, h: 122, fill: X.url('key'), label: 'Flip the tape to the other side', k: 1, icon: (c, m) => '<g fill="none" stroke="#e8e8e4" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" transform="translate(' + c + ' ' + (m - 20) + ')"><path d="M-38 -4A38 38 0 0 1 22 -30M38 4A38 38 0 0 1 -22 30"/><path d="M12 -44L25 -29L8 -21M-12 44L-25 29L-8 21"/></g><text x="' + c + '" y="' + (m + 40) + '" text-anchor="middle" font-family="' + UI + '" font-weight="800" font-size="30" letter-spacing="3" fill="#e8e8e4">FLIP</text>' },
+    { id: 'plus', x: 868, y: 2198, w: 190, h: 122, fill: X.url('key'), label: 'Skip forward 15 seconds', k: 1, icon: (c, m) => '<path d="M' + (c - 34) + ' ' + m + 'H' + (c + 34) + 'M' + c + ' ' + (m - 34) + 'V' + (m + 34) + '" stroke="#e8e8e4" stroke-width="10"/>' },
+    { id: 'minus', x: 1104, y: 2198, w: 190, h: 122, fill: X.url('key'), label: 'Skip back 15 seconds', k: 1, icon: (c, m) => '<path d="M' + (c - 34) + ' ' + m + 'H' + (c + 34) + '" stroke="#e8e8e4" stroke-width="10"/>' },
+    { id: 'eject', x: 868, y: 2334, w: 190, h: 122, fill: X.url('key'), label: 'Close the player', k: 1, icon: (c, m) => tri(c + ',' + (m - 34) + ' ' + (c - 36) + ',' + (m + 6) + ' ' + (c + 36) + ',' + (m + 6), '#e8e8e4') + '<rect x="' + (c - 36) + '" y="' + (m + 18) + '" width="72" height="13" fill="#e8e8e4"/>' },
+    { id: 'power', x: 1104, y: 2334, w: 190, h: 122, fill: X.url('key'), label: 'Power', k: 1, icon: (c, m) => '<path d="M' + (c - 26) + ' ' + (m - 30) + 'A40 40 0 1 0 ' + (c + 26) + ' ' + (m - 30) + '" fill="none" stroke="#e8e8e4" stroke-width="8" stroke-linecap="round"/><path d="M' + c + ' ' + (m - 50) + 'V' + (m - 8) + '" stroke="#e8e8e4" stroke-width="8" stroke-linecap="round"/>' },
   ];
   const bg = $('buttons'), btn = {};
   function drawBtn(d) {
@@ -177,11 +232,22 @@ function playerSkin(X) {
   const NB = 26, barsG = $('bars'), bars = [];
   for (let i = 0; i < NB; i++) bars.push(sv('rect', { x: 248 + i * 20, y: 2268, width: 12, height: 100, class: 'bar off' }, barsG));
   const lcdOff = $('lcdOff'), lcdIcon = $('lcdIcon'), lcdMsg = $('lcdMsg');
-  let lastChars = '', lastBars = -1, lastPlaying = null, lastOn = null;
+  // The cassette glyph on the LCD becomes the SIDE indicator: "SIDE" over a big A / B.
+  lcdIcon.innerHTML = '<text x="679" y="2128" text-anchor="middle" font-family="' + UI + '" font-weight="800" font-size="30" letter-spacing="4" fill="#1c331d" stroke="none">SIDE</text>' +
+    '<text id="' + 'sideLetter" x="679" y="2214" text-anchor="middle" font-family="' + UI + '" font-weight="800" font-size="100" fill="#1c331d" stroke="none">A</text>';
+  const sideLetter = lcdIcon.querySelector('#sideLetter');
+  let lastSideTxt = null, lastFlipMsg = null;
+  const flipMsgEl = document.createElementNS(NS, 'text');
+  for (const [k, v] of Object.entries({ class: 'lcd-label', x: 780, y: 2392, 'text-anchor': 'end', 'font-size': 30 })) flipMsgEl.setAttribute(k, v);
+  lcdMsg.parentNode.appendChild(flipMsgEl);
+  let lastChars = '', lastBars = -1, lastPlaying = null, lastOn = null, lastAutoKey = null;
   function flash(num, text) { st.msg = { num: String(num), text }; st.msgUntil = Date.now() + 1000; paint(true); setTimeout(() => paint(true), 1050); }
   function paint(force) {
     const s = X.state, showMsg = st.msg && Date.now() < st.msgUntil, p = s.loaded ? s.progress : 0;
     if (s.playing !== lastPlaying || force) { lastPlaying = s.playing; drawBtn(defs[2]); }
+    if (s.auto !== lastAutoKey || force) { lastAutoKey = s.auto; drawBtn(defs[3]); btn.auto.classList.toggle('down', !!s.auto); btn.auto.setAttribute('aria-pressed', String(!!s.auto)); }
+    const sideTxt = s.loaded ? s.side : '';
+    if (sideTxt !== lastSideTxt) { lastSideTxt = sideTxt; sideLetter.textContent = sideTxt || '-'; }
     if (st.on !== lastOn) { lastOn = st.on; lcdOff.setAttribute('opacity', st.on ? 0 : 0.88); }
     if (!st.on) {
       if (lastChars !== 'off') {
@@ -201,6 +267,8 @@ function playerSkin(X) {
       lcdMsg.textContent = showMsg ? st.msg.text : '';
       lcdIcon.style.display = showMsg ? 'none' : '';
     }
+    const fm = s.loaded && s.msg ? (Math.floor(Date.now() / 550) % 2 === 0 ? s.msg : '') : '';
+    if (fm !== lastFlipMsg) { lastFlipMsg = fm; flipMsgEl.textContent = fm; }
     const n = Math.round(p * NB);
     if (n !== lastBars) { lastBars = n; bars.forEach((b, i) => b.setAttribute('class', 'bar' + (i < n ? '' : ' off'))); }
   }
@@ -212,6 +280,8 @@ function playerSkin(X) {
     minus: () => { api.skip(-15); flash(15, 'BACK'); },
     eject: () => api.eject(),
     power: () => { st.on = !st.on; if (!st.on && X.state.playing) api.toggle(); paint(true); },
+    auto: () => api.auto(!X.state.auto),
+    flip: () => api.flip(),
   };
   Object.keys(acts).forEach((id) => {
     const el = btn[id];
@@ -249,7 +319,8 @@ export function mountPlayer(el, opts = {}) {
 
   const win = document.createElement('div'); win.className = 'cp-win';
   win.style.cssText = 'left:' + sk.win.x + 'px;top:' + sk.win.y + 'px;width:' + sk.win.w + 'px;height:' + sk.win.h + 'px;border-radius:' + sk.win.r + 'px;clip-path:inset(0 round ' + sk.win.r + 'px)';
-  const cass = document.createElement('div'); cass.className = 'cp-cass'; win.appendChild(cass); p.appendChild(win);
+  const flipper = document.createElement('div'); flipper.className = 'cp-flip'; win.appendChild(flipper);
+  const cass = document.createElement('div'); cass.className = 'cp-cass'; flipper.appendChild(cass); p.appendChild(win);
   p.insertAdjacentHTML('beforeend', '<svg class="cp-over" viewBox="0 0 ' + w + ' ' + hh + '" xmlns="http://www.w3.org/2000/svg"><defs><clipPath id="' + u + 'gc"><rect x="' + sk.win.x + '" y="' + sk.win.y + '" width="' + sk.win.w + '" height="' + sk.win.h + '" rx="' + sk.win.r + '"/></clipPath><linearGradient id="' + u + 'gl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".16"/><stop offset=".35" stop-color="#fff" stop-opacity=".02"/><stop offset=".7" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff" stop-opacity=".08"/></linearGradient></defs><g clip-path="url(#' + u + 'gc)"><rect x="' + sk.win.x + '" y="' + sk.win.y + '" width="' + sk.win.w + '" height="' + sk.win.h + '" fill="url(#' + u + 'gl)"/></g></svg>');
 
   let scale = 1;
@@ -258,8 +329,8 @@ export function mountPlayer(el, opts = {}) {
   const poseNow = (mode) => { cass.style.transition = 'none'; pose(mode); cass.getBoundingClientRect(); cass.style.transition = ''; };
 
   const listeners = {};
-  const state = { loaded: false, inserted: false, playing: false, winding: false, progress: 0, time: 0, speed: 0, level: 0, title: '', side: 'A', cfg: null };
-  let driver = null, cassH = null, skin = null, fade = null, lastPaint = 0, ro = null;
+  const state = { loaded: false, inserted: false, playing: false, winding: false, progress: 0, time: 0, speed: 0, level: 0, title: '', side: 'A', auto: true, msg: '', cfg: null };
+  let driver = null, cassH = null, skin = null, fade = null, lastPaint = 0, ro = null, flipTok = 0;
   const emit = (type, d) => { (listeners[type] || []).forEach((f) => f(d, api)); };
 
   function loadCass(cfg) {
@@ -290,6 +361,10 @@ export function mountPlayer(el, opts = {}) {
     toggle() { emit('toggle'); }, stop() { emit('stop'); }, eject() { emit('eject'); },
     next() { emit('next'); }, prev() { emit('prev'); }, skip(s) { emit('skip', s); },
     hold(dir) { emit('hold', dir); }, release() { emit('release'); },
+    /** AUTO key (latching): asks the host to engage/release auto-reverse; the host answers with update({ auto }). */
+    auto(on) { emit('auto', !!on); },
+    /** FLIP key: asks the host to flip the tape to the other side. */
+    flip() { emit('flip'); },
 
     insert(cfg) {
       state.cfg = cfg; state.loaded = true; state.title = (cfg.text && cfg.text.title) || ''; state.side = (cfg.text && cfg.text.side) || 'A';
@@ -299,6 +374,27 @@ export function mountPlayer(el, opts = {}) {
     },
     /** Re-draw the loaded cassette after its cfg changed (label edit); keeps progress. */
     restyle(cfg) { if (state.inserted) { state.cfg = cfg; loadCass(cfg); poseNow('in'); } return api; },
+    /**
+     * Flip the loaded tape to the other side: a short 3D rotateY (edge-on at the half: the new side's cassette,
+     * label and reel packs are drawn there, so the full reel that was on the right comes round to the left).
+     * Instant with prefers-reduced-motion. `progress` = the new side's own tape position. Resolves when done.
+     */
+    flipTo(cfg, progress) {
+      state.cfg = cfg; state.progress = progress; state.side = (cfg.text && cfg.text.side) || state.side;
+      if (!state.inserted) { loadCass(cfg); paint(true); return Promise.resolve(); }
+      const swap = () => { loadCass(cfg); poseNow('in'); paint(true); };
+      const reduce = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (reduce || typeof flipper.animate !== 'function') { swap(); return Promise.resolve(); }
+      const tok = ++flipTok;
+      flipper.style.transformOrigin = (sk.at[0] - sk.win.x) + 'px ' + (sk.at[1] - sk.win.y) + 'px';
+      flipper.getAnimations().forEach((a) => a.cancel());
+      const P = 'perspective(1800px) rotateY(';
+      state.flipping = true;
+      return flipper.animate([{ transform: P + '0deg)' }, { transform: P + '90deg)' }], { duration: 170, easing: 'ease-in', fill: 'forwards' }).finished
+        .then(() => { if (tok !== flipTok) return null; swap(); return flipper.animate([{ transform: P + '-90deg)' }, { transform: P + '0deg)' }], { duration: 190, easing: 'ease-out', fill: 'forwards' }).finished; })
+        .then(() => { if (tok === flipTok) { flipper.getAnimations().forEach((a) => a.cancel()); flipper.style.transform = ''; state.flipping = false; } })
+        .catch(() => { state.flipping = false; });
+    },
     slideOut() {
       if (!state.inserted) return api;
       pose('out'); cass.style.pointerEvents = 'none'; state.inserted = false;
@@ -310,7 +406,7 @@ export function mountPlayer(el, opts = {}) {
     update(patch) {
       let structural = false;
       for (const k in patch) {
-        if (state[k] !== patch[k]) { state[k] = patch[k]; if (k === 'playing' || k === 'winding' || k === 'loaded' || k === 'title' || k === 'side') structural = true; }
+        if (state[k] !== patch[k]) { state[k] = patch[k]; if (k === 'playing' || k === 'winding' || k === 'loaded' || k === 'title' || k === 'side' || k === 'auto' || k === 'msg') structural = true; }
       }
       if (structural) paint(false);   // continuous values (progress, time, level) repaint from frame(), throttled
       return api;

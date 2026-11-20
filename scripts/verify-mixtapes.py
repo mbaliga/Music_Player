@@ -1,0 +1,376 @@
+#!/usr/bin/env python3
+"""Verify the Mixtapes section (workstream D): the v4 editor (search / caps / sides / reorder / style / save), the shelf, the cassette
+player's sides + AUTO + FLIP with REAL audio, persistence, and a 5,000-track picker.
+
+Needs: ffmpeg, Playwright for Python, the dev server:  python3 serve.py 8321   (URL=http://localhost:8537/index.html)
+Usage:  python3 scripts/verify-mixtapes.py [outdir]     Exits non-zero when an assertion fails; screenshots go to outdir/shots.
+Set CHROME=/path/to/chrome when Playwright's own browser revision is not installed (e.g. /opt/pw-browsers/chromium-1243/chrome-linux64/chrome).
+
+It generates a tagged FLAC library (flac carries durations, so the caps are exact): three albums of ~3-4 minute songs and a 'Short' album of
+7 second songs (so the end of a side can really be reached), scans it through the folder-input fallback and drives the real UI at 360x780 and
+412x915 with touch emulation.
+NOT a substitute for the on-device checks (drag-reorder feel, flip animation frame rate, 5k-track scrolling, haptics, the Android WebView).
+"""
+import json, os, subprocess, sys, time
+from playwright.sync_api import sync_playwright
+
+OUT = sys.argv[1] if len(sys.argv) > 1 else '/tmp/mixtapes-verify'
+SHOTS = os.path.join(OUT, 'shots'); os.makedirs(SHOTS, exist_ok=True)
+LIB = os.path.join(OUT, 'lib')
+URL = os.environ.get('URL', 'http://localhost:8537/index.html')
+
+ALBUMS = [  # folder, album, artist, genre, year, [(title, seconds, hz)]
+    ('Night Shift', 'Night Shift', 'Mara Quill', 'Jazz', 1994, [('Harbor Lights', 215, 220), ('Paper Moon', 232, 262), ('Slow Window', 198, 294), ('Copper Rain', 241, 330)]),
+    ('Tidal', 'Tidal', 'Low Tide Orchestra', 'Jazz', 1995, [('Salt and Ember', 205, 392), ('Glass Hours', 223, 440), ('Low Water', 187, 196)]),
+    ('Orchard Hum', 'Orchard Hum', 'Sigur Rós', 'Electronic', 2011, [('Hoppípolla', 268, 247), ('Static Orchard', 211, 277), ('Glósóli', 252, 311), ('Café del Mar', 190, 370), ('Maze Garden', 201, 233)]),
+    ('Short', 'Short Cuts', 'Tiny Tapes', 'Rock', 1988, [('Blip One', 7, 300), ('Blip Two', 7, 340), ('Blip Three', 7, 380), ('Blip Four', 7, 420)]),
+]
+
+def make_fixtures():
+    for (folder, album, artist, genre, year, tracks) in ALBUMS:
+        d = os.path.join(LIB, folder); os.makedirs(d, exist_ok=True)
+        for i, (title, sec, f) in enumerate(tracks, 1):
+            out = os.path.join(d, f'{i:02d} - {title.replace(" ", "_")}.flac')
+            if os.path.exists(out): continue
+            subprocess.run(['ffmpeg', '-loglevel', 'error', '-y', '-f', 'lavfi', '-i', f'sine=frequency={f}:duration={sec}:sample_rate=44100', '-af', 'volume=0.4', '-ac', '2',
+                            '-metadata', f'title={title}', '-metadata', f'artist={artist}', '-metadata', f'album={album}', '-metadata', f'genre={genre}', '-metadata', f'date={year}',
+                            '-metadata', f'track={i}', '-compression_level', '5', out], check=True)
+
+BUS_HOOK = """
+(() => {
+  const orig = AudioNode.prototype.connect;
+  AudioNode.prototype.connect = function(dest, ...r){
+    try {
+      if (!window.__bus && this instanceof GainNode && dest && dest.constructor && dest.constructor.name === 'AudioDestinationNode') {
+        window.__bus = this;
+        const ctx = this.context; const an = ctx.createAnalyser(); an.fftSize = 2048; orig.call(this, an); window.__an = an;
+      }
+    } catch(e) {}
+    return orig.call(this, dest, ...r);
+  };
+  window.__rms = () => { const an = window.__an; if(!an) return -1; const b = new Float32Array(an.fftSize); an.getFloatTimeDomainData(b); let s=0; for (const x of b) s+=x*x; return Math.sqrt(s/b.length); };
+})();
+"""
+
+fails = []
+def check(ok, msg):
+    if not ok: fails.append(msg)
+    print(('ok   ' if ok else 'FAIL ') + msg, flush=True)
+
+def launch(p):
+    kw = {'executable_path': os.environ['CHROME']} if os.environ.get('CHROME') else {}
+    if not kw and os.path.exists('/opt/pw-browsers/chromium-1243/chrome-linux64/chrome'): kw = {'executable_path': '/opt/pw-browsers/chromium-1243/chrome-linux64/chrome'}
+    return p.chromium.launch(**kw, args=['--autoplay-policy=no-user-gesture-required', '--no-sandbox'])
+
+def boot(b, w, h, blob=None, reduced=False):
+    ctx = b.new_context(viewport={'width': w, 'height': h}, device_scale_factor=2, has_touch=True, is_mobile=True, reduced_motion='reduce' if reduced else 'no-preference')
+    init = 'window.showDirectoryPicker = undefined; try { localStorage.setItem("runout.wtDone", "1");'
+    if blob: init += f' if (!localStorage.getItem("runout.mixtapes")) localStorage.setItem("runout.mixtapes", {json.dumps(json.dumps(blob))});'
+    init += ' } catch (e) {}'
+    ctx.add_init_script(init); ctx.add_init_script(BUS_HOOK)
+    page = ctx.new_page(); errs = []
+    page.on('pageerror', lambda e: errs.append(str(e)))
+    page.on('console', lambda m: errs.append('console:' + m.text) if m.type == 'error' and 'stations/index.json' not in m.text and '404' not in m.text else None)
+    page.goto(URL)
+    page.wait_for_function('document.getElementById("latency") && !/boot error/.test(document.getElementById("latency").textContent)')
+    page.wait_for_timeout(500)
+    return ctx, page, errs
+
+def to_section(page, sec):
+    if page.evaluate('document.querySelector(".page:not([hidden])").dataset.section') == sec: return
+    page.click('.page:not([hidden]) .hamburger')
+    page.click(f'.drawer-item[data-section="{sec}"]')
+    page.wait_for_function('s => { const p = document.querySelector(`.page[data-section="${s}"]`); return p && !p.hidden }', arg=sec)
+    time.sleep(0.6)
+
+def scan(page):
+    to_section(page, 'albums')
+    with page.expect_file_chooser() as fc:
+        page.click('#libScan')
+    fc.value.set_files(LIB)
+    page.wait_for_function('document.querySelectorAll("#albumGrid .alb-card").length >= 4', timeout=30000)
+    page.wait_for_timeout(1200)
+
+def blob_v3_old():
+    return {'version': 3, 'mixtapes': [{'id': 'old1', 'name': 'Old Road Trip', 'author': 'me', 'cfg': {'style': 'brass', 'pen': 'marker', 'wear': 0.2, 'gloss': 0.5, 'text': {'subtitle': 'v3 tape', 'note': '', 'side': 'A'}},
+        'tracks': [{'title': 'Harbor Lights', 'artist': 'Mara Quill', 'album': 'Night Shift'}, {'title': 'Salt and Ember', 'artist': 'Low Tide Orchestra', 'album': 'Tidal'}]}]}
+
+def stored(page):
+    return json.loads(page.evaluate('localStorage.getItem("runout.mixtapes")') or 'null')
+
+def toast_text(page):
+    page.wait_for_selector('.ed-toast:not(.hidden)', timeout=3000)
+    return page.inner_text('.ed-toast span')
+
+def search(page, text):
+    page.fill('.pk-q', text); page.wait_for_timeout(350)
+
+def add_search_result(page, title):
+    search(page, title)
+    page.locator('.pk-rowbtn', has_text=title).first.tap(); page.wait_for_timeout(250)
+
+def gauges(page):
+    return page.eval_on_selector_all('.ed-gauge', 'els => els.map(e => e.innerText.replace(/\\n+/g, " | "))')
+
+def deck_playing(page):
+    """The deck's PLAY key is latched down while the tape is really playing (the analyser keeps its last block when idle, so rms is only trusted while playing)."""
+    return page.evaluate("document.querySelector('.sk-deck .key[data-key=play]').classList.contains('down')")
+
+def side_state(page):
+    """-> (side letter lit, auto engaged) from whichever skin is mounted."""
+    return page.evaluate("""() => {
+      const deck = document.querySelector('.sk-deck .side-panel');
+      if (deck) { const lit = [...deck.querySelectorAll('text[data-side]')].find(t => t.getAttribute('fill') === '#ffb347');
+        return [lit ? lit.getAttribute('data-side') : '', document.querySelector('.sk-deck .side-key[data-key=auto]').classList.contains('down')]; }
+      const a = document.querySelector('.sk-player [aria-label^="Auto-reverse"]'), l = document.querySelector('.sk-player [id$="sideLetter"]');
+      return [l ? l.textContent : '', !!a && a.classList.contains('down')]; }""")
+
+def run_viewport(b, w, h):
+    tag = f'{w}x{h}'
+    print(f'--- {tag}', flush=True)
+    shot = lambda page, name: page.screenshot(path=f'{SHOTS}/{tag}-{name}.png')
+    ctx, page, errs = boot(b, w, h, blob_v3_old())
+    scan(page)
+    to_section(page, 'mixtapes'); page.wait_for_timeout(600)
+
+    # ── migration: a v3 tape is shown, with its tape length and counts on the strip
+    check(page.locator('.cs-card').count() == 1, f'{tag}: the v3 tape is on the shelf')
+    meta = page.inner_text('.cs-meta')
+    check(meta.startswith('C60') and 'A 2' in meta and 'B 0' in meta, f'{tag}: strip shows tape + side counts ({meta})')
+    check(page.locator('.mt-sug').count() == 1, f'{tag}: the Suggested tapes row is on the page')
+    names = page.eval_on_selector_all('.mt-sug-open b', 'els => els.map(e => e.textContent)')
+    print('     suggestions:', names)
+    check(len(names) >= 2, f'{tag}: at least two suggested tapes from the library ({names})')
+    shot(page, 'shelf-with-suggestions')
+
+    # ── a suggestion opens a DRAFT in the editor; nothing is saved until Save
+    page.locator('.mt-sug-open').first.tap(); page.wait_for_selector('.ed'); page.wait_for_timeout(500)
+    before = len(stored(page)['mixtapes'])
+    check(page.locator('.tk-row').count() >= 5, f'{tag}: the suggestion is pre-filled ({page.locator(".tk-row").count()} songs on side A)')
+    shot(page, 'editor-suggestion-draft')
+    page.click('#ed-back'); page.wait_for_selector('.ed-warn'); page.click('.ed-warn .dc'); page.wait_for_timeout(300)
+    check(len(stored(page)['mixtapes']) == before, f'{tag}: discarding a suggested draft saves nothing')
+    page.locator('.mt-sug-x').first.tap(); page.wait_for_timeout(300)
+    check(page.locator('.mt-sug-open').count() == len(names) - 1, f'{tag}: a suggestion can be dismissed')
+
+    # ── create a tape end to end
+    page.tap('#mtNew'); page.wait_for_selector('.ed'); page.wait_for_timeout(500)
+    shot(page, 'editor-tape-tab')
+    page.fill('.ed-tape-tab input[aria-label="Title"]', 'Café Road <b>Mix</b>')
+    page.fill('.ed-tape-tab input[aria-label="Line on the label"]', 'for the long way home')
+    page.fill('.ed-tape-tab input[aria-label="Made by"]', 'Madhav')
+    page.locator('.ed-len', has_text='C30').tap(); page.wait_for_timeout(200)
+    check('C30' in page.inner_text('.ed-caps') and '15:00' in page.inner_text('.ed-caps'), f'{tag}: C30 caps text states 15:00 per side')
+    g = gauges(page); check('0:00 / 15:00' in g[0] and '0:00 / 15:00' in g[1], f'{tag}: gauges start empty ({g})')
+    page.tap('#edtab-add'); page.wait_for_timeout(500)
+    shot(page, 'editor-add-browse')
+    check(page.locator('.pk-alb').count() >= 4, f'{tag}: browse by album lists the albums ({page.locator(".pk-alb").count()})')
+    # search is diacritic-insensitive and grouped by album
+    search(page, 'sigur ros')
+    check(page.locator('.pk-alb').count() == 1 and page.locator('.pk-row').count() == 5, f'{tag}: "sigur ros" finds Sigur Rós across diacritics, grouped under its album')
+    search(page, 'cafe')
+    check(page.locator('.pk-rowbtn', has_text='Café del Mar').count() == 1, f'{tag}: "cafe" finds "Café del Mar"')
+    shot(page, 'editor-add-search')
+    # three different albums: Night Shift (4 songs = 14:46 fits C30 side A), then a fifth song is refused
+    search(page, 'night shift')
+    page.locator('.pk-addall').first.tap(); page.wait_for_timeout(300)
+    t = toast_text(page); check('Added 4 songs to side A' in t, f'{tag}: add whole album -> {t}')
+    g = gauges(page); check('14:46 / 15:00' in g[0], f'{tag}: gauge A after the album ({g[0]})')
+    add_search_result(page, 'Glass Hours')
+    t = toast_text(page); check(t == 'Side A has 0:14 left; this song is 3:43.', f'{tag}: refusal names the reason ({t})')
+    shot(page, 'editor-refusal')
+    check(page.locator('.pk-rowbtn', has_text='Glass Hours').count() == 1 and 'A' not in page.locator('.pk-rowbtn', has_text='Glass Hours').first.locator('.pk-act').inner_text(), f'{tag}: a refused song is not marked on tape')
+    # switch to side B and add from the two other albums
+    page.locator('.pk-sidebtn').nth(1).tap(); page.wait_for_timeout(200)
+    add_search_result(page, 'Glass Hours')
+    add_search_result(page, 'Low Water')
+    search(page, 'ros')  # Hoppípolla / Glósóli (Sigur Rós) + 'Salt and Ember'? no: 'ros'
+    page.locator('.pk-rowbtn', has_text='Hoppípolla').first.tap(); page.wait_for_timeout(250)
+    g = gauges(page); check('B' in g[1] and '3 songs' in g[1], f'{tag}: side B has three songs from three albums ({g[1]})')
+    # the row shows an "already on tape" marker, and tapping it again does not double-add
+    page.locator('.pk-rowbtn', has_text='Hoppípolla').first.tap(); page.wait_for_timeout(200)
+    t = toast_text(page); check('already on side B' in t, f'{tag}: already-on-tape is refused ({t})')
+    # multi-select
+    search(page, '')
+    page.tap('.pk-sel-toggle'); page.locator('.pk-albmain', has_text='Orchard Hum').first.tap(); page.wait_for_timeout(250)
+    page.locator('.pk-rowbtn').nth(0).tap(); page.locator('.pk-rowbtn').nth(1).tap(); page.wait_for_timeout(200)
+    check(page.locator('.pk-bar:not(.hidden)').count() == 1 and '2 selected' in page.inner_text('.pk-bar'), f'{tag}: multi-select shows the bar ({page.inner_text(".pk-bar")[:30]!r})')
+    shot(page, 'editor-add-select')
+    page.tap('.pk-clear'); page.tap('.pk-sel-toggle')
+
+    # ── tracklist of side B: reorder (keyboard + drag), move across, remove
+    page.tap('#edtab-tracks'); page.wait_for_timeout(300)
+    titles = lambda: page.eval_on_selector_all('.tk-row .tk-text b', 'els => els.map(e => e.textContent)')
+    before = titles(); check(len(before) >= 3, f'{tag}: side B tracklist {before}')
+    grip = page.locator('.tk-grip').first
+    grip.focus(); page.keyboard.press('ArrowDown'); page.wait_for_timeout(200)
+    after = titles(); check(after[0] == before[1] and after[1] == before[0], f'{tag}: keyboard reorder (ArrowDown on the grip) {before} -> {after}')
+    # drag the last row to the top with real pointer movement on the grip
+    last = page.locator('.tk-grip').last; bb = last.bounding_box(); top = page.locator('.tk-grip').first.bounding_box()
+    page.mouse.move(bb['x'] + bb['width'] / 2, bb['y'] + bb['height'] / 2); page.mouse.down()
+    steps = 8
+    for i in range(1, steps + 1):
+        page.mouse.move(bb['x'] + bb['width'] / 2, bb['y'] + bb['height'] / 2 + (top['y'] - bb['y'] - 6) * i / steps); page.wait_for_timeout(16)
+    shot(page, 'editor-tracks-dragging')
+    page.mouse.up(); page.wait_for_timeout(300)
+    dragged = titles(); check(dragged[0] == after[-1], f'{tag}: drag-to-reorder moved the last song to the top {after} -> {dragged}')
+    shot(page, 'editor-tracks-side-b')
+    # menu: move to side A is refused when A is full, with the reason
+    page.locator('.tk-dots').first.tap(); page.locator('.tk-menu button', has_text='Move to side A').tap(); page.wait_for_timeout(250)
+    t = toast_text(page); check('Side A has' in t, f'{tag}: moving across into a full side is refused ({t})')
+    # remove with undo
+    n0 = page.locator('.tk-row').count()
+    page.locator('.tk-dots').last.tap(); page.locator('.tk-menu .rm').tap(); page.wait_for_timeout(250)
+    check(page.locator('.tk-row').count() == n0 - 1, f'{tag}: remove takes a song off')
+    page.locator('.ed-toast button', has_text='Undo').tap(); page.wait_for_timeout(250)
+    check(page.locator('.tk-row').count() == n0, f'{tag}: Undo puts it back')
+    # flip the preview with a tap
+    prev = page.inner_text('.ed-sidelabel'); page.tap('.ed-tape'); page.wait_for_timeout(500)
+    check(page.inner_text('.ed-sidelabel') != prev, f'{tag}: tapping the cassette flips the preview ({prev} -> {page.inner_text(".ed-sidelabel")})')
+    page.tap('.ed-tape'); page.wait_for_timeout(400)
+
+    # ── style
+    page.tap('#edtab-style'); page.wait_for_timeout(700)
+    shot(page, 'editor-style')
+    check(page.locator('.ed-sty').count() == 37, f'{tag}: 37 cassette types ({page.locator(".ed-sty").count()})')
+    page.locator('.ed-sty').nth(5).tap(); page.locator('.ed-pens button').nth(1).tap(); page.locator('.ed-dots-row button').nth(3).tap()
+    page.wait_for_timeout(300)
+
+    # ── save, then see it in the stack with the strip info
+    page.tap('.ed-bar .sv'); page.wait_for_selector('.ed', state='detached'); page.wait_for_timeout(700)
+    st = stored(page)
+    mt = [m for m in st['mixtapes'] if m['name'].startswith('Café')][0]
+    check(st['version'] == 4 and mt['tape']['length'] == 'C30' and len(mt['sides']['A']) == 4 and len(mt['sides']['B']) == 3, f'{tag}: saved as v4 with sides A/B ({len(mt["sides"]["A"])}/{len(mt["sides"]["B"])})')
+    check(all('dur' in r for r in mt['sides']['A']), f'{tag}: real durations were stored as hints')
+    check(mt['name'] == 'Café Road <b>Mix</b>' and page.locator('.cs-card[aria-label*="<b>"]').count() >= 1, f'{tag}: a hostile title stays plain text')
+    check(page.evaluate('!document.querySelector(".cs-card b, .ed b[data-x]")'), f'{tag}: no HTML was injected from the title')
+    shot(page, 'shelf-stack')
+    metas = page.eval_on_selector_all('.cs-meta', 'els => els.map(e => e.textContent)'); check(any('C30 · A 4 · B 3' in x for x in metas), f'{tag}: strips: {metas}')
+    page.click('#mtBar .sort-chip:has-text("Spines")'); page.wait_for_timeout(500); shot(page, 'shelf-spines'); page.click('#mtBar .sort-chip:has-text("Stack")'); page.wait_for_timeout(400)
+    # reload: persisted
+    page.reload(); page.wait_for_function('document.getElementById("latency") && !/boot error/.test(document.getElementById("latency").textContent)'); page.wait_for_timeout(1200)
+    to_section(page, 'mixtapes')
+    check(page.locator('.cs-card[aria-label*="Café Road"]').count() == 1, f'{tag}: the tape is still there after a reload')
+    scan(page); to_section(page, 'mixtapes'); page.wait_for_timeout(400)      # a browser can't keep File handles: re-scan links the remembered songs again
+
+    # ── player: build a short tape (7 s songs) so the end of a side can really be reached
+    page.tap('#mtNew'); page.wait_for_selector('.ed'); page.wait_for_timeout(300)
+    page.fill('.ed-tape-tab input[aria-label="Title"]', 'Blips'); page.locator('.ed-len', has_text='C30').tap()
+    page.tap('#edtab-add'); page.wait_for_timeout(300)
+    for ti in ['Blip One', 'Blip Two']: add_search_result(page, ti)
+    page.locator('.pk-sidebtn').nth(1).tap()
+    for ti in ['Blip Three', 'Blip Four']: add_search_result(page, ti)
+    page.tap('.ed-bar .sv'); page.wait_for_selector('.ed', state='detached'); page.wait_for_timeout(500)
+    blips = [m for m in stored(page)['mixtapes'] if m['name'] == 'Blips'][0]
+    check(blips['autoReverse'] is True, f'{tag}: auto-reverse defaults on for a new tape')
+    check([len(blips['sides']['A']), len(blips['sides']['B'])] == [2, 2], f'{tag}: the short tape has two songs a side ({[r["title"] for r in blips["sides"]["A"]]} | {[r["title"] for r in blips["sides"]["B"]]})')
+
+    def open_player(name):
+        card = page.locator(f'.cs-card[aria-label^="Mixtape: {name}"]').first
+        card.tap(); page.wait_for_timeout(700)
+        if page.locator('.tp:not(.hidden)').count() == 0: card.tap()      # the first tap only brought it to the top of the stack
+        page.wait_for_selector('.tp:not(.hidden)'); page.wait_for_timeout(1500)
+    open_player('Blips')
+    check(page.evaluate('window.__rms()') > 0.01, f'{tag}: the tape plays real audio (rms {page.evaluate("window.__rms()"):.3f})')
+    check(side_state(page) == ['A', True], f'{tag}: deck shows SIDE A with AUTO engaged {side_state(page)}')
+    shot(page, 'player-deck-auto-on-side-a')
+    # AUTO on: the end of side A flips by itself and side B plays
+    page.wait_for_function('() => { const d = document.querySelector(".sk-deck .side-panel"); if (!d) return false; const l = [...d.querySelectorAll("text[data-side]")].find(t => t.getAttribute("fill") === "#ffb347"); return l && l.getAttribute("data-side") === "B"; }', timeout=25000)
+    page.wait_for_timeout(300); shot(page, 'player-deck-auto-flipped-to-b')
+    check(side_state(page)[0] == 'B', f'{tag}: AUTO on -> side B is in the deck after side A ran out')
+    page.wait_for_timeout(2500)
+    check(page.evaluate('window.__rms()') > 0.01, f'{tag}: playback carried on into side B (rms {page.evaluate("window.__rms()"):.3f})')
+    # side B ends: stops and offers rewind
+    page.wait_for_function("() => !document.querySelector('.sk-deck .key[data-key=play]').classList.contains('down')", timeout=25000)
+    check(not deck_playing(page), f'{tag}: the end of side B stops (the deck stops playing)')
+    shot(page, 'player-deck-end-of-b')
+    # skins: the Player skin with AUTO
+    page.locator('.tp-chip', has_text='Player').tap(); page.wait_for_timeout(1700)
+    shot(page, 'player-skin-player')
+    check(side_state(page)[1] in (True, False), f'{tag}: the Player skin has the AUTO key')
+    page.locator('.tp-chip', has_text='Deck').tap(); page.wait_for_timeout(1700)
+    # AUTO off via the key: persisted on the mixtape and as the default
+    page.locator('.sk-deck .side-key[data-key=auto]').click(); page.wait_for_timeout(400)
+    check(side_state(page)[1] is False, f'{tag}: pressing AUTO releases the latch')
+    check([m for m in stored(page)['mixtapes'] if m['name'] == 'Blips'][0]['autoReverse'] is False, f'{tag}: AUTO off is persisted on the mixtape')
+    check(page.evaluate('localStorage.getItem("runout.cassette.auto")') == '0', f'{tag}: ...and as the default for new tapes')
+    shot(page, 'player-deck-auto-off')
+    # FLIP back to A (manual), play: starts side A from its beginning (it ran out earlier)
+    page.locator('.sk-deck .side-key[data-key=flip]').click(); page.wait_for_timeout(120); shot(page, 'player-deck-flip-midway'); page.wait_for_timeout(700)
+    check(side_state(page)[0] == 'A', f'{tag}: FLIP turns the tape to side A')
+    page.locator('.sk-deck .key[data-key=play]').click(); page.wait_for_timeout(2200)
+    check(page.evaluate('window.__rms()') > 0.01, f'{tag}: Play after FLIP plays side A (rms {page.evaluate("window.__rms()"):.3f})')
+    # AUTO off: the end of side A stops with "Flip tape"
+    page.wait_for_function('() => { const t = [...document.querySelectorAll(".sk-deck .side-panel text")].find(x => x.textContent === "FLIP TAPE" && x.getAttribute("font-size") === "50"); return !!t; }', timeout=20000)
+    page.wait_for_timeout(300)
+    check(not deck_playing(page), f'{tag}: AUTO off -> the end of side A stops')
+    shot(page, 'player-deck-flip-tape')
+    check(side_state(page)[0] == 'A', f'{tag}: still on side A, waiting for FLIP')
+    page.locator('.sk-deck .key[data-key=play]').click(); page.wait_for_timeout(600)
+    check(not deck_playing(page) and side_state(page)[0] == 'A', f'{tag}: Play does nothing until the tape is flipped')
+    page.locator('.sk-deck .side-key[data-key=flip]').click(); page.wait_for_timeout(900)
+    check(side_state(page)[0] == 'B', f'{tag}: FLIP -> side B')
+    page.locator('.sk-deck .key[data-key=play]').click(); page.wait_for_timeout(2200)
+    check(page.evaluate('window.__rms()') > 0.01, f'{tag}: Play starts side B from its beginning (rms {page.evaluate("window.__rms()"):.3f})')
+    # the revealed tracklist shows the CURRENT side's songs with the other side one tap away
+    page.locator('.cp-win').click(position={'x': 40, 'y': 40}); page.wait_for_timeout(400)
+    lst = page.eval_on_selector_all('.tp-songs li', 'els => els.map(e => e.textContent)')
+    check(len(lst) == 2 and 'Blip Three' in lst[0], f'{tag}: tapping the cassette lists the current side ({lst})')
+    shot(page, 'player-tracklist-side-b')
+    page.locator('.tp-side', has_text='Side A').tap(); page.wait_for_timeout(250)
+    lst = page.eval_on_selector_all('.tp-songs li', 'els => els.map(e => e.textContent)'); check('Blip One' in lst[0], f'{tag}: the other side is one tap away ({lst})')
+    page.locator('.btn-close').tap(); page.wait_for_timeout(500)
+
+    # ── reload: sides / auto persist, the second boot of the player works
+    page.reload(); page.wait_for_function('document.getElementById("latency") && !/boot error/.test(document.getElementById("latency").textContent)'); page.wait_for_timeout(1000)
+    st = stored(page); b2 = [m for m in st['mixtapes'] if m['name'] == 'Blips'][0]
+    check(b2['autoReverse'] is False and len(b2['sides']['B']) == 2, f'{tag}: sides and AUTO survive a reload')
+    check(errs == [], f'{tag}: no page errors {errs[:3]}')
+    ctx.close()
+
+def run_5k(b):
+    print('--- 5,000 tracks', flush=True)
+    ctx, page, errs = boot(b, 360, 780)
+    n = 5000
+    page.evaluate("""async (n) => {
+      const tracks = [];
+      for (let i = 0; i < n; i++) tracks.push({ id: 'k5-' + i, title: 'Song ' + i + (i % 7 ? ' Night' : ' Dáy'), artist: 'Artist ' + (i % 90), albumArtist: '', album: 'Album ' + (i % 400), path: 'x/Album ' + (i % 400) + '/' + i + '.mp3', genre: 'Rock', size: 1000 + i, hue: 10, color: '#222233', durationSec: 200 + (i % 60), trackNo: (i % 12) + 1 });
+      await new Promise((res) => { const r = indexedDB.open('runout-library', 1); r.onupgradeneeded = () => { r.result.createObjectStore('kv'); r.result.createObjectStore('handles', { autoIncrement: true }); };
+        r.onsuccess = () => { const t = r.result.transaction('kv', 'readwrite'); t.objectStore('kv').put({ version: 1, savedAt: 0, tracks }, 'index'); t.oncomplete = () => { r.result.close(); res(); }; }; });
+    }""", n)
+    page.reload(); page.wait_for_function('document.getElementById("latency") && !/boot error/.test(document.getElementById("latency").textContent)'); page.wait_for_timeout(1500)
+    to_section(page, 'mixtapes'); page.tap('#mtNew'); page.wait_for_selector('.ed'); page.wait_for_timeout(400)
+    page.tap('#edtab-add'); page.wait_for_timeout(1200)
+    st = page.eval_on_selector('.pk-status', 'e => e.textContent'); check('5000 songs' in st, f'5k: library of 5000 restored ({st})')
+    rows = page.locator('.pk-alb, .pk-row').count(); check(rows < 60, f'5k: the list is virtualised ({rows} DOM rows for 400 albums / 5000 songs)')
+    t0 = time.time(); page.fill('.pk-q', 'night artist 4'); page.wait_for_function('document.querySelector(".pk-status").textContent.includes("song")'); dt = time.time() - t0
+    check(dt < 1.5, f'5k: a search over 5,000 tracks answers in {dt*1000:.0f} ms (incl. debounce)')
+    check(page.locator('.pk-alb, .pk-row').count() < 60, '5k: results are virtualised too')
+    page.fill('.pk-q', ''); page.wait_for_timeout(400)
+    page.evaluate('document.querySelector(".pk-scroll").scrollTop = 20000'); page.wait_for_timeout(300)
+    check(page.locator('.pk-alb, .pk-row').count() < 60 and page.locator('.pk-alb').first.inner_text() != '', '5k: scrolling deep re-windows the rows')
+    page.screenshot(path=f'{SHOTS}/5k-picker.png')
+    # the hard cap: 20 songs a side, then refusal, on a C90 (so time is not the limit)
+    page.tap('#edtab-tape'); page.locator('.ed-len', has_text='C90').tap()
+    page.tap('#edtab-add'); page.wait_for_timeout(300)
+    page.fill('.pk-q', 'artist 0'); page.wait_for_timeout(400)
+    page.locator('.pk-addall').first.tap(); page.wait_for_timeout(300)
+    for i in range(30):
+        page.fill('.pk-q', f'song {i}0 ') ; page.wait_for_timeout(120)
+    errs2 = [e for e in errs]
+    ctx.close()
+    check(errs2 == [], f'5k: no page errors {errs2[:3]}')
+
+def main():
+    make_fixtures()
+    with sync_playwright() as p:
+        b = launch(p)
+        for (w, h) in [(360, 780), (412, 915)]:
+            run_viewport(b, w, h)
+        run_5k(b)
+        b.close()
+    print('\nFAILED:' if fails else '\nall checks passed', *fails, sep='\n  ' if fails else '')
+    sys.exit(1 if fails else 0)
+
+if __name__ == '__main__':
+    main()

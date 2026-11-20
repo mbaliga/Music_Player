@@ -15,8 +15,11 @@
 import {
   STORAGE_KEY, cassetteCfg, resolveTracks, tapeProgress, locateTape, estimateTapeSeconds,
   serializeMixtape, parseImport, serializeCollection, parseCollection, newMixtapeId,
-  isFutureCollection, collectionVersion, MIXTAPE_VERSION,
+  isFutureCollection, collectionVersion, MIXTAPE_VERSION, withAutoReverse, withRefDuration, withDurations,
+  sideOfFlat, flatIndex, sideRefs, cleanDur,
 } from './mixtape.js';
+import { createTransport, reduce as tpReduce, runMode, deckMessage } from './cassette/transport.js';
+import { suggestTapes, draftToMixtape, SUGGEST_KEYS, suggestionBlurb } from './mixtape-suggest.js';
 import { createQueue, reduce as queueReduce } from './queue.js';
 import { mountPlayer, SKINS, SKIN_IDS } from './cassette/players.js';
 import { mountStack, mountLibrary } from './cassette/shelf.js';
@@ -37,6 +40,19 @@ const ls = {
   get(k) { try { return localStorage.getItem(k); } catch { return null; } },
   set(k, v) { try { localStorage.setItem(k, v); } catch { /* private mode / quota */ } },
 };
+
+// Settings keys (documented in docs/MIXTAPES.md for the Settings page)
+export const KEY_AUTO_DEFAULT = 'runout.cassette.auto';      // '1' | '0': AUTO default for NEW tapes (also written when the key is pressed)
+export const KEY_CLICKS = 'runout.cassette.clicks';          // '1': a soft click on the AUTO / FLIP keys (off by default)
+export const KEY_HAPTICS = 'runout.cassette.haptics';        // '1': vibrate on the keys (existing)
+
+let active = null;
+/**
+ * Seam for the global search ("add to mixtape"): open the editor on a NEW draft that already holds these library
+ * tracks (ids from the library; or pass `tracks` directly). Never saves by itself. -> true when the editor opened.
+ *   startMixtapeFrom({ trackIds: ['t-…', …], name?: 'Late night' })
+ */
+export function startMixtapeFrom(opts) { return active ? active.startFrom(opts || {}) : false; }
 
 export const WIND_MIN_MS = 450;   // a quick tap still winds this long (~10 s of tape)
 const WIND_SLOW = 24;             // x real time at the start of a hold
@@ -68,6 +84,11 @@ function fillDurations(durations) {
   return durations.map((d) => (d > 0 && isFinite(d) ? d : mean)).slice(0, n);
 }
 
+/** "C60 · A 7 · B 5" for the shelf. */
+export function tapeMeta(m) {
+  return `${m.tape.length} · A ${m.sides.A.length} · B ${m.sides.B.length}`;
+}
+
 export class MixtapeUI {
   /**
    * deps = {
@@ -95,10 +116,15 @@ export class MixtapeUI {
     this.sel = null;       // selected mixtape id on the shelf
     this.view = ls.get('runout.mixtapes.view') === 'spines' ? 'spines' : 'stack';
     this.skin = SKIN_IDS.includes(ls.get('runout.mixtapes.skin')) ? ls.get('runout.mixtapes.skin') : 'deck';
-    this.haptics = ls.get('runout.cassette.haptics') === '1';     // off by default
-    this._st = { playing: false, winding: false, progress: 0, time: 0, speed: 0, level: 0 };
+    this.haptics = ls.get(KEY_HAPTICS) === '1';     // off by default
+    this.clicks = ls.get(KEY_CLICKS) === '1';       // off by default
+    this._st = { playing: false, winding: false, progress: 0, time: 0, speed: 0, level: 0, side: 'A', auto: true, msg: '' };
     this._buildPlayer();
+    active = this;
   }
+
+  /** AUTO default for new tapes. */
+  get autoDefault() { return ls.get(KEY_AUTO_DEFAULT) !== '0'; }
 
   mount(listEl, newBtn, importBtn) {
     this.listEl = listEl;
@@ -126,11 +152,13 @@ export class MixtapeUI {
     this.viewStack?.classList.toggle('active', this.view === 'stack');
     this.viewSpines?.classList.toggle('active', this.view === 'spines');
     if (this.editSel) this.editSel.disabled = !this.byId(this.sel);
+    const sug = this._suggestRow();
+    if (sug) el.append(sug);
     if (!this.list.length) {
       el.append(h('div', { class: 'mt-empty' }, 'No mixtapes yet. Tap “+ New” to make one from your library.'));
       return;
     }
-    const items = this.list.map((m) => ({ id: m.id, cfg: cassetteCfg(m) }));
+    const items = this.list.map((m) => ({ id: m.id, cfg: cassetteCfg(m), meta: tapeMeta(m) }));
     const onSelect = (it) => { this.sel = it ? it.id : null; if (this.editSel) this.editSel.disabled = !this.byId(this.sel); };
     const host = h('div', {});
     el.append(host);
@@ -144,14 +172,63 @@ export class MixtapeUI {
     }
   }
 
+  // ── Suggested tapes: a small dismissible row of auto-generated drafts (docs/MIXTAPES.md) ──
+  get suggestEnabled() { return ls.get(SUGGEST_KEYS.enabled) !== '0'; }
+  _dismissed() { try { const a = JSON.parse(ls.get(SUGGEST_KEYS.dismissed) || '[]'); return Array.isArray(a) ? a.filter((x) => typeof x === 'string').slice(-200) : []; } catch { return []; } }
+  _suggestions() {
+    if (!this.suggestEnabled) return [];
+    // The local play history (src/radio/offline/play-history.js owns the format; this is a defensive read of
+    // its blob, not an import: the radio code is only reachable through its own door, see boot-path.test.mjs).
+    let history = null;
+    try { const j = JSON.parse(ls.get('runout.radio.offline.history.v1') || 'null'); if (j && j.v === 1 && j.tracks && typeof j.tracks === 'object') history = j; } catch { /* no history yet */ }
+    try { return suggestTapes(this.d.getLibraryTracks(), { history, dismissed: this._dismissed() }); } catch { return []; }
+  }
+  _suggestRow() {
+    const list = this._suggestions();
+    if (!list.length) return null;
+    const row = h('section', { class: 'mt-sug', 'aria-label': 'Suggested tapes' },
+      h('div', { class: 'mt-sug-head' }, h('span', {}, 'Suggested tapes'),
+        h('button', { class: 'mt-sug-hide', type: 'button', 'aria-label': 'Hide suggested tapes', title: 'Hide suggestions (switch them back on in Settings)', onclick: () => { ls.set(SUGGEST_KEYS.enabled, '0'); this.render(); } }, '✕')),
+      h('div', { class: 'mt-sug-row' }, ...list.map((sg) => {
+        const chip = h('div', { class: 'mt-sug-chip' },
+          h('button', { class: 'mt-sug-open', type: 'button', title: 'Open as a draft in the editor', onclick: () => this._openSuggestion(sg) },
+            h('b', {}, sg.name), h('small', {}, sg.tagline), h('em', {}, suggestionBlurb(sg))),
+          h('button', { class: 'mt-sug-x', type: 'button', 'aria-label': 'Dismiss ' + sg.name, onclick: () => { ls.set(SUGGEST_KEYS.dismissed, JSON.stringify([...this._dismissed(), sg.id])); this.render(); } }, '×'));
+        return chip;
+      })));
+    return row;
+  }
+  _openSuggestion(sg) {
+    const m = draftToMixtape(sg, { id: newMixtapeId(Date.now(), Math.random(), this.list) });
+    this.edit({ ...m, autoReverse: this.autoDefault }, { draft: true });
+  }
+
+  /** Seam (also exported as startMixtapeFrom): a NEW draft pre-filled with library tracks, opened in the editor. */
+  startFrom({ trackIds, tracks, name } = {}) {
+    const lib = this.d.getLibraryTracks();
+    let picks = [];
+    if (Array.isArray(trackIds)) {
+      const byId = new Map(lib.map((t) => [t.id, t]));
+      picks = trackIds.map((id) => byId.get(id)).filter(Boolean);
+    } else if (Array.isArray(tracks)) picks = tracks.filter((t) => t && typeof t.title === 'string');
+    const id = newMixtapeId(Date.now(), Math.random(), this.list);
+    const m = { ...draftToMixtape({ id, name: name || 'x', tracks: picks, tagline: '' }, { id }), name: name || '', autoReverse: this.autoDefault };
+    const skipped = picks.length - m.tracks.length;
+    this.edit(m, { draft: true, notice: skipped > 0 ? `${skipped} song${skipped === 1 ? '' : 's'} did not fit on the tape and ${skipped === 1 ? 'was' : 'were'} left off.` : '' });
+    return true;
+  }
+
   back(m) {
     openBack({ mixtape: m, onPlay: (mx, i) => this.startPlayback(mx, i), onEdit: (mx) => this.edit(mx) });
   }
 
   // ── Editor ─────────────────────────────────────────────────────────────────
-  edit(existing) {
+  edit(existing, opts = {}) {
     openEditor({
       mixtape: existing,
+      draft: !!opts.draft,
+      notice: opts.notice || '',
+      defaultAuto: this.autoDefault,
       existing: this.list,
       getLibraryTracks: () => this.d.getLibraryTracks(),
       relink: this.d.relink ? async () => { await this.d.relink(); this.refresh(); } : null,
@@ -163,6 +240,12 @@ export class MixtapeUI {
       onDelete: (id) => { this.list = this.list.filter((x) => x.id !== id); if (this.sel === id) this.sel = null; save(this.list); this.render(); },
       onPlay: (m, i) => this.startPlayback(m, i),
       onExport: (m) => this.exportDialog(m),
+      onDuplicate: (m) => {
+        const copy = { ...m, id: newMixtapeId(Date.now(), Math.random(), this.list), name: (m.name + ' copy').slice(0, 40) };
+        this.list.push(copy); this.sel = copy.id; save(this.list); this.render();
+        return copy;
+      },
+      onAutoDefault: (on) => ls.set(KEY_AUTO_DEFAULT, on ? '1' : '0'),
     });
   }
 
@@ -182,7 +265,7 @@ export class MixtapeUI {
 
   importDialog() {
     this._dialog('Import mixtape', (body, done) => {
-      const ta = h('textarea', { class: 'mt-textarea', spellcheck: 'false', placeholder: '{ "version": 3, "name": "…", "cfg": { … }, "tracks": [ … ] }' });
+      const ta = h('textarea', { class: 'mt-textarea', spellcheck: 'false', placeholder: '{ "version": 4, "name": "…", "cfg": { … }, "tape": { "length": "C60" }, "sides": { "A": [ … ], "B": [ … ] } }' });
       const step1 = h('div', { class: 'theme-step' }, ta,
         h('div', { class: 'theme-foot' }, h('span'), h('div', { class: 'theme-foot-right' },
           h('button', { class: 'theme-btn', type: 'button', onclick: done }, 'Cancel'),
@@ -225,15 +308,21 @@ export class MixtapeUI {
   // ── Player ────────────────────────────────────────────────────────────────
   _buildPlayer() {
     this.host = h('div', { class: 'tp-host' });
-    this.listPanel = h('ol', { class: 'tp-list hidden' });
+    this.listHead = h('div', { class: 'tp-sides', role: 'tablist', 'aria-label': 'Tape side' });
+    this.listBody = h('ol', { class: 'tp-songs' });
+    this.listPanel = h('div', { class: 'tp-list hidden' }, this.listHead, this.listBody);
     this.msg = h('div', { class: 'tp-msg hidden' });
     this.skinBtns = SKIN_IDS.map((id) => h('button', { class: 'tp-chip', type: 'button', 'aria-pressed': String(id === this.skin), onclick: () => this._setSkin(id) }, SKINS[id].name));
-    this.hapBtn = h('button', { class: 'tp-chip', type: 'button', 'aria-pressed': String(this.haptics), title: 'Vibrate on the wind keys', onclick: () => {
-      this.haptics = !this.haptics; ls.set('runout.cassette.haptics', this.haptics ? '1' : '0'); this.hapBtn.setAttribute('aria-pressed', String(this.haptics));
+    this.hapBtn = h('button', { class: 'tp-chip', type: 'button', 'aria-pressed': String(this.haptics), title: 'Vibrate on the keys', onclick: () => {
+      this.haptics = !this.haptics; ls.set(KEY_HAPTICS, this.haptics ? '1' : '0'); this.hapBtn.setAttribute('aria-pressed', String(this.haptics));
       this._buzz(20);
     } }, 'Haptics');
+    this.clickBtn = h('button', { class: 'tp-chip', type: 'button', 'aria-pressed': String(this.clicks), title: 'A soft click on the AUTO and FLIP keys', onclick: () => {
+      this.clicks = !this.clicks; ls.set(KEY_CLICKS, this.clicks ? '1' : '0'); this.clickBtn.setAttribute('aria-pressed', String(this.clicks));
+      this._click();
+    } }, 'Click');
     this.root = h('div', { class: 'tp hidden', role: 'dialog', 'aria-label': 'Mixtape player' },
-      h('div', { class: 'tp-bar' }, ...this.skinBtns, this.hapBtn, h('span', { class: 'sp' }),
+      h('div', { class: 'tp-bar' }, ...this.skinBtns, this.hapBtn, this.clickBtn, h('span', { class: 'sp' }),
         h('button', { class: 'btn-close', type: 'button', 'aria-label': 'Close', onclick: () => this._closePlayer() }, '✕')),
       this.host, this.msg, this.listPanel,
       h('div', { class: 'tp-hint' }, 'Tap the cassette for the songs'));
@@ -241,6 +330,22 @@ export class MixtapeUI {
   }
 
   _buzz(ms) { if (this.haptics) { try { navigator.vibrate?.(ms); } catch { /* unsupported */ } } }
+
+  /** A short soft key click (off unless the Click chip is on). A tiny noise burst; never throws. */
+  _click() {
+    if (!this.clicks) return;
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      const ac = this._ac || (this._ac = new AC());
+      if (ac.state === 'suspended') ac.resume?.();
+      const n = Math.floor(ac.sampleRate * 0.012), buf = ac.createBuffer(1, n, ac.sampleRate), d = buf.getChannelData(0);
+      for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 3);
+      const src = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain();
+      f.type = 'bandpass'; f.frequency.value = 1800; g.gain.value = 0.22;
+      src.buffer = buf; src.connect(f); f.connect(g); g.connect(ac.destination); src.start();
+    } catch { /* no audio */ }
+  }
 
   _setSkin(id) {
     if (id === this.skin && this.pl) return;
@@ -257,14 +362,20 @@ export class MixtapeUI {
     pl.on('toggle', () => this._toggle()).on('stop', () => this._stop()).on('eject', () => this._closePlayer())
       .on('next', () => this._step(1)).on('prev', () => this._step(-1)).on('skip', (s) => this._skip(s))
       .on('hold', (dir) => this._windStart(dir)).on('release', () => this._windEnd())
+      .on('auto', (on) => this._setAuto(on)).on('flip', () => this._flipKey())
       .on('tap', () => this.listPanel.classList.toggle('hidden'));
     const p = this.play;
-    if (p) { this._pushState(0, 0, performance.now(), true); pl.insert(cassetteCfg(p.mix)); }
+    if (p) {
+      this._pushState(0, 0, performance.now(), true);
+      pl.update({ side: p.tp.side, auto: p.tp.auto, msg: deckMessage(p.tp) });
+      pl.insert(cassetteCfg(p.mix, { side: p.tp.side }));
+    }
   }
 
   _closePlayer() {
     this.root.classList.add('hidden');
     this._windCancel();
+    clearTimeout(this._msgTimer);
     const p = this.play;
     if (p && p.paused) { p.paused = false; this.d.setPaused?.(false); }   // closing resumes the record, like before
     if (this.pl) { this.pl.destroy(); this.pl = null; }
@@ -275,21 +386,31 @@ export class MixtapeUI {
     const resolved = resolveTracks(m, this.d.getLibraryTracks());
     const files = resolved.map((t) => (t && t.file ? t.file : null));
     const relink = resolved.map((t) => !!(t && !t.file));   // known to the library, file not linked yet
-    const durations = resolved.map((t) => (t && t.durationSec) || null);
+    // real durations beat the hints; a freshly learned one is written back (and may be saved) below
+    m = withDurations(m, resolved);
+    const durations = m.tracks.map((r, i) => (resolved[i] && resolved[i].durationSec) || cleanDur(r.dur) || null);
     this._dropQueued();
     this._windCancel();
     if (this.play && this.play.paused) this.d.setPaused?.(false);
-    this.play = { mix: m, files, relink, durs: fillDurations(durations), idx: -1, loading: false, ended: false, tok: 0,
-      paused: false, wind: null, held: false, T: 0, lastT: 0, lastIdx: -1,
+    const nA = m.sides.A.length;
+    const start = Math.max(0, Math.min(m.tracks.length - 1, startIndex | 0));
+    const startSide = start >= nA ? 'B' : 'A';
+    const playableIn = (lo, hi) => files.slice(lo, hi).filter(Boolean).length;
+    let tp = createTransport({ side: startSide, auto: m.autoReverse, nA: playableIn(0, nA), nB: playableIn(nA, files.length) });
+    tp = { ...tp, pos: { ...tp.pos, [startSide]: { index: startSide === 'B' ? start - nA : start, frac: 0 } } };
+    this.play = { mix: m, files, relink, durs: durations, sideDurs: null, idx: -1, loading: false, ended: false, tok: 0,
+      paused: false, wind: null, held: false, T: 0, lastT: 0, lastIdx: -1, learned: -1, tp, viewSide: startSide, lastProgAt: 0,
       q: createQueue({ playable: files.map(Boolean), durations }) };
+    this._sideDurations();
     this.sel = m.id;
     this.d.closeLibrary();
     this.root.classList.remove('hidden');
     this.listPanel.classList.add('hidden');
+    this._msgOverride = null; this._flipHold = null;
     this._mountSkin();
     this._fillList();
-    const want = files[startIndex] ? startIndex : files.findIndex(Boolean);
-    if (want < 0) {
+    this._applyRunMode(runMode(tp));
+    if (!tp.n.A && !tp.n.B) {
       this._showMsg(relink.some(Boolean)
         ? 'This tape’s tracks are remembered but need re-linking to your music folder.'
         : 'None of this tape’s tracks are in the library right now. Scan your music folder, then play again.',
@@ -297,8 +418,17 @@ export class MixtapeUI {
       return;
     }
     this.msg.classList.add('hidden');
-    await this._goto(want);
+    // if the requested side has nothing playable, begin on the other one
+    if (!tp.n[startSide]) this._dispatch({ type: 'flip' });
+    this._dispatch({ type: 'play' });
   }
+
+  /** Per-side durations with unknowns filled by the side's mean, so a side's tape is always time-weighted. */
+  _sideDurations() {
+    const p = this.play, nA = p.mix.sides.A.length;
+    p.sideDurs = { A: fillDurations(p.durs.slice(0, nA)), B: fillDurations(p.durs.slice(nA)) };
+  }
+  _nSide(side) { return this.play.mix.sides[side].length; }
 
   _showMsg(text, withRelink) {
     this.msg.replaceChildren(text);
@@ -311,28 +441,137 @@ export class MixtapeUI {
     this.msg.classList.remove('hidden');
   }
 
+  /** The tracklist behind a tap on the cassette: the CURRENT SIDE's songs, the other side one tap away. */
   _fillList() {
     const p = this.play;
-    this.listPanel.replaceChildren(...p.mix.tracks.map((t, i) => h('li', {
-      class: (i === p.idx ? 'now ' : '') + (p.files[i] ? '' : 'missing'),
-      onclick: (e) => { e.stopPropagation(); if (p.files[i]) { this.listPanel.classList.add('hidden'); this._goto(i); } },
-    }, t.title, h('small', {}, ` ${t.artist}`), p.relink[i] ? h('small', { class: 'relink' }, ' · needs re-link') : null)));
+    if (!p) return;
+    const view = p.viewSide || p.tp.side;
+    this.listHead.replaceChildren(...['A', 'B'].map((sd) => h('button', {
+      class: 'tp-side' + (sd === view ? ' on' : ''), type: 'button', role: 'tab', 'aria-selected': String(sd === view),
+      onclick: (e) => { e.stopPropagation(); p.viewSide = sd; this._fillList(); },
+    }, `Side ${sd}`, h('small', {}, ` ${p.mix.sides[sd].length}`), sd === p.tp.side ? h('i', { class: 'tp-in', title: 'In the deck' }, ' ●') : null)));
+    const off = flatIndex(p.mix, view, 0);
+    this.listBody.replaceChildren(...p.mix.sides[view].map((t, i) => {
+      const f = off + i;
+      return h('li', {
+        class: (f === p.idx ? 'now ' : '') + (p.files[f] ? '' : 'missing'),
+        onclick: (e) => { e.stopPropagation(); if (p.files[f]) { this.listPanel.classList.add('hidden'); this._jumpTo(f); } },
+      }, t.title, h('small', {}, ` ${t.artist}`), p.relink[f] ? h('small', { class: 'relink' }, ' · needs re-link') : null);
+    }));
+    if (!p.mix.sides[view].length) this.listBody.append(h('li', { class: 'missing' }, 'Nothing on this side'));
   }
 
-  // ── Transport (keys on the skin) ────────────────────────────────────────────
-  _toggle() {
-    const p = this.play; if (!p) return;
-    p.paused = !p.paused; this.d.setPaused?.(p.paused);
+  // ── Transport: the pure state machine (src/cassette/transport.js) decides, this performs ──
+  _dispatch(ev) {
+    const p = this.play; if (!p) return [];
+    const r = tpReduce(p.tp, ev);
+    p.tp = r.state;
+    if (p.tp.phase === 'flip' || p.tp.phase === 'end') p.ended = true;
+    for (const a of r.actions) this._act(a);
+    if (this.pl) this.pl.update({ side: p.tp.side, auto: p.tp.auto, msg: this._msgOverride != null ? this._msgOverride : deckMessage(p.tp) });
+    return r.actions;
   }
+
+  _act(a) {
+    const p = this.play;
+    switch (a.type) {
+      case 'start': {
+        const side = a.side, lo = flatIndex(p.mix, side, 0), hi = lo + this._nSide(side);
+        let i = -1;
+        for (let k = lo + a.index; k < hi; k++) if (p.files[k]) { i = k; break; }
+        if (i < 0) for (let k = lo; k < hi; k++) if (p.files[k]) { i = k; break; }
+        if (i < 0) return;
+        p.viewSide = side;
+        p.paused = false; this.d.setPaused?.(false);
+        this._applyRunMode(runMode(p.tp));
+        this._goto(i, i === lo + a.index ? a.frac : 0);
+        break;
+      }
+      case 'resume': p.paused = false; this.d.setPaused?.(false); break;
+      case 'pause': case 'stopPlayback': if (!p.paused) { p.paused = true; this.d.setPaused?.(true); } break;
+      case 'flipAnim': this._flipView(a.to, a.reason); break;
+      case 'queueMode': this._applyRunMode(a.playable); break;
+      case 'notice': this._flash(a.text); break;
+      case 'persistAuto': this._persistAuto(a.on); break;
+      default: break;
+    }
+  }
+
+  /** Which songs the gapless run may cover: 'both' (AUTO on side A: A then B as one run), or one side. */
+  _applyRunMode(mode) {
+    const p = this.play; if (!p) return;
+    const nA = p.mix.sides.A.length;
+    const playable = p.files.map((f, i) => !!f && (mode === 'both' || (mode === 'A' ? i < nA : i >= nA)));
+    if (p.q.playable.length === playable.length && p.q.playable.every((v, i) => v === playable[i])) return;
+    this._dropQueued();
+    p.q = { ...p.q, playable, phase: 'idle', next: -1, nextBytes: 0, cold: false };
+  }
+  _inRun(i) { const p = this.play; return !!p.q.playable[i]; }
+
+  /** Flip the picture: the cassette turns over (3D), the label shows the new side, the reels start that side's own tape. */
+  _flipView(to, reason) {
+    const p = this.play; if (!p) return;
+    p.viewSide = to;
+    this._buzz(reason === 'auto' ? [14, 40, 14] : 22); this._click();
+    this._fillList();
+    if (!this.pl) return;
+    this._flipHold = { prog: this._st.progress };             // the old side's reels stay put until the cassette is edge-on
+    clearTimeout(this._flipTimer);
+    this._flipTimer = setTimeout(() => { this._flipHold = null; }, 175);
+    const startP = p.tp.pos[to] ? tapeProgress(p.tp.pos[to].index, this._nSide(to), p.tp.pos[to].frac, p.sideDurs[to]) : 0;
+    this.pl.flipTo(cassetteCfg(p.mix, { side: to }), reason === 'auto' ? 0 : startP);
+  }
+
+  _flash(text) {
+    if (!this.play || !this.pl) return;
+    this._msgOverride = text;
+    clearTimeout(this._msgTimer);
+    this._msgTimer = setTimeout(() => { this._msgOverride = null; }, 1600);
+  }
+
+  _persistAuto(on) {
+    ls.set(KEY_AUTO_DEFAULT, on ? '1' : '0');
+    const p = this.play; if (!p) return;
+    p.mix = withAutoReverse(p.mix, on);
+    const i = this.list.findIndex((x) => x.id === p.mix.id);
+    if (i >= 0) { this.list[i] = withAutoReverse(this.list[i], on); save(this.list); }
+  }
+
+  _setAuto(on) { this._buzz(18); this._click(); this._dispatch({ type: 'setAuto', on: !!on }); }
+  _flipKey() { this._buzz(10); this._dispatch({ type: 'flip' }); }
+
+  _toggle() { this._dispatch({ type: 'toggle' }); }
   _stop() {
     const p = this.play; if (!p) return;
-    if (!p.paused) { p.paused = true; this.d.setPaused?.(true); return; }
-    const first = p.files.findIndex(Boolean);
-    if (first >= 0) this._goto(first);        // stays braked: wind back to the top, ready to play
+    const was = p.tp.phase;
+    this._dispatch({ type: 'stop' });
+    if (was !== 'playing' && was !== 'flip') this._rewindSide();   // second press: wind back to the top, ready to play
   }
+  /** Top of the current side, braked. */
+  _rewindSide() {
+    const p = this.play;
+    const side = p.tp.side, lo = flatIndex(p.mix, side, 0), hi = lo + this._nSide(side);
+    p.ended = false;
+    if (!p.paused) { p.paused = true; this.d.setPaused?.(true); }
+    for (let k = lo; k < hi; k++) if (p.files[k]) { this._goto(k); break; }
+  }
+
+  /** Jump to a song by flat index, flipping to its side first when it is on the other one. */
+  _jumpTo(flat) {
+    const p = this.play; if (!p || p.loading || !p.files[flat]) return;
+    const { side, index } = sideOfFlat(p.mix, flat);
+    if (side !== p.tp.side) {
+      this._dispatch({ type: 'flip' });
+      p.tp = { ...p.tp, pos: { ...p.tp.pos, [side]: { index, frac: 0 } } };
+    } else p.tp = { ...p.tp, pos: { ...p.tp.pos, [side]: { index, frac: 0 } } };
+    p.ended = false;
+    this._dispatch({ type: 'play' });
+    if (p.idx !== flat) this._goto(flat);
+  }
+
   _playable(from, dir) {
     const p = this.play;
-    for (let i = from; i >= 0 && i < p.files.length; i += dir) if (p.files[i]) return i;
+    for (let i = from; i >= 0 && i < p.files.length; i += dir) if (p.files[i] && this._inRun(i)) return i;
     return -1;
   }
   _step(dir) {
@@ -349,13 +588,13 @@ export class MixtapeUI {
     this._step(sec > 0 ? 1 : -1);
   }
 
-  // ── Wind: hold left = rewind, right = fast-forward ──────────────────────────
-  // The reels spin and the pack radii change as the tape runs past; the music bus
-  // is silent meanwhile. On release the tape position is resolved to (track, time)
-  // and the real playback seeks there: inside the current track with a seek, into
-  // another track via the queue (goto + seek).
+  // ── Wind: hold left = rewind, right = fast-forward — on the CURRENT SIDE's own tape ─────────
+  // The reels spin and the pack radii change as the tape runs past; the music bus is silent
+  // meanwhile. On release the side's tape position is resolved to (track, time) and the real
+  // playback seeks there. Rewinding past the start of the side stops; winding off the end is the
+  // end of the side (auto-reverse or "flip tape", per the transport).
   _windStart(dir) {
-    const p = this.play; if (!p || p.idx < 0 || p.loading) return;
+    const p = this.play; if (!p || p.idx < 0 || p.loading || p.tp.phase === 'flip' || p.tp.phase === 'end') return;
     this._windCancel(true);
     const cur = this._progressNow();
     p.wind = { dir, p: cur, t0: performance.now(), mul: WIND_SLOW, track: p.idx, time: p.lastT, lastLoc: 0 };
@@ -370,29 +609,47 @@ export class MixtapeUI {
     p.wind = null; p.held = false;
     if (!keepMute) this.d.muteBus?.(false);
   }
-  _windCommit() {
+  _windCommit(edge) {
     const p = this.play, w = p.wind;
     p.wind = null; p.held = false;
-    const loc = locateTape(w.p, p.files.length, p.durs);
-    let i = loc.index;
+    const side = p.tp.side, lo = flatIndex(p.mix, side, 0), n = this._nSide(side);
+    if (edge === 'start') {
+      this.d.muteBus?.(false);
+      this._dispatch({ type: 'windEdge', edge: 'start' });
+      this._rewindSide();
+      return;
+    }
+    if (edge === 'end') {
+      this.d.muteBus?.(false);
+      this._dispatch({ type: 'windEdge', edge: 'end' });
+      return;
+    }
+    const loc = locateTape(w.p, n, p.sideDurs[side]);
+    let i = lo + loc.index;
     if (!p.files[i]) {
-      i = this._playable(i, w.dir);
-      if (i < 0) i = this._playable(loc.index, -w.dir);
-      loc.frac = w.dir > 0 ? 0 : 0.99;
+      let j = -1;
+      for (let k = i; k >= lo && k < lo + n; k += w.dir) if (p.files[k]) { j = k; break; }
+      if (j < 0) for (let k = i; k >= lo && k < lo + n; k -= w.dir) if (p.files[k]) { j = k; break; }
+      i = j; loc.frac = w.dir > 0 ? 0 : 0.99;
     }
     if (i < 0) { this.d.muteBus?.(false); return; }
     const frac = Math.max(0, Math.min(0.985, loc.frac));
+    this._dispatch({ type: 'seek', index: i - lo, frac });
     if (i === p.idx) { this.d.seekFrac?.(frac); this.d.muteBus?.(false); }
     else this._goto(i, frac).then(() => this.d.muteBus?.(false));
   }
 
+  /** Whole-SIDE tape progress (each side is its own tape: B's is not a mirror of A's). */
   _progressNow() {
     const p = this.play;
     if (!p) return 0;
     if (p.wind) return p.wind.p;
+    if (this._flipHold) return this._flipHold.prog;
     if (p.idx < 0) return 0;
+    const side = p.tp.side, { side: isd, index } = sideOfFlat(p.mix, p.idx);
+    if (isd !== side) { const q = p.tp.pos[side]; return tapeProgress(q.index, this._nSide(side), q.frac, p.sideDurs[side]); }   // flipped, not started yet
     const frac = p.ended ? 1 : (p.T > 0 ? p.lastT / p.T : 0);
-    return tapeProgress(p.idx, p.mix.tracks.length, frac, p.durs);
+    return tapeProgress(index, this._nSide(side), frac, p.sideDurs[side]);
   }
 
   async _goto(i, frac = 0) {
@@ -432,7 +689,7 @@ export class MixtapeUI {
       if (a.type === 'preload') this._preload(a.index);
       else if (a.type === 'join') this._applyJoin(a.index, a.fadeSec);
       else if (a.type === 'cold') this._goto(a.index);
-      else if (a.type === 'end') p.ended = true;
+      else if (a.type === 'end') { p.ended = true; this._dispatch({ type: 'sideEnd' }); }
       else if (a.type === 'drop-next') { p.tok++; p.nextTrack = null; this.d.dropNext?.(); }
     }
     return actions;
@@ -461,7 +718,7 @@ export class MixtapeUI {
     if (!nt || nt.index !== index || !this.d.joinNext(fadeSec)) {
       // Nothing usable queued after all: fall back to a plain cold load.
       this._dropQueued();
-      if (p) { p.q = createQueue({ playable: p.files.map(Boolean), durations: p.q.durations }); this._goto(index); }
+      if (p) { p.q = createQueue({ playable: p.q.playable, durations: p.q.durations }); this._goto(index); }
       return;
     }
     p.nextTrack = null;
@@ -483,7 +740,21 @@ export class MixtapeUI {
     s.progress = this._progressNow();
     s.time = p && p.wind ? p.wind.time || 0 : t;
     s.level = level;
+    if (p) { s.side = p.tp.side; s.auto = p.tp.auto; s.msg = this._msgOverride != null ? this._msgOverride : deckMessage(p.tp); }
     if (this.pl) this.pl.update(s);
+  }
+
+  /** A real duration is known (decoded): write it onto the tape's ref (and save), so caps use the truth from now on. */
+  _learn(p) {
+    if (p.learned === p.idx || !(p.T > 0.5)) return;
+    p.learned = p.idx;
+    const next = withRefDuration(p.mix, p.idx, p.T);
+    p.durs[p.idx] = p.T;
+    this._sideDurations();
+    if (next === p.mix) return;
+    p.mix = next;
+    const i = this.list.findIndex((x) => x.id === next.id);
+    if (i >= 0) { this.list[i] = withRefDuration(this.list[i], p.idx, p.T); save(this.list); }
   }
 
   /** Called every frame by main.js with the live playback state. */
@@ -491,7 +762,11 @@ export class MixtapeUI {
     const p = this.play;
     if (!p) return;
     p.lastT = t; p.T = T;
-    if (p.idx !== p.lastIdx) { p.lastIdx = p.idx; if (p.wind) p.wind.track = p.idx; }
+    if (p.idx !== p.lastIdx) {
+      p.lastIdx = p.idx; if (p.wind) p.wind.track = p.idx;
+      if (p.idx >= 0) { const { side, index } = sideOfFlat(p.mix, p.idx); this._dispatch({ type: 'changed', side, index }); }
+    }
+    if (!p.loading && p.idx >= 0) this._learn(p);
     if (!p.loading && p.idx >= 0 && !p.wind) {
       if (this._gapless) {
         // Bounded-memory gapless advance: preload the next track ahead of the runout, join at it.
@@ -499,8 +774,16 @@ export class MixtapeUI {
         this._q({ type: 'tick', t, T, rate });
       } else if (!p.ended && T > 0.5 && t >= T - 0.05) {
         // No engine hooks: plain load-at-the-runout (a short gap).
-        const next = p.files.findIndex((f, i) => i > p.idx && f);
-        if (next >= 0) this._goto(next); else p.ended = true;
+        const next = this._playable(p.idx + 1, 1);
+        if (next >= 0) this._goto(next); else { p.ended = true; this._dispatch({ type: 'sideEnd' }); }
+      }
+      if (p.tp.phase === 'playing') {
+        const nowMs = performance.now();
+        if (nowMs - p.lastProgAt > 250) {            // the side's own tape position, remembered for a later flip back
+          p.lastProgAt = nowMs;
+          const { side, index } = sideOfFlat(p.mix, p.idx);
+          if (side === p.tp.side) this._dispatch({ type: 'progress', index, frac: T > 0 ? t / T : 0 });
+        }
       }
     }
     if (this.root.classList.contains('hidden') || !this.pl) return;   // nothing visible: no per-frame work
@@ -508,18 +791,19 @@ export class MixtapeUI {
     let mul = p.ended || p.loading ? 0 : rate;
     const w = p.wind;
     if (w) {
-      const held = now - w.t0;
+      const held = now - w.t0, side = p.tp.side, n = this._nSide(side);
       w.mul = WIND_SLOW + (WIND_FAST - WIND_SLOW) * Math.min(1, held / WIND_RAMP_MS);
-      const tapeSec = estimateTapeSeconds(p.durs, p.files.length);
+      const tapeSec = estimateTapeSeconds(p.sideDurs[side], n);
       w.p = Math.max(0, Math.min(1, w.p + w.dir * w.mul * dt / tapeSec));
       mul = w.dir * w.mul;
-      const hitEnd = (w.dir > 0 && w.p >= 1) || (w.dir < 0 && w.p <= 0);
-      if ((!p.held && held >= WIND_MIN_MS) || hitEnd) { this._windCommit(); mul = 0; }
+      const edge = w.dir > 0 && w.p >= 1 ? 'end' : (w.dir < 0 && w.p <= 0 ? 'start' : null);
+      if (edge || (!p.held && held >= WIND_MIN_MS)) { this._windCommit(edge); mul = 0; }
       else if (now - (w.lastLoc || 0) > 120) {            // track number / time readout, ~8x a second
         w.lastLoc = now;
-        const loc = locateTape(w.p, p.files.length, p.durs);
-        w.time = loc.frac * p.durs[loc.index];
-        if (loc.index !== w.track) { w.track = loc.index; this._buzz(8); }
+        const loc = locateTape(w.p, n, p.sideDurs[side]);
+        w.time = loc.frac * (p.sideDurs[side][loc.index] || 0);
+        const flat = flatIndex(p.mix, side, loc.index);
+        if (flat !== w.track) { w.track = flat; this._buzz(8); }
       }
     }
     const level = this.d.levelAt ? this.d.levelAt(t, T) : 0;

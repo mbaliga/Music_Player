@@ -44,8 +44,10 @@ let uid = 0;
       items.forEach(function (it) { if (order.indexOf(it.id) < 0) order.push(it.id); });
       items.forEach(function (it) {
         var b = document.createElement('button'); b.type = 'button'; b.className = 'cs-card'; b.setAttribute('aria-label', 'Mixtape: ' + ((it.cfg.text && it.cfg.text.title) || 'Untitled'));
+        if (it.meta) b.setAttribute('aria-label', b.getAttribute('aria-label') + ', ' + it.meta);
         var holder = document.createElement('div'); b.appendChild(holder);
         Cassette.mount(holder, Object.assign({}, it.cfg, { static: true }));
+        if (it.meta) { var mt = document.createElement('span'); mt.className = 'cs-meta'; mt.textContent = it.meta; b.appendChild(mt); }
         b.addEventListener('click', function () {
           if (bringToTop) {
             if (order[order.length - 1] === it.id) { selected = it.id; opts.onOpen && opts.onOpen(it); return; }
@@ -153,6 +155,7 @@ let uid = 0;
         var b = document.createElement('button'); b.type = 'button'; b.setAttribute('aria-label', 'Mixtape: ' + ((it.cfg.text && it.cfg.text.title) || 'Untitled'));
         b.style.cssText = 'display:block;width:100%;border:0;padding:0;background:none;cursor:pointer;transition:transform .35s cubic-bezier(.25,.8,.25,1),filter .25s;flex:none';
         b.innerHTML = spineSvg(it, i); b.firstChild.style.cssText = 'display:block;width:100%;height:auto';
+        if (it.meta) { b.style.position = 'relative'; b.setAttribute('aria-label', b.getAttribute('aria-label') + ', ' + it.meta); var sm = document.createElement('span'); sm.className = 'cs-meta spine'; sm.textContent = it.meta; b.appendChild(sm); }
         b.addEventListener('click', function () { api.select(it.id); opts.onOpen && opts.onOpen(it); });
         list.appendChild(b); btns[it.id] = b;
       });

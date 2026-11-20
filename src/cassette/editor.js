@@ -1,33 +1,38 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// editor.js — the mixtape editor and the back-of-the-case view, adapted from the
-// owner's deck-page.js to Runout's data: songs are REAL library refs (picked
-// from the scanned library, matched by stable id), not typed-in metadata.
+// editor.js — the mixtape editor and the back-of-the-case view.
 //
-//   openEditor({ mixtape|null, ... })   full-screen: live cassette, title /
-//       tagline / by, PLAY + ADD SONG plates, song rows with a ⋮ menu (move,
-//       play from here, remove), a look sheet (37 styles, pen, ink colour, wear,
-//       gloss, side + note), needs-re-link states with a Re-link button,
-//       discard guard, delete.
-//   openBack({ mixtape, ... })          the case back: track list (tap a song to
-//       start there), Play from the top, Edit, Close.
+//   openEditor(ctx)  a phone-first full-screen flow: live cassette preview (tap to flip it A/B)
+//       with a capacity gauge per side, and four tabs —
+//         Tape    name, author, tagline, tape length (C30 / C60 / C90), auto-reverse, duplicate /
+//                 export / delete
+//         Add     search the whole library and add songs to the selected side (editor-songs.js)
+//         Tracks  the selected side's list: reorder, move across, remove, per-row times (editor-songs.js)
+//         Style   cassette type (37), pen, ink, wear, gloss, label note
+//       Songs are REAL library refs (matched by stable id); needs-re-link states keep working.
+//       Caps (tape length per side, 20 songs per side) are enforced by the pure model.
+//   openBack(ctx)    the case back: both sides' lists (tap a song to start there), Play, Edit, Close.
 //
-// All model decisions live in mixtape.js (pure); this file is DOM glue.
+// All model decisions live in mixtape.js / mixtape-pick.js (pure); this file is DOM glue and builds
+// everything from text nodes (never innerHTML with song data).
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { Cassette } from './index.js';
+import { h, icon, ICONS, reducedMotion } from './dom.js';
 import {
-  createMixtape, withName, withAuthor, withStyle, withPen, withInk, withWear, withGloss, withText, inkHex,
-  addTrack, removeTrack, moveTrack, resolveTracks, cassetteCfg, newMixtapeId, FONT_COLOURS, cassetteStyles,
-  MAX_NAME, MAX_TAGLINE, MAX_NOTE, MAX_AUTHOR,
+  createMixtape, withName, withAuthor, withStyle, withPen, withInk, withWear, withGloss, withText, inkHex, withTape, withAutoReverse,
+  canResize, withDurations, resolveTracks, cassetteCfg, newMixtapeId, FONT_COLOURS, cassetteStyles, sideInfo, sideCapacity, remaining, fmtDur,
+  TAPES, TAPE_IDS, MAX_SONGS_PER_SIDE, MAX_NAME, MAX_TAGLINE, MAX_NOTE, MAX_AUTHOR,
 } from '../mixtape.js';
+import { createPicker } from '../mixtape-pick.js';
+import { createAddTab, createTracksTab } from './editor-songs.js';
 
-const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-
-function hashS(s) { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
-function barcode(seed) {
-  let h = hashS(seed), x = 0, r = '';
-  while (x < 100) { h = Math.imul(h ^ (h >>> 13), 1274126177) >>> 0; const w = 0.6 + (h % 5) * 0.45, g = 0.5 + ((h >>> 5) % 3) * 0.45; r += '<rect x="0" y="' + x.toFixed(2) + '" width="10" height="' + w.toFixed(2) + '"/>'; x += w + g; }
-  return '<svg class="bk-bar" viewBox="0 0 10 100" preserveAspectRatio="none" fill="#151515">' + r + '</svg>';
+function hashS(s) { let x = 2166136261; for (let i = 0; i < s.length; i++) { x ^= s.charCodeAt(i); x = Math.imul(x, 16777619); } return x >>> 0; }
+function barcodeSvg(seed) {
+  let x = hashS(seed), y = 0, r = '';
+  while (y < 100) { x = Math.imul(x ^ (x >>> 13), 1274126177) >>> 0; const w = 0.6 + (x % 5) * 0.45, g = 0.5 + ((x >>> 5) % 3) * 0.45; r += '<rect x="0" y="' + y.toFixed(2) + '" width="10" height="' + w.toFixed(2) + '"/>'; y += w + g; }
+  const s = h('span', { class: 'bk-barwrap' });
+  s.innerHTML = '<svg class="bk-bar" viewBox="0 0 10 100" preserveAspectRatio="none" fill="#151515">' + r + '</svg>';   // static, hash-derived markup only
+  return s.firstChild;
 }
 
 // ── back of the case ─────────────────────────────────────────────────────────
@@ -38,29 +43,40 @@ export function closeBack() {
 
 export function openBack({ mixtape: m, onPlay, onEdit }) {
   closeBack();
-  const year = new Date().getFullYear(), side = m.cfg.text.side || 'A';
+  const year = new Date().getFullYear();
   const num = 10000 + (hashS(m.id + m.name) % 89999);
-  const ov = document.createElement('div');
-  ov.className = 'bk-ov'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-label', 'Back of the case: ' + m.name);
   const blurb = [m.cfg.text.subtitle || 'A mixtape', m.cfg.text.note].filter(Boolean).join('. ');
-  ov.innerHTML = '<div class="bk-stage"><div class="bk-card">' +
-    '<div class="bk-top"><b>' + esc(m.name) + '</b><span>' + year + '©</span><svg viewBox="0 0 24 24" fill="none" stroke="#181818" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><ellipse cx="12" cy="12" rx="4.2" ry="10"/><path d="M2 12h20M4 7h16M4 17h16"/></svg></div>' +
-    '<ol class="bk-list">' + (m.tracks.length
-      ? m.tracks.map((t, i) => '<li><button type="button" data-i="' + i + '">' + ('0' + (i + 1)).slice(-2) + ' ' + esc(t.title) + '</button></li>').join('')
-      : '<li style="opacity:.55">No songs yet</li>') + '</ol>' +
-    '<div class="bk-side">' + esc(m.name) + ' · side ' + esc(side) + '<br>mixtape copy</div>' + barcode(m.id + m.name) +
-    '<div class="bk-foot"><span class="id">MX—#' + num + '</span><p>' + esc(blurb) + '. Best played in order, start to finish.</p>' +
-    '<small>All rights reserved © ' + esc(m.author || 'You') + '   Since ' + year + '</small></div>' +
-    '</div></div><div class="bk-actions"><button type="button" class="chip primary" id="bk-ins"' + (m.tracks.length ? '' : ' disabled') + '>Play from the top</button><button type="button" class="chip ghost" id="bk-edit">Edit</button><button type="button" class="chip ghost" id="bk-x">Close</button></div>';
+  const ov = h('div', { class: 'bk-ov', role: 'dialog', 'aria-label': 'Back of the case: ' + m.name });
+  const globe = h('span', { class: 'bk-globe' });
+  globe.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="#181818" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><ellipse cx="12" cy="12" rx="4.2" ry="10"/><path d="M2 12h20M4 7h16M4 17h16"/></svg>';
+  const items = [];
+  let flat = 0;
+  for (const side of ['A', 'B']) {
+    if (!m.sides[side].length && side === 'B') continue;
+    if (m.sides.B.length || side === 'B') items.push(h('li', { class: 'bk-sidehead' }, `Side ${side} · ${m.tape.length}`));
+    if (!m.sides[side].length) items.push(h('li', { style: { opacity: '.55' } }, 'No songs yet'));
+    m.sides[side].forEach((t, i) => {
+      const idx = flat++;
+      items.push(h('li', {}, h('button', { type: 'button', onclick: () => { closeBack(); onPlay(m, idx); } }, ('0' + (i + 1)).slice(-2) + ' ' + t.title)));
+    });
+  }
+  const card = h('div', { class: 'bk-card' },
+    h('div', { class: 'bk-top' }, h('b', {}, m.name), h('span', {}, year + '©'), globe),
+    h('ol', { class: 'bk-list' }, ...items),
+    h('div', { class: 'bk-side' }, m.name, ' · ', m.tape.length, h('br'), 'mixtape copy'),
+    barcodeSvg(m.id + m.name),
+    h('div', { class: 'bk-foot' }, h('span', { class: 'id' }, 'MX—#' + num), h('p', {}, blurb + '. Best played in order, start to finish.'),
+      h('small', {}, 'All rights reserved © ' + (m.author || 'You') + '   Since ' + year)));
+  const close = h('button', { type: 'button', class: 'chip ghost', onclick: closeBack }, 'Close');
+  ov.append(h('div', { class: 'bk-stage' }, card),
+    h('div', { class: 'bk-actions' },
+      h('button', { type: 'button', class: 'chip primary', disabled: m.tracks.length ? null : '', onclick: () => { closeBack(); onPlay(m, 0); } }, 'Play from the top'),
+      h('button', { type: 'button', class: 'chip ghost', onclick: () => { closeBack(); onEdit(m); } }, 'Edit'), close));
   ov.addEventListener('click', (e) => { if (e.target === ov) closeBack(); });
   document.body.appendChild(ov); backEl = ov;
   backKey = (e) => { if (e.key === 'Escape') closeBack(); };
   document.addEventListener('keydown', backKey);
-  ov.querySelector('#bk-x').addEventListener('click', closeBack);
-  ov.querySelector('#bk-edit').addEventListener('click', () => { closeBack(); onEdit(m); });
-  ov.querySelector('#bk-ins').addEventListener('click', () => { closeBack(); onPlay(m, 0); });
-  ov.querySelectorAll('.bk-list button').forEach((b) => b.addEventListener('click', () => { closeBack(); onPlay(m, +b.dataset.i); }));
-  ov.querySelector('#bk-x').focus();
+  close.focus();
 }
 
 // ── editor ───────────────────────────────────────────────────────────────────
@@ -69,183 +85,220 @@ let edEl = null;
 /**
  * ctx = {
  *   mixtape: existing mixtape | null (new),
+ *   draft?: true  the mixtape is a NEW unsaved draft (suggested tape, "add to mixtape"): Save adds it
+ *   notice?: string  shown as a toast on open
+ *   defaultAuto?: boolean  AUTO default for a new tape
  *   existing: mixtape[] (for collision-free ids),
  *   getLibraryTracks(): track[],
  *   relink?(): Promise,                 user-gesture re-link
  *   onSave(m): void,                    persist (add or replace by id)
  *   onDelete(id): void,
- *   onPlay(m, startIndex): void,        save already done
+ *   onPlay(m, flatIndex): void,         save already done
  *   onExport?(m): void,                 show the JSON text
+ *   onDuplicate?(m): mixtape            persist a copy
  * }
  */
 export function openEditor(ctx) {
   closeBack();
   if (edEl) edEl.remove();
-  const isNewInit = !ctx.mixtape;
+  const isNewInit = !ctx.mixtape || !!ctx.draft;
   let isNew = isNewInit;
-  let m = ctx.mixtape || createMixtape({ id: newMixtapeId(Date.now(), Math.random(), ctx.existing || []), name: '' });
-  if (isNewInit) m = { ...m, name: '' };
-  let orig = JSON.stringify(m), menuAt = -1;
+  let m = ctx.mixtape || createMixtape({ id: newMixtapeId(Date.now(), Math.random(), ctx.existing || []), name: '', autoReverse: ctx.defaultAuto !== false });
+  if (!ctx.mixtape) m = { ...m, name: '' };
+  const lib = () => ctx.getLibraryTracks() || [];
+  m = withDurations(m, resolveTracks(m, lib()));          // real durations beat estimates
+  let orig = ctx.draft ? '' : JSON.stringify(m);          // a draft is dirty from the start (nothing saved yet)
   const dirty = () => JSON.stringify(m) !== orig;
+  let side = 'A', tab = m.tracks.length ? 'tracks' : 'tape';
 
-  const ov = document.createElement('div'); ov.className = 'ed-ov';
-  ov.innerHTML = '<div class="ed" role="dialog" aria-label="' + (isNew ? 'New mixtape' : 'Edit mixtape') + '">' +
-    '<div class="ed-bar"><button type="button" id="ed-back" aria-label="Back"><svg width="12" height="20" viewBox="0 0 12 20" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2L2 10l8 8"/></svg></button><h2>' + (isNew ? 'New mixtape' : 'Edit mixtape') + '</h2><button type="button" class="sv" id="ed-save">Save</button></div>' +
-    '<div class="ed-scroll" id="ed-scroll"><div class="ed-hero"><button type="button" class="ed-tape" id="ed-tape" aria-label="Change the look of the tape"></button><div class="ed-hint">Tap the tape to change its look</div>' +
-    '<input class="f t" id="ed-title" maxlength="' + MAX_NAME + '" placeholder="Name your mixtape" autocomplete="off" aria-label="Title">' +
-    '<input class="f g" id="ed-tag" maxlength="' + MAX_TAGLINE + '" placeholder="A few words about it" autocomplete="off" aria-label="Line on the label">' +
-    '<div class="ed-by"><span>by</span><input class="f" id="ed-by" maxlength="' + MAX_AUTHOR + '" placeholder="your name" autocomplete="off" aria-label="Made by"></div></div>' +
-    '<div class="ed-plates"><button type="button" class="plate" id="ed-play">Play</button><button type="button" class="plate" id="ed-add">Add song</button></div>' +
-    '<div id="ed-relink"></div>' +
-    '<div class="ed-head"><span>Songs</span><span id="ed-count"></span></div><div id="ed-list"></div>' +
-    '<button type="button" class="ed-del" id="ed-del"' + (isNew ? ' style="display:none"' : '') + '>Delete mixtape</button>' +
-    (ctx.onExport ? '<button type="button" class="ed-del" id="ed-exp" style="color:#b9b9be;margin-top:4px">Export JSON</button>' : '') +
-    '</div></div>';
+  // ── frame
+  const live = h('div', { class: 'ed-live', 'aria-live': 'polite', role: 'status' });
+  const toastEl = h('div', { class: 'ed-toast hidden', role: 'status' });
+  const title = h('h2', {}, isNew ? 'New mixtape' : 'Edit mixtape');
+  const saveBtn = h('button', { type: 'button', class: 'sv', onclick: () => { commit(); closeEd(); } }, 'Save');
+  const playBtn = h('button', { type: 'button', class: 'pl', 'aria-label': 'Save and play', onclick: () => { const saved = commit(); closeEd(); ctx.onPlay(saved, 0); } }, icon(ICONS.play, { size: 14, fill: 'currentColor', stroke: 0 }), ' Play');
+  const backBtn = h('button', { type: 'button', id: 'ed-back', 'aria-label': 'Back', onclick: () => askLeave() }, icon(ICONS.back, { size: 20, stroke: 2.6 }));
+  const bar = h('div', { class: 'ed-bar' }, backBtn, title, h('span', { class: 'sp' }), playBtn, saveBtn);
+
+  const prev = h('button', { type: 'button', class: 'ed-tape', onclick: () => api.setSide(side === 'A' ? 'B' : 'A') });
+  const prevWrap = h('div', { class: 'ed-prevwrap' }, prev, h('span', { class: 'ed-flipchip' }, icon(ICONS.flip, { size: 13, stroke: 2.2 }), h('span', { class: 'ed-sidelabel' })));
+  const gA = h('button', { type: 'button', class: 'ed-gauge', onclick: () => api.setSide('A') });
+  const gB = h('button', { type: 'button', class: 'ed-gauge', onclick: () => api.setSide('B') });
+  const top = h('div', { class: 'ed-top' }, prevWrap, h('div', { class: 'ed-gauges', role: 'group', 'aria-label': 'Tape capacity per side' }, gA, gB));
+  const TABS = [['tape', 'Tape'], ['add', 'Add'], ['tracks', 'Tracks'], ['style', 'Style']];
+  const tabBtns = {};
+  const tabs = h('div', { class: 'ed-tabs', role: 'tablist' }, ...TABS.map(([id, label]) => (tabBtns[id] = h('button', { type: 'button', role: 'tab', id: 'edtab-' + id, onclick: () => api.goTab(id) }, label))));
+  const panels = {};
+  const panel = h('div', { class: 'ed-panel' });
+  const ed = h('div', { class: 'ed', role: 'dialog', 'aria-label': isNew ? 'New mixtape' : 'Edit mixtape' }, bar, top, tabs, panel, toastEl, live);
+  const ov = h('div', { class: 'ed-ov' }, ed);
   document.body.appendChild(ov); edEl = ov;
-  const $e = (id) => ov.querySelector('#' + id);
-  $e('ed-title').value = m.name; $e('ed-tag').value = m.cfg.text.subtitle; $e('ed-by').value = m.author;
 
-  // ── live cassette (debounced redraw; reels shown at a static mid position)
-  let tapeH = null, ut = null;
-  const cfgNow = () => cassetteCfg(m.name ? m : { ...m, name: 'Untitled mix' }, { reelStandIns: true, progress: 0.35, static: false });
-  const mountTape = () => { tapeH = Cassette.mount($e('ed-tape'), cfgNow(), { onRender: (h) => { const hits = h.svg.querySelector('[data-layer="reel-hit"]'); if (hits) hits.remove(); } }); };
-  const retape = () => { clearTimeout(ut); ut = setTimeout(() => tapeH.update(cfgNow()), 120); };
-  mountTape();
-
-  // ── songs
-  const status = (resolved, i) => (!resolved[i] ? 'miss' : (resolved[i].file ? '' : 'relink'));
-  function renderList() {
-    const L = $e('ed-list'); L.textContent = '';
-    $e('ed-count').textContent = m.tracks.length + (m.tracks.length === 1 ? ' song' : ' songs');
-    $e('ed-play').disabled = !m.tracks.length;
-    const res = resolveTracks(m, ctx.getLibraryTracks());
-    const needs = res.some((r, i) => status(res, i) === 'relink');
-    const rl = $e('ed-relink'); rl.textContent = '';
-    if (needs && ctx.relink) {
-      rl.innerHTML = '<div class="ed-relink"><span>Some songs are remembered but need re-linking to your music folder.</span><button type="button" id="ed-rl">Re-link…</button></div>';
-      rl.querySelector('#ed-rl').addEventListener('click', async () => { try { await ctx.relink(); } catch { /* user cancelled */ } renderList(); });
-    }
-    if (!m.tracks.length) { L.innerHTML = '<div class="ed-empty">No songs yet. Add the first one.</div>'; return; }
-    m.tracks.forEach((t, i) => {
-      const st = status(res, i);
-      const r = document.createElement('div'); r.className = 'ed-row' + (st === 'miss' ? ' dim' : '');
-      const tag = st === 'miss' ? '<span class="tag miss">not in library</span>' : (st === 'relink' ? '<span class="tag">needs re-link</span>' : '');
-      r.innerHTML = '<div class="ed-main" style="cursor:default"><b>' + esc(t.title) + '</b><small>' + esc([t.artist, t.album].filter(Boolean).join(' - ') || 'Unknown artist') + tag + '</small></div>' +
-        '<button type="button" class="ed-dots" aria-label="More for ' + esc(t.title) + '" aria-haspopup="true"><svg width="4" height="18" viewBox="0 0 4 18" fill="#fff"><circle cx="2" cy="2" r="2"/><circle cx="2" cy="9" r="2"/><circle cx="2" cy="16" r="2"/></svg></button>';
-      r.querySelector('.ed-dots').addEventListener('click', (e) => { e.stopPropagation(); menuAt = menuAt === i ? -1 : i; renderList(); });
-      L.appendChild(r);
-      if (menuAt === i) {
-        const mm = document.createElement('div'); mm.className = 'ed-menu'; mm.setAttribute('role', 'menu');
-        mm.innerHTML = '<button type="button" data-a="up"' + (i === 0 ? ' disabled' : '') + '>Move up</button><button type="button" data-a="down"' + (i === m.tracks.length - 1 ? ' disabled' : '') + '>Move down</button><button type="button" data-a="play">Play from here</button><button type="button" data-a="rm" class="rm">Remove</button>';
-        mm.addEventListener('click', (e) => {
-          const a = e.target.getAttribute && e.target.getAttribute('data-a'); if (!a) return; e.stopPropagation(); menuAt = -1;
-          if (a === 'up' && i > 0) { m = moveTrack(m, i, i - 1); changed(); }
-          else if (a === 'down' && i < m.tracks.length - 1) { m = moveTrack(m, i, i + 1); changed(); }
-          else if (a === 'rm') { m = removeTrack(m, i); changed(); }
-          else if (a === 'play') { const saved = commit(); if (saved) { closeEd(); ctx.onPlay(saved, i); } }
-          else renderList();
-        });
-        r.appendChild(mm);
-      }
-    });
-  }
-  const changed = () => { renderList(); retape(); };
-  ov.addEventListener('click', (e) => { if (menuAt >= 0 && !(e.target.closest && e.target.closest('.ed-menu'))) { menuAt = -1; renderList(); } });
-  renderList();
-
-  // ── text fields
-  $e('ed-title').addEventListener('input', (e) => { m = { ...m, name: e.target.value.slice(0, MAX_NAME) }; retape(); });
-  $e('ed-tag').addEventListener('input', (e) => { m = withText(m, { subtitle: e.target.value }); retape(); });
-  $e('ed-by').addEventListener('input', (e) => { m = withAuthor(m, e.target.value); });
-
-  // ── sheets
-  let sheetEl = null;
-  const closeSheet = () => { if (sheetEl) { sheetEl.scrim.remove(); sheetEl.sheet.remove(); sheetEl = null; } };
-  function openSheet(html) {
-    closeSheet();
-    const host = ov.querySelector('.ed'), scrim = document.createElement('div'); scrim.className = 'ed-scrim';
-    const sheet = document.createElement('div'); sheet.className = 'ed-sheet'; sheet.innerHTML = html;
-    scrim.addEventListener('click', closeSheet); host.appendChild(scrim); host.appendChild(sheet); sheetEl = { scrim, sheet };
-    return sheet;
+  // ── shared state / services for the tabs
+  let picker = null, pickerSig = '', toastT = 0, ut = null, tapeH = null;
+  const api = {
+    get m() { return m; },
+    setM(next) { if (next !== m) { m = next; changed(); } },
+    get side() { return side; },
+    setSide(s) {
+      if (s !== 'A' && s !== 'B') return;
+      const flipped = s !== side;
+      side = s;
+      paintTop();
+      if (flipped) flipPreview();
+      addTab.refresh(); tracksTab.refresh();
+      announce(`Side ${s}`);
+    },
+    lib,
+    picker() {
+      const l = lib(), sig = l.length + ':' + (l[0] ? l[0].id : '') + ':' + (l.length ? l[l.length - 1].id : '');
+      if (!picker || sig !== pickerSig) { pickerSig = sig; picker = createPicker(l); }
+      return picker;
+    },
+    toast, announce, goTab: (t) => goTab(t), ctx,
+    play(i) { const saved = commit(); closeEd(); ctx.onPlay(saved, i); },
+    libraryChanged() { m = withDurations(m, resolveTracks(m, lib())); picker = null; addTab.libraryChanged(); changed(); },
+    goTab,
+  };
+  const addTab = createAddTab(api), tracksTab = createTracksTab(api);
+  function announce(t) { live.textContent = ''; setTimeout(() => { live.textContent = t; }, 30); }
+  function toast(msg, o = {}) {
+    clearTimeout(toastT);
+    toastEl.replaceChildren(h('span', {}, msg), o.undo ? h('button', { type: 'button', onclick: () => { o.undo(); toastEl.classList.add('hidden'); } }, 'Undo') : null);
+    toastEl.classList.toggle('bad', !!o.bad); toastEl.classList.remove('hidden');
+    toastT = setTimeout(() => toastEl.classList.add('hidden'), o.undo ? 5200 : (o.bad ? 4600 : 3200));
+    announce(msg);
   }
 
-  // Add songs from the real library (multi-add; rows show what is already on the tape).
-  function pickSheet() {
-    const lib = ctx.getLibraryTracks();
-    const sh = openSheet('<h3>Add songs</h3>' + (lib.length
-      ? '<input class="pick-q" id="pk-q" type="search" placeholder="Filter by title, artist or album" autocomplete="off"><div class="pick-rows" id="pk-rows"></div>'
-      : '<p style="color:#5b5f66;line-height:1.5">Your library is empty. Scan your music folder in Albums first.</p>') +
-      '<div class="acts"><button type="button" class="go" id="pk-ok">Done</button></div>');
-    sh.querySelector('#pk-ok').addEventListener('click', closeSheet);
-    if (!lib.length) return;
-    const q = sh.querySelector('#pk-q'), rows = sh.querySelector('#pk-rows');
-    const have = () => new Set(resolveTracks(m, lib).filter(Boolean));
-    const fill = () => {
-      const f = q.value.trim().toLowerCase(), inTape = have();
-      rows.textContent = '';
-      let n = 0;
-      for (const t of lib) {
-        if (f && !`${t.title} ${t.artist} ${t.album}`.toLowerCase().includes(f)) continue;
-        if (++n > 300) break;      // keep the list light on a phone; filter to find the rest
-        const b = document.createElement('button'); b.type = 'button'; b.className = 'pick-row' + (inTape.has(t) ? ' added' : '');
-        b.innerHTML = '<span>' + esc(t.title) + '<small>' + esc([t.artist, t.album].filter(Boolean).join(' - ')) + '</small></span><b>' + (inTape.has(t) ? '✓' : '+') + '</b>';
-        b.addEventListener('click', () => {
-          m = addTrack(m, t); changed();
-          b.classList.add('added'); b.querySelector('b').textContent = '✓';
-          const sc = $e('ed-scroll'); if (sc) sc.scrollTop = sc.scrollHeight;
-        });
-        rows.appendChild(b);
-      }
-      if (!n) rows.innerHTML = '<div style="padding:16px;color:#6b7078">No matching songs.</div>';
-    };
-    q.addEventListener('input', fill); fill();
+  // ── live cassette preview (debounced redraw; reels shown at a static mid position)
+  const cfgNow = () => cassetteCfg(m.name ? m : { ...m, name: 'Untitled mix' }, { side, reelStandIns: true, progress: 0.35, static: false });
+  const mountTape = () => { tapeH = Cassette.mount(prev, cfgNow(), { onRender: (hh) => { const hits = hh.svg.querySelector('[data-layer="reel-hit"]'); if (hits) hits.remove(); } }); };
+  const retape = () => { clearTimeout(ut); ut = setTimeout(() => tapeH && tapeH.update(cfgNow()), 120); };
+  function flipPreview() {
+    const el = prev;
+    if (reducedMotion() || typeof el.animate !== 'function') { tapeH.update(cfgNow()); return; }
+    el.getAnimations().forEach((a) => a.cancel());
+    el.animate([{ transform: 'perspective(700px) rotateY(0deg)' }, { transform: 'perspective(700px) rotateY(90deg)' }], { duration: 130, easing: 'ease-in', fill: 'forwards' }).finished
+      .then(() => { tapeH.update(cfgNow()); return el.animate([{ transform: 'perspective(700px) rotateY(-90deg)' }, { transform: 'perspective(700px) rotateY(0deg)' }], { duration: 150, easing: 'ease-out', fill: 'forwards' }).finished; })
+      .then(() => { el.getAnimations().forEach((a) => a.cancel()); }).catch(() => {});
   }
 
-  // Look: style grid, pen, ink, wear, gloss, side + note.
-  function lookSheet() {
-    const sh = openSheet('<h3>Look of the tape</h3><div class="ed-grid" id="g-s"></div>' +
-      '<h3>Handwriting</h3><div class="ed-pens" id="g-p"></div>' +
-      '<h3>Ink</h3><div class="ed-dots-row" id="g-i"></div>' +
-      '<label class="rng">Wear<input type="range" id="g-w" min="0" max="1" step="0.01"></label>' +
-      '<label class="rng">Gloss<input type="range" id="g-g" min="0" max="1" step="0.01"></label>' +
-      '<div class="row2"><label>Side<input id="g-side" maxlength="2" autocomplete="off"></label><label>Note on the label<input id="g-note" maxlength="' + MAX_NOTE + '" autocomplete="off" placeholder="Side A · ' + m.tracks.length + ' songs"></label></div>' +
-      '<div class="acts"><button type="button" class="go" id="g-ok">Done</button></div>');
-    const grid = sh.querySelector('#g-s'), pens = sh.querySelector('#g-p'), inks = sh.querySelector('#g-i');
+  // ── capacity gauges: 'A 21:40 / 30:00' and '7 songs, 13 left'
+  function paintGauge(btn, s) {
+    const info = sideInfo(m, s), cap = sideCapacity(m), r = remaining(m, s), over = info.sec > cap || info.count > MAX_SONGS_PER_SIDE;
+    btn.replaceChildren(
+      h('span', { class: 'g-top' }, h('b', {}, s), h('span', {}, `${fmtDur(info.sec, info.est)} / ${fmtDur(cap)}`)),
+      h('span', { class: 'g-bar' }, h('i', { style: { width: Math.min(100, info.sec / cap * 100).toFixed(1) + '%' } })),
+      h('span', { class: 'g-sub' }, over ? 'Over capacity' : `${info.count} song${info.count === 1 ? '' : 's'}, ${Math.max(0, MAX_SONGS_PER_SIDE - info.count)} left`));
+    btn.setAttribute('aria-pressed', String(side === s));
+    btn.setAttribute('aria-label', `Side ${s}: ${fmtDur(info.sec, info.est)} of ${fmtDur(cap)}, ${info.count} songs. ${side === s ? 'Selected' : 'Select'}`);
+    btn.classList.toggle('on', side === s); btn.classList.toggle('over', over);
+    btn.classList.toggle('full', !over && (r.sec < 30 || r.slots === 0));
+  }
+  function paintTop() {
+    paintGauge(gA, 'A'); paintGauge(gB, 'B');
+    prev.setAttribute('aria-label', `Cassette preview, side ${side}. Tap to flip to side ${side === 'A' ? 'B' : 'A'}.`);
+    prevWrap.querySelector('.ed-sidelabel').textContent = `Side ${side}`;
+  }
+
+  function changed() { paintTop(); retape(); addTab.refresh(); tracksTab.refresh(); paintTape(); }
+
+  // ── tabs
+  function goTab(id) {
+    tab = id;
+    for (const [k] of TABS) { tabBtns[k].setAttribute('aria-selected', String(k === id)); tabBtns[k].classList.toggle('on', k === id); }
+    for (const k of Object.keys(panels)) panels[k].classList.toggle('hidden', k !== id);
+    panel.classList.toggle('fill', id === 'add');
+    if (id === 'add') { addTab.show(); }
+    else if (id === 'tracks') tracksTab.show();
+    else if (id === 'style') buildStyle();
+    else paintTape();
+    panel.scrollTop = 0;
+  }
+
+  // ── Tape tab
+  const tapeP = panels.tape = h('div', { class: 'ed-tab ed-tape-tab' });
+  const fName = h('input', { class: 'fld', maxlength: MAX_NAME, placeholder: 'Name your mixtape', autocomplete: 'off', 'aria-label': 'Title' });
+  const fTag = h('input', { class: 'fld', maxlength: MAX_TAGLINE, placeholder: 'A few words about it', autocomplete: 'off', 'aria-label': 'Line on the label' });
+  const fBy = h('input', { class: 'fld', maxlength: MAX_AUTHOR, placeholder: 'your name', autocomplete: 'off', 'aria-label': 'Made by' });
+  fName.value = m.name; fTag.value = m.cfg.text.subtitle; fBy.value = m.author;
+  fName.addEventListener('input', () => { m = { ...m, name: fName.value.slice(0, MAX_NAME) }; retape(); });
+  fTag.addEventListener('input', () => { m = withText(m, { subtitle: fTag.value }); retape(); });
+  fBy.addEventListener('input', () => { m = withAuthor(m, fBy.value); });
+  const lenBox = h('div', { class: 'ed-lens', role: 'radiogroup', 'aria-label': 'Tape length' });
+  const autoSw = h('button', { type: 'button', class: 'ed-switch', role: 'switch', onclick: () => { m = withAutoReverse(m, !m.autoReverse); paintTape(); } },
+    h('span', { class: 'sw-track' }, h('i', {})), h('span', { class: 'sw-txt' }, h('b', {}, 'Auto-reverse'), h('small', {}, 'At the end of side A the player flips to side B by itself. You can still switch it on the player.')));
+  const caps = h('p', { class: 'ed-caps' });
+  const manage = h('div', { class: 'ed-manage' });
+  tapeP.append(
+    h('label', { class: 'ed-l' }, 'Title', fName), h('label', { class: 'ed-l' }, 'Line on the label', fTag), h('label', { class: 'ed-l' }, 'Made by', fBy),
+    h('div', { class: 'ed-h' }, 'Tape length'), lenBox, caps, autoSw, manage);
+  function paintTape() {
+    lenBox.replaceChildren(...TAPE_IDS.map((id) => {
+      const t = TAPES[id], on = m.tape.length === id;
+      return h('button', { type: 'button', class: 'ed-len' + (on ? ' on' : ''), role: 'radio', 'aria-checked': String(on), onclick: () => {
+        if (on) return;
+        const ok = canResize(m, id);
+        if (!ok.ok) { toast(`Cannot switch to ${id}. ${ok.reason}`, { bad: true }); return; }
+        m = withTape(m, id); changed(); announce(`${id} tape`);
+      } }, h('b', {}, id), h('small', {}, `${t.minutes / 2}+${t.minutes / 2} min`));
+    }));
+    caps.textContent = `A ${m.tape.length} side holds ${fmtDur(sideCapacity(m))} and at most ${MAX_SONGS_PER_SIDE} songs. A song that does not fit is refused, never squeezed. Songs with an unknown length count as ~4:00 until they have played once.`;
+    autoSw.setAttribute('aria-checked', String(!!m.autoReverse)); autoSw.classList.toggle('on', !!m.autoReverse);
+    manage.replaceChildren(
+      !isNew && ctx.onDuplicate ? h('button', { type: 'button', class: 'ed-act', onclick: () => { finalizeName(); const copy = ctx.onDuplicate(m); if (copy) toast(`Duplicated as “${copy.name}”.`); } }, 'Duplicate') : null,
+      ctx.onExport ? h('button', { type: 'button', class: 'ed-act', onclick: () => { finalizeName(); ctx.onExport(m); } }, 'Export JSON') : null,
+      !isNew ? delBtn : null);
+  }
+  let armed = null;
+  const delBtn = h('button', { type: 'button', class: 'ed-act danger', onclick: () => {
+    if (!armed) { delBtn.textContent = 'Tap again to delete'; armed = setTimeout(() => { armed = null; delBtn.textContent = 'Delete mixtape'; }, 3000); return; }
+    clearTimeout(armed); ctx.onDelete(m.id); closeEd();
+  } }, 'Delete mixtape');
+
+  // ── Style tab (built on first view: 37 thumbnails)
+  const styleP = panels.style = h('div', { class: 'ed-tab ed-style-tab' });
+  let styleBuilt = false;
+  function buildStyle() {
+    if (styleBuilt) return;
+    styleBuilt = true;
+    const grid = h('div', { class: 'ed-grid' }), pens = h('div', { class: 'ed-pens' }), inks = h('div', { class: 'ed-dots-row' });
+    const retag = (box, btn) => box.childNodes.forEach((x) => x.setAttribute('aria-pressed', String(x === btn)));
     cassetteStyles().forEach((s) => {
-      const b = document.createElement('button'); b.type = 'button'; b.className = 'ed-sty'; b.setAttribute('aria-pressed', String(s.id === m.cfg.style)); b.setAttribute('aria-label', s.name);
-      b.innerHTML = '<span class="th"></span><span>' + esc(s.name) + '</span>';
+      const b = h('button', { type: 'button', class: 'ed-sty', 'aria-pressed': String(s.id === m.cfg.style), 'aria-label': 'Cassette type: ' + s.name }, h('span', { class: 'th' }), h('span', {}, s.name));
       Cassette.mount(b.firstChild, { style: s.id, static: true, wear: 0, text: { title: m.name || 'Mixtape', subtitle: '', note: '', side: 'A' } });
-      b.addEventListener('click', () => { m = withStyle(m, s.id); grid.childNodes.forEach((x) => x.setAttribute('aria-pressed', String(x === b))); tapeH.update(cfgNow()); });
-      grid.appendChild(b);
+      b.addEventListener('click', () => { m = withStyle(m, s.id); retag(grid, b); tapeH.update(cfgNow()); });
+      grid.append(b);
     });
     Object.keys(Cassette.PENS).forEach((k) => {
-      const b = document.createElement('button'); b.type = 'button'; b.textContent = Cassette.PENS[k].label; b.style.fontFamily = Cassette.PENS[k].family; b.setAttribute('aria-pressed', String(k === m.cfg.pen));
-      b.addEventListener('click', () => { m = withPen(m, k); pens.childNodes.forEach((x) => x.setAttribute('aria-pressed', String(x === b))); tapeH.update(cfgNow()); });
-      pens.appendChild(b);
+      const b = h('button', { type: 'button', 'aria-pressed': String(k === m.cfg.pen), style: { fontFamily: Cassette.PENS[k].family } }, Cassette.PENS[k].label);
+      b.addEventListener('click', () => { m = withPen(m, k); retag(pens, b); tapeH.update(cfgNow()); });
+      pens.append(b);
     });
-    const dots = [{ id: 'auto', name: 'Style default', hex: null }, ...FONT_COLOURS];
-    dots.forEach((c) => {
-      const b = document.createElement('button'); b.type = 'button'; b.title = c.name; b.setAttribute('aria-label', 'Ink: ' + c.name);
+    [{ id: 'auto', name: 'Style default', hex: null }, ...FONT_COLOURS].forEach((c) => {
+      const b = h('button', { type: 'button', title: c.name, 'aria-label': 'Ink: ' + c.name });
       b.style.background = c.hex || 'conic-gradient(#c0392b,#e07a1f,#1e7a4a,#1f4fd8,#6d4cff,#c0392b)';
       b.setAttribute('aria-pressed', String((inkHex(m) || null) === c.hex || (c.hex && inkHex(m) && inkHex(m).toLowerCase() === c.hex)));
-      b.addEventListener('click', () => { m = withInk(m, c.hex); inks.childNodes.forEach((x) => x.setAttribute('aria-pressed', String(x === b))); tapeH.update(cfgNow()); });
-      inks.appendChild(b);
+      b.addEventListener('click', () => { m = withInk(m, c.hex); retag(inks, b); tapeH.update(cfgNow()); });
+      inks.append(b);
     });
-    const w = sh.querySelector('#g-w'), g = sh.querySelector('#g-g');
+    const w = h('input', { type: 'range', min: '0', max: '1', step: '0.01', 'aria-label': 'Wear' }), g = h('input', { type: 'range', min: '0', max: '1', step: '0.01', 'aria-label': 'Gloss' });
     w.value = m.cfg.wear; g.value = m.cfg.gloss;
     w.addEventListener('input', () => { m = withWear(m, +w.value); retape(); });
     g.addEventListener('input', () => { m = withGloss(m, +g.value); retape(); });
-    const side = sh.querySelector('#g-side'), note = sh.querySelector('#g-note');
-    side.value = m.cfg.text.side; note.value = m.cfg.text.note;
-    side.addEventListener('input', () => { m = withText(m, { side: side.value }); retape(); });
+    const note = h('input', { class: 'fld light', maxlength: MAX_NOTE, autocomplete: 'off', placeholder: 'Side A · 6 songs', 'aria-label': 'Note on the label' });
+    note.value = m.cfg.text.note;
     note.addEventListener('input', () => { m = withText(m, { note: note.value }); retape(); });
-    sh.querySelector('#g-ok').addEventListener('click', closeSheet);
+    styleP.append(h('div', { class: 'ed-h' }, 'Cassette type'), grid, h('div', { class: 'ed-h' }, 'Handwriting'), pens, h('div', { class: 'ed-h' }, 'Ink'), inks,
+      h('label', { class: 'rng' }, 'Wear', w), h('label', { class: 'rng' }, 'Gloss', g),
+      h('label', { class: 'ed-l light' }, 'Note on the label (blank = side and song count)', note));
   }
-  $e('ed-tape').addEventListener('click', lookSheet);
-  $e('ed-add').addEventListener('click', pickSheet);
 
-  // ── save, play, delete, leave
-  function finalizeName() { if (!m.name.trim()) { m = withName(m, 'Untitled mix'); $e('ed-title').value = m.name; } else m = withName(m, m.name); }
+  panels.add = addTab.el; panels.tracks = tracksTab.el;
+  panel.append(panels.tape, panels.add, panels.tracks, panels.style);
+
+  // ── save, play, leave
+  function finalizeName() { if (!m.name.trim()) { m = withName(m, 'Untitled mix'); fName.value = m.name; } else m = withName(m, m.name); }
   function commit() {
     clearTimeout(ut);
     finalizeName();
@@ -253,29 +306,29 @@ export function openEditor(ctx) {
     orig = JSON.stringify(m); isNew = false;
     return m;
   }
-  function closeEd() { closeSheet(); document.removeEventListener('keydown', edKey); clearTimeout(ut); ov.remove(); if (edEl === ov) edEl = null; }
+  function closeEd() { document.removeEventListener('keydown', edKey); clearTimeout(ut); clearTimeout(toastT); ov.remove(); if (edEl === ov) edEl = null; }
   function askLeave() {
     if (!dirty()) { closeEd(); return; }
-    if (ov.querySelector('.ed-warn')) return;
-    const w = document.createElement('div'); w.className = 'ed-warn';
-    w.innerHTML = '<span>Discard your changes?</span><span style="display:flex;gap:8px"><button type="button" class="kp">Keep editing</button><button type="button" class="dc">Discard</button></span>';
-    w.querySelector('.kp').addEventListener('click', () => w.remove());
-    w.querySelector('.dc').addEventListener('click', closeEd);
-    ov.querySelector('.ed').appendChild(w);
+    if (ed.querySelector('.ed-warn')) return;
+    const w = h('div', { class: 'ed-warn', role: 'alertdialog', 'aria-label': 'Discard your changes?' }, h('span', {}, 'Discard your changes?'),
+      h('span', { style: { display: 'flex', gap: '8px' } },
+        h('button', { type: 'button', class: 'kp', onclick: () => w.remove() }, 'Keep editing'),
+        h('button', { type: 'button', class: 'dc', onclick: closeEd }, 'Discard')));
+    ed.append(w);
+    w.querySelector('.kp').focus();
   }
-  function edKey(e) { if (e.key === 'Escape') { if (sheetEl) closeSheet(); else askLeave(); } }
+  function edKey(e) {
+    if (e.key !== 'Escape') return;
+    const warn = ed.querySelector('.ed-warn');
+    if (warn) { warn.remove(); return; }
+    askLeave();
+  }
   document.addEventListener('keydown', edKey);
-  $e('ed-back').addEventListener('click', askLeave);
-  $e('ed-save').addEventListener('click', () => { commit(); closeEd(); });
-  $e('ed-play').addEventListener('click', () => { const saved = commit(); closeEd(); ctx.onPlay(saved, 0); });
-  const del = $e('ed-del');
-  let armed = null;
-  del.addEventListener('click', () => {
-    if (!armed) { del.textContent = 'Tap again to delete'; armed = setTimeout(() => { armed = null; del.textContent = 'Delete mixtape'; }, 3000); return; }
-    clearTimeout(armed); ctx.onDelete(m.id); closeEd();
-  });
-  const exp = $e('ed-exp');
-  if (exp) exp.addEventListener('click', () => { finalizeName(); ctx.onExport(m); });
-  setTimeout(() => { if (isNewInit) $e('ed-title').focus(); }, 80);
+
+  mountTape();
+  paintTop();
+  goTab(tab);
+  if (ctx.notice) toast(ctx.notice);
+  setTimeout(() => { if (isNewInit && !ctx.mixtape) fName.focus(); }, 80);
   return { close: closeEd, el: ov };
 }
