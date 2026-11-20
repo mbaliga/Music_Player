@@ -6,7 +6,7 @@ import {
 } from '../src/fx/divisions.js';
 import { estimateTempo, onsetEnvelope, tempoFromOnsets } from '../src/fx/tempo.js';
 import {
-  GESTURE_KNOBS as K, divisionFromRadius, repeatRateFromSpin, ratePercent, formatPercent, padFromPoint, bpFreqFromX, bpQFromY, echoWetFromX,
+  GESTURE_KNOBS as K, divisionFromDrag, repeatRateFromSpin, ratePercent, formatPercent, padFromPoint, bpFreqFromX, bpQFromY, echoWetFromX,
   echoFeedbackFromY, blendFromRadius, smooth, spinRelative,
 } from '../src/fx/gesture.js';
 import { MODES, defaultFx, sanitizeFx, setMode, setParam, derive, W_MODE, holdsPlatter, isPadMode } from '../src/fx/modes.js';
@@ -101,24 +101,25 @@ test('tempo: deterministic', () => {
 });
 
 // ── gesture mappings ──────────────────────────────────────────────────────────────────────────────────────────────────
-test('division from radius: outer = 1/1 ... spindle = 1/16, monotone, covers all five', () => {
-  const seen = []; let last = -1;
-  for (let u = 1; u >= 0; u -= 0.01) {
-    const d = divisionFromRadius(u, null); const i = DIVISIONS.indexOf(d);
-    assert.ok(i >= last, 'never goes back toward 1/1 as the finger moves inward'); last = i; if (!seen.includes(d)) seen.push(d);
-  }
+test('division from a radial drag: inward steps toward 1/16, outward toward 1/1, one step per zone, clamped', () => {
+  const zone = (K.divOuter - K.divInner) / DIVISIONS.length;
+  assert.equal(divisionFromDrag('1/4', 0.5, 0.5), '1/4');
+  assert.equal(divisionFromDrag('1/4', 0.5, 0.5 - zone), '1/8');
+  assert.equal(divisionFromDrag('1/4', 0.5, 0.5 - 2 * zone), '1/16');
+  assert.equal(divisionFromDrag('1/4', 0.5, 0.5 + zone), '1/2');
+  assert.equal(divisionFromDrag('1/4', 0.5, 0.5 + 2 * zone), '1/1');
+  assert.equal(divisionFromDrag('1/4', 0.5, -9), '1/16'); assert.equal(divisionFromDrag('1/4', 0.5, 9), '1/1'); assert.equal(divisionFromDrag('zzz', NaN, NaN), '1/1');
+  // sweeping across the whole platter visits every division, in order
+  const seen = []; let prev = null;
+  for (let u = 1; u >= 0; u -= 0.005) { const d = divisionFromDrag('1/1', 1, u, prev); prev = d; if (!seen.includes(d)) seen.push(d); }
   assert.deepEqual(seen, [...DIVISIONS]);
-  assert.equal(divisionFromRadius(1.5), '1/1'); assert.equal(divisionFromRadius(-3), '1/16'); assert.equal(divisionFromRadius(NaN), '1/16');
 });
 test('division stepping has hysteresis: wobbling across a boundary does not flip-flop', () => {
-  const span = K.divOuter - K.divInner;
-  const boundary = K.divOuter - span * (1 / 5);      // between 1/1 (outer zone) and 1/2
-  let d = divisionFromRadius(boundary + 0.001, null); assert.equal(d, '1/1');
-  let flips = 0;
-  for (let i = 0; i < 100; i++) { const u = boundary + (i % 2 ? -1 : 1) * 0.004; const n = divisionFromRadius(u, d); if (n !== d) flips++; d = n; }
+  const zone = (K.divOuter - K.divInner) / DIVISIONS.length;
+  const boundary = 0.5 - zone * 0.5;                 // exactly between 1/4 and 1/8 for a drag that started at 0.5
+  let d = '1/4', flips = 0;
+  for (let i = 0; i < 200; i++) { const u = boundary + (i % 2 ? -1 : 1) * 0.3 * zone * K.divHyst; const n = divisionFromDrag('1/4', 0.5, u, d); if (n !== d) flips++; d = n; }
   assert.equal(flips, 0);
-  // but a real move across the whole zone does change it
-  assert.equal(divisionFromRadius(boundary - span * 0.1, '1/1'), '1/2');
 });
 test('repeat rate from spin: dead zone, +% forward, -% backward, clamped to -50..+900', () => {
   assert.equal(repeatRateFromSpin(0), 1); assert.equal(repeatRateFromSpin(K.spinDead), 1); assert.equal(repeatRateFromSpin(-K.spinDead), 1);

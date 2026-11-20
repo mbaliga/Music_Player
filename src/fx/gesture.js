@@ -9,7 +9,7 @@
 import { DIVISIONS } from './divisions.js';
 
 export const GESTURE_KNOBS = Object.freeze({
-  // beat repeat / stutter: radial position picks the division (outer edge = 1/1 ... spindle = 1/16)
+  // beat repeat / stutter: a radial drag steps the division (inward = shorter slice, outward = longer)
   divInner: 0.10,        // u at which the innermost zone (1/16) starts
   divOuter: 0.96,        // u at which the outermost zone (1/1) ends
   divHyst: 0.18,         // hysteresis, in zones (0.18 of a zone width) before the division changes
@@ -30,17 +30,19 @@ export const clamp = (x, lo, hi) => (x < lo ? lo : x > hi ? hi : x);
 const num = (x, d = 0) => (typeof x === 'number' && Number.isFinite(x) ? x : d);
 
 /**
- * Division from radial position with hysteresis. `prev` is the division currently in force (or null).
- * Outer edge = 1/1 ... spindle = 1/16. Returns one of DIVISIONS.
+ * Division from a radial DRAG. The division in force when the finger lands is `div0`; moving the finger inward (toward the spindle)
+ * steps toward 1/16, outward toward 1/1, one step per `zoneWidth` of radial travel (u units; 5 zones span divInner..divOuter).
+ * `prev` = the division currently in force while holding (hysteresis: the finger must pass a zone boundary by divHyst of a zone).
  */
-export function divisionFromRadius(u, prev = null, K = GESTURE_KNOBS) {
+export function divisionFromDrag(div0, u0, u, prev = null, K = GESTURE_KNOBS) {
   const n = DIVISIONS.length;
-  const t = clamp((num(u) - K.divInner) / (K.divOuter - K.divInner), 0, 1);   // 0 = inner .. 1 = outer
-  const z = (1 - t) * n;                                                       // 0 = outer zone start ... n = inner end
-  let k = Math.min(n - 1, Math.floor(z));
+  const i0 = Math.max(0, DIVISIONS.indexOf(div0));
+  const zone = (K.divOuter - K.divInner) / n;
+  const f = i0 + (num(u0) - num(u)) / zone;                 // fractional index: inward = larger
   const pi = prev ? DIVISIONS.indexOf(prev) : -1;
-  if (pi >= 0 && pi !== k && z > pi - K.divHyst && z < pi + 1 + K.divHyst) k = pi;
-  return DIVISIONS[k];
+  let k = Math.round(f);
+  if (pi >= 0 && Math.abs(f - pi) <= 0.5 + K.divHyst) k = pi;
+  return DIVISIONS[clamp(k, 0, n - 1)];
 }
 
 /** Signed spin relative to nominal: rad/s finger angular velocity over rad/s nominal. */
