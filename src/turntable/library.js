@@ -106,9 +106,9 @@ export function mountTurntableLibrary(container, deps = {}) {
     onChange: () => {},
   });
 
-  function emit(ev, a, b) {
+  function emit(ev, ...args) {
     const hs = handlers[ev]; if (!hs || !hs.length) return;
-    for (const h of hs.slice()) { try { h(a, b); } catch (err) { (win.console || console).error(err); } }
+    for (const h of hs.slice()) { try { h(...args); } catch (err) { (win.console || console).error(err); } }
   }
   const reduced = () => !!(mql && mql.matches);
   try { mql = (deps.matchMedia || win.matchMedia || null) && (deps.matchMedia || win.matchMedia.bind(win))('(prefers-reduced-motion: reduce)'); } catch { mql = null; }

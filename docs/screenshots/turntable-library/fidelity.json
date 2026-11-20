@@ -1,0 +1,86 @@
+[
+ {
+  "viewport": "1241x561",
+  "vars_proto": [
+   "247px",
+   "158px",
+   "422px",
+   "70px",
+   "16px",
+   "14.1px",
+   "87px",
+   "48px"
+  ],
+  "vars_mine": [
+   "247px",
+   "158px",
+   "422px",
+   "70px",
+   "16px",
+   "14.1px",
+   "87px",
+   "48px"
+  ],
+  "max_cover_rect_diff_px": 0.0,
+  "title_diff_px": 0,
+  "sub_diff_px": 0,
+  "slot_diff_px": 0,
+  "max_row_rect_diff_px": 0
+ },
+ {
+  "viewport": "561x1241",
+  "vars_proto": [
+   "348px",
+   "223px",
+   "595px",
+   "70px",
+   "16px",
+   "14.1px",
+   "39px",
+   "48px"
+  ],
+  "vars_mine": [
+   "348px",
+   "223px",
+   "595px",
+   "70px",
+   "16px",
+   "14.1px",
+   "39px",
+   "48px"
+  ],
+  "max_cover_rect_diff_px": 0.0,
+  "title_diff_px": 0,
+  "sub_diff_px": 0,
+  "slot_diff_px": 0.0,
+  "max_row_rect_diff_px": 0
+ },
+ {
+  "viewport": "582x1162",
+  "vars_proto": [
+   "361px",
+   "231px",
+   "617px",
+   "70px",
+   "16px",
+   "14.1px",
+   "41px",
+   "48px"
+  ],
+  "vars_mine": [
+   "361px",
+   "231px",
+   "617px",
+   "70px",
+   "16px",
+   "14.1px",
+   "41px",
+   "48px"
+  ],
+  "max_cover_rect_diff_px": 0.0,
+  "title_diff_px": 0,
+  "sub_diff_px": 0,
+  "slot_diff_px": 0.0,
+  "max_row_rect_diff_px": 0
+ }
+]

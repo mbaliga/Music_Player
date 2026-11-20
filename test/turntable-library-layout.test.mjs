@@ -103,8 +103,8 @@ test('dragFocus: finger right = previous album; clamped', () => {
 test('flingTarget: rounds, adds momentum, is capped and clamped', () => {
   assert.equal(flingTarget(2.4, 0, 10), 2);
   assert.equal(flingTarget(2.6, 0, 10), 3);
-  assert.equal(flingTarget(2.2, 5, 10), 3);          // 2.2 + .9 = 3.1
-  assert.equal(flingTarget(2.2, -5, 10), 1);
+  assert.equal(flingTarget(2.2, 5, 10), 3);          // 2.2 + .5 = 2.7
+  assert.equal(flingTarget(2.2, -9, 10), 1);          // 2.2 - .9 = 1.3
   assert.equal(flingTarget(2, 500, 100), 7);          // capped at +5
   assert.equal(flingTarget(0.2, -50, 10), 0);
   assert.equal(flingTarget(8.7, 50, 10), 9);

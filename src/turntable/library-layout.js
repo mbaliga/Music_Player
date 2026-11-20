@@ -25,7 +25,7 @@ export const LIB_KNOBS = Object.freeze({
   rowMin: 44,            // minimum track-row height (touch target); the prototype's own is 34..48
   dragSlopPx: 6,         // movement before a press becomes a swipe
   easeRate: 11,          // focus eases to its target at 1 - exp-ish: min(1, dt * easeRate)
-  flingGainS: 0.18,      // momentum: target = round(focus + velocity * gain)
+  flingGainS: 0.1,       // momentum: target = round(focus + velocity * gain)
   maxFling: 5,           // never fling further than this many albums
   settleEps: 0.003,
   wheelIdleMs: 120,

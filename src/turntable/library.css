@@ -69,7 +69,7 @@
 /* track list */
 .tl-tracks { list-style: none; margin: 0; padding: 0 var(--pad) 28px; }
 .tl-trk {
-  display: flex; align-items: center; gap: 14px; height: var(--rh); box-sizing: border-box;
+  display: flex; align-items: center; gap: 14px; height: var(--rh);
   border-top: 1px solid rgba(255, 255, 255, .07); font-size: var(--f1); cursor: pointer; color: #a9a9b3; outline: none;
 }
 .tl-trk .n { white-space: nowrap; width: 3em; font-variant-numeric: tabular-nums; color: #5d5d66; font-size: var(--f2); }
