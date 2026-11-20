@@ -95,7 +95,7 @@ helper block above `def run():`.
 
 **Not verified anywhere (needs the phone):** real-finger gestures (scratch feel, dimple drag, pinch, swipe), latency and the §3 gate, frame rate and memory on a mid phone, the Android WebView behaviour of audio / Web Speech / SVG filters / fonts, the native plugins at runtime (CI compiles them; nobody has called them on a device), keep-awake / refresh rate / brightness, TalkBack, system back gesture interplay, battery. Real speech is never heard in any test (a fake `speechSynthesis` is injected). `postMessage` (non-SAB) engine path is unit-compared, not run in the browser.
 
-Measured in the tour (desktop Chromium, **not** phone numbers): see `docs/screenshots/tour/` and the results recorded in `STATE.md`.
+Measured in the tour (desktop Chromium on a CPU renderer, **not** phone numbers; the table is in `STATE.md`): first interactive 0.7 s, Albums stage 2.4 ms per frame, JS heap 7 MB at the end of the tour, search over 5,000 songs ~100 ms, `www/` 2.8 MB. On the BUILT `www/` tree a visit to every section plus a canned station start produced zero 404s and zero console messages; the `stations/` 404s only occur on the dev server (it has no `stations/` folder).
 
 ---
 

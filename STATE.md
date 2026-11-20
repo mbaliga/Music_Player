@@ -14,16 +14,16 @@ All of it has been integrated and exercised together by `scripts/verify-tour.py`
 
 `npm test`: all pass (1,030+). `python3 scripts/verify-all.py`: every browser verifier plus the end-to-end tour (see `HANDOFF.md` §1 for what each proves).
 CI builds the debug APK on every push, compiling both custom Java plugins (device library, device display). Tour measurements (headless CPU renderer, not a phone)
-are in the table below.
+are in the table below (run B of `verify-all.py`; the screenshots of the tour are in `docs/screenshots/tour/`, 1x, 412x915 portrait + landscape + the native and 5k phases).
 
 | measure | value |
 |---|---|
-| first interactive (Play tapped and acting, local server) | TTI_VALUE |
-| app boot with a 5,000-track library | BOOT5K_VALUE |
-| Albums stage cost per frame while playing | STAGE_VALUE |
-| JS heap after the whole tour (after GC) | HEAP_VALUE |
-| search over 5,000 songs | SEARCH5K_VALUE |
-| `www/` shipped | WWW_VALUE |
+| first interactive (Play tapped and acting, local server) | 0.72 s (app ready 0.55 s, first paint 79 ms; 98 requests, 1.17 MB at boot) |
+| app boot with a 5,000-track library | 0.66 s (400 albums in the coverflow) |
+| Albums stage cost per frame while playing | 2.4 ms average, 4.1 ms worst (about 31 frames/s on this machine's CPU renderer) |
+| JS heap after the whole tour (after GC) | 6.8 MB used at the end of the tour (3.9 MB after a reload and playing); JS heap only, decoded audio buffers are off-heap and not counted |
+| search over 5,000 songs | about 96 ms to first results, 87 ms for a later query (including the debounce); the mixtape picker answers in 15 ms |
+| `www/` shipped | 2,830 KB in 190 files (JS 1,493 KB); largest `assets/mat.jpg` 216 KB, then the station packs at 120-146 KB each |
 
 ## Not verified
 
