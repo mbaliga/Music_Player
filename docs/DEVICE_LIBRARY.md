@@ -170,6 +170,12 @@ deviceLibrary.mountScanCard(container)   // the permission / progress / blocked 
 * CI (`android.yml`): `node scripts/apply-android-plugins.mjs android` after `cap add android`, before `cap sync`; the debug APK build is the Java compile check.
   The script fails with `::error::apply-android-plugins failed: ...` naming the missing anchor.
 
+## 5b. Integration (Workstream I)
+
+* The Albums library toolbar button reads **Scan phone** on native Android (`mountTurntableLibrary(..., { scanLabel })` / `lib.setScanLabel()`); the web keeps **Scan music folder**.
+* Both sources produce the same extra track fields for the mixtape suggestions and search: `year`, `added` (epoch ms: device `date_modified` seconds x 1000, folder `file.lastModified`), `genre`, exact `durationSec` (device: MediaStore `duration`; folder: tags / MP3 frame header). Device rows stored before `added` existed get it from `modified` on load. Tests: `test/library-fields.test.mjs`.
+* The device source reads tags with `readTags(file, { duration: false })` (MediaStore already has the duration; one native read less per file).
+
 ## 6. NOT verified (no phone here)
 
 On-device checks to do: the permission prompt on API 33+ (READ_MEDIA_AUDIO) and on API <= 32 (READ_EXTERNAL_STORAGE), including

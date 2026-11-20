@@ -204,4 +204,4 @@ continues, the side indicator flips) and AUTO off (stops with "FLIP TAPE", FLIP 
 * Flip animation frame rate (3D transform of a large SVG) and the AUTO/FLIP key feel.
 * 5,000-track picker scrolling on the device's WebView.
 * Haptic ticks (`navigator.vibrate`) and the optional key click through the phone's speaker.
-* Real device-library durations once the MediaStore scan lands (estimates `~` should disappear).
+* Real device-library durations once the MediaStore scan lands (estimates `~` should disappear). Folder-scanned MP3s now get a length from their first frame (Xing / VBRI count, else a CBR estimate) when they have no TLEN frame, so the `~` estimates are mostly gone there too (a VBR file without a Xing header is still an estimate).

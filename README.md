@@ -5,156 +5,90 @@
 > **Constellation** · `state: seeded` · public · [registry: `Personal-Tracker/CONSTELLATION.md`](https://github.com/mbaliga/Personal-Tracker/blob/main/CONSTELLATION.md)
 > "Runout" — tactile vinyl audio instrument for web/mobile (SharedArrayBuffer + AudioWorklet, sub-30ms scrub).
 
-A tactile vinyl listening instrument. One disc, one needle, direct manipulation:
-the gestures **are** the playback. Position on the disc maps continuously to
-position in the sound, with no progress bar in between.
+A music player for your own files that you operate with your hands: a **turntable** whose disc is the playhead (drag it to scratch, drag the arm to
+seek, hold the label to brake), a **cassette** stack for mixtapes, a **radio** dial (internet stations and pre-written offline shows) and a **booth**
+of performance effects. It plays local audio only; nothing is streamed from a service and nothing leaves the phone unless you tap an internet-radio row.
 
-This is **v0 — "prove the feel"** (spec §10). The single job of this milestone
-is the go/no-go gate: *does a hand-scrub feel like it is **on** the sound?*
-(< 30 ms perceived target, < 50 ms ceiling.) Everything else waits behind it.
+This is **v0, "prove the feel"**: the one milestone gate is whether a hand-scrub feels like it is *on* the sound (target under 30 ms, ceiling 50 ms).
+That gate is **owner-verified on a phone and has not been passed yet**; everything below is verified in desktop Chromium only unless it says otherwise.
+See [`STATE.md`](STATE.md) for the short status and [`HANDOFF.md`](HANDOFF.md) for the full current-state handoff (section map, architecture, what is
+verified, the prioritised on-device checklist, open owner decisions).
 
-## Navigation
+## The app in one screen map
 
-Five sections — **Albums, Mixtapes, Radio, Booth, Settings** — each a full page on a rounded card. Tap the menu button (top left) or drag the page aside from
-the left edge to reveal the menu behind it; tap a name to go there. Details, gestures and tunables: [`docs/SHELL.md`](docs/SHELL.md).
+Five sections, a rounded page pulled aside from the left edge (the menu button, top left, or a drag from the screen edge) over a list of names:
+
+| Section | What it is | Docs |
+|---|---|---|
+| **Albums** | The vinyl player: stage with a disc, a linear tonearm, a dot display, Play/Stop, 33/45/78 and − / +. Pinch in and it becomes the **library** (a coverflow of albums, the track list below; CDs open a CD player). | [`docs/TURNTABLE.md`](docs/TURNTABLE.md), [`docs/TURNTABLE_LIBRARY.md`](docs/TURNTABLE_LIBRARY.md) |
+| **Mixtapes** | A stack (or spines) of cassettes. A phone-first editor (tape length C30/C60/C90, sides A and B, search, drag to reorder, 37 styles), suggested tapes, two player skins with AUTO and FLIP. | [`docs/MIXTAPES.md`](docs/MIXTAPES.md) |
+| **Radio** | A dial of public Radio Browser stations, six **pre-written offline shows** (hosts talk between your songs), favourites, recents; an experimental offline "You Radio" behind a flag. | [`docs/RADIO_ARCHITECTURE.md`](docs/RADIO_ARCHITECTURE.md) |
+| **Booth** (working name) | Beat repeat, stutter, blend scratch, band pass, reverb/delay on a touch pad. | [`docs/FX.md`](docs/FX.md) |
+| **Settings** | Theme (Dark / OLED black / Light / custom JSON), accent, text size, reduced motion, library, playback, radio, booth, device mode, privacy. | [`docs/SETTINGS.md`](docs/SETTINGS.md) |
+
+Across sections: **Search** (the magnifier in every header, Ctrl/Cmd+K or `/`: songs, albums, artists, mixtapes, stations; offline) — [`docs/SEARCH.md`](docs/SEARCH.md);
+the **lock key** (padlock, top right of every page: frozen face, keep-awake, dim always-on display) — [`docs/DEVICE_MODE.md`](docs/DEVICE_MODE.md);
+the **phone library** (Android app only: scans the phone's own audio through MediaStore; the web build keeps the folder picker) — [`docs/DEVICE_LIBRARY.md`](docs/DEVICE_LIBRARY.md);
+the navigation shell — [`docs/SHELL.md`](docs/SHELL.md).
 
 ## Run it
 
 ```bash
-python3 serve.py            # serves on http://localhost:8000
-# then open http://localhost:8000 in a browser
+python3 serve.py            # http://localhost:8000  (sets COOP/COEP so SharedArrayBuffer works)
+npm test                    # node:test, no dependencies: ~1,030 tests
+npm run build:web           # stages index.html + src + assets + content/stations into www/ (what the APK ships)
 ```
 
-The server sets the `COOP`/`COEP` headers that enable cross-origin isolation, so
-`SharedArrayBuffer` is available — that's the lock-free control channel and the
-shared PCM buffer the audio worklet reads (spec §3). Opening `index.html` over
-`file://` works too, but degrades to a `postMessage` fallback; the latency gate
-must be measured on the SAB path.
+The app boots with a **synthesized test pressing** (no copyrighted audio is bundled). Scan your music with the **Scan** button in the library (pinch in on
+Albums): a browser asks for a folder, the Android app scans the phone (after a permission card). Drop a file onto the page, or use Deck details > Load, for a single file.
+Opening `index.html` over `file://` works but degrades to a `postMessage` audio path; measure the latency gate on the SharedArrayBuffer path.
 
-The app boots with a **synthesized test pressing** (no copyrighted audio is
-bundled) built with sharp transients and a quiet→loud→breakdown dynamic arc, so
-the groove banding visibly shows the music's shape. **Drop in any local audio
-file** to scrub real material.
+### Verify (desktop Chromium with real touch events and real audio)
+
+```bash
+CHROME=/path/to/chrome python3 scripts/verify-all.py [outdir]     # starts serve.py on a free port, runs every verify script, prints a table
+CHROME=... python3 scripts/verify-all.py /tmp/out tour            # only scripts whose name contains "tour"
+```
+
+Needs Playwright for Python, ffmpeg (with libmp3lame, libopus) and numpy. The scripts and what each proves are listed in `HANDOFF.md` "How to run".
+`scripts/verify-tour.py` is the end-to-end acceptance tour (first run to reload persistence at two phone sizes and landscape, a mocked native device
+library, a 5,000-track library, measured numbers). None of this replaces testing on a phone.
 
 ## Get a sideloadable APK
 
-A Capacitor wrapper + a GitHub Actions workflow (`.github/workflows/android.yml`)
-build a debug APK on every push and publish it two ways:
+A Capacitor wrapper and `.github/workflows/android.yml` build a debug APK on every push to `main` (the workflow runs `npm test` first, builds `www/`, compiles
+**both** custom Java plugins — the device library and the device display — and publishes):
 
-- **Release asset (easiest — tap to install on the phone):**
-  <https://github.com/mbaliga/Music_Player/releases/download/v0-latest/app-debug.apk>
-  Direct `.apk`, no login, no zip. Updated on every push.
-- **Actions artifact:** the run's **Artifacts → `runout-debug-apk`** (downloads
-  as a `.zip` you must unpack first; requires being logged in).
+- **Rolling release asset:** <https://github.com/mbaliga/Music_Player/releases/download/v0-latest/app-debug.apk>
+- **Per-commit asset on the same release:** `runout-<sha7>.apk`
+- **Actions artifact:** the run's `runout-debug-apk` (a zip).
 
-Then `adb install app-debug.apk`, or just open the `.apk` on the phone.
+The APK runs the web build in the system **WebView**: the wrapped-web audio path the spec flags as the latency weak point; the local scheme has no
+cross-origin isolation, so the engine uses its `postMessage` fallback. It measures *wrapped-web* feel, **not** native Oboe. For the truest web read, use
+`adb reverse tcp:8000 tcp:8000` and `serve.py` over `localhost`.
 
-> The APK runs the web build inside the system **WebView**. That uses the
-> web-Android audio output path the spec flags as the latency weak point, and
-> cross-origin isolation headers aren't sent for the local scheme, so
-> `SharedArrayBuffer` is unavailable and the engine takes its `postMessage`
-> fallback. It's a real installable app, but it measures *wrapped-web* feel —
-> **not** native Oboe. For the truest web read of the §3 gate, prefer
-> `adb reverse tcp:8000 tcp:8000` + `serve.py` over `localhost` (a secure
-> context, so SAB stays on).
-
-## Gestures (spec §5)
-
-| Gesture | How | What you hear |
-|---|---|---|
-| **Scrub** | Drag the disc round | Scratch at finger velocity; release → motor winds ω back up to speed |
-| **Silent seek** | Drag inward from the outer edge (swings the tonearm) | Silence while lifted; hard jump on set-down |
-| **Speed dial** | 33/45/78 buttons or the slider | Pitch + tempo shift together (coupled) |
-| **Palm brake** | Hold the brake pad, or the spacebar | Pitch bends down to a stop; winds back up on release |
-| **Flick / nudge** | A quick drag-and-release | Momentary bend that coasts out via friction |
-
-The four **feel knobs** (`J` inertia, `k` motor, `c` friction, brake damp) are
-live sliders — dialing them by hand is most of v0's job (spec §4).
-
-## How it's built (spec §8 — layered so the audio engine is swappable)
+## How the core is built (spec §8: layered so the audio engine is swappable)
 
 ```
-src/model.js          Portable model layer — PURE functions, no browser deps.
-                      Spiral geometry + 1-DOF platter physics + RMS envelope.
-                      This survives the web → native Android port intact.
-src/worklet.js        The AudioWorklet that OWNS the read loop. Holds the one
-                      float readPosition; each sample: readPosition += rate, then
-                      Catmull-Rom interpolate. Arbitrary rate — fractional, zero,
-                      negative (TRUE reverse) — falls out of one line. This is
-                      why we don't use AudioBufferSourceNode.
-src/control-layout.js The lock-free Float64 SAB layout shared with the worklet.
-src/audio-engine.js   The SWAPPABLE engine. Stable interface (load/setRate/seek/
-                      setPlaying/position) so the §3 gate can replace it with
-                      native Oboe/AAudio without touching model or render.
-src/track.js          Procedural test track + local-file decode.
-src/render.js         canvas2D. Bakes the groove (envelope banding) to a sprite
-                      ONCE, then per-frame rotates that blit under a fixed needle.
-src/main.js           Wires input → physics → engine → render.
+src/model.js          Portable model layer, PURE: spiral geometry, 1-DOF platter physics, RMS envelope. Survives a native port intact.
+src/worklet.js        AudioWorklet that OWNS the read loop (one float readPosition, Catmull-Rom interpolation, any rate incl. negative).
+src/control-layout.js Lock-free Float64 SharedArrayBuffer layout shared with the worklet (constants duplicated in worklet.js).
+src/audio-engine.js   The SWAPPABLE engine behind a stable interface (load / setRate / seek / setPlaying / position).
+src/turntable/        The Albums stage (SVG + canvas) and the coverflow library; pure geometry / camera / arm / spiral / state modules.
+src/main.js           Wires input -> platter physics -> engine -> stage; owns the audio; the sections hang off the shell (src/shell/).
 ```
 
-### The model (spec §2)
-
-Vinyl is constant-angular-velocity, so one revolution is always the same amount
-of audio time. The consequence:
-
-> **Platter angular velocity, normalized to nominal RPM, *is* the playback rate.**
-
-Audio time `t` is the single source of truth, owned by the worklet. The needle
-radius `r(t)` is a *display* of progress; placing the needle inverts it into a
-seek. There is no separate scrub logic — scrubbing is hand-driving the platter's
-angular velocity. The speed dial moves the motor's target ω, while `rate` is
-normalized to the track's **fixed mastered RPM**, so 45 plays faster and pitched
-up (the authentic transform), rather than re-defining "1×".
-
-## Latency & the go/no-go gate
-
-The panel shows the browser's reported output-latency estimate. That is **not**
-true end-to-end touch-to-sound latency — measuring that properly needs an
-external loopback (tap the screen next to a mic, capture both the tap and the
-resulting audio, measure the offset) on the actual RedMagic 11 Pro. The spec is
-explicit: **decide the stack by feel on-device, not on theory.**
-
-- Web feel acceptable on the RedMagic → wrap with Capacitor; keep this codebase.
-- Web scrub breaks the illusion → swap **only** `audio-engine.js` for native
-  Oboe/AAudio. Because the engine is the only swappable layer, that is not a
-  rewrite.
-
-## Albums, Mixtapes, Radio
-
-Library metadata (tags incl. track/disc numbers, no audio) is remembered between sessions; tracks show "needs re-link" until you re-pick the folder (`src/tags.js`, `src/libindex.js`; see HANDOFF.md "Tags, library persistence, gapless mixtapes").
-
-The library overlay (`≡`) has three tabs:
-
-- **Mixtapes.** Custom playlists dressed as real cassettes (`src/mixtape.js` model v4, `src/cassette/`, the owner's cassette system): pick a **tape length** (C30 / C60 / C90 = 15 / 30 / 45 min per side, at most 20 songs a side; a song that does not fit is refused, never squeezed), **two sides** A and B, 37 cassette styles, 4 pens, inks, wear and gloss. A phone-first editor (live cassette you can flip A/B, capacity gauges, a library-wide search with results grouped by album, add a whole album, multi-select, drag to reorder, per-side tracklists) and a row of **suggested tapes** built from your library. The Deck and Player skins have a latching **AUTO** key (auto-reverse at the end of side A, on by default) and a **FLIP** key; with AUTO off the tape stops with "Flip tape". Songs are real library refs (v1-v3 tapes migrate; "needs re-link" states keep working). Playback is the real gapless queue: while playing you see the mixtape name only; tap the cassette for the current side's songs. JSON export/import with a verbatim preview; saved in `localStorage`. Docs: [`docs/MIXTAPES.md`](docs/MIXTAPES.md).
-- **Albums.** Vinyls and CDs are albums (`src/albums.js`, pure + tested). An album, or any folder in a track's path, labelled `CD1`/`CD 2`/`Disc 2`/`Disk_1` (case-insensitive, 1-2 digit number) is a **CD**, one per disc for multi-disc sets; everything else is a **Vinyl**. Cards show the distinction (sleeve + peeking record vs. jewel case + disc); filter All/Vinyl/CD. The Albums page is the **Vinyl player** (`docs/TURNTABLE.md`): a stage with a linear tonearm, dot display and one Play/Stop toggle; pinch in for the album library (CDs open the CD view).
-- **Mixtapes.** Custom playlists (`src/mixtape.js`, v3) dressed as cassettes (`src/cassette/`, the owner's cassette system): 37 styles (opaque, clear, flat, glass), a label editor (title, tagline, by, side + note, 4 pens, ink colour, wear, gloss), a Stack / Spines shelf, a back-of-case view and two player skins (Deck, Player). Songs are real library refs (stable id; v1/v2 tapes migrate; "needs re-link" states keep working). Playback is the real gapless queue: while playing you see the mixtape name only (the cassette; the reels change size as the tape runs, area-conserving, omega = v/r); tap the cassette for the song list; hold the left/right reel (or the deck's rew/ff keys) to wind and seek. Pen fonts are bundled (`src/fonts/`, nothing fetched). JSON export/import with a verbatim preview (also reads the standalone Mixtape Deck data); saved in `localStorage`.
-- **Radio.** Real public stations from the [Radio Browser](https://www.radio-browser.info) directory (`src/radio.js`, `src/radio-player.js`), streamed via an `<audio>` element. Star stations to keep Favourites; Recents and one-tap Resume sit at the top of the tab (`src/radio-store.js`, stored locally with a snapshot so they play even if the directory is down). Dead streams try the directory's alternate URL, and a dropped stream reconnects with backoff. Needs a network; degrades to a retry message. `src/stations.js` is the seam where AI/"You" stations plug in. **You Radio (experimental, off by default):** Radio tab > Settings > "AI stations (experimental)" adds a station of automated hosts who talk between your own songs. The lines are templated and written on the phone, spoken by its built-in voice (captions on screen, labelled "Automated host"), over your library played through the normal engine; it needs no network and no account (`src/radio/offline/`). **Pre-written shows** (always on, no flag): six fictional stations with hosts who talk between your own songs, written in advance so they work with no internet; pick them from the dial at the top of the Radio tab (`src/radio/canned/`, `content/stations/`). They are labelled "Pre-written show" and captioned; voices are the phone's own speech (recordings are supported but none exist yet).
-
-## FX (performance effects)
-
-The **Booth** section of the drawer (its code loads the first time it is shown). Six modes on a touch pad (or the platter, when the shell forwards it): Scratch (default, unchanged), Blend scratch, Beat repeat (1/1 to 1/16 of a beat, `+n%` rate from spin), Stutter, Band pass, Reverb / delay, plus a light ring that follows mode and hand speed. Works on vinyl and CD tracks, switches itself off while a radio station or mixtape owns the engine, and with FX off the audio path is byte-identical. Docs: [`docs/FX.md`](docs/FX.md); code: `src/fx/`.
-
-## Not in v0 (later phases)
-
-Local library + import, off-thread envelope precompute, per-track procedural
-grooves from real files, the Hyle WebGL/AGSL material pass, the atmosphere
-subsystem (patina bus + empty-groove surfaces), persistence beyond the wear
-counter, and the native port. See the spec phasing (§10).
-
-Platform packaging (Ubuntu Touch, Linux, iOS/iPadOS, macOS, Windows) is planned, not built: see [`PORTING_PLAN.md`](PORTING_PLAN.md).
+Vinyl is constant-angular-velocity, so **platter angular velocity, normalised to the nominal RPM, is the playback rate**; audio time is owned by the worklet
+and the needle position is a *display* of it. Scrubbing is hand-driving the platter's angular velocity; coupled pitch and tempo only (no time-stretch).
+The four feel knobs (J inertia, k motor, c friction, brake damp; `model.js: DEFAULT_PARAMS`, live in Deck details > audiophile mode) are most of v0's tuning job.
 
 ## Do not touch
 
-- The **pure model layer** (spiral/platter physics, `src/model.js`) is intentionally isolated for a later native (Oboe/AAudio) swap — **keep it portable** (zero browser deps).
-- **COOP/COEP headers** are required for SharedArrayBuffer — the dev server (`serve.py`) sets them; don't drop them.
+- The **pure model layer** (`src/model.js`) is isolated for a later native swap — keep it free of browser dependencies.
+- **COOP/COEP headers** in `serve.py` are what enable SharedArrayBuffer — do not drop them.
+- Boot path: the radio, Booth, search UI and settings page are lazy imports; the static-import tests (e.g. `test/fx-ship.test.mjs`) and `test/build-web.test.mjs` guard what the first paint may load and that every shipped file is reachable.
 
 ## Licence
 
-Source-available, free for noncommercial use under the [PolyForm Noncommercial License 1.0.0](LICENSE). If you make money with it, you need a commercial licence: see [COMMERCIAL-LICENSE.md](COMMERCIAL-LICENSE.md).
-
-
-## Track jumping and the CD view
-Vinyl albums are one record with a band per track: hold the tonearm (outer edge) to see a ghost needle, drop it in the gap between grooves to start the next track, or flick sideways for next/previous. CD albums get a separate player (rainbow disc, track ring, tap to skip; no scrubbing). Details and tuning knobs: HANDOFF.md.
-
-## Search and Settings
-The magnifier (drawer header and every page header, Ctrl/Cmd+K, "/") searches your songs, albums, artists, mixtapes and radio stations; it works offline, and the one thing that touches the network is a row you tap yourself (the internet radio directory). **Settings** (last in the drawer) holds the theme (Dark, OLED black, Light, custom JSON theme with a plain-text preview), accent colour, text size, reduce motion, library options, default speed, radio, device mode and privacy. Docs: [`docs/SEARCH.md`](docs/SEARCH.md), [`docs/SETTINGS.md`](docs/SETTINGS.md); code: `src/search/`, `src/settings/`.
+Source-available, free for noncommercial use under the [PolyForm Noncommercial License 1.0.0](LICENSE). If you make money with it, you need a commercial
+licence: see [COMMERCIAL-LICENSE.md](COMMERCIAL-LICENSE.md).

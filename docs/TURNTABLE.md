@@ -85,6 +85,10 @@ First run / empty library: the one album is the built-in synthesized test pressi
 **Deck details** (the old side panel, nothing removed): the sliders icon in the header opens a sheet: track nav (⏮ ⏭), fine speed, rate / position / wear,
 feel knobs, latency, load track, build id.
 
+## Device mode
+
+The stage's gesture entry points ask `allowsGesture` (`platter-scrub`, `platter-brake`, `tonearm-drag`, `pinch-zoom`); the top SVG is `data-lock-surface`; Play/Stop, 33/45/78 and − / + stay live while locked. In the always-on display `stage.setOutline(true)` draws hairline circles only and redraws on change (no spiral, mat image or cover art). See `docs/DEVICE_MODE.md`.
+
 ## Tunables (on-device)
 
 `ZOOM` (`camera.js`): `PINCH_GAIN 2.2`, `SNAP_OUT .35`, `SNAP_IN .65`, `K1 .56`, `EASE_RATE`. `ARM_KNOBS` (`tonearm.js`): `gapGrab`, flick thresholds. `AMP` (`spiral.js`).
@@ -99,7 +103,7 @@ library alone; `scripts/fidelity-turntable.py` renders it next to the prototype;
 ## How the old renderer was replaced
 
 Removed: `src/render.js` (canvas record + mat sprite + ghost overlay), `src/mat.js`, the old arm SVG, the `.stage / .nowline / .rpms / .brake` CSS, the shelf grid
-(`GridView` in `library.js` is now unused by the app; the scan / relink flows of `LibraryManager` are what the library's Scan button calls), the Layout
+(`GridView` and its CSS were removed in the integration pass; the scan / relink flows of `LibraryManager` are what the library's Scan button calls), the Layout
 section of the settings popover (Compact / Utilitarian / Cinematic). The CD view, the mixtape and radio code paths and all their tests are intact. Tests
 retired: `test/fx-ship.test.mjs` listed `render.js` in a "no static fx import" file list → now lists `turntable/stage.js`. No other test was removed.
 

@@ -79,11 +79,9 @@ built-in light palette only (no inline `--bg`), the shell uses the reference's s
 Change `BOOTH_LABEL` in `src/shell/sections.js`. The drawer, page title, walkthrough and placeholder all read it. (The owner has not approved
 the name; "Booth" is a working name.)
 
-## Wire in the FX component
+## The FX component
 
-`src/shell/booth.js`: change `const loadFxSection = null;` to `const loadFxSection = () => import('../fx/<module>.js');` where the module exports
-`mountFxSection(container, deps) -> { unmount, onShow, onHide }`. `deps` is built by `boothDeps()` in `main.js` (engine, storage, `host.*`, `blocked()`
-which names the radio / mixtape session that owns the engine, else null).
+`src/shell/booth.js` already mounts it: `const loadFxSection = () => import('../fx/section.js');` (lazy; fetched the first time the Booth is shown). `mountFxSection(container, deps) -> { unmount, onShow, onHide, onTrack, platter, controller, setAod }`; `deps` is built by `boothDeps()` in `main.js` (engine, storage, `host.*`, `blocked()` which names the radio / mixtape session that owns the engine, else null). `booth.js` also subscribes the handle to the AOD outline hook.
 
 ## Verification
 

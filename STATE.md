@@ -1,47 +1,46 @@
 # STATE — Runout
 
-## Navigation shell (Workstream S)
-The library overlay is gone: the app is a rounded card pulled aside from the left edge over a section menu (**Albums, Mixtapes, Radio, Booth**; "Booth" is an unapproved working name, one constant). Compact turntable is the Albums default; the Mixtapes page is the cassette stack; Radio and Booth load lazily on first visit; a now-playing mini bar follows you across sections. Desktop-Chromium (touch emulation) verified only; edge-gesture feel vs the Android back gesture, frame rate and safe-area insets need the RedMagic. See `docs/SHELL.md`.
+Short status. The full handoff (section map, architecture, verified vs not, on-device checklist, open decisions) is `HANDOFF.md`; the overview is `README.md`.
 
-## Current state
-v0 pre-release, gated on a hardware feel-test on the RedMagic 11 Pro.
-Beyond the v0 instrument, the library overlay now has **Albums** (Vinyl vs CD, by `CD1`/`Disc 2` labels), **Mixtapes** (custom playlists as the owner's 37-style cassettes with a label editor, two player skins and reel physics driven by real playback; localStorage) and **Radio** (real Radio Browser stations). Desktop-Chromium verified only; see HANDOFF.md "Albums, Mixtapes, Radio".
+## Where we are
+
+**v0 pre-release, gated on a hands-on feel test on the RedMagic 11 Pro** (owner-verified on-device latency / scrub feel is the one gate; not yet done).
+The app is five sections behind a pull-aside drawer: **Albums** (vinyl stage + coverflow library + CD view), **Mixtapes** (cassette stack, editor, sides, AUTO / FLIP),
+**Radio** (stations, six pre-written offline shows, a flagged offline "You Radio"), **Booth** (performance effects; working name) and **Settings**; plus a global
+**Search** overlay, a **lock key** with a frozen face and a dim always-on display, and, in the Android app, the **phone's own music library** (MediaStore).
+All of it has been integrated and exercised together by `scripts/verify-tour.py` in desktop Chromium; **nothing has been run on a phone by us**.
+
+## Verified (desktop Chromium, node)
+
+`npm test`: all pass (1,030+). `python3 scripts/verify-all.py`: every browser verifier plus the end-to-end tour (see `HANDOFF.md` §1 for what each proves).
+CI builds the debug APK on every push, compiling both custom Java plugins (device library, device display). Tour measurements (headless CPU renderer, not a phone)
+are in the table below.
+
+| measure | value |
+|---|---|
+| first interactive (Play tapped and acting, local server) | TTI_VALUE |
+| app boot with a 5,000-track library | BOOT5K_VALUE |
+| Albums stage cost per frame while playing | STAGE_VALUE |
+| JS heap after the whole tour (after GC) | HEAP_VALUE |
+| search over 5,000 songs | SEARCH5K_VALUE |
+| `www/` shipped | WWW_VALUE |
+
+## Not verified
+
+Anything on a device: gesture feel, the §3 latency gate, WebView audio / speech / SVG behaviour, native plugin runtime, keep-awake / refresh / brightness, TalkBack,
+battery. Real speech has never been heard (fake `speechSynthesis` in tests). The prioritised on-device list is `HANDOFF.md` §6; the owner decisions are §7.
 
 ## Next
-Run the v0 feel-gate; if web audio fails latency, swap `audio-engine.js` for native.
-Then: on-device check of the three new tabs (radio codecs/mixed content in the WebView); AI/"You" stations via the `stations.js` seam (plan: `docs/RADIO_ARCHITECTURE.md`).
-Multi-platform packaging is a plan only (nothing built) and waits on that gate: see `PORTING_PLAN.md`.
 
-Vinyl track-jumping (ghost needle, gap drop = next track, flick) and a distinct CD player view are in; desktop-Chromium verified only, knobs listed in HANDOFF.md "Track jumping + CD view" need on-device tuning.
+1. Owner: the v0 feel gate on the RedMagic with the per-commit APK (`runout-<sha7>.apk` on the `v0-latest` release), then the P1 items in `HANDOFF.md` §6 (phone library permission + scan, device mode).
+2. If the web audio path fails the gate: swap `src/audio-engine.js` for a native Oboe wrapper (the only swappable layer).
+3. After the gate: AI radio P1 device spikes (`docs/RADIO_SPIKE_P1.md`), then P2.
+4. Multi-platform packaging is a plan only (`PORTING_PLAN.md`) and waits on the gate.
 
-Tag parsing, persisted library metadata (needs re-link) and the bounded-memory gapless mixtape queue are in (desktop-Chromium verified; device decode time/memory unverified; see HANDOFF.md).
+## Integration pass (Workstream I) — what changed at the seams
 
-## Owner-verified
-On-device latency.
-
-## Radio P1 spike
-Radio spike P1 done as far as a sandbox allows; verdicts are NEEDS-DEVICE (echo, background audio) and framework-GO (latency). Device procedure and results: `docs/RADIO_SPIKE_P1.md`. Throwaway code in `spike/radio-p1/`.
-
-## AI radio
-P0 (contracts and skeleton) done: pure core in `src/radio/core/`, flag `radio.ai` default OFF, not on the boot path, inert `ai-you`/`ai-you-city` station stub. Cue extraction (`cues.js`) done and wired into the sim (synthetic signals only, not validated on real music); web/APK build excludes dev-only core files. P1 device spikes pending (owner). P2 gated on the v0 feel gate and the owner's device results. See HANDOFF.md "AI radio".
-
-**You Radio (offline host)** is built and usable: Radio tab > Settings > "AI stations (experimental)" (default off) adds a station with templated hosts and the phone's own speech, no network, no models (`src/radio/offline/`; HANDOFF.md "You Radio (offline host)"; architecture section 16). Desktop-Chromium verified with INJECTED fake speech only: headless Chromium has no TTS voices, so real speech has not been heard and nothing is verified on the RedMagic (on-device checklist in HANDOFF.md).
-
-## Mixtapes (Workstream C)
-The owner's cassette/mixtape design system is ported (`src/cassette/`, model v3 in `src/mixtape.js`): 37 styles, label editor, shelf, back-of-case, deck + player skins, reels driven by the real gapless queue, wind keys that seek. Desktop-Chromium verified only; on-device checklist in HANDOFF.md "Cassette mixtapes". Left out: flip-depth studio, synthesized audio, Google Fonts (see HANDOFF.md).
-
-## Mixtapes v4 (Workstream D)
-Mixtape model v4 (`src/mixtape.js`): `tape {length: C30|C60|C90}`, two sides `sides {A, B}`, `autoReverse`, per-song duration hints; caps are 15 / 30 / 45 minutes per side with 0 s tolerance and at most 20 songs per side (the owner is asked to confirm these numbers). The editor (`src/cassette/editor.js`, `editor-songs.js`) is a phone-first Tape / Add / Tracks / Style flow with a live flippable preview and capacity gauges; the picker runs on the global search core through `src/mixtape-search.js`. Suggested tapes (`src/mixtape-suggest.js`) sit above the stack (setting `runout.mixtapes.suggest`). The Deck and Player skins have a latching AUTO key and a FLIP key; the pure transport state machine is `src/cassette/transport.js`. Seam: `startMixtapeFrom({trackIds})` (bound to search's `addToMixtape`). Desktop-Chromium (touch emulation) verified at 360x780 and 412x915 with `scripts/verify-mixtapes.py`; drag-reorder feel, flip frame rate, 5k-track scrolling and haptics need the RedMagic. See `docs/MIXTAPES.md`.
-
-## Canned stations + the dial (Workstream P)
-When the phone is offline the app still has radio: six pre-written fictional stations (`content/stations/`) play between the user's own songs, visible without the AI flag and labelled "Pre-written show". The Radio tab now has a station picker ("the dial"): the six stations as cards, plus (flag on) the five AI styles greyed "Needs internet — coming soon". Voices: pre-rendered recordings when an audio pack exists (none yet), else the phone's own speech with a distinguishable voice per cast member; a source-fallback policy (`chooseShowSource`, cloud never chosen while `CLOUD_AVAILABLE` is false) and a switch hook are ready for the cloud phase. Mechanical content review findings: `docs/CANNED_REVIEW_FINDINGS.md` (renames are owner decisions, not applied). Desktop-Chromium verified with INJECTED fake speech only; real speech never heard, nothing tested on the RedMagic (checklist in HANDOFF.md "Canned stations and the dial").
-
-## FX section (Workstream X)
-A self-contained, lazily loaded `mountFxSection(container, deps)` (`src/fx/`) is mounted by the shell's Booth section (one line in `src/shell/booth.js`); the pad is its touch surface, Blend scratch waits for the shell to forward the platter. Beat repeat, stutter and blend scratch live in the worklet (a second read head over the already-loaded PCM; FX off = byte-identical, golden-hash tested); band pass and reverb/delay are bus chains built only while used. Desktop-Chromium verified with measured audio (docs/FX.md "Measured results"); nothing verified on the RedMagic (checklist in HANDOFF.md "FX section").
-
-## Search + Settings (Workstream B)
-Global **Search** (songs, albums, artists, mixtapes, radio) opens from the magnifier in the drawer and every page header, Ctrl/Cmd+K or "/"; a pure, tested core (`src/search/`, diacritic / CJK / typo tolerant, 20k songs in about 5-15 ms per query in node) behind a full-screen overlay. The only network use is an explicit "Search the internet radio directory" row. **Settings** is the fifth drawer section and replaces the gear popover: theme (Dark / OLED black / Light), accent colour, text size, reduce motion, custom JSON theme (plain-text preview kept), library prefs, playback, radio, booth, device mode, privacy; one versioned `runout.settings.v1` that mirrors the three old keys other code still reads. Desktop-Chromium (touch emulation) verified at 360x780 and 412x915; keyboard/IME, 20k-song latency on the phone and the back gesture need the RedMagic. See `docs/SEARCH.md`, `docs/SETTINGS.md`.
-
-## The Vinyl player (Workstream T1)
-Built and verified in headless Chromium (real audio, real touch): Play/Stop, 33/45/78, scratch, palm brake, dimple seek / gap drop / flick, album as one record, pinch zoom, library, CD routing.
-Not verified: real finger pinch, frame rate / memory on a phone. Details and open items: `docs/TURNTABLE.md`.
+* Lock x new UI: every gesture entry point of the stage, coverflow, cassette, shelf and editor asks `allowsGesture`; surfaces are `data-lock-surface`; a live key inside a surface no longer swallows its own ancestors' pointerdown (this had broken the cassette's transport / AUTO / FLIP while locked); the hint card is capped at 4 s, tap-dismissible, never in AOD.
+* AOD x new UI: subscribers for the Albums stage (hairline circles, static), the cassette player (reels frozen) and Booth; rAF stays at 1 Hz on every section and audio is untouched across enter / exit.
+* Device library x UI: "Scan phone" on native; `year` / `added` / `genre` / exact durations flow from both sources (and the persisted index) into suggestions and search; MP3 length from the first frame when there is no TLEN; one read-model confirmed with a parity test.
+* Removed: `GridView` + its CSS and other dead card / grid CSS, the temporary lock-sheet gear (Device mode is reached from Settings).
+* New: `scripts/verify-all.py`, `scripts/verify-tour.py`, `docs/screenshots/tour/`; the walkthrough text was rewritten to the real UI.

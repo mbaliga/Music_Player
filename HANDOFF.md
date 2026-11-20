@@ -1,350 +1,149 @@
-# Runout — Project Handoff
+# Runout — Project Handoff (current state)
 
-Codename: **Runout** (after the runout groove — also the atmosphere zone).  
-Spec: see the full product & engineering spec in the original brief.  
-Branch: `claude/runout-vinyl-instrument-tad8i4` → PR #1 into `main`.  
-APK (latest): https://github.com/mbaliga/Music_Player/releases/download/v0-latest/app-debug.apk
+Codename **Runout** (after the runout groove). Repo `mbaliga/Music_Player`, work lives on `main`. This is the one engineering handoff: what the app is, where
+things are, what is verified and what is not, how to run everything, and what only a phone (or the owner) can settle. Per-feature depth is in `docs/`; the
+short status is `STATE.md`; the user-facing overview is `README.md`.
+
+**Status:** v0 pre-release, gated on a hands-on feel test on the RedMagic 11 Pro. Everything below has been exercised in **desktop Chromium** (Playwright, real
+touch events through CDP, real decoded audio, a CPU renderer) and in node tests. **Nothing has been run on a phone by us.** CI proves the Android build compiles
+(including both custom Java plugins) and ships; it does not prove the app runs on a device.
+
+APK: rolling `https://github.com/mbaliga/Music_Player/releases/download/v0-latest/app-debug.apk`; per commit `runout-<sha7>.apk` on the same release.
 
 ---
 
-## Navigation shell (Workstream S)
+## 1. How to run, test, verify, build
 
-`src/shell/` (+ `docs/SHELL.md`) replaced the library overlay (the old pinch-to-open-library gesture went with it). `index.html` holds the four `section[data-section]` pages inside `#shell`; `main.js` only creates the shell (`installLibrary`) and hands it hooks. Pure parts (`drawer.js`, `arbitration.js`, `sections.js`, `nowplaying.js`) have node tests; `scripts/verify-shell.py` drives it with real touch events. Header buttons moved to the drawer footer (`?`, mode, theme, gear; same ids). Boot path rule changed: `radio-player.js` is now lazy (dynamic import from the Radio section), the boot graph tests were updated accordingly. FX: `src/shell/booth.js` has a one-line mount point for `mountFxSection`.
-
-## What's built
-
-### Core architecture (all files in `src/`)
-
-| File | Role |
+| What | Command |
 |---|---|
-| `model.js` | **Portable, pure model layer.** Spiral geometry (radius↔time inversion), 1-DOF platter physics (motor + friction + brake), RMS envelope. Zero browser deps — survives web → native Android port intact. This was the highest-priority architectural decision in the spec (§8). |
-| `worklet.js` | **AudioWorklet read loop.** Owns the single float `readPosition`. Each output sample: `readPosition += rate`, then Catmull-Rom interpolation. Supports arbitrary rate: fractional, zero, and true negative (reverse). This is why we skip `AudioBufferSourceNode`. |
-| `control-layout.js` | Lock-free Float64 SAB control channel layout (6 slots: target rate, read position, seek pos/gen/ack, playing flag). Constants duplicated verbatim in `worklet.js` (worklets can't import ES modules). |
-| `audio-engine.js` | **Swappable engine** behind a stable interface (`load / setRate / seek / setPlaying / position`). Uses SharedArrayBuffer when the page is cross-origin isolated; falls back to postMessage otherwise. Replacing this one file with a native Oboe wrapper is the entire web→native swap. |
-| `track.js` | Procedural test track (24 s, dynamic arc: quiet intro → full → breakdown → outro, sharp transients for scrub feel) + `loadFile()` for local audio decode. |
-| `render.js` | canvas2D renderer. Bakes the groove spiral + envelope banding into an offscreen sprite **once per track**; each frame is a single rotated blit of that sprite plus the screen-fixed tonearm/needle. Tonearm pivot at upper-right (ferrofluid violet node), needle tip tracks `r(t)`. |
-| `main.js` | Wires everything: input → platter physics → audio engine → render. Pointer events for scrub + tonearm seek. Speed dial 33/45/78 + continuous slider. Palm brake (pad + spacebar). Live feel knobs. Wear counter persisted to localStorage. |
+| Dev server (COOP/COEP set, SharedArrayBuffer on) | `python3 serve.py [port]` |
+| Unit tests (node:test, no deps; currently ~1,030) | `npm test` |
+| Stage the web build (what the APK ships) | `npm run build:web` → `www/` (gitignored) |
+| Every browser verifier in one go | `CHROME=/path/to/chrome python3 scripts/verify-all.py [outdir] [name-filter...]` |
+| One verifier | start `serve.py`, then `URL=http://localhost:PORT/index.html CHROME=... python3 scripts/verify-X.py outdir` |
+| Android | CI only (`.github/workflows/android.yml`): `npm test` → `build:web` → `cap add android` → icon → `apply-android-plugins.mjs` (device library Java) → `apply-android-display.mjs` (device display Java) → `cap sync` → `assembleDebug` → release `v0-latest` (`runout-<sha7>.apk` + `app-debug.apk`) |
 
-### Gestures implemented
+Browser verifiers need Playwright for Python, ffmpeg (libmp3lame, libopus), numpy. In this sandbox use `CHROME=/opt/pw-browsers/chromium-1243/chrome-linux64/chrome`.
+Scripts (each exits non-zero when an assertion fails; `verify-all.py` prints the table):
 
-| Gesture | Status |
+| script | covers |
 |---|---|
-| Scrub (drag disc to set ω) | ✓ Working. Finger angular velocity → platter ω → rate → audio. Release → motor winds back. |
-| Silent seek (tonearm swing) | ✓ Implemented. Drag from outer edge → sets `seekRadius` → silence while lifted → hard jump on release. *Not yet stress-tested on touch.* |
-| Speed dial 33 / 45 / 78 + slider | ✓ Working. Rate normalised to fixed reference RPM so 45 plays faster and pitched up (authentic coupled transform). |
-| Palm brake | ✓ Working. Motor target drops to 0 while braking so the motor doesn't fight the brake. ω decays to a true stop. |
-| Flick / nudge / coast | ✓ Emergent from platter physics (friction coefficient `c`). |
+| `verify-shell.py` | drawer / sections, real-touch arbitration, mini bar, persistence of the last section |
+| `verify-turntable.py` | the Albums stage with real audio: play/stop/resume, speed, scratch rate == finger ω, palm brake, dimple seek / gap drop / flick, pinch, library, CD routing, portrait + landscape |
+| `verify-turntable-library.py` | the coverflow component on its own harness page (`test/support/turntable-library.html`) |
+| `verify-fx.py` | Booth effects with measured audio (periods, no clicks, FX-off byte identity) |
+| `verify-mixtapes.py` | mixtape editor end to end, caps, sides, AUTO / FLIP with real audio, 5,000-track picker |
+| `verify-search-settings.py` | search overlay and every Settings group, theme / accent / custom theme, persistence |
+| `verify-devicemode.py` | lock key, frozen / live faces on the real stage, coverflow and cassette, hint card, AOD on every section, keep-awake (mocked), audio across AOD |
+| `verify-device-library.py` | mocked native Android MediaStore plugin: permission card, scan, albums, playback through `DeviceFile` |
+| `verify-radio-layout.py`, `verify-you-radio.py`, `verify-canned-radio.py` | radio sections (fake speech injected; real speech is never heard) |
+| `verify-tour.py` | **the acceptance tour**: the whole app at 360x780 and 412x915 (+ landscape), mocked native, 5,000 tracks, measurements; `TOUR_PUBLISH=1` refreshes `docs/screenshots/tour/` |
+| `fidelity-turntable.py` | dev only: pixel diff of the stage against the owner's prototype (`ORIG=...`) |
 
-### CI / delivery
-
-- GitHub Actions workflow (`.github/workflows/android.yml`) builds a Capacitor debug APK on every push.
-- APK is published to a rolling `v0-latest` GitHub Release — tap-to-install URL, no login, no zip:  
-  `https://github.com/mbaliga/Music_Player/releases/download/v0-latest/app-debug.apk`
-- `serve.py` sets COOP/COEP headers for cross-origin isolation (enables SharedArrayBuffer) for local dev.
-
-### §3 latency gate — preliminary result
-
-The screenshot showed **12 ms estimated output latency ("on the sound ✓")** on the RedMagic WebView. That beats the 30 ms target. **However:** that's the browser's self-reported estimate, not a true end-to-end touch-to-sound measurement (which needs a loopback mic). Treat it as a green signal but confirm by feel on-device before closing the gate.
-
-### Tests & hardening (automated, this round)
-
-The pure model layer now has a committed, dependency-free test suite (`test/model.test.mjs`, run with `npm test` — uses only `node:test`). It is wired into CI **before** the APK build, so a broken model fails the build rather than shipping. 22 checks cover radius↔time inversion exactness, the RPM↔rate transform (1× at reference, 1.35× at 45, true −1× reverse), platter spin-up/brake/coast, envelope normalization, and the angle-wrap helper.
-
-Three correctness fixes fell out of that work and a source review:
-
-1. **Steady-state speed was ~6% slow (the record played flat).** With proportional-only motor control, ω settled where motor pull balanced friction — `ω_ss = target·k/(k+c)` ≈ 0.9375× at the default knobs, ~1.1 semitones flat. Worse, the offset depended on `k`, so dialing the motor knob on-device would have *detuned playback*. Fixed in `model.js:stepPlatter` with a direct-drive-style friction feed-forward (`+c·motorTarget`) so steady-state ω locks to nominal regardless of the knobs — the brake still wins (its target is 0). This makes the on-device knob-dialing clean: `k` now changes spin-up snappiness without touching pitch.
-2. **Scrub could fling / NaN on a high-refresh panel.** `main.js` capped frame `dt` on the high side but never floored it; a sub-millisecond frame made `angleDelta/dt` explode (Infinity/NaN → poisoned audio rate). Now `dt` is clamped to `[1 ms, 50 ms]` and finger ω is bounded to ±40 rad/s (≈380 rpm, past any real backspin).
-3. **SAB capability over-claimed.** `audio-engine.js` treated `crossOriginIsolated === undefined` as SAB-capable, which could hand the worklet a buffer it can't share (presents as silence). Now requires `=== true`; the WebView/`file://` path degrades cleanly to postMessage as intended.
-
-### Custom theme (JSON paste → verbatim preview → Apply)
-
-Added `src/theme.js` + a "Custom theme…" entry in the settings popover
-(`#btnSettings`), so the owner can restyle the app by pasting a JSON theme
-document — the same feature, and the same shared JSON schema (`version`,
-`name`, `colors.light`/`colors.dark`, 8 hex keys each, `#RRGGBB` or the
-`#AARRGGBB` alpha-prefixed superset), already shipped on the Fylz/Fyl-Manager
-and Fotoz/Foto-Xplorr apps. This is a **separate, independent** selector from
-the existing dark/light toggle (`#btnTheme` → `data-theme`, unchanged) — a
-custom theme supplies its own light *and* dark color pairs, and the existing
-toggle just decides which of those (or which of the built-in pair) is showing.
-
-**Flow:** paste/edit JSON in a textarea → "Preview →" shows the *exact* text
-back, byte-for-byte, in a read-only monospace block (never a swatch/summary)
-→ a malformed paste shows a specific named error there (e.g. `Missing
-"colors.dark.primary".`) and disables Apply → only an explicit "Apply" from
-that screen commits it (writes `localStorage['runout.customTheme']` and sets
-the CSS vars); Cancel/Back change nothing. Also added a "Reset to default"
-action in the edit step (not explicitly asked for, but there was otherwise no
-way back out of a custom theme once applied) — clears the stored theme and
-the inline CSS vars, reverting to the built-in defaults.
-
-**Validation** (`parseTheme` in `src/theme.js`) never throws and always names
-the exact problem: JSON parse failure, missing/wrong `version`, missing
-`colors`/`colors.light`/`colors.dark`, a missing key naming the exact field
-(`colors.<mode>.<key>`), or a bad hex naming the field and the bad value
-(missing `#`, wrong length, non-hex digit). `name` has no named malformed
-case in the spec, so a missing/blank one is tolerated (defaults to "Custom
-theme") rather than refusing the whole document.
-
-**CSS variable mapping** — index.html's tokens are `--violet` (fixed accent,
-same in both modes today), `--violet-glow`, `--bg`, `--surface`, `--surface2`,
-`--border`, `--ink`, `--ink2`. The schema's 8 keys land as:
-
-| schema key | CSS var | reasoning |
-|---|---|---|
-| `primary` | `--violet` | the instrument's core accent — toolbar active state, RPM dial, brake, sliders, stat readouts, walkthrough nav (all the places `--violet` already drove) |
-| `secondary` | `--secondary` (new) | the library/browsing surface — sort-chip active state + scan button. A visible, self-contained second accent without touching the turntable's own controls |
-| `tertiary` | `--tertiary` (new) | optional/audiophile info surfaces — feel-knob values + the latency readout's bold figures |
-| `background` | `--bg` | direct |
-| `surface` | `--surface` | direct |
-| `surfaceVariant` | `--surface2` | direct — reads naturally as the "variant" input/button surface it already was |
-| `onSurface` | `--ink` | most UI text sits on `--surface` (panel, track name, stats, etc.) |
-| `onBackground` | `--ink-bg` (new) | the *one* piece of text painted directly on `--bg` — the toolbar logo. `.logo` reads `var(--ink-bg, var(--ink))`, so the built-in theme needs no new default and is untouched until a custom theme sets `--ink-bg` |
-
-`--secondary`/`--tertiary` are declared once in `:root` as `var(--violet)` (a
-pure alias, zero default-appearance change) so the built-in theme still
-renders exactly as before; a custom theme overrides them directly via inline
-style, which always wins over that stylesheet default.
-
-Two tokens have no schema slot, by design:
-- `--violet-glow` and `--ink2` **are** derived — alpha-blended from
-  `primary`/`onSurface` at the same alphas the built-in theme already uses
-  (glow: .28 dark / .18 light; ink2: .48 dark / .5 light). Same kind of call
-  the Fotoz agent made blending its `AccentPalette` presets into concrete
-  secondary/tertiary hex — a real, accepted design call, not an oversight.
-- `--border` is deliberately **left alone** — the built-in low-alpha
-  white/black hairline, not derived from the palette at all. It's a
-  structural separator, not a themed color slot in the schema, and reads
-  fine over any custom background/surface without a schema-side alpha value
-  to derive it from.
-
-8-digit `#AARRGGBB` hex is accepted (Android's `Color.parseColor` alpha-first
-order) and converted to an `rgba()` CSS value; 6-digit hex passes straight
-through.
-
-Verified end-to-end with Playwright against `serve.py` (headless Chromium):
-opened the settings gear → "Custom theme…", pasted a malformed theme (missing
-`colors.dark.primary`) and confirmed the exact named error showed with Apply
-disabled and nothing changed; pasted a valid theme and confirmed the preview
-matched the pasted text byte-for-byte, Apply changed `--violet`/`--secondary`/
-`--tertiary`/`--bg`/`--surface`/`--ink`/`--ink-bg` (computed via
-`getComputedStyle`) and the *rendered* background-color of real elements
-(the mode toggle button, the library scan button/sort chip, the logo text);
-toggling dark/light while the custom theme was active correctly swapped to
-its own light color set; and "Reset to default" reverted every var. Added
-`test/theme.test.mjs` (24 tests: valid round-trip incl. 8-digit hex, every
-named malformed case, the color-math helpers) alongside the existing
-`test/model.test.mjs`/`test/worklet.test.mjs` — `npm test` went from 27 to 51
-passing checks.
+`scripts/verify-devicemode.py`, `verify-shell.py` and `verify-canned-radio.py` share helpers by `exec`-ing a prefix of `verify-canned-radio.py`; keep that file's
+helper block above `def run():`.
 
 ---
 
-## Albums, Mixtapes, Radio (Workstream A)
+## 2. Section map
 
-**New files:** `albums.js`, `mixtape.js`, `radio.js`, `stations.js` are PURE (node:test in `test/`); `cassette.js`, `mixtape-ui.js`, `radio-player.js` are browser glue. `library.js`/`main.js` only wire them. Library overlay now has Albums | Mixtapes | Radio tabs. `npm test` is 84 checks (now 300+ with the radio core; see "AI radio" below).
-
-### Albums
-- **Exact rule** (`albums.js`): a disc label is `cd|disc|disk` + optional one of ` . _ -` + 1-2 digit number as a standalone word (`CD1`, `cd 2`, `Disc 02`, `Album [CD1]`, `(Disc 2)`, optional `of N`). Looked for in the album tag first, then folder names deepest-first. `CD` with no number, `Discovery`, `ACD1`, `CD123` are NOT labels. A disc-number ID3 tag alone does not make a CD.
-- One labelled track makes its whole album a CD (tags are often inconsistent). Disc-labelled variants merge into one album keyed by (albumArtist||artist, label-stripped title); the shelf shows one CD per disc ("Title · CD 2"). Untagged tracks fall back to their parent folder name, so `library.js` now stores a folder path per track (FS Access files get a stamped `runoutPath`; the `webkitdirectory` fallback uses `webkitRelativePath`).
-- **Visuals:** vinyl = square sleeve with a record peeking out, badge "LP"; CD = jewel case with spine strip + rainbow disc, badge "CD". **Playing UI:** a CD gets its own player view (see "Track jumping + CD view" below); vinyl keeps the platter. Track order inside an album is natural-sorted by file path (no track-number tag parsing yet).
-
-### Mixtapes
-_Superseded in part by "Cassette mixtapes (Workstream C)" at the end: model is now v3 (cassette cfg, 37 styles, pens), the canvas shells in `cassette.js` and the old font/colour ids are gone (v1/v2 migrate); the ref/resolve/queue notes below still hold._
-- Refs are `{title, artist, album}` metadata, not file handles (a File can't survive a reload). Playing resolves them against the CURRENT scanned library (`resolveTracks`); unmatched refs stay on the tape, dimmed, and resolve after a re-scan. So a tape only plays after the library has been scanned this session.
-- Colours are `#RRGGBB`/`#AARRGGBB` validated with `theme.js:validateHexColor`; JSON is `{version:1,name,style,font,fontColor,tracks}`; parser never throws and names the exact error; import shows the pasted text verbatim before Add (same idiom as custom theme).
-- Reels: `reelRadii(progress)` conserves tape area (rS^2 + rT^2 constant). Progress = tape position, equal weight per track (durations are unknown before decode; `tapeProgress` is time-weighted if durations are supplied).
-- Playback uses the same engine/platter as the vinyl view, so the speed dial and scrub still apply; the next playable track loads at the runout; the tape stops at the end.
-
-### Radio
-- Directory: discovery list (`all.api.radio-browser.info/json/servers`) -> shuffled, plus hard-coded fallbacks (de1 first); tries servers in order with a 6 s timeout each. Stations filtered to: last check ok, not HLS (`<audio>` can't play `.m3u8` in Chromium/Android WebView), **https only** (a Capacitor https origin blocks http media as mixed content; flip `httpsOnly` in `parseStations` if you serve over http). Dedupe by name+url, sort by votes.
-- Playback via `<audio>` (not the worklet); the vinyl bus is muted while a station plays and restored on Stop. Failures: offline, directory unreachable (Retry), connect timeout 12 s, dead/unsupported stream (message + Retry).
-- **`serve.py` now sends `COEP: credentialless`** instead of `require-corp`: still cross-origin isolated (SAB on), but third-party radio streams (no CORP header) can load. With `require-corp` they were blocked. The Capacitor WebView isn't isolated anyway.
-- **Extension point:** `stations.js` StationType/Session interface (documented at the top). AI/"You"/"You City" stations register a type there; see `docs/RADIO_ARCHITECTURE.md`. Nothing AI is implemented.
-
-### Radio: favourites, recents, resume, robustness (Workstream R)
-- **`radio-store.js`** (pure) — one versioned JSON (`localStorage` key `runout.radio.v1`, `{v:1,favs,recents,last}`). Entries are keyed by **`type|id`** (`radio-browser|rb:<directory UUID>`), so AI stations (`ai-you`, ...) can join the same lists with no migration; they carry a **snapshot** (name, stream URLs, favicon, tags, country, codec) so favourites play with the directory down. Recents capped at 20 (UI shows 8), deduped, move-to-front; recorded when a station first reaches `playing`, which also refreshes a favourite's snapshot and promotes the URL that actually worked. `parseModel` never throws (bad JSON / unknown version -> empty); every storage access is try/caught. Favicons are stored but never fetched (no extra network).
-- **UI** (`radio-player.js`): star on every row and in the now-playing bar; top of the Radio tab shows `Resume <last>`, Favourites, Recents, rendered from storage before/independent of the directory.
-- **`radio-session.js`** (browser-agnostic, tested with a fake `<audio>`) is the `radio-browser` Session. A dead URL falls through to the directory's other URL (`streamUrls` = url_resolved + url, https/HLS rules applied) before erroring. After sound, a drop (error/ended/15 s stall) reconnects at 1/2/4/8 s, max 4 (`MAX_RECONNECTS`), phase `reconnecting` ("Reconnecting (n/4)"); budget refills only after 30 s stable. Offline drops fail immediately with Retry. New session phase `reconnecting` added to the Station interface docs.
-- Tests: `test/radio-store.test.mjs`, `test/radio-session.test.mjs`. Playwright with a stubbed directory + fake WAV stream covered: star/persist, alt URL, dead stream, forced mid-stream drop and recovery, reload with directory unreachable then Resume.
-- Not done on purpose: AI stations; click/vote reporting to the directory.
-
-### Not verified on a real device
-Everything here was exercised in desktop headless Chromium only (Playwright against `serve.py`): grouping on generated WAV folders, mixtape build/play/persist, a live station playing, dead-stream and directory-down states. NOT checked on the RedMagic/Android WebView: radio codec/mixed-content behaviour, touch ergonomics of the new tabs, mixtape playback latency, the CD/vinyl card look on a real screen, FS Access folder paths.
-
-## Track jumping + CD view (Workstream V)
-
-**Files:** `tonearm.js` and `cd.js` are PURE (tests: `test/tonearm.test.mjs`, `test/cd.test.mjs`); `cd-view.js` (canvas CD + rainbow), `needle-fx.js` (synth lift/drop sounds) are browser glue; `main.js` wires them; `render.js` draws the ghost and gap lanes. `audio-engine.js:load()` now disconnects the previous worklet node (before, every track change left the old node sounding underneath).
-
-### Vinyl (album = one record, one band per track)
-- Picking a track from an LP builds a queue (`queueFor` in main.js: matches the picked track in `library.albums()`; falls back to a single track). The record is one spiral divided into **bands** (width ~ track duration) with thin bare-vinyl **gaps**. Durations of tracks not yet decoded are estimated (mean of known) so the layout shifts slightly as tracks are played. One track = exact old behaviour (tested against `model.js`).
-- **Silent seek (arm zone, d > 0.9 rOut):** while held, a dashed **ghost ring** + marker + label ("2 · 1:12", or "▸ track 3" in a gap) shows where the needle will land. Dropping **in a gap** starts the **next track at 0:00**; landing within `startSnapFrac` of a band's outer edge also snaps to 0:00. Entering a gap fires a short haptic (`navigator.vibrate(8)`, Android).
-- **Release:** set-down ripple on the canvas, arm settle animation (`#arm.dropping`), synthesized thump + stylus tick + hiss burst; the music bus reopens `dropDelayMs` later. **Lift** plays a soft click + rumble. Silence while lifted already existed.
-- **Flick = next / previous track:** while holding the tonearm, a quick *sideways* (tangential) swipe. It cannot be confused with a seek because seeks are radial; it is judged only on release. Clockwise = next, counter-clockwise = previous (previous restarts the track if > `prevRestartSec` in). Plain scrubbing on the platter (d < 0.9 rOut) is untouched. Prev/next buttons also sit under "Now playing" for LP queues.
-- Changing track decodes the file (arm stays lifted, silent), then seeks. No prefetch / gapless yet; a vinyl track still stops at its runout (CDs auto-advance).
-
-### Knobs to tune on the device (`TONEARM_KNOBS` in `tonearm.js`, `CD_KNOBS` in `cd.js`, `NEEDLE_FX` in `needle-fx.js`)
-`gapFrac` (drawn gap width, 0.02 of groove span), `gapGrabPx` (finger hit width of a gap, 14), `startSnapFrac`; flick: `flickMinArcPx` 70, `flickMaxMs` 280, `flickMinSpeed` 0.45 px/ms, `flickMaxRadialPx` 22; `dropDelayMs` 55, `dropAnimMs` 340, `prevRestartSec` 3; sound levels `liftLevel/dropLevel/hissLevel`; CD: `segGapRad`, ring radii, `skipMuteMs` 70. The arm-grab threshold is still `rOut * 0.9` in main.js.
-
-### CD view (albums classified CD by `albums.js`)
-Replaces platter + arm in `.stage` (speed dial and brake sections hidden via `.vinyl-only`). Disc drawn procedurally: static two-lobe diffraction field (light does not rotate) under a rotating data-ring/print/dust layer. Audio is always rate 1 (or 0 paused): **no scrub, no pitch bend**. Controls: play/pause, prev/next (deck semantics), a **segment ring** (one arc per track, tap = jump) and a **progress ring** (tap = seek, with `skipMuteMs` of silence), plus a tappable track list. Centre shows track number and time. Auto-advances at track end.
-
-### Not verified
-Only desktop headless Chromium (Playwright, generated WAV albums, mouse not touch): ghost/gap drop/flick/prev-next/CD taps all behave and screenshots look right. NOT done: any feel test on the RedMagic (flick thresholds, gap grab width, haptic, sound levels, arm-zone ergonomics), touch events, real-album durations/decode time, FS Access paths.
+| Section (drawer order) | Code | Docs | Notes |
+|---|---|---|---|
+| Shell | `src/shell/` (`nav.js`, `drawer.js`, `arbitration.js`, `sections.js`, `nowplaying.js`, `booth.js`, `*.css`) | `docs/SHELL.md` | rounded card pulled aside over a menu; mini now-playing bar; edge strip 24 px; `BOOTH_LABEL` is one constant |
+| **Albums** | `src/turntable/` (stage, camera, arm, spiral, display, state, geometry, disc-draw, stage-svg), `src/turntable/library*.js`, `covers.js`, `src/cd-view.js`, `src/cd.js`, `src/tonearm.js`, `src/albums.js` | `docs/TURNTABLE.md`, `docs/TURNTABLE_LIBRARY.md` | stage = SVG + one canvas; library = DOM coverflow + track list; `window.__rt` test hooks |
+| **Mixtapes** | `src/mixtape.js` (model v4), `src/mixtape-ui.js`, `src/mixtape-pick.js`, `src/mixtape-search.js`, `src/mixtape-suggest.js`, `src/cassette/**` | `docs/MIXTAPES.md` | caps 15 / 30 / 45 min per side and 20 songs per side (owner to confirm); AUTO / FLIP; suggested tapes |
+| **Radio** | `src/radio.js`, `src/radio-player.js`, `src/radio-store.js`, `src/radio-session.js`, `src/stations.js`, `src/radio/{core,canned,offline}` | `docs/RADIO_ARCHITECTURE.md`, `docs/VOICES.md`, `docs/CANNED_REVIEW_FINDINGS.md` | `content/stations/` six pre-written shows; AI flag `radio.ai` default off |
+| **Booth** (working name) | `src/fx/**`, mounted lazily by `src/shell/booth.js` | `docs/FX.md` | worklet slicer behind `C_FX_*` control slots; FX off = byte-identical output |
+| **Settings** | `src/settings/**`, `src/theme.js` | `docs/SETTINGS.md` | one versioned blob `runout.settings.v1` that mirrors three legacy keys |
+| Search (overlay) | `src/search/**` | `docs/SEARCH.md` | pure core (diacritics / CJK / typo tolerant); adapters read the library read-model |
+| Device mode (lock) | `src/devicemode/**`, `native/android-display/` | `docs/DEVICE_MODE.md` | lock key, frozen face, keep-awake, always-on display |
+| Phone library (Android) | `src/device/**`, `src/library-model.js`, `src/library-prefs.js`, `native/android/` | `docs/DEVICE_LIBRARY.md` | MediaStore through a custom Capacitor plugin; web unchanged |
+| Library core | `src/library.js` (`LibraryManager`), `src/libindex.js`, `src/library-store.js`, `src/tags.js` | this file §4 | ONE read model: `library.tracks` / `albums()` |
+| Audio core | `src/model.js`, `src/worklet.js`, `src/audio-engine.js`, `src/control-layout.js`, `src/track.js`, `src/queue.js` | README | the swappable engine; gapless queue; FX bus |
 
 ---
 
-## Tags, library persistence, gapless mixtapes (Workstream M)
+## 3. Features per section (what exists, as verified in desktop Chromium)
 
-- **Tag parsing** (`src/tags.js`, pure, dependency-free; tests use generated fixtures in `test/support/tagfix.mjs`, and it was also checked against real ffmpeg-written mp3 ID3v2.3/2.4, flac, m4a, ogg and opus files). Reads title/artist/albumArtist/album/genre/year, **track + disc numbers (and totals)**, cover bytes and, when the container gives it cheaply, duration (flac STREAMINFO, mp4 mvhd). ID3v2.2/2.3/2.4 (unsync, UTF-16/UTF-8), Vorbis comments (flac/ogg/opus), MP4 `ilst` (moov before or after mdat). Picks the parser by magic bytes, never throws.
-- **Ordering rule** (`albums.js`): tracks with a track number sort by it (ties/unnumbered fall back to natural file-path order, unnumbered last). A disc tag never makes a CD (rule unchanged: an explicit CD/Disc label is still required; vinyl box sets often carry "1/2"). It only (a) orders a *vinyl* album disc-major and (b) places an *unlabelled* track in a label-CD album on its tagged disc; a label number beats a tag.
-- **Library persistence** (`src/libindex.js` pure + `src/library-store.js` IndexedDB glue). Scanned metadata only (no audio, no cover art) is saved after each scan and restored at startup (`library.restore()`); restored tracks have `relink: true`, no `File`, and show **needs re-link** (dimmed cards, a "N saved tracks need re-linking" bar, a Re-link button in the tape player). **Re-link** first tries stored `FileSystemDirectoryHandle`s (File System Access API; `queryPermission`, and `requestPermission` only inside that button click, never at startup), else the folder picker; a scanned file replaces the persisted entry with the same id. **Stable track id** = FNV hash (64 bit) of normalised title/artist/album + track/disc no + file size + container duration.
-- **Mixtape v2**: refs are still `{title, artist, album}` and now carry an optional `id`. Matching order: id, exact (artist, album, title), loose (artist, title); a linked track beats a needs-re-link one. `MIXTAPE_VERSION` 2 reads v1 and v2 (v1 simply has no ids; the next save writes v2). Parsers never throw; a collection blob written by a *newer* version is copied to `runout.mixtapes.backup` before anything can overwrite it.
-- **Gapless queue** (`src/queue.js` pure reducer + engine hook in `audio-engine.js` + host in `mixtape-ui.js`). Memory is bounded to TWO decoded tracks (current + next, about 170 MB for two 4-minute stereo tracks; cap `maxResidentBytes` = 200 MB): the next track is decoded `preloadLeadSec` (40 s) before the runout, parked on a second silent "deck", joined with a short equal-power crossfade (`fadeSec` 0.05 s by default; raise it for a real crossfade), then the old deck is released (`free` message to the worklet + disconnect). If the next track would bust the budget (e.g. a 40-minute DJ mix, judged from the library's known durations) the preload is skipped and that boundary is a cold load (short gap) rather than risking an out-of-memory kill. Engine interface is unchanged; additive methods: `prepareNext(channels, frames)`, `joinNext({fadeSec})`, `dropNext()`, `hasNext`. After a join the public `setRate/seek/position` address the new deck from frame 0 and the rate carries over. `load()` now frees the replaced deck (it previously could keep a stale node sounding). Honours `docs/RADIO_ARCHITECTURE.md` 4.5 (at most 2 songs resident).
-- **Verified**: unit tests (tags, albums ordering, libindex, mixtape v1/v2, queue) plus headless Chromium: scan -> ordered albums -> reload shows "needs re-link" -> v1 mixtape resolves -> Re-link -> plays -> auto-advances across 4 tracks with no dropout at joins (output tap) -> jump to queued / other track works.
-- **Not verified**: anything on the RedMagic (decode time and memory of a real 4-minute track in the WebView; sample-accuracy of the join is tick-driven, about one frame of jitter hidden by the 50 ms fade); FS Access handle re-link (headless has no picker, so only the input fallback was exercised); m4a/ogg cover art in real files; mono/odd sample-rate files across a join.
-
-## FX section (Workstream X)
-
-Full write-up: `docs/FX.md`. Summary for the next person:
-
-* **Entry point:** `src/fx/section.js` -> `mountFxSection(container, deps) -> { unmount, onShow, onHide, onTrack, platter, controller }` (contract in docs/FX.md). Mounted by the shell's Booth section: the single line in `src/shell/booth.js` (`loadFxSection`). Placement-independent, `.fx-` CSS only, own rAF loop between `onShow` and `onHide`, notices track changes itself. The Booth has no platter, so the pad is the surface; Blend scratch is disabled until the shell passes `hasPlatter: true` and forwards platter events to `handle.platter`.
-* **Layers:** pure `src/fx/{divisions,tempo,gesture,modes,persist,ring,waveform,dsp}.js`; DOM-free `controller.js`; Web Audio `bus.js`; DOM `ui.js` + `ring-draw.js`; worklet slicer in `src/worklet.js` behind `C_FX_*` slots (`control-layout.js`, `CONTROL_SLOTS` 16); `AudioEngine.setFx(p)`.
-* **Invariants:** FX off = byte-identical worklet output (golden hash in `test/fx-worklet.test.mjs`, from the pre-FX file); no FX node exists until an effect is first engaged; `musicBus -> destination` is restored on release/close; FX is off while `state.radioOn`, a radio session or `state.mixtapes.play` exists.
-* **Verify:** `python3 serve.py 8123` then `python3 scripts/verify-fx.py outdir` (real audio, measured; needs numpy + Playwright; set `CHROME`).
-* **Not verified:** anything on the RedMagic. On-device: touch feel and the gesture thresholds (`GESTURE_KNOBS`), CPU and battery with an effect held, WebView audio latency with FX on, ring drawing cost, ConvolverNode cost, whether the 2 ms loop cross-fade is audible on the phone's DAC, the postMessage (non-SAB) path under the APK WebView.
-
-## What's pending
-
-### v0 — still to close
-
-These are the remaining items before the v0 gate is officially passed:
-
-- [ ] **Confirm scrub feel on the RedMagic 11 Pro.** The layout fix (disc no longer overlays the panel) was the blocker for usable on-device testing. Now testable. The question: does the hand-drag feel like it is *on* the sound? If yes, web stack is confirmed. If no, swap the audio engine (see below).
-- [ ] **Stress-test the tonearm seek gesture on touch.** The outer-edge drag threshold (`rOut * 0.9`) may need tuning for reliable activation vs. a normal platter grab.
-- [ ] **Tune the feel knobs (J / k / c / brake damp)** by hand on the actual device. The spec is explicit that this is most of v0's job. Good starting defaults are in `DEFAULT_PARAMS` in `model.js` but they haven't been felt yet.
-- [ ] **True latency measurement** — loopback mic on-device (tap screen, capture audio, measure offset).
-
-### v1 — the player
-
-- [ ] **Local library + import UI.** MediaStore / File System Access. File hash → envelope cache key.
-- [ ] **Off-thread envelope precompute** (Worker). Currently inline/sync — fine for the 24 s synth track, slow for real album-length files.
-- [ ] **Per-track procedural grooves from real audio.** Currently the groove uses the synth track's envelope. Each imported file needs its own envelope baked and used for groove banding.
-- [ ] **Album art label fill.** `bakeGroove()` in `render.js` already accepts an `albumImage` param (drawn inside `rIn`); just needs a real image source from track metadata.
-- [x] **Tonearm silent-seek UI polish.** Done (ghost ring, lift/set-down, track gaps, flick). See "Track jumping + CD view". Feel NOT tested on device.
-- [ ] **Atmosphere subsystem (§7).** Separate audio bus: filtered noise + crackle impulses, wet/dry control. Material: dust/fog density on the glass instead of a slider. Empty-groove mode (needle past runout → music bus silent, atmosphere only). Selectable surfaces (clean crackle, rain, tape warmth, brown noise).
-- [ ] **Hyle WebGL/AGSL material pass (§6).** The canvas2D renderer validates feel; the real glass + ferrofluid materials come in the WebGL pass. This is the visual upgrade that makes it feel like the spec's Hyle language.
-- [ ] **Persistence beyond wear counter.** Last position per track, per-track atmosphere settings.
-- [ ] **Wear surfaces.** Play count → crackle density + patina material (already scaffolded: `dust` param in `drawFrame`, `playCount` in localStorage).
-- [ ] **Harden the seek handshake with `Atomics`.** The seek control channel writes `C_SEEK_POS` then bumps `C_SEEK_GEN` as two plain Float64 stores; the worklet reads them in the opposite order. The write/read ordering is correct, but without `Atomics` release/acquire there's no formal barrier, so a CPU/JIT reorder could (very rarely) let the worklet see a new generation with a stale position — one occasional tonearm seek landing wrong, self-corrected by re-seeking. Negligible for v0; the proper fix needs an `Int32Array` view for the gen/ack counters (Float64 can't take `Atomics`), so it was deferred rather than redesign the control channel mid-v0.
-
-### v2 — depth + port
-
-- [ ] **Native Android audio engine (Oboe/AAudio).** Only needed if the §3 latency gate fails on the web path. Architecture is ready: swap `src/audio-engine.js` for a Capacitor plugin wrapping Oboe. Model + render layers are untouched.
-- [ ] **AGSL shaders for Hyle materials** (native Android path). Already on the roadmap; runs alongside the native audio swap.
-- [ ] **Crate-flip browsing.** Physical metaphor for the library — stacked records, flip through them.
-- [ ] **Gapless / queue.** Multiple tracks without silence between (requires cross-fade in the worklet).
-- [ ] **Desktop via Tauri** (Linux / Windows / Mac). The web codebase is already the seed; Tauri wraps it. After the native Android port the file I/O and audio layers would need platform-specific adapters.
-- [ ] **Two-hand multitouch** (reserved, not v0). Input layer is already multitouch-capable (`setPointerCapture` per pointer ID). Gestures like one hand scrubs / other hand brakes are open.
+* **Albums.** A landscape stage (portrait = rotated). Play/Stop (Stop freezes the record exactly; a stopped record cannot be scratched), 33 / 45 / 78 and − / + (±2 %, 0.7–1.3×; 45 plays faster *and* higher). Scratch = drag the disc: finger angular velocity → platter ω → rate → worklet; reverse works; the motor winds back on release. Palm brake = hold the label (r < 217 stage units) or Space. Silent seek = drag the dimple on the tonearm along its rail (bus muted, ghost ring + label on the disc); set-down inside a band = that point, in a gap = next track at 0:00; a quick sweep = next / previous. An album is one record (one band per track; only the loaded track is decoded). Pinch in (or Ctrl+wheel, `deltaY > 0`) zooms out to the coverflow **library**: swipe, tap a track to play it (a CD album opens the CD view, whose Library button shows the library again), tap the centre cover to return; Esc zooms back in. Deck details (sliders icon) holds track nav, fine speed, rate / position / wear, feel knobs (audiophile mode), latency, load file, build id. First run: a built-in synthesized test pressing.
+* **Library.** Folder scan (File System Access or `<input webkitdirectory>`): tags from ID3v2 / FLAC / Ogg / MP4 incl. year, genre, track / disc, cover, duration (MP3 length from a TLEN frame, else the first frame's Xing / VBRI count, else a CBR estimate), persisted (tags only, no audio) so albums and mixtape refs survive a restart as "needs re-link". Vinyl vs CD by `CD1` / `Disc 2` labels in the album tag or any folder of the path (`src/albums.js`). Android app: the same library fed by MediaStore (permission card first, incremental scan, change observer, rescan on resume); the library toolbar button says "Scan phone" there and "Scan music folder" on the web.
+* **Mixtapes.** Model v4 (`tape.length` C30/C60/C90, sides A / B, `autoReverse`, per-song duration hints; v1–v3 migrate, v3 backed up once). Editor: Tape / Add / Tracks / Style tabs, live flippable cassette, capacity gauges, search-driven picker grouped by album (add a whole album, multi-select), drag or keyboard reorder, undo. Refusal toasts say why (time or the 20-song count). 37 cassette styles, pens, inks, wear, gloss, bundled pen fonts. Suggested tapes (Fresh Finds, On Repeat, genre, decade, the long player). Players: Deck and Player skins, reels driven by the real gapless queue, wind keys that seek, **AUTO** (latching; flips to side B at the end of A, default on) and **FLIP** (with AUTO off the tape stops and shows "FLIP TAPE"). JSON export / import with a verbatim preview.
+* **Radio.** Radio Browser stations through an `<audio>` element (favourites, recents, resume, reconnect with backoff). **Dial** of six pre-written offline shows (hosts talk between your own songs; labelled "Pre-written show"; ducking -14 dB; speech from the phone's own voices, recordings supported but none shipped). **You Radio** (flag, default off): templated offline hosts over your library. P0 of a larger AI-radio plan: contracts and a pure core only.
+* **Booth.** Scratch (default), Blend scratch, Beat repeat (1/1 to 1/16 of a detected beat, `+n %` from spin), Stutter, Band pass, Reverb / delay, a light ring. Needs a loaded record; off while a radio session or mixtape owns the engine.
+* **Search.** Songs, albums, artists, mixtapes, stations; chips; drill-downs with Play all / Add to mixtape; recents (setting); an explicit "search the internet radio directory" row is the only network use. 20,000 songs index in ~130 ms in chunks.
+* **Settings.** Appearance (Dark soft / OLED black default / Light, accent presets or hex, text size, reduce motion, custom JSON theme with a mandatory plain-text preview, export, reset, haptics), Library (sources, minimum song length, include / exclude folders, rescan on resume, parse untagged, Scan now, clear cache), Playback (default speed, audiophile mode), Radio, Booth (read-only note), Device mode (opens the options sheet), Privacy & about (tour, licence, docs list).
+* **Device mode.** The padlock at the top right of every header (a floating copy over the cassette player). Locked: the screen stays awake (native flag, else Wake Lock API), only keys work. **Live:** Albums Play/Stop, 33/45/78, − / +, prev / next in the CD view and the speed slider; Mixtapes cassette keys (transport, wind-hold, AUTO, FLIP, eject); Radio Stop / skip; Booth mode rows and chips (the pad only if the setting allows it); the lock key and the mini bar's Stop. **Frozen:** the disc scratch and label brake, the dimple drag, pinch / Ctrl+wheel zoom, the coverflow swipe, cover and track-row taps, library chips, header chips (search, Deck details), the drawer, the shelf, the editor / importer, skin chips, the tape-tap song-list reveal (decided frozen: it is a reveal, not a key), Space / Esc shortcuts. Every frozen gesture is double-guarded: CSS `pointer-events` from one generated allowlist and an `allowsGesture(kind)` call in each gesture entry point; gesture surfaces carry `data-lock-surface`. Unlock by hold (0.8 s ring), double-tap or slide; Android back never unlocks. After the idle time a dim **always-on display** (true black, hairline stage, glowing allowed keys, pixel shift, 1 Hz rAF gate, native brightness / refresh hints) takes over; double-tap (default), long-press or the lock key wakes it. The "locked" hint card auto-dismisses in at most 4 s, dismisses on tap and never shows in AOD.
 
 ---
 
-## Key architectural decisions (locked)
+## 4. Architecture notes that matter when changing things
 
-1. **Single deck, single spiral.** Load-bearing for the whole data model. No two-deck drift.
-2. **Coupled pitch+tempo only.** Rate = pitch. No time-stretch / phase vocoder. Keeps the engine simple and latency low.
-3. **One continuous spiral per track** (not A/B sides). Album = a crate of tracks.
-4. **Local-only library.** The library itself never streams. (Radio, below, is a separate live-stream surface; it does not touch the library or the worklet.)
-5. **Audio time `t` owned by the worklet**, never the main thread. Main thread only reads it back for display.
-6. **The feel knobs are the product.** `J`, `k`, `c`, `brakeDamp` in `model.js:DEFAULT_PARAMS` — dial them by hand on-device, not by theory.
-
----
-
-## How to run / test locally
-
-```bash
-python3 serve.py          # → http://localhost:8000 (COOP/COEP set for SharedArrayBuffer)
-```
-
-For on-device testing without an APK build:
-```bash
-adb reverse tcp:8000 tcp:8000     # phone's localhost → this machine
-# then open http://localhost:8000 in Chrome on the phone
-```
-`localhost` is a secure context even without HTTPS, so SharedArrayBuffer stays on and you get the full SAB latency path — the truest read of the §3 gate.
+* **Engine boundary.** `audio-engine.js` is the only swappable audio layer (`load / setRate / seek / setPlaying / position` + gapless `prepareNext / joinNext / dropNext` + `setFx`). The worklet owns audio time; the main thread reads it back. SAB path when `crossOriginIsolated === true`, `postMessage` otherwise (the APK WebView). Locked decisions: single deck, single spiral, coupled pitch + tempo only, local-only library, feel knobs are the product.
+* **The stage reports intent, `main.js` owns audio.** The disc's drawn rotation is *derived from the audio position*; the platter physics still decides the rate. The stage draws on demand (`needsFrame`); AOD outline mode draws once per change.
+* **One library read-model.** `LibraryManager.tracks` (folder + registered sources, filtered by library prefs, de-duplicated) and `albums()` are read by the coverflow, the Albums stage queue, search (`adaptLibrary`), the mixtape picker and suggestions (`getLibraryTracks`), You Radio (`getTracks`). Do not keep a second list. Track records carry the same extra fields from both sources: `year`, `added` (epoch ms: folder `file.lastModified`, device `date_modified` × 1000), `genre`, exact `durationSec`.
+* **Track ids** (`libindex.trackId`) hash tags + size + container duration; an MP3 duration derived from frames is deliberately kept OUT of the id so libraries scanned earlier keep their ids and mixtape links.
+* **Lock faces.** `registerLockFace(sectionId, { buttons, aod, aodText, notes })` + `data-lock-ok` / `data-lock-surface`; one allowlist feeds the CSS and the capture-phase guard. A live press inside a surface is stopped at the surface's child (so the control's own ancestors, e.g. the cassette key group, still get it). New gesture entry points must call `allowsGesture(kind)` (`src/devicemode/guard.js`).
+* **AOD renderer hook.** `onAodOutlineMode(cb)` (`src/devicemode/aodhooks.js`). Subscribers: the Albums stage (`stage.setOutline`), the cassette player (reels frozen, CSS hairlines), Booth (`handle.setAod`). Radio and the mini bar have no canvases or rAF loops, so they need none. The main frame loop still runs at 1 Hz in AOD (track-end handling, auto-advance); audio is on the audio thread.
+* **Boot path rule.** Radio, Booth, search UI, settings page and the FX component are dynamic imports; `test/fx-ship.test.mjs` and `test/build-web.test.mjs` guard it. `build-web.mjs` skips dev-only radio core files.
+* **Persistence keys** (all try/caught): `runout.settings.v1` (+ legacy mirrors `runout.theme`, `runout.cassette.haptics`, `runout.flag.radio.ai`), `runout.customTheme`, `runout.mixtapes` (v4) + `runout.mixtapes.v3.backup`, `runout.mixtapes.skin|view|suggest`, `runout.cassette.auto`, IndexedDB `runout-library` (tag index) / `runout-device` (phone rows), `runout.library.prefs`, `runout.devicemode.v1` (and `runout.devicemode.locked` when "stay locked after restart" is on), `runout.fx.v1`, `runout.tt.speed|last`, `runout.wtDone`, `runout.playCount`, radio store keys.
 
 ---
 
-## AI radio ("You" / "You City"): status
+## 5. Verified vs not verified
 
-Plan: `docs/RADIO_ARCHITECTURE.md`. Spike notes: `docs/RADIO_SPIKE_P1.md`.
+**Verified (desktop Chromium + node):** everything in §3 as listed by the scripts in §1; 1,030+ unit tests; the tour (`verify-tour.py`) end to end at 360x780, 412x915 and landscape with zero console errors / failed requests beyond the known `stations/` 404 on the dev server (that server has no `stations/` folder; the packs live in `content/stations/` and the app falls back); CI compiles and packages both Java plugins.
 
-* **P0 DONE (contracts and skeleton).** `src/radio/core/` is a pure, dependency-free core with `node:test` coverage in `test/radio-core/` (`src/radio/core/README.md` has the module map, the pure-vs-adapter split and how the fakes swap for real adapters). Feature flag `radio.ai` (`src/radio/flag.js`), **default off, no UI**; when off nothing in `src/radio/core/` is on the boot path (`test/radio-core/boot-path.test.mjs`) and behaviour is unchanged. `stations.js` has an inert `ai-you` / `ai-you-city` stub (registered only when the flag is on) that shares the existing `type|id` favourites keys.
-* **Cues + build (Workstream K).** `src/radio/core/cues.js` extracts introEnd/outroStart/trims/BS.1770-style loudness from an envelope or PCM (synthetic-signal tested only; see core README for limits); the simulated show uses extracted cues by default (`cues: 'handset'` keeps fixtures). `scripts/build-web.mjs` now has an explicit dev-only deny list (fakes, fixtures, sim, `dev.js`) and `src/radio/core/index.js` no longer re-exports dev tooling (import it from `dev.js`); `test/build-web.test.mjs` guards exclusions, reachability (incl. the lazy radio core) and determinism.
-* **P1 device spikes pending** (owner runs `docs/RADIO_SPIKE_P1.md` section 7: S2 background audio first, then S1 echo/AEC and the vendor latency spike). Latency gate is now p95 <= 2.5 s (p50 <= 1.6 s reported); the 8.3 doc errors were corrected in P0.
-* **P2 gated** on the v0 feel gate and the owner's device results (if the engine goes native, the radio bus follows; `core/` stays portable). Open items for P2: see the P0 final report / `src/radio/core/README.md`.
+**Not verified anywhere (needs the phone):** real-finger gestures (scratch feel, dimple drag, pinch, swipe), latency and the §3 gate, frame rate and memory on a mid phone, the Android WebView behaviour of audio / Web Speech / SVG filters / fonts, the native plugins at runtime (CI compiles them; nobody has called them on a device), keep-awake / refresh rate / brightness, TalkBack, system back gesture interplay, battery. Real speech is never heard in any test (a fake `speechSynthesis` is injected). `postMessage` (non-SAB) engine path is unit-compared, not run in the browser.
 
-### You Radio (offline host, Workstream H)
+Measured in the tour (desktop Chromium, **not** phone numbers): see `docs/screenshots/tour/` and the results recorded in `STATE.md`.
 
-A first working "You" station that needs NO models and NO network: `src/radio/offline/` (ES modules, loaded only by the lazy `import()` in `radio-player.js` through the `stations.js` seam; tests in `test/radio-offline/`, 100 checks (475 in the whole suite)). Design and the cloud-reuse table: `docs/RADIO_ARCHITECTURE.md` section 16.
+---
 
-* **Enable it.** Radio tab > Settings > **AI stations (experimental)** (default off; sets `runout.flag.radio.ai`, applies without a reload). A "You Radio" row appears under "AI stations"; tapping it starts the show. Favourites, Recents and Resume work as for any station.
-* **What it does.** Library -> seeded shortlist -> rule-based rundown (`director.js`, through `repairRundown`) -> templated lines (`writer.js` + `bank.js`, 210 lines: station IDs, sign-on with the "automated host" disclosure, song intros, back-announces, time checks, trivia from the owner's OWN tags only, "you" moments from the new local play history `play-history.js`, sunrise/sunset only if the owner typed a city, holidays from a small fixed table, banter, fillers, sign-off) -> verified by the core grounding verifier when written AND again at air time -> spoken live by the phone's voice (`voice.js`) over music that is ducked on the new `AudioEngine.musicBus`. Songs play through the existing engine with the gapless prepareNext/joinNext path (`queue.js` policy; never more than two decoded tracks). Captions, an "Automated host" label, now-playing, Skip, Stop and a two-host voice picker are in the card (`panel.js`). Cold start: the station ID is spoken at once while the first song decodes; a bad file is skipped silently; speech that fails skips the break and, three times in a row, switches the hosts off ("music only"); an empty or re-link-only library shows a friendly message.
-* **Speech availability (what was verified).** Headless Chromium here HAS `window.speechSynthesis` but reports 0 voices and `speak()` fails at once with `synthesis-failed`, so real speech was NOT heard in any test; the adapter handled it (3 failures -> hosts off, music kept playing). Everything else (captions, ducking, skip, stop, offline) was verified with an injected fake `speechSynthesis` whose events fire like a real engine. For Android the adapter falls back to `@capacitor-community/text-to-speech` (added at `^5.1.0`, the Capacitor 6 line; 6.x/8.x need Capacitor 7/8). Verified locally: `npm install`, `build:web`, `cap add android`, `cap sync android` detect it and register it (settings.gradle, capacitor.plugins.json); its manifest adds the `TTS_SERVICE` `<queries>`. NOT verified: the Gradle/APK build (no Android SDK here; if it ever breaks CI, delete that one line from `package.json` and the web `speechSynthesis` path is unaffected), and the plugin on a device. The app has no bundler, so the plugin proxy is made with `Capacitor.registerPlugin('TextToSpeech')` when `isPluginAvailable` (see `resolveCapacitorTts`).
-* **Limits vs the cloud design.** No pre-rendered voice (live-spoken, durations estimated); ducking is event-driven; no voice chain, no expressive markup, no caller loop, no weather/traffic/place (`serviceStatus` 'down'; the schema has no 'unavailable'); no LLM variety (the bank is finite; anti-repeat is per kind, then the older half returns); music is only the user's own files; non-Latin titles are not named; timers (talk placement, watchdogs) can throttle with the screen off. After Stop the vinyl deck rests in the runout groove (silent) rather than resuming a record.
-* **Verified (desktop Chromium + Playwright, generated MP3 fixtures with tags, injected fake speech):** toggle on/off and persistence, You Radio row, label + captions + now-playing, two host voices with emotion-dependent rate/pitch, music bus gain 1 -> 0.2 (-14 dB) around speech and back (real Web Audio gain; after the fix the max slope is 3.6/s, equal to the configured ramp, and the music signal's sample-to-sample steps in ramps are no larger than in steady music), skip, offline (`setOffline(true)`) still joins the next song with zero requests, stop cancels speech and restores the gain, empty-library message.
-* **Radio tab layout / saved canned stations.** While the canned / You Radio card is mounted the now-bar is hidden (`.ai-panel:not(.hidden) + .radio-now`), the card is capped at 46% of the tab and scrolls inside, and the dial scroller keeps >= 190 px (`scripts/verify-radio-layout.py` asserts it at 360x780, 320x640, 412x915, plus 44 px star hit areas and 40 px audition buttons). Dial cards are plain containers with one real Play button (stretched over the card). When the stations index loads, saved `canned|<id>` favourites / recents / Resume are refreshed from it (name, dial, tagline); an id the index no longer lists shows "This station is no longer in the app" with Remove.
-* **On-device checks for the owner (RedMagic).** (1) Does the WebView expose `speechSynthesis`, and do English voices exist offline? If not, does the plugin path speak? (the card's note says "music only" when neither works). (2) Does `onend` fire reliably (watch for long silences after a line; the watchdog ends a line after about 1.6 x its estimate + 2 s). (3) Audio focus: does TTS interrupt, pause or mix with the Web Audio music? If it ducks or pauses the music itself, our own duck stacks on top. (4) Ducking feel: -14 dB, 220 ms attack, 450 ms release are starting values (`DUCK` in `ducking.js`). (5) Bluetooth routing: does speech follow the music to the headset, and does the first word clip while the route wakes? (6) Screen off / app backgrounded: speech is cancelled when the page is hidden and breaks are skipped; does the music keep going? (7) Voice quality: pick hosts in the card (two voices, or one voice told apart by pitch). (8) Gapless joins and decode memory with a real library (same as mixtapes). (9) Scrubbing the vinyl while You Radio plays is allowed and untested.
-* **Verifying again.** `scripts/verify-you-radio.py` (needs `ffmpeg` and Playwright; `python3 serve.py 8123` first) generates tagged fixtures and replays the checks above.
+## 6. On-device checklist (consolidated, in priority order)
 
-### Canned stations and the dial (Workstream P)
+**P0 — the v0 gate**
+1. Scrub feel and latency on the RedMagic in the WebView (postMessage path) and over `adb reverse` + `serve.py` (SAB path); loopback measurement (tap near a mic, compare). If the hand does not feel on the sound, swap `audio-engine.js` for native Oboe.
+2. Albums stage with real fingers: dimple drag and flick thresholds (`TONEARM_KNOBS`, `ARM_KNOBS`), palm-brake hold on the label, pinch gain and snaps (`ZOOM`), scratch vs coverflow swipe disambiguation, the 24 px edge strip vs Android back, the full-width landscape stage. Frame rate and memory of the 14,000-point spiral redraw (one full redraw per frame while playing; DPR capped at 2.5).
+3. Tune the feel knobs J / k / c / brake damp (`model.js: DEFAULT_PARAMS`) by hand.
 
-Plan and design: `docs/RADIO_ARCHITECTURE.md` section 17. Findings of the mechanical content review: `docs/CANNED_REVIEW_FINDINGS.md`.
+**P1 — Android-only features (runtime never exercised)**
+4. Phone library: the permission prompt on API 33+ (`READ_MEDIA_AUDIO`) and ≤ 32, Deny / Don't ask again / grant from Settings, scan time and jank on a ~5k-track phone, `DeviceFile` read speed (1 MiB base64 chunks over the bridge) and decode of a ~30 MB FLAC and a 3 h file, playback start latency, MediaStore oddities (SD card volumes, pending / cloud files, `<unknown>` per vendor, numeric genres, missing duration), art (`loadThumbnail` / retriever), `ContentObserver` on an add from another app, rescan on resume, kill mid-scan, large result strings on old WebViews (lower `chunkBytes`).
+5. Device mode: `FLAG_KEEP_SCREEN_ON` against a 15 s screen timeout, whether `preferredRefreshRate` / display mode really lowers the panel rate, AOD brightness override and whether 1–40 % is visible on the AMOLED, burn-in shift visibility, TalkBack reaching the lock key and the live keys, Android back while locked (history sentinel), battery over hours of AOD, holding the unlock ring in a pocket. Also: that both plugins register and respond at runtime (the build proves only that they compile).
 
-* **What it is.** When the phone has no internet the app still has radio: six fictional, PRE-WRITTEN stations (`content/stations/*.json`: hosts with personalities, callers, cast, talk segments only) between the user's OWN songs. Not AI at run time, so they show WITHOUT the `radio.ai` flag, labelled "Pre-written show" with live captions (the "Automated host" label stays with You Radio). Station type `canned`, id = pack id, so favourites / recents / Resume use the existing `canned|<id>` store keys.
-* **The dial** (Radio tab, between Favourites/Recents and the internet-radio search): the six stations as cards (name, dial number, tagline, vibe, host chips, "about N min of talk", "Pre-written show", a daypart badge that only ORDERS: stations that name the current time of day first, then "any time" ones, then the rest; all play at any hour). With the flag on: the five AI styles from the bibles (Daybreak, The Quiet Signal, The Deep Cut, Town Line, Signal Pirate) as greyed cards "Needs internet — coming soon", never startable (they need the cloud phase); tapping one shows its style info and "Hear <host>" reads the ten audition lines through the phone's voice at the host's persona rate/pitch. Names, dials and taglines come from the pack JSON only (`content/stations/index.json` is generated: `node scripts/stations-index.mjs`, a test fails when stale), so the owner's renames are data-only.
-* **Code** `src/radio/canned/` (pure: `pack` `slots` `chooser` `voices` `audio-pack` `policy` `fallback` `net` `catalog` `ai-styles`; glue: `runner` `session` `audio` `panel` `dial` `audition`; tests `test/radio-canned/`, 579 checks in the whole suite). It is lazy: two dynamic imports in `radio-player.js`, a thin `canned` proxy session in `stations.js`; `test/radio-canned/static.test.mjs` proves nothing but `flag.js` under `src/radio/` is on the boot path and that no canned file uses a network API (station files are loaded by an injectable, same-origin-only loader and cached, so a loaded station restarts with the network off). Voices: only on-device voices are ever used (a `localService:false` cloud voice is never listed, assigned or spoken with; if a device has only those, the show is music only with the note "No offline voice on this device"). Reused from You Radio: the show-state reducer, `queue.js` gapless policy, ducking controller, system-speech adapter (additive per-line `override`), panel styles, play host port.
-* **How a show runs.** Sign-on first; one chosen break per song boundary, spoken over the music bed (ducked) so it ends ~2 s before the join; talk share targets 25-30 % (measured over the 3-hour test: about 22-27 % per pack, pack-limited), at least 75 s of music between breaks, station ID / jingle ~every 15 min, 90-minute cool-down per segment (45 min for kinds with 4 or fewer units such as news/promo/liner, 25 min only for ID/jingle units), running gags in `seq` order with the payoff last (a finished gag never airs again), `bit` tags at most twice an hour, slot lines (`{nextTitle}` ...) filled from library tags through `pronounce.js` and replaced by the slot-free twin whenever any slot is empty / non-Latin / cruft / too long. Stop signs off first (second tap stops at once); the pill and the now-bar Stop stop immediately.
-* **Shared engine hand-over.** Engine-backed shows (canned, You Radio) stand down at once, without sign-off and without touching the deck, the prepared next deck or the bus, when the user starts an Albums / Vinyl / CD / Mixtape track (`RadioUI.foreignPlayback()` from `loadTrack`; the runners also detect a deck that changed under them). Stop / source switch cancels a decode still in flight (`src/engine-gate.js`, checked by the host `load` / `decodeNext` / `prepareNext`). A cancelled break cannot resume after the pause between its lines. A library that empties mid-show ends the show with the friendly empty message. The duck is taken when a recording actually starts, not before.
-* **Voices.** Per segment: a recording when an audio pack is present (`audio/<station>/manifest.json` + `<segment>.opus`, optional `.m4a` alternates; played through an `<audio>` element; the stations index must say `audio: true`, so with no pack nothing is requested), else the phone's speech: each host/caller/cast member gets the closest system voice to the pack's hints (gender, accent, age), shared voices are told apart by pitch/pace, `direction` words nudge a line. Recording decode/load failure falls back to TTS for that segment; 3 in a row switch recordings off with a note; TTS failure skips the segment, 3 in a row = "Music only" with a note; no engine at all = music only from the start. **No recordings exist yet** (owner is still auditioning voices): do not render or commit audio or models; `build:web` copies `content/audio/` into `www/audio/` if it ever exists.
-* **Fallback policy.** `chooseShowSource({online, cloudAvailable, flagOn, userStation, lastSource})` (pure, table-tested) -> `'cloud' | 'offline-host' | 'canned'` + reason. `CLOUD_AVAILABLE` is false: cloud is never returned; You Radio "Auto" = offline host; cloud-only styles and real streams with no network degrade to a pre-written show. `createFallbackController` is the switch hook P2 plugs the cloud session into (tested with a fake cloud session that fails or loses the network: it stops it and starts canned, dead-air ladder rung 5, never flips back up mid-show). Connectivity is an injectable adapter. The canned session reports its decision (`session.decision`); the picker does not yet route You Radio through the hook (not needed until P2).
-* **Build / shipping.** `scripts/build-web.mjs` validates and copies `content/stations/<id>.json` to `www/stations/`, writes `www/stations/index.json` (the dial renders from it without loading six packs), copies `content/audio/` to `www/audio/` if present; dev-only `README.md`, `_stoplist.json` and the committed index are not copied; an invalid pack fails the build. `www/` staged size 1017 KB -> 1938 KB (+921 KB: station packs 785 KB, canned code ~136 KB with comments; the APK compresses JSON well).
-* **Content review (report only).** `node scripts/review-content.mjs [--md docs/CANNED_REVIEW_FINDINGS.md]` runs the mechanical checks from `canned-review.md` (repetition, fact-claim grep, real-world leakage with the SEED stoplist `content/stations/_stoplist.json`, PG-13, clock-fit minimums, call-in `bit` tags, time-of-day words, song-adjacent adjectives, ...). It never fails CI; `scripts/check-content.mjs` keeps its pass/fail contract (now a thin wrapper over `src/radio/canned/pack.js`). The reviewer's renames (Pirate 1400 -> Carrier Wave / The Unlicensed, Sunbelt Soul -> Sunbelt / Slow Current, Kilo-Hertz Rock -> Kilohertz) are NOT applied: they are owner decisions listed in the findings document.
-* **Verified (desktop Chromium + Playwright, generated MP3 fixtures, injected FAKE speech): see `scripts/verify-canned-radio.py`** (dial lists the six stations with names from the pack JSON; start, captions with speaker names, "Pre-written show" label, ducking down and back, skip, favourites + Resume across a reload, offline mid-show and restart with zero new requests, sign-off Stop, flag-on AI cards and audition, audio-pack path with a stub manifest, `.m4a` alternate and TTS fallback on decode failure). Real Chromium found and fixed three bugs the node tests could not: a recording candidate that fired `error` AND rejected `play()` advanced the candidate list twice (regression test added), a bare `{setTimeout, clearTimeout}` default threw "Illegal invocation" (static test added), and a graceful sign-off finishing re-entered `RadioUI.stop()` (guarded). Screenshots: `docs/screenshots/canned-*.png`, `dial-ai-styles-greyed.png`. In the dev server (serve.py at the repo root) the first lookup base `stations/` 404s before `content/stations/` is used (console noise only; the built app ships `stations/`). **Real speech was never heard; nothing was tested on the RedMagic.**
-* **On-device checks for the owner.** (1) Voices: does the WebView/Android TTS offer enough English voices for a 4-10 person cast (the cast panel shows who got which voice); how distinguishable are shared voices; do accents (Irish, Scottish, Australian) exist offline? (2) Opus decode in the WebView (and whether the `.m4a` alternate is needed): `canPlayType('audio/ogg; codecs="opus"')`. (3) Ducking feel under the longer breaks (a long monologue is ducked at -14 dB for up to ~2 minutes; maybe wants a deeper or shorter duck). (4) Audio focus when speech or a recording plays over the Web Audio music. (5) Screen off / app backgrounded (breaks are dropped while hidden, music continues). (6) Talk share by ear (25-30 % target; Sunbelt and Pirate run lower) and whether the 75 s minimum music gap feels right. (7) The dial on a phone: card density, tap targets, the greyed AI cards. (8) Caption timing for recordings (estimated from words, not aligned).
-* **Owner decisions open.** The three renames; accents without licence-clean voices (see `docs/VOICES.md`; the hints are used for system voices and audition only); slot segments in audio-pack mode (default: the recorded slot-free twin airs even when the library could fill the slot, `slotsInAudioMode: 'tts'` reads the slot line live in the phone's voice instead, a different voice from the recordings); whether call-ins should carry the `bit` tag (none do); whether to add silent zero-line liners (validator currently rejects empty `lines`); whether a graceful sign-off should be the default Stop.
+**P2 — per section**
+6. Radio: stations' codecs / mixed content in the WebView; `speechSynthesis` presence and English voice count offline (does the cast get distinguishable voices?); `onend` reliability (watchdog ≈ 1.6 × estimate + 2 s); audio focus when speech plays over Web Audio; ducking feel (-14 dB, 220 ms / 450 ms; long monologues); Bluetooth routing; screen off / app backgrounded (breaks are dropped while hidden, music continues); Opus decode (`canPlayType`) and whether the `.m4a` alternate is needed; background audio (P1 spike S2 in `docs/RADIO_SPIKE_P1.md`).
+7. Mixtapes: drag-reorder feel and scroll-vs-drag; flip animation frame rate (3D transform of a large SVG) and AUTO / FLIP key feel; cassette SVG filter cost at 60 fps (feTurbulence grain at wear > 0); fonts in the WebView; 20+ tapes on the stack (each mounts an SVG); haptics (`navigator.vibrate`); wind keys, seek accuracy and the gapless join after a wind (decode time of the target track); 5,000-track picker scroll.
+8. Search: Gboard composition (the query runs after `compositionend`), 20k-song latency and chunked build jank during a scan, the back gesture closing the overlay and not the app, a long result list scrolling while audio plays.
+9. Booth: touch feel and `GESTURE_KNOBS`, CPU and battery with an effect held, WebView latency with FX on, ring drawing cost, ConvolverNode cost, 2 ms loop cross-fade audibility, the postMessage path.
+10. Shell / settings: edge-gesture feel vs Android back, safe-area insets on a notched phone, text size and reduced motion on device, custom theme import by paste on a phone keyboard.
+11. Library on device: memory with hundreds of real embedded covers; the coverflow swipe momentum (`flingGainS`, `easeRate`, `dragSlopPx`); the toolbar position against the hamburger / drawer strip.
 
+---
 
-## Cassette mixtapes (Workstream C)
+## 7. Open owner decisions (consolidated)
 
-The owner's finished cassette/mixtape design work (standalone Mixtape Deck + Cassette Studio, "handoff") replaces the 8 placeholder canvas shells. Runout's mixtape model stays the source of truth; the handoff's engine is ported as plain ES modules.
+1. **Booth name** ("Booth" is a working name; `BOOTH_LABEL` in `src/shell/sections.js`).
+2. **Mixtape caps** (15 / 30 / 45 min per side, 0 s tolerance, 20 songs per side) and whether tape lengths should be configurable.
+3. **Default theme** for a fresh install: OLED black (what the app looked like) or the new soft Dark.
+4. **Haptics default** is on (the cassette buzz used to be off).
+5. **Canned stations:** the three suggested renames (`docs/CANNED_REVIEW_FINDINGS.md`); accents without licence-clean voices (`docs/VOICES.md`); slot segments in audio-pack mode (`slotsInAudioMode`); whether call-ins carry the `bit` tag; silent zero-line liners; whether a graceful sign-off is the default Stop.
+6. **AI radio:** P1 device spikes (owner runs `docs/RADIO_SPIKE_P1.md` §7) and the open questions in `docs/RADIO_ARCHITECTURE.md` §15; P2 is gated on the feel gate.
+7. **Device mode defaults** (never-timeout-while-playing, AOD 60 s, wake by double-tap, glow 30 %) and whether the always-on display should ever dim below what an AMOLED can show.
+8. **Booth over mixtapes:** FX is off while a mixtape or radio session owns the engine (`docs/FX.md`); say if that should change.
 
-**Layout.** `src/mixtape.js` (pure model v3) | `src/mixtape-ui.js` (shelf, import/export, player + gapless queue host, wind) | `src/cassette/`:
-`core.js` (renderer: `Cassette.render/mount/styles/style/mounts/PENS`; pure SVG strings, node-testable) | `styles-1.js` `styles-2.js` `styles-glass.js` (37 styles, 17 + 16 + 4, owner order) | `reels-physics.js` (PURE: `packR`, `tapeD`, `hubStep` omega = v/r, `mirrorProgress`) | `reels-art.js` (reel/tape/roller/marker markup) | `reels-driver.js` (binds one mounted cassette; transform-only per frame; no loop of its own) | `player-skins.js` + `players.js` (Deck and Player chassis, `nsIds` id namespacing) | `shelf.js` (Stack + Spines) | `editor.js` (editor + back-of-case) | `cassette.css` | `index.js` (entry: engine + all styles). Pen fonts: `src/fonts/`.
+---
 
-**Model v3.** `{id, name, author, tracks:[ref], cfg:{style, pen, wear, gloss, slots?{ink}, text{subtitle,note,side}}}`; the cassette title is `name` (`cassetteCfg(m)` builds the renderer cfg; blank note prints "Side A · N songs"). JSON `{version:3,name,author,cfg,tracks}`; collection key `runout.mixtapes` unchanged. Readers accept v1, v2, v3 and never throw; v4+ is "future" (blob backed up to `runout.mixtapes.backup`, never overwritten). A v1/v2 blob is also copied once to `runout.mixtapes.v<N>.backup` before it migrates. Migration is one-way and nearest-match (`LEGACY_STYLE_MAP`: clear-chrome->smoke, ferric-red->crimson, noir->noir, sunburst->tangerine, neon-grid->lilac, checker->checker, waves->aqua, pastel-dots->bubblegum; `LEGACY_FONT_MAP`: marker->marker, typewriter->type, serif->script, sans->bold, condensed->bold, mono->type; the old default ink #1a1a1f means "no override", any other old font colour becomes `slots.ink`). Import also reads the standalone deck's data (`{items:[...]}` from its `mixtape-deck:v1` localStorage blob, or one item): one-way, names only (re-add songs from the library to make them playable). The handoff's `mixtape-deck:v1` key/shape is NOT used.
+## 8. Known issues and gaps (found during integration; see `STATE.md` for the dated list)
 
-**Playback.** The reels use the handoff's drawing + physics only. Progress is Runout's real one (`tapeProgress` from the queue index and engine position, time-weighted with library durations, unknown ones filled with the mean); hub speed = platter rate x omega = v/r, so scrubbing the vinyl also reverses the reels. No loop of its own: `MixtapeUI.tick` (main loop) pushes state; nothing runs while the player is hidden. The pack radii / tape path / marker are rewritten only when progress moves (>0.0004), per-frame work is `SVGTransform.setRotate` (a 200k-frame heap test is in `test/cassette-reels.test.mjs`). Synthesized audio, 24 s fake tracks and the handoff's transport are NOT ported. Wind: hold the left/right reel or the deck's rew/ff keys: reels run at 24x rising to 64x over 2.5 s, the music bus is muted (`muteBus`), the tape position runs ahead; on release it resolves (`locateTape`) to (track, time) and seeks the real playback (same track: engine seek; other track: queue goto then seek). A tap winds ~450 ms (~10 s). Pause = the platter brake (`setPaused`), closing the player resumes. Haptics: `navigator.vibrate`, OFF by default, chip in the player bar (`runout.cassette.haptics`). No click/whirr sounds.
+* The always-on display's Albums outline is faint by design (`--dm-line` is very dark); whether it is readable on the AMOLED is an on-device check.
+* Locking while the library is zoomed out leaves the coverflow visible but frozen (the pinch back is frozen too); unlock to return. Locking first while on the turntable is the supported flow.
+* `src/tonearm.js` keeps the old radius-based helpers and `classifyFlick` (used by the CD tests, unused by the app).
+* Albums: Blend scratch in the Booth needs the shell to forward platter events (`hasPlatter: true`); gapless album pre-fetch at a track boundary is a cold load with a short gap.
+* Folder scans in a browser cannot keep `File` handles across a restart (tracks show "needs re-link" until the folder is scanned again).
+* Not built: the atmosphere bus, Hyle shaders, crate-flip browsing, desktop packaging (`PORTING_PLAN.md` is a plan only), native Oboe engine (only if the gate fails), two-hand multitouch, `Atomics` hardening of the seek handshake (a rare mis-seek, self-corrects).
 
-**UI.** Mixtapes tab: Stack (tap = insert and play) | Spines (tap = back of case: list, tap a song to start there, Play from the top, Edit) + "Edit selected". Player: Deck skin is the default (reels prominent, mixtape title printed, rew/play/stop/ff/close), Player skin selectable (LCD, prev/next, skip +/-15 s instead of volume since the engine has no master gain); skin choice in `runout.mixtapes.skin`. While playing only the mixtape name shows (label strip and skin title); tap the cassette to reveal the song list. The deck's level meter is the real loudness envelope under the needle. Editor: live cassette, title / tagline / by, PLAY + ADD SONG (library picker, multi-add), rows with move / play from here / remove, look sheet (37 styles, 4 pens, 8 inks + style default, wear, gloss, side, note), needs-re-link banner with Re-link, discard guard, delete (tap twice), Export JSON.
+---
 
-**Fonts.** The handoff asked for Google Fonts (Instrument Sans, Barlow, Barlow Condensed, Patrick Hand, Caveat, Special Elite, Permanent Marker). Bundled offline (latin subsets, woff2, ~160 KB): Caveat and Patrick Hand (SIL OFL), Permanent Marker and Special Elite (Apache 2.0; delete `src/fonts/*` and the four `@font-face` rules if only OFL is wanted, the stacks fall back to cursive/monospace). Substituted with system stacks: Instrument Sans -> system-ui, Barlow / Barlow Condensed -> `Arial Narrow, Roboto Condensed, sans-serif-condensed`. Nothing is fetched at runtime (a test asserts no external URL in any generated markup).
+## 9. History pointers
 
-**Brand check.** No wordmarks or logos in the artwork; the chassis SVGs print only PREV./NEXT/PLAY. Generic format words are printed on some styles (TYPE I, CHROME, HI-FI, C-60, N.R., STEREO, HIT, MIXTAPE). One model-like mark was removed: "VX 60" -> "C 60". The Stereo Blue style has three thin horizontal bars (not a diagonal-stripe mark); worth the owner's eye. A test guards a list of known brand words.
-
-**Left out / known gaps vs the handoff.** Cassette Studio page and its flip-with-depth view (the handoff itself notes depth was unchecked on glass/clear/flat); synthesized motor/clack/tune audio; the 24 s fake tracks; iOS haptic-switch hack; per-style colour slot editing (only ink is exposed; `cfg.slots` accepts only `ink`); song-detail editing (songs are library refs); the player skins' volume keys (now skip +/-15 s); the standalone page chrome/tabs. Opaque styles show only a small pack (pill window r=68), as in the handoff. Gallery-style `Library` phone frame replaced by the pane.
-
-**Verified (desktop headless Chromium + Playwright, generated FLAC fixtures with tags, mouse not touch):** shelf (stack, spines), editor (add songs, look sheet, save), back of case, play via the real queue, reels moving with the real position (radii change, hubs turn), name-only view, song-list reveal, FF/REW across tracks (seek landed in the right track/time), skin switch, needs-re-link after reload (message + Re-link, editor banner), 37 style grid, reel screenshots at ~10/50/90% for clear, brass, glass, checker on both skins. All node tests green (368).
-**NOT verified (no device):** anything on the RedMagic / Android WebView. On-device checks: (1) cassette SVG filter cost at 60 fps in the player (feTurbulence grain is on at wear>0; try wear 0 / glass on a busy shelf), (2) fonts render in the WebView (`Caveat`, `Patrick Hand`, `Permanent Marker`, `Special Elite` after install; label text fits via `getComputedTextLength`), (3) touch: hold a reel / deck key to wind, release seeks; tap the cassette toggles the list; a quick tap on a reel winds ~10 s, (4) shelf scroll + Stack tap targets with 20+ tapes, memory with many Stack cards (each mounts a full SVG), (5) `navigator.vibrate` pulses with the Haptics chip on, (6) back-gesture/close while winding, (7) seek accuracy + gapless join after a wind within the same track and across tracks (decode time of the target track), (8) pause (brake) then close resumes the record, (9) real mp3 library: unknown durations make the tape equal-weighted-estimate, so the reel position is approximate until durations are known.
-
-
-## Search + Settings (Workstream B)
-Docs: `docs/SEARCH.md`, `docs/SETTINGS.md`. Where things are: pure core `src/search/index.js` + `fold.js` (node tests `test/search-*.test.mjs`), adapters (`adapters.js`) read the library / mixtapes / radio store, overlay `ui.js` (lazy), seam `actions.js` (`searchActions`: `playTrack`, `openAlbum`, `openArtist`, `openMixtape`, `playStation`, `playTracks`, `addToMixtape` unbound until Workstream D binds it), settings store `src/settings/settings.js` (`runout.settings.v1`, mirrors `runout.theme`, `runout.cassette.haptics`, `runout.flag.radio.ai`). `scripts/verify-search-settings.py` is the Playwright check. On-device checklist: keyboard/IME with the overlay, search latency on a 20k-song library, the back gesture vs the overlay, text-size zoom on Radio, the accent on every hard-coded violet surface.
-
-## Mixtapes v4: sides, caps, editor, AUTO (Workstream D)
-
-Full write-up in `docs/MIXTAPES.md` (model v4, cap numbers, transport state machine, editor flow, suggested tapes, setting keys, seams, on-device checks). Where things are: pure `src/mixtape.js` (v4 model; `tracks` is the derived flat list, `sides` the source of truth), `src/mixtape-pick.js` + `src/mixtape-search.js` (picker core and the global-search adapter), `src/mixtape-suggest.js`, `src/cassette/transport.js`; glue `src/mixtape-ui.js`, `src/cassette/editor.js` + `editor-songs.js` + `dom.js`; the AUTO / FLIP keys and `flipTo` are in `src/cassette/players.js`. Tests: `test/mixtape-v4`, `mixtape-pick`, `mixtape-search`, `mixtape-suggest`, `cassette-transport`; browser check `scripts/verify-mixtapes.py`. One additive hook outside the section: `main.js` binds `searchActions.addToMixtape` to `state.mixtapes.startFrom({trackIds})`. The v3 blob is copied once to `runout.mixtapes.v3.backup` before it migrates.
-
-## The Vinyl player (Workstream T1)
-
-The Albums section is now the owner's turntable prototype (stage + zoom-out library): `docs/TURNTABLE.md` (architecture, coordinates, decisions, tunables, on-device
-checks). Code in `src/turntable/`; `src/render.js` / `src/mat.js` are gone; `scripts/verify-turntable.py` (real audio) and `scripts/fidelity-turntable.py` verify it.
+The original v0 decisions and the three correctness fixes from the first hardening pass (steady-state speed locked with a friction feed-forward, `dt` clamped, SAB capability requires `=== true`) are in `test/model.test.mjs` and `src/model.js`. The custom-theme feature (JSON paste → verbatim preview → Apply, schema keys mapped onto `--violet`, `--secondary`, `--tertiary`, `--bg`, `--surface`, `--surface2`, `--ink`, `--ink-bg`; `--border` left alone) is in `src/theme.js` and `docs/SETTINGS.md`. Workstream write-ups: `docs/TURNTABLE.md`, `docs/TURNTABLE_LIBRARY.md`, `docs/MIXTAPES.md`, `docs/SEARCH.md`, `docs/SETTINGS.md`, `docs/DEVICE_LIBRARY.md`, `docs/DEVICE_MODE.md`, `docs/FX.md`, `docs/SHELL.md`, `docs/RADIO_ARCHITECTURE.md`.
