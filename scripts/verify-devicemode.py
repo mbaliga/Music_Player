@@ -380,7 +380,7 @@ def new_ui_albums(p, w, h):
         T.down((cx0, cy0)); time.sleep(0.05); T.move((cx0 + 8, cy0 + 20)); time.sleep(0.05); T.move((cx0 + 12, cy0 + 40)); time.sleep(0.05)
         v = page.evaluate(f'{APP}.stage.isScratching()'); T.up(); time.sleep(0.2); return v
     def braking_during():
-        bx, by = stage_pt(page, 278, 457)
+        bx, by = stage_pt(page, 428, 457)      # on the label (r = 150 < 217) but clear of the header chips (the spindle itself sits under the hamburger on a 360 px phone)
         T.down((bx, by)); time.sleep(0.1); v = page.evaluate(f'{APP}.state.braking'); T.up(); time.sleep(0.2); return v
     def arm_during():
         gx, gy = center(page, '#tt-grab'); T.down((gx, gy)); time.sleep(0.1); T.move((gx + 4, gy + 4)); v = page.evaluate(f'{APP}.stage.player.dragging'); T.up(); time.sleep(0.3); return v
@@ -419,7 +419,10 @@ def new_ui_albums(p, w, h):
     page.keyboard.press('Space'); time.sleep(0.2)
     check(not page.evaluate(f'{APP}.state.braking'), f'{tag}: LOCKED: Space does not brake')
     for kk in ['Escape', 'ArrowLeft']: page.keyboard.press(kk)
-    # live keys while the record plays: speed, -/+, Stop, Play
+    # live keys while the record plays: speed, -/+, Stop, Play (the 40 s test songs run out while the gestures above are tried, so put the needle back first)
+    page.evaluate("() => { const a = window.__rt.app(), e = a.state.engine; if (a.state.T - e.position / e.sampleRate < 25) window.__rt.goTo({ index: 0, time: 1 }, true); }"); time.sleep(1.5)
+    if not page.evaluate(f'{APP}.stage.player.playing'):
+        px, py = center(page, '#tt-playBtn'); T.tap(px, py); time.sleep(2.0)
     rpm0 = page.evaluate(f'{APP}.state.rpm')
     px_, py_ = center(page, '#tt-bp'); T.tap(px_, py_); time.sleep(0.3)
     rpm1 = page.evaluate(f'{APP}.state.rpm'); check(rpm1 != rpm0, f'{tag}: LOCKED: the + speed key works ({rpm0} -> {rpm1})')

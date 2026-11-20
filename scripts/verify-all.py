@@ -35,7 +35,7 @@ try:
             code = r.returncode
         except subprocess.TimeoutExpired: code = 'timeout'
         txt = open(log, errors='replace').read()
-        fails = [l for l in txt.splitlines() if l.startswith('FAIL')]
+        fails = [l for l in txt.splitlines() if l.startswith('FAIL ') or l.startswith('FAIL:')]
         oks = sum(1 for l in txt.splitlines() if l.startswith('ok '))
         rows.append((name, 'PASS' if code == 0 else 'FAIL', time.time() - t0, f'{oks} ok, {len(fails)} FAIL lines, exit {code}' + (('  first: ' + fails[0][:90]) if fails else '')))
         print(f'{rows[-1][0]:18s} {rows[-1][1]}  {rows[-1][2]:6.1f}s  {rows[-1][3]}', flush=True)
