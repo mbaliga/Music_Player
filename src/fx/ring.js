@@ -7,7 +7,7 @@
 export const RING_KNOBS = Object.freeze({
   speedFull: 6,          // |spin| (relative to nominal) that counts as "full speed"
   rainbowAt: 0.85,       // speed (0..1) beyond which the ring turns into a spectrum
-  idleAlpha: 0.2, heldAlpha: 0.55, maxAlpha: 0.95,
+  idleAlpha: 0.38, heldAlpha: 0.55, maxAlpha: 0.95,
   idleWidth: 0.012, maxWidth: 0.04,   // as fractions of the ring radius
 });
 

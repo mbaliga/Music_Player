@@ -203,6 +203,17 @@ Only desktop headless Chromium (Playwright, generated WAV albums, mouse not touc
 - **Verified**: unit tests (tags, albums ordering, libindex, mixtape v1/v2, queue) plus headless Chromium: scan -> ordered albums -> reload shows "needs re-link" -> v1 mixtape resolves -> Re-link -> plays -> auto-advances across 4 tracks with no dropout at joins (output tap) -> jump to queued / other track works.
 - **Not verified**: anything on the RedMagic (decode time and memory of a real 4-minute track in the WebView; sample-accuracy of the join is tick-driven, about one frame of jitter hidden by the 50 ms fade); FS Access handle re-link (headless has no picker, so only the input fallback was exercised); m4a/ogg cover art in real files; mono/odd sample-rate files across a join.
 
+## FX section (Workstream X)
+
+Full write-up: `docs/FX.md`. Summary for the next person:
+
+* **Entry point:** `src/fx/ui.js` exports `mountFxSection(container, deps) -> { unmount, onShow, onHide, onTrack, platter, controller }`. `deps = { engine, host{getTrack, envelope, durationSec, positionSec, nominalRate, omegaNominal, sampleRate, blocked, view, geom}, resume, stage?, close? }`. It lays out in any container (tested at 360 x 780), prefixes all CSS with `.fx-` (`src/fx/fx.css`, loaded lazily), runs its own rAF loop while shown.
+* **Temporary mount:** the block "FX section (src/fx)" in `src/main.js` (`openFx/closeFx/installFx`, `fxHost`, the `#fxSection` markup at the end of `aside.panel` in index.html, 8 lines of `.fx-head` CSS). To relocate (drawer "DJ"/"Booth" section): call `openFx` with the new container, call `fx.onShow()/onHide()` when the section appears/disappears, keep the three platter hooks (canvas pointerdown/move/up call `fx.platter.*`, the loop calls `fx.platter.rateFor(rate)`) and `fx?.onTrack()` in `loadTrack` and the two `adopt` paths. Without the platter hooks the pad inside the section still works (and is the only surface for CD tracks).
+* **Layers:** pure `src/fx/{divisions,tempo,gesture,modes,persist,ring,waveform,dsp}.js`; DOM-free `controller.js`; Web Audio `bus.js`; DOM `ui.js` + `ring-draw.js`; worklet slicer in `src/worklet.js` behind `C_FX_*` slots (`control-layout.js`, `CONTROL_SLOTS` 16); `AudioEngine.setFx(p)`.
+* **Invariants:** FX off = byte-identical worklet output (golden hash in `test/fx-worklet.test.mjs`, from the pre-FX file); no FX node exists until an effect is first engaged; `musicBus -> destination` is restored on release/close; FX is off while `state.radioOn`, a radio session or `state.mixtapes.play` exists.
+* **Verify:** `python3 serve.py 8123` then `python3 scripts/verify-fx.py outdir` (real audio, measured; needs numpy + Playwright; set `CHROME`).
+* **Not verified:** anything on the RedMagic. On-device: touch feel and the gesture thresholds (`GESTURE_KNOBS`), CPU and battery with an effect held, WebView audio latency with FX on, ring drawing cost, ConvolverNode cost, whether the 2 ms loop cross-fade is audible on the phone's DAC, the postMessage (non-SAB) path under the APK WebView.
+
 ## What's pending
 
 ### v0 — still to close

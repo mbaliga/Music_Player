@@ -183,7 +183,8 @@ export class FxController {
     if (this._disposed) return;
     this.refreshBlocked();
     const h = this.hold;
-    const moving = nowMs - h.lastMoveT < 90 || !h.pointer;                 // a resting finger measures 0 spin; keyboard "spin" persists until reset
+    const gap = this._tickT == null ? 16 : nowMs - this._tickT; this._tickT = nowMs;
+    const moving = nowMs - h.lastMoveT < Math.max(90, gap * 2.5) || !h.pointer;   // frame-aware: a hitching frame must not read as a resting finger                 // a resting finger measures 0 spin; keyboard "spin" persists until reset
     const target = h.pointer ? (moving ? h.rawSpin : 0) : h.rawSpin;
     h.spin = smooth(h.spin, target, dt, K.spinSmoothTau);
     const v = h.pointer && moving ? (h.rawV || 0) * 3 : 0;                    // hand travel (radius-lengths/s) also lights the ring in pad modes
