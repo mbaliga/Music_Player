@@ -10,7 +10,7 @@ library; Radio dial; Booth; drag from the 24 px strip opens / flings / cancels; 
 cassette never moves the drawer; vinyl scrub still changes the rate; tap on the card / Esc / menu item close; aria + inert + focus trap;
 last section is remembered; a playing radio station and a playing mixtape survive section changes and show the mini bar.
 """
-import json, math, os, sys, time
+import json, math, os, subprocess, sys, time
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 src = open(os.path.join(ROOT, 'scripts/verify-canned-radio.py')).read()
 src = src[:src.index('def run():')]
@@ -18,6 +18,14 @@ OUTDIR = sys.argv[1] if len(sys.argv) > 1 else '/tmp/shell-verify'
 sys.argv = ['x', OUTDIR]
 exec(src)                                   # helpers: make_fixtures, launch, to_section, FAKE_SPEECH, BUS_HOOK, LIB, SHOTS, URL, SPECS
 make_fixtures()
+# a two-disc-label folder so the shelf has a CD (albums.js: a disc label in the album tag or the path makes it a CD)
+CD_DIR = os.path.join(LIB, 'Glass Hours CD1')
+os.makedirs(CD_DIR, exist_ok=True)
+for i, f in enumerate([196, 233], 1):
+    out = os.path.join(CD_DIR, f'0{i} - Glass {i}.mp3')
+    if not os.path.exists(out):
+        subprocess.run(['ffmpeg', '-loglevel', 'error', '-y', '-f', 'lavfi', '-i', f'sine=frequency={f}:duration=30:sample_rate=44100', '-metadata', f'title=Glass {i}', '-metadata', 'artist=Glass Hours',
+                        '-metadata', 'album=Glass Hours [CD1]', '-metadata', f'track={i}', '-c:a', 'libmp3lame', '-b:a', '96k', out], check=True)
 
 fails = []
 def check(ok, msg):
@@ -108,6 +116,18 @@ with sync_playwright() as p:
         page.tap('.alb-detail-list li'); page.wait_for_timeout(1500)
         check(page.locator('.alb-detail').count() == 0, f'{tag}: picking a track closes the track list and loads the turntable')
         check(page.inner_text('#trackName') != 'Runout — test pressing', f'{tag}: the picked track is the loaded record ({page.inner_text("#trackName")})')
+
+        # a CD album swaps in the existing CD view (compact stage grows a little); then back to a vinyl record for the platter tests
+        page.click('#kindChips [data-kind="cd"]'); page.wait_for_timeout(300)
+        page.tap('#albumGrid .alb-card'); page.wait_for_selector('.alb-detail'); page.tap('.alb-detail-list li'); page.wait_for_timeout(1500)
+        check(not page.evaluate('document.getElementById("cdView").classList.contains("hidden")'), f'{tag}: a CD album swaps in the CD view')
+        shot('albums-cd')
+        cdm = page.evaluate('(() => { const c = document.getElementById("cdView").getBoundingClientRect(), l = document.getElementById("cdList").getBoundingClientRect(); return { canvasH: document.getElementById("cdCanvas").getBoundingClientRect().height, listH: l.height, bottom: c.bottom }; })()')
+        check(cdm['canvasH'] >= 120, f'{tag}: the CD canvas keeps a usable size ({cdm["canvasH"]:.0f} px)')
+        page.click('#kindChips [data-kind="vinyl"]'); page.wait_for_timeout(300)
+        page.tap('#albumGrid .alb-card'); page.wait_for_selector('.alb-detail'); page.tap('.alb-detail-list li'); page.wait_for_timeout(1500)
+        check(page.evaluate('document.getElementById("cdView").classList.contains("hidden")'), f'{tag}: a vinyl album brings the platter back')
+        page.click('#kindChips [data-kind="all"]'); page.wait_for_timeout(200)
 
         # ---- drawer by touch: drag from the strip
         d = disc(page)

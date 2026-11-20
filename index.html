@@ -281,14 +281,15 @@
     display: flex; align-items: center; justify-content: space-between;
     margin-top: 24px; gap: 12px;
   }
-  .wt-dots { display: flex; gap: 5px; }
+  .wt-dots { display: flex; flex-wrap: wrap; gap: 5px; flex: 1; min-width: 0; }
   .wt-dot {
     width: 6px; height: 6px; border-radius: 50%;
     background: var(--border); transition: background .2s;
   }
   .wt-dot.on { background: var(--violet); }
 
-  .wt-nav { display: flex; gap: 8px; }
+  .wt-nav { display: flex; gap: 8px; flex: none; }
+  .wt-nav button { white-space: nowrap; }
   .wt-nav button {
     padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600;
     cursor: pointer; border: 1px solid var(--border);

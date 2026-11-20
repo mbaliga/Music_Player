@@ -174,7 +174,7 @@ export function openEditor(ctx) {
     const lib = ctx.getLibraryTracks();
     const sh = openSheet('<h3>Add songs</h3>' + (lib.length
       ? '<input class="pick-q" id="pk-q" type="search" placeholder="Filter by title, artist or album" autocomplete="off"><div class="pick-rows" id="pk-rows"></div>'
-      : '<p style="color:#5b5f66;line-height:1.5">Your library is empty. Scan your music folder on the Albums tab first.</p>') +
+      : '<p style="color:#5b5f66;line-height:1.5">Your library is empty. Scan your music folder in Albums first.</p>') +
       '<div class="acts"><button type="button" class="go" id="pk-ok">Done</button></div>');
     sh.querySelector('#pk-ok').addEventListener('click', closeSheet);
     if (!lib.length) return;

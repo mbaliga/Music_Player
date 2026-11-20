@@ -127,7 +127,7 @@ export class MixtapeUI {
     this.viewSpines?.classList.toggle('active', this.view === 'spines');
     if (this.editSel) this.editSel.disabled = !this.byId(this.sel);
     if (!this.list.length) {
-      el.append(h('div', { class: 'mt-empty' }, 'No mixtapes yet. Tap “+ New mixtape” to make one from your library.'));
+      el.append(h('div', { class: 'mt-empty' }, 'No mixtapes yet. Tap “+ New” to make one from your library.'));
       return;
     }
     const items = this.list.map((m) => ({ id: m.id, cfg: cassetteCfg(m) }));

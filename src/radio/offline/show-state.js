@@ -31,7 +31,7 @@ export const initialShow = () => ({
 const out = (state, ...actions) => ({ state, actions });
 const HALT = [{ type: 'cancel-speech' }, { type: 'restore-music' }, { type: 'drop-next' }, { type: 'halt' }];
 
-export const EMPTY_MESSAGE = 'Your library has no playable songs yet. Scan your music folder in the Albums tab, then tune in again.';
+export const EMPTY_MESSAGE = 'Your library has no playable songs yet. Scan your music folder in Albums, then tune in again.';
 
 export function reduceShow(state, ev) {
   switch (ev.type) {

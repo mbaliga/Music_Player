@@ -11,6 +11,7 @@
 [data-layout="utilitarian"] #pageAlbums .stage { height: 60svh; }
 [data-layout="cinematic"] #pageAlbums .stage { height: 66svh; }
 #pageAlbums .stage canvas#disc { background: transparent; }
+#pageAlbums .cd-view { background: var(--card-bg); }
 
 /* the now-line: title + track nav, then speed 33/45/78 and the palm brake in ONE tight row */
 .nowline { display: flex; flex-direction: column; gap: 8px; padding: 6px 16px 10px; }
