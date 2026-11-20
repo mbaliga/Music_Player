@@ -395,8 +395,7 @@ def new_ui_albums(p, w, h):
     z = pinch_z(); check(z > 0.3, f'{tag}: [control] pinch zooms out when unlocked (z {z:.2f})')
     # coverflow control (unlocked): swipe moves focus, a row tap picks a track, a cover tap fires
     title0 = page.evaluate("document.querySelector('.tl-title').textContent")
-    fl = page.evaluate("() => { const r = document.querySelector('.tl-flow').getBoundingClientRect(); return [r.x, r.y, r.width, r.height]; }")
-    fy = fl[1] + fl[3] * 0.4
+    fy = center(page, '.tl-slot')[1]          # swipe across the centre cover (the toolbar chips sit above it and are not part of the swipe surface)
     T.drag(T.line(w * 0.75, fy, w * 0.2, fy, 8)); time.sleep(1.2)
     title1 = page.evaluate("document.querySelector('.tl-title').textContent")
     check(title1 != title0, f'{tag}: [control] a coverflow swipe changes the focused album when unlocked ("{title0}" -> "{title1}")')
@@ -436,8 +435,8 @@ def new_ui_albums(p, w, h):
     # coverflow, frozen: show the library through the test hook (the zoom gesture itself is frozen), then swipe / tap
     page.evaluate('window.__rt.setZ(1)'); time.sleep(1.0)
     t_before = page.evaluate("document.querySelector('.tl-title').textContent")
-    fl = page.evaluate("() => { const r = document.querySelector('.tl-flow').getBoundingClientRect(); return [r.x, r.y, r.width, r.height]; }")
-    T.drag(T.line(w * 0.75, fl[1] + fl[3] * 0.4, w * 0.2, fl[1] + fl[3] * 0.4, 8)); time.sleep(1.0)
+    fy = center(page, '.tl-slot')[1]
+    T.drag(T.line(w * 0.75, fy, w * 0.2, fy, 8)); time.sleep(1.0)
     check(page.evaluate("document.querySelector('.tl-title').textContent") == t_before, f'{tag}: LOCKED: a coverflow swipe does nothing')
     rx, ry = center(page, '.tl-trk'); T.tap(rx, ry); time.sleep(0.5)
     cvx, cvy = center(page, '.tl-cv[aria-selected="true"], .tl-cv'); T.tap(cvx, cvy); time.sleep(0.5)

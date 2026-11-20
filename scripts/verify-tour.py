@@ -211,8 +211,7 @@ def tour(b, w, h, tag, landscape=False):
           for (const a of head) for (const b of bar) if (Math.min(a.right, b.right) - Math.max(a.left, b.left) > 1 && Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) > 1) n++; return n; }""")
         check(ov == 0, f'{tag}: the library toolbar chips do not run under the header chips ({ov} overlaps)')
         t0 = page.inner_text('.tl-title')
-        fl = page.evaluate("() => { const r = document.querySelector('.tl-flow').getBoundingClientRect(); return [r.x, r.y, r.width, r.height]; }")
-        fy = fl[1] + fl[3] * 0.4
+        fy = center(page, '.tl-slot')[1]       # across the centre cover (the toolbar chips sit above it)
         T.drag(T.line(w * 0.75, fy, w * 0.2, fy, 8)); page.wait_for_timeout(1300)
         t1 = page.inner_text('.tl-title'); shot(page, 'coverflow-swiped')
         check(t1 != t0, f'{tag}: a coverflow swipe moves to another album ("{t0}" -> "{t1}")')
