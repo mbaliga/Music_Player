@@ -135,7 +135,7 @@ with sync_playwright() as p:
 
         # ---- drawer by touch: drag from the strip
         d = disc(page)
-        T.drag(T.line(10, 420, 120, 420, 8), release=False); page.wait_for_timeout(80)
+        T.drag(T.line(10, 420, 170, 420, 8), release=False); page.wait_for_timeout(80)   # ends at 170 px (was 120): 120 sat on the 50 % settle threshold, so one slow run settled closed (flake)
         mid = tx(page); shot('drawer-mid-drag')
         T.up(); settle(page)
         check(0 < mid < 200, f'{tag}: mid-drag the card follows the finger ({mid:.0f} px)')
