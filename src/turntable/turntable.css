@@ -1,0 +1,46 @@
+/* turntable.css — the Albums page's vinyl player (src/turntable/stage.js). Ported from the prototype's page CSS; tokens that matter:
+   the stage is always black (a physical object), the library backdrop is #0b0b0e. */
+.tt-wrap { position: absolute; inset: 0; overflow: hidden; background: #000; touch-action: none; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+.tt-layer { position: absolute; left: 0; top: 0; width: 100%; height: 100%; display: block; }
+.tt-top { touch-action: none; }
+.tt-disc { pointer-events: none; }
+.tt-libbg { position: absolute; inset: 0; background: #0b0b0e; opacity: 0; pointer-events: none; }
+.tt-lib { position: absolute; inset: 0; overflow: hidden; opacity: 0; pointer-events: none; color: #e9e9ee; }
+.tt-top .hit, .tt-top .ctl { cursor: pointer; outline: none; }
+.tt-top .ctl text { fill: #3b3b3b; font: 300 25px "Helvetica Neue", Helvetica, Arial, sans-serif; transition: fill .25s; user-select: none; }
+.tt-top .ctl:hover text { fill: #8d8d8d; }
+.tt-top .ctl.on text { fill: #4d4d4d; }
+.tt-top #tt-playIcon { fill: #454545; transition: fill .25s; }
+.tt-top #tt-playBtn:hover #tt-playIcon { fill: #8d8d8d; }
+.tt-top #tt-playBtn.live #tt-playIcon { fill: #9a9a9a; }
+.tt-top #tt-grab { cursor: grab; outline: none; }
+.tt-top #tt-grab.drag { cursor: grabbing; }
+.tt-top [role="button"]:focus-visible, .tt-top #tt-grab:focus-visible { outline: none; }
+.tt-top .ctl:focus-visible text { fill: #d8d8e0; }
+.tt-top #tt-playBtn:focus-visible #tt-playIcon { fill: #d8d8e0; }
+/* a keyboard / screen-reader way into the library (pinch and Ctrl+wheel are the gestures) */
+.tt-sr { position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); z-index: 3; padding: 8px 14px; border-radius: 16px; border: 1px solid rgba(255,255,255,.3);
+  background: rgba(20,20,26,.92); color: #eceaff; font: 600 13px system-ui, sans-serif; opacity: 0; pointer-events: none; }
+.tt-sr:focus-visible { opacity: 1; pointer-events: auto; outline: 2px solid var(--shell-accent, #8E7BFF); }
+/* the Albums page: the stage fills the card; the drawer hamburger + the small deck-details control float over its top corners */
+#pageAlbums { overflow: hidden; background: #000; }
+#pageAlbums .page-head { position: absolute; left: 0; right: 0; top: 0; z-index: 4; min-height: 0; padding: var(--safe-top) 6px 0 6px; pointer-events: none; }
+#pageAlbums .page-head > * { pointer-events: auto; }
+#pageAlbums .page-title { display: none; }
+#pageAlbums .hamburger { color: #e8e8f0; filter: drop-shadow(0 1px 3px rgba(0,0,0,.7)); }
+.tt-details-btn { width: 44px; height: 44px; border: 0; border-radius: 12px; background: none; color: #e8e8f0; cursor: pointer; display: flex; align-items: center; justify-content: center; filter: drop-shadow(0 1px 3px rgba(0,0,0,.7)); }
+.tt-details-btn:active { transform: scale(.92); }
+.tt-details-btn:focus-visible { outline: 2px solid var(--shell-accent, #8E7BFF); outline-offset: 2px; }
+/* CD albums: the existing CD view (src/cd.js) sits above the stage instead of the platter */
+#pageAlbums .cd-view { position: absolute; inset: 0; z-index: 3; padding-top: calc(52px + var(--safe-top)); background: var(--card-bg); }
+#pageAlbums[data-view="cd"] .tt-wrap { visibility: hidden; }
+/* Deck details (the old side panel) opens as a sheet over the page */
+.tt-sheet { position: absolute; left: 0; right: 0; bottom: 0; max-height: 82%; z-index: 5; overflow-y: auto; background: var(--surface); color: var(--ink);
+  border-radius: 22px 22px 0 0; border-top: 1px solid var(--border); box-shadow: 0 -18px 50px rgba(0,0,0,.55); padding: 6px 16px calc(24px + var(--safe-bottom)); }
+.tt-sheet[hidden] { display: none; }
+.tt-sheet-head { display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: var(--surface); padding: 10px 0 8px; z-index: 1; }
+.tt-sheet-head h2 { font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--ink2); }
+.tt-sheet .panel { display: flex; flex-direction: column; gap: 16px; padding-top: 4px; }
+.tt-sheet .hint-brake { margin-top: 2px; }
+@media (prefers-reduced-motion: reduce) { .tt-top .ctl text, .tt-top #tt-playIcon { transition: none; } }
+.cd-libbtn { position: absolute; z-index: 5; top: calc(10px + var(--safe-top)); right: 58px; padding: 8px 14px; border-radius: 16px; border: 1px solid var(--border); background: var(--surface2); color: var(--ink); font: 600 12px system-ui, sans-serif; cursor: pointer; }

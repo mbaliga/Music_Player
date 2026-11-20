@@ -27,7 +27,7 @@ test('the build ships every FX module and its stylesheet; the app reaches them o
 test('the boot path has NO static import of src/fx; the shell reaches the FX component through one lazy import in src/shell/booth.js', async () => {
   const booth = strip(await readFile(resolve(root, 'src/shell/booth.js'), 'utf8'));
   assert.equal((booth.match(/import\(\s*['"]\.\.\/fx\/section\.js['"]\s*\)/g) || []).length, 1, 'one dynamic import of fx/section.js');
-  for (const f of ['main.js', 'audio-engine.js', 'render.js', 'library.js', 'mixtape-ui.js', 'radio-player.js', 'shell/booth.js', 'shell/nav.js', 'shell/sections.js']) {
+  for (const f of ['main.js', 'audio-engine.js', 'turntable/stage.js', 'library.js', 'mixtape-ui.js', 'radio-player.js', 'shell/booth.js', 'shell/nav.js', 'shell/sections.js']) {
     assert.equal(/^\s*import[^;]*from\s+['"][^'"]*\/fx\//m.test(strip(await readFile(resolve(root, 'src', f), 'utf8'))), false, `${f} statically imports src/fx`);
   }
 });

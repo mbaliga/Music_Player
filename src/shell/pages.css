@@ -1,43 +1,8 @@
 /* pages.css — layout of the four section pages inside the card. Scoped to .page / section ids; the shared widgets
    (chips, album cards, radio dial, cassette) keep their own styles in index.html and src/cassette/cassette.css. */
 
-/* ── Albums ─────────────────────────────────────────────────────────────────────────────────────────────────────────── */
-#pageAlbums { overflow: hidden; }
-#pageAlbums .deck { flex: none; display: flex; flex-direction: column; }
-/* Compact (default): the Utilitarian composition (whole record + mat + tonearm) scaled to the top ~42% of the card. */
-#pageAlbums .stage { height: clamp(236px, calc(var(--shell-h, 780px) * .42), 420px); background: var(--card-bg); }
-[data-layout="compact"] #pageAlbums .stage[data-view="cd"] { height: clamp(300px, calc(var(--shell-h, 780px) * .5), 460px); }
-[data-layout="compact"] .cd-list { max-height: 10svh; }
-[data-layout="utilitarian"] #pageAlbums .stage { height: 60svh; }
-[data-layout="cinematic"] #pageAlbums .stage { height: 66svh; }
-#pageAlbums .stage canvas#disc { background: transparent; }
-#pageAlbums .cd-view { background: var(--card-bg); }
-
-/* the now-line: title + track nav, then speed 33/45/78 and the palm brake in ONE tight row */
-.nowline { display: flex; flex-direction: column; gap: 8px; padding: 6px 16px 10px; }
-.nowline-info { display: flex; align-items: center; gap: 10px; min-height: 28px; }
-.nowline .track-name { flex: 1; min-width: 0; font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.nowline .trk-nav { margin: 0; gap: 6px; }
-.nowline .trk-nav button { padding: 4px 12px; min-height: 32px; }
-.nowline-ctl { display: flex; align-items: stretch; gap: 8px; }
-.nowline-ctl .rpms { flex: 0 0 auto; gap: 5px; }
-.nowline-ctl .rpms button { flex: 0 0 auto; width: 50px; min-height: 40px; padding: 0; font-size: 12px; }
-.nowline-ctl .brake { flex: 1; padding: 0 10px; min-height: 40px; display: flex; align-items: center; justify-content: center; font-size: 11px; }
-.app[data-view="cd"] .nowline-ctl { display: none; }
-
-/* the shelf scrolls; the turntable stays put above it */
-#albShelf { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; border-top: 1px solid var(--border); }
-#albShelf .lib-toolbar { padding: 10px 16px; border-bottom: 0; }
-#albShelf .lib-grid-wrap { flex: none; overflow: visible; padding: 4px 16px 16px; }
-.deck-more { margin: 4px 16px 24px; border: 1px solid var(--border); border-radius: 14px; background: var(--surface); }
-.deck-more > summary { cursor: pointer; padding: 12px 14px; font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--ink2); min-height: 44px; display: flex; align-items: center; }
-.deck-more .panel { padding: 4px 14px 16px; display: flex; flex-direction: column; gap: 16px; }
-/* short screens (landscape phones): the whole page scrolls instead */
-@media (max-height: 560px) {
-  #pageAlbums { overflow-y: auto; }
-  #pageAlbums .stage { height: 300px; }
-  #albShelf { overflow: visible; flex: none; }
-}
+/* ── Albums ───────────────────────────────────────────────────────────────────────────────────────────────────────────
+   The page is the vinyl player (src/turntable/stage.js): the stage fills the card. Its CSS is src/turntable/turntable.css. */
 
 /* ── Mixtapes ───────────────────────────────────────────────────────────────────────────────────────────────────────── */
 .mt-bar { flex: none; display: flex; align-items: center; gap: 6px; padding: 0 14px 6px; overflow-x: auto; scrollbar-width: none; }

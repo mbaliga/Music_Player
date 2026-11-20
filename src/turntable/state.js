@@ -100,7 +100,10 @@ function tick(st, { dt, posS = 0, easeZ, reduced = false }) {
   if (wantOut) n.dep = Math.min(1, n.dep + dt / DEPLOY_S);
   else if (n.armS <= 0) n.dep = Math.max(0, n.dep - dt / DEPLOY_S);
   if (n.starting && n.dep >= 1) fx.push('beginAudio');
-  return fx.length ? { state: n, effects: fx } : { state: n, effects: NONE };
+  // an unchanged state keeps its identity, so the caller can tell "nothing moved" with ===
+  let same = true;
+  for (const k in n) if (n[k] !== st[k]) { same = false; break; }
+  return fx.length ? { state: same ? st : n, effects: fx } : { state: same ? st : n, effects: NONE };
 }
 
 function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }

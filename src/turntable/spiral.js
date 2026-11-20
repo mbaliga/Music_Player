@@ -15,7 +15,8 @@ import { C, R_START, TURNS, rOf, thG } from './geometry.js';
 export const M = 14000;
 export { TURNS };
 export const AMP = Object.freeze({ base: 0.9, peak: 25, width: 0.17 / TURNS, widthHi: 2.6 });
-export const BUMP_STEP = 48;       // highlight ribbon chunk (points)
+export const BUMP_STEP = 48;
+export const MAX_PER_BIN = 512;       // highlight ribbon chunk (points)
 
 export function makeTables(n = M) {
   const rU = new Float32Array(n), thU = new Float32Array(n), cU = new Float32Array(n), sU = new Float32Array(n);
@@ -40,7 +41,8 @@ export function computePeaks(env, getSample, frames, i0 = 0, i1 = env.n - 1) {
   for (let k = 0; k < bins; k++) {
     const a = Math.floor(k * frames / bins), b = Math.max(a + 1, Math.floor((k + 1) * frames / bins));
     let hi = 0, lo = 0;
-    for (let j = a; j < b && j < frames; j++) { const v = getSample(j); if (v > hi) hi = v; if (v < lo) lo = v; }
+    const step = Math.max(1, Math.floor((b - a) / MAX_PER_BIN));   // long files: look at <= MAX_PER_BIN samples per bin (peaks barely change)
+    for (let j = a; j < b && j < frames; j += step) { const v = getSample(j); if (v > hi) hi = v; if (v < lo) lo = v; }
     env.hi[i0 + k] = hi; env.lo[i0 + k] = lo;
     if (hi > pk) pk = hi; if (-lo > pk) pk = -lo;
   }
