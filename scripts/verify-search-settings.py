@@ -153,7 +153,7 @@ def run_viewport(b, w, h):
     check(ov_open(page) and page.locator('.so-drill-title:not([hidden])').count() == 0, f'{tag}: back returns to results')
     page.click('.so-row[data-type="album"]'); page.wait_for_timeout(400)
     check(page.locator('.so-act.primary').inner_text() == 'Play album' and page.locator('.so-row[data-type="song"]').count() >= 1, f'{tag}: album drill: Play album + songs')
-    check(page.locator('.so-act:has-text("Add to mixtape")').count() == 0, f'{tag}: Add to mixtape is hidden until the mixtape creator binds it')
+    check(page.locator('.so-act:has-text("Add to mixtape")').count() == 1, f'{tag}: album drill offers Add to mixtape (bound by the mixtape creator)')
     shot('search-drill-album')
     # recents after an activation
     page.keyboard.press('Escape'); page.wait_for_timeout(200)     # back from the drill

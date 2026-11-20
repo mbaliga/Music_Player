@@ -49,6 +49,10 @@ Other keys keep their owners: `runout.customTheme` (theme.js), `runout.tt.speed`
 * **Privacy & about** - what leaves the phone (nothing by default; only the internet radio streams and, when you tap it, the directory), **Remember my searches**, the tour, the PolyForm Noncommercial 1.0.0 summary, the logo and build id, the document names
   (plain text, not fetched).
 
+## Verification
+
+`node --test test/settings-*.test.mjs` and `python3 scripts/verify-search-settings.py` (the Settings half: every group, light / dark / OLED, accent live, text size, reduce motion, custom theme import with the preview step, export, reload persistence, old-key migration). Screenshots: `docs/screenshots/search-settings/settings-*.png`.
+
 ## Colour precedence
 
 1. a custom JSON theme (`runout.customTheme`): its own light and dark sets supply every colour, the accent included (the Settings page says so);

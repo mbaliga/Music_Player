@@ -30,7 +30,7 @@ JavaScript with no DOM, no storage and no network.
   closes, Tab stays inside. Roles: `combobox` (input, `aria-activedescendant`) + `listbox` / `option`; chips are a `radiogroup`; a polite live region says "N results".
 * **Rows** are >= 56 px. A song plays, an album and an artist open a drill-down, a mixtape opens its player, a station starts.
 * **Drill-down (inside the overlay):** *Artist* lists the artist's albums and songs with **Play all**. *Album* lists its songs with **Play album** and
-  **Open in Albums**. **Add to mixtape** appears only when the mixtape creator has bound `addToMixtape` (hidden today).
+  **Open in Albums**. **Add to mixtape** appears only when `addToMixtape` is bound (it is: the mixtape creator opens its editor on a new draft holding the songs).
 
 ## Matching and ranking
 
@@ -89,7 +89,7 @@ Search shows results; the app binds what they do with `bindSearchActions({...})`
 | `openMixtape(id)` | goes to Mixtapes and `MixtapeUI.startPlayback(m)` | D's mixtape player/creator entry |
 | `playStation(station)` | ensures Radio is mounted (without switching to it) and calls `RadioUI.play(station)`; accepts a Station object or `"type|id"` | - |
 | `playTracks(ids)` | artist "Play all": the songs as one queue on the vinyl player | - |
-| `addToMixtape(trackIds)` | **not bound** | **Workstream D**: bind this to the mixtape creator; the overlay then shows "Add to mixtape" in album and artist drill-downs |
+| `addToMixtape(trackIds)` | opens the mixtape editor on a new unsaved draft holding these library songs (bound by Workstream D: `MixtapeUI.startFrom`) | the overlay shows "Add to mixtape" in album and artist drill-downs only while this is bound |
 
 ## Settings tie-ins
 
@@ -105,6 +105,10 @@ Node 22, one core, generated 20,000 songs + 1,500 albums + 400 artists (`test/se
   All well under the 30 ms goal; the test's own budget is a generous 150 ms (CI machines vary). In Chromium on the same machine the numbers are in the same range
   (see the report); a phone will be slower: **20k-track latency on the RedMagic is an on-device check**.
 * memory: bounded by the caps above; roughly 1 KB of folded text and tokens per song.
+
+## Verification
+
+`node --test` (search core, adapters, recents, directory, view helpers) and `python3 scripts/verify-search-settings.py [outdir]` (Chromium with touch emulation at 360x780 and 412x915, scale 2; needs the dev server on 8321 and ffmpeg). Screenshots: `docs/screenshots/search-settings/` (drawer, recents, results in every group, chip filter, hostile titles, no results, directory offline note, artist and album drill-downs). In Chromium on the build machine: index of 20,000 songs 134 ms in 21 chunks (worst chunk 8 ms), queries 3-10 ms, page heap 42 MB with the app loaded.
 
 ## On-device checks (not done here)
 
