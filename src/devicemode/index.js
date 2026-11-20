@@ -17,7 +17,6 @@ import { registerDefaultFaces } from './default-faces.js';
 import { _setGuard, allowsGesture } from './guard.js';
 import { setAodOutlineMode, onAodOutlineMode } from './aodhooks.js';
 import { createLockKey } from './lockkey.js';
-import { openSheet } from './sheet.js';
 
 const LOCK_KEY = 'runout.devicemode.locked';
 const OVERLAY_Q = '.tp:not(.hidden)';
@@ -239,9 +238,6 @@ export function initDeviceMode(opts = {}) {
     if (!ui) buildUi();
     for (const actions of doc.querySelectorAll('.page-head .page-actions')) {
       if (actions.querySelector('.dm-key')) continue;
-      const gear = doc.createElement('button'); gear.type = 'button'; gear.className = 'dm-gear'; gear.setAttribute('aria-label', 'Device mode settings'); gear.title = 'Device mode settings'; gear.textContent = '⚙';
-      gear.addEventListener('click', () => openSheet({ settings, doc }));
-      actions.append(gear);
       keys.push(createLockKey(keyDeps(actions, false)));
     }
     if (!doc.querySelector('.dm-key-float')) keys.push(createLockKey(keyDeps(body, true)));

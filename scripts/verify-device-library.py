@@ -166,8 +166,9 @@ try:
         # the real UI path: pick a track in the library -> the app loads it through DeviceFile and queues the album
         picked = pg.evaluate("""async () => {
           const app = window.__rt.app(); const i = app.albums.findIndex(a => a.title === 'Night Shift' || a.album === 'Night Shift');
-          app.tlib.focus(i, { animate: false });
-          const li = document.querySelectorAll('[data-stub="library"] .stub-list li')[2]; if (!li) return { err: 'no list' };
+          window.__rt.setZ(1); await new Promise(r => setTimeout(r, 900));          // the coverflow library (T2) replaced the old stub library: zoom out first
+          app.tlib.focus(i, { animate: false }); await new Promise(r => setTimeout(r, 500));
+          const li = document.querySelectorAll('.tl-tracks .tl-trk')[2]; if (!li) return { err: 'no list' };
           li.click();
           await new Promise(r => setTimeout(r, 2500));
           const s = window.__rt.app().state;

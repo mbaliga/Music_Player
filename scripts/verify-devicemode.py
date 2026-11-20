@@ -343,9 +343,11 @@ def run_size(p, w, h):
     unlock_hold(page, T, 1000)
 
     # the settings sheet (temporary home for the settings)
-    to_section(page, 'albums')
-    page.evaluate("document.querySelector('.page:not([hidden]) .dm-gear').click()"); time.sleep(0.4)
-    check(page.evaluate("!!document.querySelector('.dm-sheet')"), f'{tag}: the Device mode sheet opens from the gear')
+    to_section(page, 'settings'); page.wait_for_selector('.st-page')
+    check(page.evaluate("document.querySelectorAll('.dm-gear').length") == 0, f'{tag}: the temporary lock-sheet gear is gone from the page headers')
+    page.evaluate("document.querySelector('.st-group[data-group=\"device-mode\"]') && (document.querySelector('.st-group[data-group=\"device-mode\"]').open = true)")
+    page.locator('.st-group[data-group="device-mode"] .st-btn').first.click(); time.sleep(0.4)
+    check(page.evaluate("!!document.querySelector('.dm-sheet')"), f'{tag}: the Device mode sheet opens from Settings > Device mode')
     shot('settings-sheet'); page.evaluate("document.querySelector('.dm-done').click()")
 
     check(not errs, f'{tag}: no page errors {errs[:3]}')
