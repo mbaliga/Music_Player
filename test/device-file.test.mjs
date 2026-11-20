@@ -30,12 +30,16 @@ test('arrayBuffer() reassembles a multi-chunk file byte-for-byte, in order', asy
 test('slice(): offsets, negatives, clamping, nesting and empty windows match Blob', async () => {
   const { file, data } = rig({ size: 50000, chunkBytes: 16 * 1024 });
   const ref = new Blob([data]);
-  const cases = [[0, 10], [10], [20000, 40000], [-100], [-100, -50], [49990, 99999], [60000, 70000], [30, 20], [undefined, 5], [null, 5], [NaN, 4], [-Infinity, 3]];   // (slice(0, Infinity) clamps to the end in browsers; Node's Blob returns 0, so it is asserted below)
+  // (Node 20's Blob.slice aborts the process on NaN / +-Infinity / null, so those are asserted by hand below, not against Blob)
+  const cases = [[0, 10], [10], [20000, 40000], [-100], [-100, -50], [49990, 99999], [60000, 70000], [30, 20], [undefined, 5]];
   for (const [a, b] of cases) {
     const got = file.slice(a, b), want = ref.slice(a, b);
     assert.equal(got.size, want.size, `size slice(${a},${b})`);
     same(await got.arrayBuffer(), new Uint8Array(await want.arrayBuffer()));
   }
+  assert.equal(file.slice(NaN, 4).size, 4);
+  assert.equal(file.slice(null, 5).size, 5);
+  assert.equal(file.slice(-Infinity, 3).size, 3);
   const nested = file.slice(1000, 40000).slice(500, -500).slice(10, 20);
   same(await nested.arrayBuffer(), data.subarray(1510, 1520));
   assert.ok(nested instanceof DeviceBlob);
