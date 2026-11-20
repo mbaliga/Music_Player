@@ -29,6 +29,17 @@ SR = 44100
 REPORT = {}
 
 # ── fixtures ──────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+# Albums page = the Vinyl player: the library is the zoomed-out view of the stage (src/turntable/). Scan through its toolbar button.
+def scan_albums(page, folder, n=2):
+    page.evaluate('window.__rt.setZ(1)'); page.wait_for_timeout(800)
+    with page.expect_file_chooser() as fc:
+        page.click('.tl-scan')
+    fc.value.set_files(folder)
+    page.wait_for_function('n => window.__rt.app().albums.filter(a => !a.builtin).length >= n', arg=n, timeout=30000)
+    page.wait_for_timeout(900)
+    page.evaluate('window.__rt.setZ(0)'); page.wait_for_timeout(700)
+
 def write_wav(path, x):
     with wave.open(path, 'wb') as w:
         w.setnchannels(1); w.setsampwidth(2); w.setframerate(SR)
@@ -413,14 +424,12 @@ def _run():
 
         # ── L. CD album: the pad works on a CD track ───────────────────────────────────────────────────────────────
         to_section(pg, 'albums')
-        with pg.expect_file_chooser() as fc: pg.click('#libScan')
-        fc.value.set_files(os.path.join(FIX, 'lib'))
-        pg.wait_for_function('document.querySelectorAll("#albumGrid > *").length >= 2', timeout=30000); time.sleep(1.0)
-        pg.click('#kindChips [data-kind="cd"]'); time.sleep(0.4)
-        pg.locator('#albumGrid > *').first.click(); time.sleep(0.6)
-        pg.locator('.alb-detail-list li').first.click()
+        scan_albums(pg, os.path.join(FIX, 'lib'))
+        pg.evaluate('window.__rt.setZ(1)'); time.sleep(0.8)
+        pg.evaluate("(() => { const a = window.__rt.app(); a.tlib.focus(a.albums.findIndex(x => x.kind === 'cd'), {animate: false}); })()"); time.sleep(0.5)
+        pg.locator('.tl-trk').first.click()
         time.sleep(2.5)
-        R['L_view'] = pg.evaluate("document.querySelector('.stage').dataset.view")
+        R['L_view'] = pg.evaluate("document.getElementById('pageAlbums').dataset.view")
         if R['L_view'] == 'cd':
             to_section(pg, 'booth'); pg.wait_for_selector('.fx-view'); select_mode(pg, 'repeat')
             R['L_blend_disabled_on_cd'] = pg.evaluate("(() => { document.querySelector('.fx-top .fx-btn').click(); return document.querySelector('.fx-row[data-id=\"blend\"]').getAttribute('aria-disabled'); })()")

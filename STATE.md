@@ -41,3 +41,7 @@ A self-contained, lazily loaded `mountFxSection(container, deps)` (`src/fx/`) is
 
 ## Search + Settings (Workstream B)
 Global **Search** (songs, albums, artists, mixtapes, radio) opens from the magnifier in the drawer and every page header, Ctrl/Cmd+K or "/"; a pure, tested core (`src/search/`, diacritic / CJK / typo tolerant, 20k songs in about 5-15 ms per query in node) behind a full-screen overlay. The only network use is an explicit "Search the internet radio directory" row. **Settings** is the fifth drawer section and replaces the gear popover: theme (Dark / OLED black / Light), accent colour, text size, reduce motion, custom JSON theme (plain-text preview kept), library prefs, playback, radio, booth, device mode, privacy; one versioned `runout.settings.v1` that mirrors the three old keys other code still reads. Desktop-Chromium (touch emulation) verified at 360x780 and 412x915; keyboard/IME, 20k-song latency on the phone and the back gesture need the RedMagic. See `docs/SEARCH.md`, `docs/SETTINGS.md`.
+
+## The Vinyl player (Workstream T1)
+Built and verified in headless Chromium (real audio, real touch): Play/Stop, 33/45/78, scratch, palm brake, dimple seek / gap drop / flick, album as one record, pinch zoom, library, CD routing.
+Not verified: real finger pinch, frame rate / memory on a phone. Details and open items: `docs/TURNTABLE.md`.

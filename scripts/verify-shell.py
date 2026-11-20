@@ -59,10 +59,10 @@ class Touch:
     def line(self, x0, y0, x1, y1, n=12): return [(x0 + (x1 - x0) * i / n, y0 + (y1 - y0) * i / n) for i in range(n + 1)]
 
 def disc(page):
-    b = page.evaluate('(() => { const r = document.getElementById("disc").getBoundingClientRect(); return [r.left, r.top, r.width, r.height]; })()')
-    l, t, w, h = b
-    R = min(w * .45, h * .43)
-    return {'cx': l + w * .47, 'cy': t + h * .45, 'R': R, 'rOut': R * .86}
+    """the disc centre in client px (through the stage's own SVG matrix) and its outer radius"""
+    r = page.evaluate("""(() => { const t = document.querySelector('.tt-top'), g = document.getElementById('tt-topRot'); const p = t.createSVGPoint(); p.x = 278; p.y = 457;
+      const q = p.matrixTransform(g.getScreenCTM()); const m = g.getScreenCTM(); return [q.x, q.y, Math.hypot(m.a, m.b)]; })()""")
+    return {'cx': r[0], 'cy': r[1], 'R': 644 * r[2], 'rOut': 640 * r[2]}
 
 def boot(b, w, h, tag, seed_mix=True, speech=False, light=False):
     ctx = b.new_context(viewport={'width': w, 'height': h}, device_scale_factor=2, has_touch=True, is_mobile=True)
@@ -82,11 +82,13 @@ def boot(b, w, h, tag, seed_mix=True, speech=False, light=False):
     return ctx, page, errs
 
 def scan(page):
-    with page.expect_file_chooser() as fc:
-        page.click('#libScan')
-    fc.value.set_files(LIB)
-    page.wait_for_function('document.querySelectorAll("#albumGrid .alb-card").length >= 1', timeout=20000)
-    page.wait_for_timeout(900)
+    scan_albums(page, LIB, 1)
+
+def pick(page, kind):
+    """zoom out, focus the first album of `kind`, tap its first track (the library is the stage's zoomed-out view)"""
+    page.evaluate('window.__rt.setZ(1)'); page.wait_for_timeout(700)
+    page.evaluate("k => { const a = window.__rt.app(); a.tlib.focus(a.albums.findIndex(x => x.kind === k && !x.builtin), {animate: false}); }", kind); page.wait_for_timeout(500)
+    page.locator('.tl-trk').first.click(); page.wait_for_timeout(2500)
 
 with sync_playwright() as p:
     b = launch(p)
@@ -105,29 +107,21 @@ with sync_playwright() as p:
         scan(page)
         page.wait_for_timeout(400)
         shot('albums-closed')
-        # compact deck: record + arm in the top ~40-45% of the card, tonearm fully visible
-        m = page.evaluate('(() => { const s = document.querySelector("#pageAlbums .stage").getBoundingClientRect(), c = document.getElementById("card").getBoundingClientRect(); return { stageBottom: s.bottom, cardH: c.height, stageH: s.height, arm: document.getElementById("arm").getBoundingClientRect().toJSON() }; })()')
-        share = m['stageBottom'] / m['cardH']
-        check(0.38 <= share <= 0.60, f'{tag}: record + arm area ends at {share:.0%} of the card (stage {m["stageH"]:.0f} px) -- the stage is the top ~40-50% incl. the header')
+        # the Vinyl player fills the card (src/turntable/); the library is its zoomed-out view
+        m = page.evaluate('(() => { const s = document.querySelector("#pageAlbums .tt-wrap").getBoundingClientRect(), c = document.getElementById("card").getBoundingClientRect(); return { sw: s.width, sh: s.height, cw: c.width, ch: c.height }; })()')
+        check(abs(m['sw'] - m['cw']) < 2 and abs(m['sh'] - m['ch']) < 2, f'{tag}: the stage fills the Albums card ({m["sw"]:.0f}x{m["sh"]:.0f} in {m["cw"]:.0f}x{m["ch"]:.0f})')
         check(page.evaluate('document.documentElement.scrollWidth <= innerWidth'), f'{tag}: no horizontal page scroll on Albums')
-        # the album shelf: tap a card opens its track list; picking a track plays it on the turntable
-        page.tap('#albumGrid .alb-card'); page.wait_for_selector('.alb-detail'); page.wait_for_timeout(300)
-        shot('albums-tracklist')
-        page.tap('.alb-detail-list li'); page.wait_for_timeout(1500)
-        check(page.locator('.alb-detail').count() == 0, f'{tag}: picking a track closes the track list and loads the turntable')
-        check(page.inner_text('#trackName') != 'Runout — test pressing', f'{tag}: the picked track is the loaded record ({page.inner_text("#trackName")})')
-
-        # a CD album swaps in the existing CD view (compact stage grows a little); then back to a vinyl record for the platter tests
-        page.click('#kindChips [data-kind="cd"]'); page.wait_for_timeout(300)
-        page.tap('#albumGrid .alb-card'); page.wait_for_selector('.alb-detail'); page.tap('.alb-detail-list li'); page.wait_for_timeout(1500)
+        pick(page, 'vinyl')
+        check(page.evaluate('window.__rt.app().stage.zoom') == 0 and page.evaluate('window.__rt.app().state.queue.kind') == 'vinyl', f'{tag}: picking a library track zooms in and loads the record')
+        # a CD album opens the existing CD view; then back to a vinyl record for the platter tests
+        pick(page, 'cd')
         check(not page.evaluate('document.getElementById("cdView").classList.contains("hidden")'), f'{tag}: a CD album swaps in the CD view')
         shot('albums-cd')
         cdm = page.evaluate('(() => { const c = document.getElementById("cdView").getBoundingClientRect(), l = document.getElementById("cdList").getBoundingClientRect(); return { canvasH: document.getElementById("cdCanvas").getBoundingClientRect().height, listH: l.height, bottom: c.bottom }; })()')
         check(cdm['canvasH'] >= 120, f'{tag}: the CD canvas keeps a usable size ({cdm["canvasH"]:.0f} px)')
-        page.click('#kindChips [data-kind="vinyl"]'); page.wait_for_timeout(300)
-        page.tap('#albumGrid .alb-card'); page.wait_for_selector('.alb-detail'); page.tap('.alb-detail-list li'); page.wait_for_timeout(1500)
+        page.click('#cdLibBtn'); page.wait_for_timeout(600)
+        pick(page, 'vinyl')
         check(page.evaluate('document.getElementById("cdView").classList.contains("hidden")'), f'{tag}: a vinyl album brings the platter back')
-        page.click('#kindChips [data-kind="all"]'); page.wait_for_timeout(200)
 
         # ---- drawer by touch: drag from the strip
         d = disc(page)
@@ -202,11 +196,13 @@ with sync_playwright() as p:
         check(not errs, f'{tag}: no page errors {errs}')
 
         # ---- gesture arbitration on the Albums page
+        page.evaluate('window.__rt.setZ(0)'); page.wait_for_timeout(500)
+        page.evaluate('window.__rt.app().stage.dispatch({type: "stop"})'); page.tap('#tt-playBtn'); page.wait_for_timeout(2200)
         d = disc(page)
         rate0 = page.evaluate('document.getElementById("rate").textContent')
         # (a) a drag that starts ON the platter does not move the drawer, and the platter scrubs
         a0 = d['rOut'] * 0.6
-        circle = [(d['cx'] + a0 * math.cos(i * 0.45), d['cy'] + a0 * math.sin(i * 0.45)) for i in range(0, 40)]
+        circle = [(d['cx'] + a0 * math.cos(0.12 + i * 0.035), d['cy'] + a0 * math.sin(0.12 + i * 0.035)) for i in range(0, 40)]   # an arc that stays on screen
         T.drag(circle, step_s=0.016, release=False); page.wait_for_timeout(300)
         rate_during = page.evaluate('document.getElementById("rate").textContent')
         moved = tx(page); T.up(); settle(page, 500)

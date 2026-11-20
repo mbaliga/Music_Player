@@ -32,7 +32,7 @@
 .tt-details-btn:active { transform: scale(.92); }
 .tt-details-btn:focus-visible { outline: 2px solid var(--shell-accent, #8E7BFF); outline-offset: 2px; }
 /* CD albums: the existing CD view (src/cd.js) sits above the stage instead of the platter */
-#pageAlbums .cd-view { position: absolute; inset: 0; z-index: 3; padding-top: calc(52px + var(--safe-top)); background: var(--card-bg); }
+#pageAlbums .cd-view { position: absolute; inset: 0; z-index: 3; padding-top: calc(100px + var(--safe-top)); background: var(--card-bg); }
 #pageAlbums[data-view="cd"]:not([data-lib]) .tt-wrap { visibility: hidden; }
 #pageAlbums[data-lib] .cd-view { display: none; }   /* browsing the library from the CD view: the CD keeps playing underneath */
 /* Deck details (the old side panel) opens as a sheet over the page */
@@ -44,7 +44,7 @@
 .tt-sheet .panel { display: flex; flex-direction: column; gap: 16px; padding-top: 4px; }
 .tt-sheet .hint-brake { margin-top: 2px; }
 @media (prefers-reduced-motion: reduce) { .tt-top .ctl text, .tt-top #tt-playIcon { transition: none; } }
-.cd-libbtn { position: absolute; z-index: 5; top: calc(10px + var(--safe-top)); right: 58px; padding: 8px 14px; border-radius: 16px; border: 1px solid var(--border); background: var(--surface2); color: var(--ink); font: 600 12px system-ui, sans-serif; cursor: pointer; }
+.cd-libbtn { position: absolute; z-index: 5; top: calc(62px + var(--safe-top)); right: 14px; padding: 8px 14px; border-radius: 16px; border: 1px solid var(--border); background: var(--surface2); color: var(--ink); font: 600 12px system-ui, sans-serif; cursor: pointer; }
 
 /* Landscape: the shell caps its frame at 560 px (docs/SHELL.md); the stage is a 2.21:1 landscape window, so on a landscape phone / tablet the
    Albums page takes the full width instead (otherwise it would be a 560 x 253 strip). Other sections keep the cap. main.js sets #shell[data-section]. */

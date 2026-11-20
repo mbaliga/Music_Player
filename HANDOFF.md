@@ -343,3 +343,8 @@ Docs: `docs/SEARCH.md`, `docs/SETTINGS.md`. Where things are: pure core `src/sea
 ## Mixtapes v4: sides, caps, editor, AUTO (Workstream D)
 
 Full write-up in `docs/MIXTAPES.md` (model v4, cap numbers, transport state machine, editor flow, suggested tapes, setting keys, seams, on-device checks). Where things are: pure `src/mixtape.js` (v4 model; `tracks` is the derived flat list, `sides` the source of truth), `src/mixtape-pick.js` + `src/mixtape-search.js` (picker core and the global-search adapter), `src/mixtape-suggest.js`, `src/cassette/transport.js`; glue `src/mixtape-ui.js`, `src/cassette/editor.js` + `editor-songs.js` + `dom.js`; the AUTO / FLIP keys and `flipTo` are in `src/cassette/players.js`. Tests: `test/mixtape-v4`, `mixtape-pick`, `mixtape-search`, `mixtape-suggest`, `cassette-transport`; browser check `scripts/verify-mixtapes.py`. One additive hook outside the section: `main.js` binds `searchActions.addToMixtape` to `state.mixtapes.startFrom({trackIds})`. The v3 blob is copied once to `runout.mixtapes.v3.backup` before it migrates.
+
+## The Vinyl player (Workstream T1)
+
+The Albums section is now the owner's turntable prototype (stage + zoom-out library): `docs/TURNTABLE.md` (architecture, coordinates, decisions, tunables, on-device
+checks). Code in `src/turntable/`; `src/render.js` / `src/mat.js` are gone; `scripts/verify-turntable.py` (real audio) and `scripts/fidelity-turntable.py` verify it.
