@@ -16,6 +16,8 @@ import { groupTracks, shelfItems, KIND_CD } from './albums.js';
 import { readFileTags } from './tags.js';
 import { trackId, serializeIndex, parseIndex, mergeScanned, linkSummary } from './libindex.js';
 import { saveIndex, loadIndex, saveHandle, loadHandles } from './library-store.js';
+import { libraryPrefs } from './library-prefs.js';
+import { trackSource, filterDeviceTracks, mergeSources, deriveArtists, deriveGenres } from './library-model.js';
 
 // ── Dominant hue extraction from album art ───────────────────────────────────
 async function dominantHue(imageUrl) {
@@ -53,13 +55,13 @@ async function dominantHue(imageUrl) {
 }
 
 // Deterministic hue from a string (fallback when no album art).
-function hashHue(str) {
+export function hashHue(str) {
   let h = 0;
   for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) >>> 0;
   return (h % 360);
 }
 
-function hueToHex(h) {
+export function hueToHex(h) {
   const s = 0.45, l = 0.25;
   const c = (1 - Math.abs(2 * l - 1)) * s;
   const x = c * (1 - Math.abs((h / 60) % 2 - 1));
@@ -109,8 +111,60 @@ const AUDIO_RE = /\.(mp3|flac|ogg|m4a|aac|opus|wav|wma|aiff?)$/i;
 
 export class LibraryManager {
   constructor() {
-    this.tracks = [];
     this._shelf = null; // cached shelfItems(groupTracks(tracks)); null = dirty
+    this._folder = [];            // tracks from the folder picker / persisted folder index
+    this._sources = new Map();    // registered extra sources (the Android device library): name -> source
+    this._sourceAll = new Map();  // name -> that source's UNFILTERED tracks
+    this._listeners = new Set();
+    this._merged = [];
+  }
+
+  // `tracks` is the merged library (folder + registered sources, filtered, deduped). Assigning replaces the
+  // FOLDER tracks only (that is what the folder code paths below do), then re-merges.
+  get tracks() { return this._merged; }
+  set tracks(v) { this._folder = (v || []).filter((t) => trackSource(t) === 'folder'); this._rebuild(); }
+
+  // ── Source registry (docs/DEVICE_LIBRARY.md) ───────────────────────────────
+  // A source = { name, isAvailable(), tracks(), onChange(fn), restore?(), scan?(opts) }. Its tracks join the
+  // library, filtered by libraryPrefs (device tracks only) and deduped by id / content.
+  registerSource(src) {
+    if (!src || !src.name || this._sources.has(src.name)) return this;
+    this._sources.set(src.name, src);
+    this._sourceAll.set(src.name, src.tracks?.() || []);
+    src.onChange?.((tracks) => { this._sourceAll.set(src.name, tracks); this._rebuild(); });
+    if (!this._prefsOff) this._prefsOff = libraryPrefs.subscribe(() => this._rebuild());
+    this._rebuild();
+    return this;
+  }
+  getSource(name) { return this._sources.get(name) || null; }
+  async restoreSources() { for (const s of this._sources.values()) { try { await s.restore?.(); } catch { /* best effort */ } } }
+  async scanSources(opts) { const out = {}; for (const s of this._sources.values()) { try { out[s.name] = await s.scan?.(opts); } catch (e) { out[s.name] = { error: String(e?.message || e) }; } } return out; }
+
+  _rebuild() {
+    const p = libraryPrefs.get();
+    const lists = [];
+    for (const [name, all] of this._sourceAll) {
+      if (!p.sources[name]) continue;
+      lists.push(name === 'device' ? filterDeviceTracks(all, p) : all);
+    }
+    this._merged = mergeSources(lists, p.sources.folder ? this._folder : []);
+    this._shelf = null;
+    for (const fn of [...this._listeners]) { try { fn(this._merged); } catch { /* ignore */ } }
+  }
+
+  /** fn(tracks) after the merged library changes (a scan batch, a pref change, a restore). Returns unsubscribe. */
+  onChange(fn) { this._listeners.add(fn); return () => this._listeners.delete(fn); }
+
+  // ── Read model (stable API for search / mixtape picker / settings; see library-model.js) ──
+  getTracks() { return this._merged; }
+  getAlbums(sortBy = 'artist') { return this.albums(sortBy); }
+  getArtists() { return deriveArtists(this.albums('artist')); }
+  getGenres() { return deriveGenres(this._merged); }
+  /** Album art URL for a shelf item: the folder scan's cover, else the device source's MediaStore art (async). */
+  async getAlbumArt(item, size = 256) {
+    if (item?.coverUrl) return item.coverUrl;
+    const dev = this._sources.get('device');
+    return dev?.getArt ? dev.getArt(item, size) : null;
   }
 
   // Scan a directory (File System Access API or webkitdirectory fallback).
@@ -142,7 +196,7 @@ export class LibraryManager {
     const flush = () => {
       if (!batch.length) return;
       // A scanned file REPLACES the persisted needs-re-link entry with its id.
-      this.tracks = mergeScanned(this.tracks, batch);
+      this.tracks = mergeScanned(this._folder, batch);
       batch = [];
       this._shelf = null;
     };
@@ -158,18 +212,18 @@ export class LibraryManager {
 
   // ── Persisted index (metadata only; see libindex.js) ──────────────────────
   _persist() {
-    saveIndex(serializeIndex(this.tracks, Date.now())).catch(() => {});
+    saveIndex(serializeIndex(this._folder, Date.now())).catch(() => {});
   }
 
   /** Load the persisted index at startup. Restored tracks are `relink: true`. */
   async restore() {
-    if (this.tracks.length) return 0;
+    if (this._folder.length) return 0;
     const restored = parseIndex(await loadIndex());
     if (restored.length) { this.tracks = restored; this._shelf = null; }
     return restored.length;
   }
 
-  get linkSummary() { return linkSummary(this.tracks); }
+  get linkSummary() { return linkSummary(this._folder); }
 
   /**
    * Re-link persisted tracks to real files. MUST be called from a user gesture.
