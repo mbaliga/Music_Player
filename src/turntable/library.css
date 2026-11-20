@@ -92,6 +92,8 @@
 .tl-row { display: flex; align-items: center; gap: 2px 14px; min-height: 44px; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; touch-action: pan-x; pointer-events: auto; }
 /* the first row clears the hamburger (top left, ~48 px) */
 .tl-row1 { padding-left: 44px; }
+/* portrait, with albums: the filter chips would run under the header chips on the right (search, Deck details, lock key; found by the integration tour at 360 and 412 px wide), so the whole toolbar sits one header row lower; the cover top leaves the room */
+.tl-portrait:not(.tl-empty) .tl-bar { top: calc(env(safe-area-inset-top, 0px) + 50px); }
 .tl-row > :first-child { margin-left: auto; }
 .tl-row > :last-child { margin-right: auto; }
 .tl-row::-webkit-scrollbar { display: none; }

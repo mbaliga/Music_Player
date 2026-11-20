@@ -68,5 +68,9 @@ Drag follows the finger (`dx / (cs*.62)` albums), release flings to `round(focus
 
 Virtualisation: a pool of 9 cover nodes (`k % 9`), only indices within about +-3.2 of the focus are bound; painted canvases live in an LRU of 20; track rows are pooled and capped at 500 per album; strings reaching the DOM are clipped to 200 chars (CSS ellipsis on top). All library text goes through `textContent` / `setAttribute`.
 
+## Integration fix
+
+In portrait, with albums on the shelf, the toolbar (Scan + filter chips, then the sort chips) sits one header row lower (`.tl-portrait:not(.tl-empty) .tl-bar`, 50 px): the filter chips used to run under the header chips on the right (search, Deck details, lock key) at 360 and 412 px wide. Found by `scripts/verify-tour.py` (the check counts chip overlaps).
+
 ## Not verified here (needs the device)
 Swipe feel and momentum with a real finger (`flingGainS`, `easeRate`, `dragSlopPx`), vertical pan vs horizontal swipe disambiguation on the WebView, frame rate with the player canvas running underneath, memory with hundreds of real embedded covers, the pinch hand-off with T1's two-pointer gesture, the safe-area inset on a notched phone, and the toolbar position against the real hamburger / drawer strip.

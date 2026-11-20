@@ -206,6 +206,10 @@ def tour(b, w, h, tag, landscape=False):
         names = [a[0] for a in A]
         check(len(A) == 7 and sum(1 for a in A if a[1] == 'cd') == 2, f'{tag}: the scan fills the library: {len(A)} albums, {sum(1 for a in A if a[1] == "cd")} CD cases ({names})')
         shot(page, 'library-scanned')
+        ov = page.evaluate("""() => { const R = (e) => e.getBoundingClientRect(); const head = [...document.querySelectorAll('.page:not([hidden]) .page-head button, .page:not([hidden]) .page-head .dm-key')].map(R).filter(r => r.width > 0);
+          const bar = [...document.querySelectorAll('.tl-bar button')].map(R).filter(r => r.width > 0); let n = 0;
+          for (const a of head) for (const b of bar) if (Math.min(a.right, b.right) - Math.max(a.left, b.left) > 1 && Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) > 1) n++; return n; }""")
+        check(ov == 0, f'{tag}: the library toolbar chips do not run under the header chips ({ov} overlaps)')
         t0 = page.inner_text('.tl-title')
         fl = page.evaluate("() => { const r = document.querySelector('.tl-flow').getBoundingClientRect(); return [r.x, r.y, r.width, r.height]; }")
         fy = fl[1] + fl[3] * 0.4
