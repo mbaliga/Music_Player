@@ -49,3 +49,5 @@
 /* Landscape: the shell caps its frame at 560 px (docs/SHELL.md); the stage is a 2.21:1 landscape window, so on a landscape phone / tablet the
    Albums page takes the full width instead (otherwise it would be a 560 x 253 strip). Other sections keep the cap. main.js sets #shell[data-section]. */
 @media (orientation: landscape) { .shell[data-section="albums"] { width: 100%; } }
+/* header buttons float over the disc / mat: a soft dark chip keeps them legible on the light label */
+#pageAlbums .page-head button { background: rgba(0,0,0,.38); border-radius: 14px; color: #e8e8f0; filter: none; }
