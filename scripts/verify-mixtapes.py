@@ -295,10 +295,12 @@ def run_viewport(b, w, h):
     shot(page, 'player-skin-player-auto-off')
     page.locator('.sk-player [aria-label^="Auto-reverse"]').click(); page.wait_for_timeout(300)
     check(side_state(page)[1] is True, f'{tag}: ...and latches again')
+    s0 = side_state(page)[0]
     page.locator('.sk-player [aria-label^="Flip the tape"]').click(); page.wait_for_timeout(900)
-    check(side_state(page)[0] == 'B', f'{tag}: the Player skin FLIP key turns the tape (LCD shows side {side_state(page)[0]})')
-    shot(page, 'player-skin-player-side-b')
+    check(side_state(page)[0] != s0 and side_state(page)[0] in ('A', 'B'), f'{tag}: the Player skin FLIP key turns the tape (LCD side {s0} -> {side_state(page)[0]})')
+    shot(page, 'player-skin-player-flipped')
     page.locator('.sk-player [aria-label^="Flip the tape"]').click(); page.wait_for_timeout(900)
+    check(side_state(page)[0] == s0, f'{tag}: ...and back ({side_state(page)[0]})')
     page.locator('.tp-chip', has_text='Deck').tap(); page.wait_for_timeout(1700)
     # AUTO off via the key: persisted on the mixtape and as the default
     page.locator('.sk-deck .side-key[data-key=auto]').click(); page.wait_for_timeout(400)
@@ -359,7 +361,7 @@ def run_5k(b):
     n = 5000
     page.evaluate("""async (n) => {
       const tracks = [];
-      for (let i = 0; i < n; i++) tracks.push({ id: 'k5-' + i, title: 'Song ' + i + (i % 7 ? ' Night' : ' Dáy'), artist: 'Artist ' + (i % 90), albumArtist: '', album: 'Album ' + (i % 400), path: 'x/Album ' + (i % 400) + '/' + i + '.mp3', genre: 'Rock', size: 1000 + i, hue: 10, color: '#222233', durationSec: 200 + (i % 60), trackNo: (i % 12) + 1 });
+      for (let i = 0; i < n; i++) tracks.push({ id: 'k5-' + i, title: 'Song ' + i + (i % 7 ? ' Night' : ' Dáy'), artist: 'Artist ' + (i % 25), albumArtist: '', album: 'Album ' + (i % 400), path: 'x/Album ' + (i % 400) + '/' + i + '.mp3', genre: 'Rock', size: 1000 + i, hue: 10, color: '#222233', durationSec: 200 + (i % 60), trackNo: (i % 12) + 1 });
       await new Promise((res) => { const r = indexedDB.open('runout-library', 1); r.onupgradeneeded = () => { r.result.createObjectStore('kv'); r.result.createObjectStore('handles', { autoIncrement: true }); };
         r.onsuccess = () => { const t = r.result.transaction('kv', 'readwrite'); t.objectStore('kv').put({ version: 1, savedAt: 0, tracks }, 'index'); t.oncomplete = () => { r.result.close(); res(); }; }; });
     }""", n)
