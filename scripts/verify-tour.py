@@ -424,6 +424,11 @@ def tour(b, w, h, tag, landscape=False):
 
     # ── 10. reload: persistence ────────────────────────────────────────────────────────────────────────────────────────────────────────────
     def s_persist():
+        if tag.startswith('412'):           # the heap at the END of the interactive tour (before the reload below throws the page's heap away)
+            cdp0 = page.context.new_cdp_session(page); cdp0.send('HeapProfiler.enable'); cdp0.send('HeapProfiler.collectGarbage'); time.sleep(0.4)
+            h0 = cdp0.send('Runtime.getHeapUsage'); METRICS['js_heap_used_mb_end_of_tour_before_reload'] = round(h0['usedSize'] / 1048576, 1); METRICS['js_heap_total_mb_end_of_tour'] = round(h0['totalSize'] / 1048576, 1)
+            print(f"     JS heap at the end of the tour, before the reload (after GC): {METRICS['js_heap_used_mb_end_of_tour_before_reload']} MB used / {METRICS['js_heap_total_mb_end_of_tour']} MB total", flush=True)
+            check(METRICS['js_heap_used_mb_end_of_tour_before_reload'] < 250, f'{tag}: JS heap at the end of the tour {METRICS["js_heap_used_mb_end_of_tour_before_reload"]} MB (< 250)')
         before = {'albums': page.evaluate(f'{APP}.albums.length'), 'speed': page.evaluate('localStorage.getItem("runout.tt.speed")'),
                   'theme': page.evaluate('document.documentElement.dataset.theme'), 'tapes': [m['name'] for m in json.loads(page.evaluate('localStorage.getItem("runout.mixtapes")'))['mixtapes']]}
         page.reload(); page.wait_for_function('document.getElementById("latency") && !/boot error/.test(document.getElementById("latency").textContent) && window.__rt'); page.wait_for_timeout(2500)
@@ -454,9 +459,9 @@ def tour(b, w, h, tag, landscape=False):
             print(f"     rAF cost on the Albums stage while playing: avg {METRICS['stage_update_ms_avg']} ms/frame, max {METRICS['stage_update_ms_max']} ms, {METRICS['frames_per_s_playing']} frames/s, {u['long']} frames > 50 ms (headless CPU renderer; the frame rate here is the machine's, not a phone's)", flush=True)
             check(METRICS['stage_update_ms_avg'] < 8, f'{tag}: the Albums stage costs {METRICS["stage_update_ms_avg"]} ms per frame on average (< 8 ms budget on this machine)')
             cdp.send('HeapProfiler.enable'); cdp.send('HeapProfiler.collectGarbage'); time.sleep(0.5)
-            h_ = cdp.send('Runtime.getHeapUsage'); METRICS['js_heap_used_mb_after_tour'] = round(h_['usedSize'] / 1048576, 1); METRICS['js_heap_total_mb'] = round(h_['totalSize'] / 1048576, 1)
-            print(f"     JS heap after the tour (after GC): {METRICS['js_heap_used_mb_after_tour']} MB used / {METRICS['js_heap_total_mb']} MB total", flush=True)
-            check(METRICS['js_heap_used_mb_after_tour'] < 200, f'{tag}: JS heap after the tour {METRICS["js_heap_used_mb_after_tour"]} MB (< 200)')
+            h_ = cdp.send('Runtime.getHeapUsage'); METRICS['js_heap_used_mb_after_reload'] = round(h_['usedSize'] / 1048576, 1); METRICS['js_heap_total_mb'] = round(h_['totalSize'] / 1048576, 1)
+            print(f"     JS heap after reload + playing (after GC): {METRICS['js_heap_used_mb_after_reload']} MB used / {METRICS['js_heap_total_mb']} MB total", flush=True)
+            check(METRICS['js_heap_used_mb_after_reload'] < 200, f'{tag}: JS heap after the tour {METRICS["js_heap_used_mb_after_reload"]} MB (< 200)')
         step('measure', s_measure)
     ctx.close()
 
