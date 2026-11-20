@@ -22,6 +22,7 @@ import { openSheet } from './sheet.js';
 const LOCK_KEY = 'runout.devicemode.locked';
 const OVERLAY_Q = '.tp:not(.hidden)';
 const FADE_MS = 160;
+export const HINT_MAX_MS = 4000;
 const AOD_LONG_MS = 600, AOD_DOUBLE_MS = 350, AOD_DOUBLE_PX = 48;
 const BLOCK_EVENTS = ['click', 'dblclick', 'auxclick', 'contextmenu', 'selectstart', 'dragstart', 'wheel', 'gesturestart', 'gesturechange'];
 
@@ -104,7 +105,7 @@ export function initDeviceMode(opts = {}) {
     clearTimeout(fadeT);
     const shell = doc.getElementById('shell');
     const apply = () => {
-      aodApplied = on; writeAttr();
+      aodApplied = on; writeAttr(); if (on) { clearHint(); noticeEl && (noticeEl.hidden = true); }
       _setGuard({ locked: machine.state.locked, aod: on, fxPadWhileLocked: S().fxPadWhileLocked });
       frameGate.setMode(on ? 'aod' : 'normal');
       setAodOutlineMode(on);
@@ -139,9 +140,11 @@ export function initDeviceMode(opts = {}) {
     hintEl = doc.createElement('div'); hintEl.className = 'dm-hint'; hintEl.setAttribute('role', 'status'); hintEl.setAttribute('aria-live', 'polite'); hintEl.hidden = true;
     noticeEl = doc.createElement('div'); noticeEl.className = 'dm-notice'; noticeEl.setAttribute('role', 'status'); noticeEl.hidden = true;
     npEl = doc.createElement('div'); npEl.className = 'dm-np'; npEl.setAttribute('aria-hidden', 'true');
+    hintEl.addEventListener('click', () => clearHint()); noticeEl.addEventListener('click', () => { machine.dismissNotice(); noticeEl.hidden = true; });
     ui.append(hintEl, noticeEl, npEl); body.append(ui);
   }
-  function showHint(msg, ms = 2200) { if (!hintEl) return; hintEl.textContent = msg; hintEl.hidden = false; clearTimeout(hintT); hintT = setTimeout(clearHint, ms); }
+  // The hint card: auto-dismisses in at most HINT_MAX_MS, dismisses on tap, and never shows in the always-on display (burn-in).
+  function showHint(msg, ms = 2200) { if (!hintEl || aodApplied || machine.state.aod) return; hintEl.textContent = msg; hintEl.hidden = false; clearTimeout(hintT); hintT = setTimeout(clearHint, Math.min(ms, HINT_MAX_MS)); }
   function clearHint() { clearTimeout(hintT); if (hintEl) hintEl.hidden = true; }
   function showNotice() {
     if (!noticeEl) return;

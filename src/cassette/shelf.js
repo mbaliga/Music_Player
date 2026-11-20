@@ -4,6 +4,7 @@
 // fonts + system stacks (no network). Items are {id, cfg} with cfg from
 // mixtape.js:cassetteCfg.
 import { Cassette } from './index.js';
+import { allowsGesture } from '../devicemode/guard.js';   // device mode: the shelf is a frozen face while locked
 
 const H = Cassette.helpers;
 const H0 = H;
@@ -49,6 +50,7 @@ let uid = 0;
         Cassette.mount(holder, Object.assign({}, it.cfg, { static: true }));
         if (it.meta) { var mt = document.createElement('span'); mt.className = 'cs-meta'; mt.textContent = it.meta; b.appendChild(mt); }
         b.addEventListener('click', function () {
+          if (!allowsGesture('shelf-tap')) return;
           if (bringToTop) {
             if (order[order.length - 1] === it.id) { selected = it.id; opts.onOpen && opts.onOpen(it); return; }
             api.select(it.id); return;
@@ -156,7 +158,7 @@ let uid = 0;
         b.style.cssText = 'display:block;width:100%;border:0;padding:0;background:none;cursor:pointer;transition:transform .35s cubic-bezier(.25,.8,.25,1),filter .25s;flex:none';
         b.innerHTML = spineSvg(it, i); b.firstChild.style.cssText = 'display:block;width:100%;height:auto';
         if (it.meta) { b.style.position = 'relative'; b.setAttribute('aria-label', b.getAttribute('aria-label') + ', ' + it.meta); var sm = document.createElement('span'); sm.className = 'cs-meta spine'; sm.textContent = it.meta; b.appendChild(sm); }
-        b.addEventListener('click', function () { api.select(it.id); opts.onOpen && opts.onOpen(it); });
+        b.addEventListener('click', function () { if (!allowsGesture('shelf-tap')) return; api.select(it.id); opts.onOpen && opts.onOpen(it); });
         list.appendChild(b); btns[it.id] = b;
       });
       paint(); Cassette.refit();

@@ -17,6 +17,7 @@ import {
   libraryLayout, coverPose, visibleRange, POOL_SIZE, LIB_KNOBS, dragFocus, flingTarget, easeStep, wheelStep, keyStep,
   formatDuration, totalDuration, clipText, pad2, builtinTestPressing, isBuiltinAlbum, clampIndex,
 } from './library-layout.js';
+import { allowsGesture as guardAllows } from '../devicemode/guard.js';   // device mode: frozen gestures while locked (docs/DEVICE_MODE.md)
 import { createCoverCache, coverPixelSize, revokeCoverUrl, isTrackedCoverUrl } from './covers.js';
 
 export {
@@ -65,6 +66,7 @@ export function mountTurntableLibrary(container, deps = {}) {
   scanBtn.btn.__tl = { kind: 'scan' };
 
   const flow = el('div', 'tl-flow', scroll);
+  flow.setAttribute('data-lock-surface', '');
   flow.setAttribute('role', 'listbox'); flow.setAttribute('aria-label', 'Albums'); flow.setAttribute('tabindex', '0');
   const slot = el('div', 'tl-slot', flow); slot.setAttribute('aria-hidden', 'true');
   const hint = el('button', 'tl-hint', scroll); hint.setAttribute('type', 'button');
@@ -72,7 +74,7 @@ export function mountTurntableLibrary(container, deps = {}) {
   const meta = el('div', 'tl-meta', scroll);
   const titleEl = el('div', 'tl-title', meta), subEl = el('div', 'tl-sub', meta);
   const list = el('ol', 'tl-tracks', scroll);
-  list.setAttribute('role', 'listbox'); list.setAttribute('aria-label', 'Tracks');
+  list.setAttribute('role', 'listbox'); list.setAttribute('aria-label', 'Tracks'); list.setAttribute('data-lock-surface', '');
 
   // covers: a fixed pool of nodes, node for album k = pool[k % POOL_SIZE]
   const pool = [];
@@ -126,6 +128,7 @@ export function mountTurntableLibrary(container, deps = {}) {
   }
   paintChips();
   function onBarClick(e) {
+    if (!may('library-chip')) return;
     const o = ownerOf(e.target, root);
     if (!o || !o.__tl) return;
     const t = o.__tl;
@@ -134,7 +137,7 @@ export function mountTurntableLibrary(container, deps = {}) {
     else if (t.kind === 'sort') { sortState = t.v; paintChips(); emit('sort', t.v); }
   }
   bar.addEventListener('click', onBarClick);
-  hint.addEventListener('click', () => emit('scan'));
+  hint.addEventListener('click', () => { if (may('library-chip')) emit('scan'); });
 
   // ── album display (title / meta / tracks) ──────────────────────────────────
   function rowAt(i) {
@@ -244,8 +247,9 @@ export function mountTurntableLibrary(container, deps = {}) {
 
   // ── pointer: swipe / tap ───────────────────────────────────────────────────
   const live_ = () => live && shown && !destroyed;
+  const may = (kind) => (deps.allowsGesture || guardAllows)(kind);   // false while the device is locked
   function onDown(e) {
-    if (!live_() || n === 0) return;
+    if (!live_() || n === 0 || !may('coverflow-swipe')) return;
     if (e.pointerType === 'mouse' && e.button > 0) return;
     if (drag) { cancelDrag(); return; }                  // a second finger: not ours (T1's pinch)
     const o = ownerOf(e.target, flow);
@@ -296,7 +300,7 @@ export function mountTurntableLibrary(container, deps = {}) {
   flow.addEventListener('lostpointercapture', (e) => { if (drag && e.pointerId === drag.id && !drag.moved) cancelDrag(); });
 
   function onWheel(e) {
-    if (!live_() || e.ctrlKey || n === 0) return;
+    if (!live_() || e.ctrlKey || n === 0 || !may('coverflow-swipe')) return;
     const unit = e.deltaMode === 1 ? 16 : 1;
     let d = (e.deltaX || 0) * unit;
     if (!d && e.shiftKey) d = (e.deltaY || 0) * unit;
@@ -311,7 +315,7 @@ export function mountTurntableLibrary(container, deps = {}) {
 
   // ── keyboard ───────────────────────────────────────────────────────────────
   flow.addEventListener('keydown', (e) => {
-    if (!live_() || n === 0) return;
+    if (!live_() || n === 0 || !may('coverflow-swipe')) return;
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault(); const k = clampIndex(Math.round(focusPos), n);
       emit('tapCover', albums[k].id); return;
@@ -327,11 +331,12 @@ export function mountTurntableLibrary(container, deps = {}) {
     if (a && i >= 0 && i < a.tracks.length) emit('selectTrack', a.id, i);
   }
   list.addEventListener('click', (e) => {
-    if (!live_()) return;
+    if (!live_() || !may('track-row')) return;
     const o = ownerOf(e.target, list);
     if (o && o.__tl && o.__tl.kind === 'row') onRowActivate(o.__tl.i);
   });
   list.addEventListener('keydown', (e) => {
+    if (!may('track-row')) return;
     const o = ownerOf(e.target, list);
     if (!o || !o.__tl || o.__tl.kind !== 'row') return;
     const i = o.__tl.i;

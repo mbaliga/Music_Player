@@ -24,6 +24,8 @@ import { createQueue, reduce as queueReduce } from './queue.js';
 import { mountPlayer, SKINS, SKIN_IDS } from './cassette/players.js';
 import { mountStack, mountLibrary } from './cassette/shelf.js';
 import { openEditor, openBack, closeBack } from './cassette/editor.js';
+import { allowsGesture } from './devicemode/guard.js';
+import { onAodOutlineMode } from './devicemode/aodhooks.js';
 
 const h = (tag, props = {}, ...kids) => {
   const e = document.createElement(tag);
@@ -111,6 +113,8 @@ export class MixtapeUI {
    */
   constructor(deps) {
     this.d = deps;
+    this._aodOutline = false;
+    onAodOutlineMode((on) => { this._aodOutline = !!on; });   // device mode AOD: outline cassette (CSS hairlines), reels frozen
     this.list = load();
     this.play = null;      // { mix, files[], relink[], durs[], idx, loading, ended, q, paused, wind, held }
     this.sel = null;       // selected mixtape id on the shelf
@@ -232,6 +236,7 @@ export class MixtapeUI {
 
   // ── Editor ─────────────────────────────────────────────────────────────────
   edit(existing, opts = {}) {
+    if (!allowsGesture('editor')) return;   // device mode: the editor is frozen while locked
     openEditor({
       mixtape: existing,
       draft: !!opts.draft,
@@ -272,6 +277,7 @@ export class MixtapeUI {
   }
 
   importDialog() {
+    if (!allowsGesture('editor')) return;
     this._dialog('Import mixtape', (body, done) => {
       const ta = h('textarea', { class: 'mt-textarea', spellcheck: 'false', placeholder: '{ "version": 4, "name": "…", "cfg": { … }, "tape": { "length": "C60" }, "sides": { "A": [ … ], "B": [ … ] } }' });
       const step1 = h('div', { class: 'theme-step' }, ta,
@@ -315,7 +321,7 @@ export class MixtapeUI {
 
   // ── Player ────────────────────────────────────────────────────────────────
   _buildPlayer() {
-    this.host = h('div', { class: 'tp-host' });
+    this.host = h('div', { class: 'tp-host', 'data-lock-surface': '' });
     this.listHead = h('div', { class: 'tp-sides', role: 'tablist', 'aria-label': 'Tape side' });
     this.listBody = h('ol', { class: 'tp-songs' });
     this.listPanel = h('div', { class: 'tp-list hidden' }, this.listHead, this.listBody);
@@ -816,6 +822,6 @@ export class MixtapeUI {
     }
     const level = this.d.levelAt ? this.d.levelAt(t, T) : 0;
     this._pushState(t, level, now, false);
-    this.pl.frame(this._st.progress, mul, dt, now);
+    this.pl.frame(this._st.progress, this._aodOutline ? 0 : mul, dt, now);   // AOD: the reels stay frozen (the time, side and title still update)
   }
 }

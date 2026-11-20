@@ -42,7 +42,8 @@ body[data-devicemode~="locked"] .dm-gear { display: none; }
 body[data-devicemode~="locked"] { overscroll-behavior: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
 body[data-devicemode~="locked"] * { pointer-events: none; touch-action: none; -webkit-user-select: none; user-select: none; overscroll-behavior: none; }
 body[data-devicemode~="locked"] :is(.dm-key, .dm-ui, .dm-sheet, .dm-sheet *) { pointer-events: auto; touch-action: manipulation; }
-body[data-devicemode~="locked"] .dm-hint, body[data-devicemode~="locked"] .dm-notice { pointer-events: none; }
+body[data-devicemode~="locked"] .dm-hint, body[data-devicemode~="locked"] .dm-notice { pointer-events: auto; cursor: pointer; }
+body[data-devicemode~="locked"] .tp-hint { display: none; }
 
 /* ── the settings sheet ──────────────────────────────────────────────────────────────────────────────────────────────── */
 .dm-sheet { position: fixed; inset: 0; z-index: 600; display: flex; align-items: flex-end; justify-content: center; background: rgba(0,0,0,.55); }
@@ -70,6 +71,9 @@ body[data-devicemode~="aod"] *, body[data-devicemode~="aod"] *::before, body[dat
 }
 body[data-devicemode~="aod"] :is(.page, .stage, .nowline, .shelf, .minibar, .tp-host, .fx-pad, .fx-row, .fx-chip, .radio-now, .dial-card, .alb-card):not(.hidden) { outline: 1px solid var(--dm-line); outline-offset: -1px; }
 body[data-devicemode~="aod"] :is(canvas, img, video, picture, svg image, svg foreignObject) { visibility: hidden !important; }
+/* the Albums stage subscribes to the outline hook: its canvas shows hairline circles only; the heavy SVG (phone body, mat image) and the library stay hidden */
+body[data-devicemode~="aod"] canvas.tt-disc[data-outline="1"] { visibility: visible !important; }
+body[data-devicemode~="aod"] :is(.tt-bot, .tt-libbg, .tt-lib, #tt-dispHit) { visibility: hidden !important; }
 body[data-devicemode~="aod"] #arm, body[data-devicemode~="aod"] .shell-peek, body[data-devicemode~="aod"] .card-handle, body[data-devicemode~="aod"] #edgeStrip { display: none !important; }
 body[data-devicemode~="aod"] svg *:not(.dm-key *) { fill: none !important; stroke: var(--dm-line) !important; stroke-width: 1px !important; opacity: 1 !important; }
 body[data-devicemode~="aod"] :is(button, [role=button], input, select) { border: 1px solid var(--dm-line) !important; }

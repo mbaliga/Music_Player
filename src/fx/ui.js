@@ -362,7 +362,7 @@ export function mountFxSection(root, deps) {
     drawRing(g, W, H, geom.cx, geom.cy, (geom.R || geom.rOut) * 1.02, st, { t: now, fingerAngle: fa, shimmer: !reducedQ.matches });
   }
 
-  let shown = false, raf = 0, lastT = 0, lastTrack = api.host.getTrack();
+  let shown = false, aod = false, raf = 0, lastT = 0, lastTrack = api.host.getTrack();
   const loop = (now) => {
     if (!shown) return;
     const dt = lastT ? Math.min(0.05, Math.max(0.001, (now - lastT) / 1000)) : 0.016; lastT = now;
@@ -370,7 +370,7 @@ export function mountFxSection(root, deps) {
     if (tr !== lastTrack) { lastTrack = tr; handle.onTrack(); }          // a record / tape was loaded by someone else: nothing survives it
     ctl.tick(dt, now);
     frameN++;
-    if (frameN % 2 === 0) { drawStageRing(now); if (view === 'perform') { drawWave(); drawPad(now); } refresh(); }
+    if (!aod && frameN % 2 === 0) { drawStageRing(now); if (view === 'perform') { drawWave(); drawPad(now); } refresh(); }
     raf = requestAnimationFrame(loop);
   };
   const setOverlays = (on) => { ringCv.style.display = on ? '' : 'none'; if (!on) hud.classList.add('hidden'); };
@@ -378,6 +378,8 @@ export function mountFxSection(root, deps) {
     controller: ctl, bus,
     onShow() { if (shown) return; shown = true; lastT = 0; ringKey = ''; if (api.host.getTrack() !== lastTrack) { lastTrack = api.host.getTrack(); handle.onTrack(); } setOverlays(true); raf = requestAnimationFrame(loop); },
     onHide() { if (!shown) return; shown = false; cancelAnimationFrame(raf); ctl.release(); setOverlays(false); },
+    /** device mode AOD: no ring / wave / pad drawing while on (the controller keeps ticking; nothing is released) */
+    setAod(on) { aod = !!on; ringKey = ''; waveKey = ''; },
     onTrack() { ctl.onTrack(); waveKey = ''; if (view === 'menu') rebuild(); },
     platter: {
       wantsPlatter: () => shown && ctl.wantsPlatter(),

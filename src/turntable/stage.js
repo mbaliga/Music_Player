@@ -14,6 +14,7 @@ import { botSvgInner, topSvgInner, LABEL_SVG } from './stage-svg.js';
 import { fillSilence, fillPlaceholder, computePeaks, binRange } from './spiral.js';
 import { eqFromBytes, eqFake, EQ_BARS } from './display.js';
 import { classifyArmFlick } from '../tonearm.js';
+import { allowsGesture } from '../devicemode/guard.js';   // device mode: frozen gestures while locked (docs/DEVICE_MODE.md)
 
 const NS = 'http://www.w3.org/2000/svg';
 const BRAKE_R = 217;   // inside the label = palm brake (hold)
@@ -28,7 +29,7 @@ export function createStage(host, hooks = {}) {
   const libBg = mk('div', 'tt-libbg');
   const cv = mk('canvas', 'tt-layer tt-disc'); cv.id = 'disc'; cv.setAttribute('aria-hidden', 'true');
   const top = mk('svg', 'tt-layer tt-top', true); top.setAttribute('preserveAspectRatio', 'xMidYMid meet'); top.setAttribute('viewBox', '222.5 -15 1241 561');
-  top.setAttribute('role', 'group'); top.setAttribute('aria-label', 'Turntable'); top.innerHTML = topSvgInner();
+  top.setAttribute('data-lock-surface', ''); top.setAttribute('role', 'group'); top.setAttribute('aria-label', 'Turntable'); top.innerHTML = topSvgInner();
   const libEl = mk('div', 'tt-lib');
   const sr = mk('button', 'tt-sr'); sr.type = 'button'; sr.textContent = 'Open album library';
   host.append(bot, libBg, cv, top, libEl, sr);
@@ -44,7 +45,7 @@ export function createStage(host, hooks = {}) {
   let P = createPlayer();
   const view = { posS: 0, dust: 0, name: '', trackCount: 1, trackIndex: 0, loading: false, lit: false, dispMode: 0, ana: null, level: 0 };
   let visible = false, W = 0, H = 0, DPR = 1, portrait = false, MX = [1, 0, 0, 1, 0, 0], dirty = true, preview = null, scrollT = 0;
-  let ghost = null, drop = null, lib = null, lastLive = null, lastZ = -1;
+  let ghost = null, drop = null, lib = null, lastLive = null, lastZ = -1, outline = false;
   const anaBuf = new Uint8Array(32);
 
   const dispatch = (a) => {
@@ -126,7 +127,7 @@ export function createStage(host, hooks = {}) {
   // ── the tonearm dimple: the drag handle ───────────────────────────────────────────────────────────────────────────────
   let arm = null;   // { id, grabDX, trail:[] }
   grabG.addEventListener('pointerdown', (e) => {
-    if (!e.isPrimary || (hooks.canGrab && !hooks.canGrab())) return;
+    if (!e.isPrimary || (hooks.canGrab && !hooks.canGrab()) || !allowsGesture('tonearm-drag')) return;
     e.preventDefault(); e.stopPropagation();
     const before = P.dragging;
     dispatch({ type: 'dragStart', s: view.posS });
@@ -156,7 +157,7 @@ export function createStage(host, hooks = {}) {
   };
   grabG.addEventListener('pointerup', endArm); grabG.addEventListener('pointercancel', endArm);
   grabG.addEventListener('keydown', (e) => {   // keyboard: left/right nudge the playhead a little (inner groove = left)
-    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' || (hooks.canGrab && !hooks.canGrab())) return;
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' || (hooks.canGrab && !hooks.canGrab()) || !allowsGesture('tonearm-drag')) return;
     e.preventDefault();
     if (hooks.armNudge) hooks.armNudge(e.key === 'ArrowLeft' ? 1 : -1);
   });
@@ -168,6 +169,7 @@ export function createStage(host, hooks = {}) {
     const p = stagePt(e), d = Math.hypot(p.x - C.x, p.y - C.y);
     if (d > RDISC) return;
     const mode = d <= BRAKE_R ? 'brake' : 'scratch';
+    if (!allowsGesture(mode === 'brake' ? 'platter-brake' : 'platter-scrub')) return;   // locked: the record is a frozen face
     scratch = { id: e.pointerId, mode, angle: Math.atan2(p.y - C.y, p.x - C.x) };
     try { top.setPointerCapture(e.pointerId); } catch { /* synthetic */ }
     if (mode === 'brake') hooks.brake && hooks.brake(true);
@@ -192,6 +194,7 @@ export function createStage(host, hooks = {}) {
   const dist = () => { const a = [...ptrs.values()]; return Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y); };
   window.addEventListener('pointerdown', (e) => {
     if (!host.contains(e.target)) return;
+    if (!allowsGesture('pinch-zoom')) return;
     ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
     if (ptrs.size === 2) {
       endArm(); endScratch();     // a second finger is the zoom gesture: let go of whatever the first was doing
@@ -220,6 +223,7 @@ export function createStage(host, hooks = {}) {
   host.addEventListener('wheel', (e) => {
     if (!e.ctrlKey) return;
     e.preventDefault();
+    if (!allowsGesture('pinch-zoom')) return;
     dispatch({ type: 'pinchStart' });
     dispatch({ type: 'pinchMove', z: wheelZ(P.z, e.deltaY) }); applyCam(); kick();
     clearTimeout(wheelT);
@@ -250,6 +254,7 @@ export function createStage(host, hooks = {}) {
     dirty = false;
     const L = layers(P.z), now = performance.now();
     ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, cv.width, cv.height);
+    if (outline) { drawOutline(L); return; }
     const s = preview ? preview.s : playheadS(P, view.posS);
     if (L.showDisplay) {
       setM(MX); ctx.globalAlpha = L.displayAlpha;
@@ -271,6 +276,20 @@ export function createStage(host, hooks = {}) {
     if (!place && (ghost || drop)) { setM(MX); painter.drawGhost(ctx, ghost, drop, portrait); }
   }
 
+  // Always-on display (device mode): hairline circles only (platter, disc, label, spindle), the dot display dimmed and static. No spiral, no
+  // mat / cover art / label image; the arm and the slot are the SVG layer's hairlines (devicemode.css). Redrawn only when something changed.
+  function drawOutline(L) {
+    setM(MX);
+    ctx.lineWidth = 1.25 / Math.max(0.2, Math.sqrt(Math.abs(MX[0] * MX[3] - MX[1] * MX[2])));
+    ctx.strokeStyle = 'rgba(190,190,205,.75)'; ctx.fillStyle = 'rgba(0,0,0,0)';
+    for (const r of [RDISC + 2, RDISC, BRAKE_R, 9]) { ctx.beginPath(); ctx.arc(C.x, C.y, r, 0, Math.PI * 2); ctx.stroke(); }
+    if (L.showDisplay) {
+      ctx.globalAlpha = 0.3;
+      painter.drawDisplay(ctx, { portrait, active: view.lit, mode: 0, name: view.loading ? 'LOADING...' : view.name, trackCount: view.trackCount, trackIndex: view.trackIndex, now: 0, vals: null });
+      ctx.globalAlpha = 1;
+    }
+  }
+
   let lastNow = 0;
   /** called by the app every frame (cheap when idle). input = { posS, dt }. */
   function update(dt, input) {
@@ -282,6 +301,7 @@ export function createStage(host, hooks = {}) {
     const r = dispatch({ type: 'tick', dt, posS: input.posS, easeZ, reduced: reducedFn() });
     if (P.z !== lastZ) applyCam();
     if (drop) { drop.t = (performance.now() - drop.t0) / 340; if (drop.t >= 1) { drop = null; dirty = true; } }
+    if (outline) { if (dirty || was !== P) { placeArm(); setLiveUI(P.playing || P.starting); if (visible && W) draw(); } return; }   // AOD: static, redraw only on change
     if (needsFrame(P) || dirty || was !== P || drop || view.loading) { placeArm(); setLiveUI(P.playing || P.starting); if (visible && W) draw(); }
   }
   function kick() { dirty = true; if (hooks.wake) hooks.wake(); }
@@ -339,6 +359,9 @@ export function createStage(host, hooks = {}) {
       }
       dirty = true;
     },
+    /** device mode AOD: outline-only draw (see drawOutline); the CSS shows the canvas + hairline SVG while body[data-aod-outline] */
+    setOutline(on) { on = !!on; if (on === outline) return; outline = on; cv.dataset.outline = on ? '1' : ''; dirty = true; ghost = null; drop = null; if (visible) { placeArm(); draw(); } kick(); },
+    get outline() { return outline; },
     layers: () => layers(P.z),
     slotRect,
     startScroll() { scrollT = 0; },

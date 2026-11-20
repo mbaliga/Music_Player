@@ -5,13 +5,17 @@ import { registerLockFace } from './faces.js';
 
 export const DEFAULT_FACES = Object.freeze({
   albums: {
-    // Play/Stop, 33/45/78 + -/+ speed and prev/next track stay live; platter, tonearm, zoom, library, display toggle and drawer are frozen.
+    // Live: Play/Stop, 33/45/78 + -/+ speed, prev/next (Deck details / CD view keys) and the lock key.
+    // Frozen (`data-lock-surface`, and every stage / library entry point asks allowsGesture): the disc scratch and the palm-brake hold on the label,
+    // the tonearm dimple drag / seek / flick, pinch and Ctrl+wheel zoom, the coverflow swipe, cover and track-row taps, the library chips, the header
+    // chips (search, Deck details), the dot-display toggle, the drawer / hamburger, Space (brake) and Esc (zoom in).
     buttons: ['#tt-playBtn', '#tt-b78', '#tt-b33', '#tt-b45', '#tt-bm', '#tt-bp', '#btnPrevTrk', '#btnNextTrk', '#cdPrev', '#cdPlay', '#cdNext', '#rpmSlider'],
     aodText: ['#cdTitle'],
-    notes: 'Albums: play, stop, speed and track keys are live. The record, arm and shelf are locked.',
+    notes: 'Albums: Play / Stop and the speed keys are live. The record, arm and library are locked.',
   },
   mixtapes: {
-    // Cassette player transport keys (SVG role=button), wind keys, AUTO, FLIP, eject. Shelf, editor, stack gestures and skin chips frozen.
+    // Cassette player: transport keys (SVG role=button), wind keys (hold), AUTO, FLIP, eject stay live. Frozen: the shelf / stack, the editor and
+    // importer, the skin / haptics chips and the close button, and the tap-the-tape song-list reveal (a reveal, not a key: decided frozen).
     buttons: ['.tp [role=button]', '.tp [data-key]'],
     aodText: ['.tp-title', '.tp .cass-title'],
     notes: 'Mixtapes: open the cassette player before locking to use its keys. The shelf and editor are locked.',

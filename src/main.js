@@ -28,7 +28,9 @@ import { CdView } from './cd-view.js';
 import { CD_KNOBS, formatTime } from './cd.js';
 import { MixtapeUI } from './mixtape-ui.js';
 import { createShell } from './shell/nav.js';
-import { initDeviceMode } from './devicemode/index.js';   // Device mode: lock key, frozen face, keep-awake, always-on display (docs/DEVICE_MODE.md)
+import { initDeviceMode } from './devicemode/index.js';
+import { allowsGesture } from './devicemode/guard.js';
+import { onAodOutlineMode } from './devicemode/aodhooks.js';   // Device mode: lock key, frozen face, keep-awake, always-on display (docs/DEVICE_MODE.md)
 let deviceMode = null;
 import { mountBooth } from './shell/booth.js';
 import { createEngineGate } from './engine-gate.js';
@@ -478,6 +480,7 @@ function installTurntable() {
     beginAudio: onBeginAudio,
     analyser: () => getAnalyser(),
   });
+  onAodOutlineMode((on) => stage.setOutline(on));   // always-on display: hairline circles only, static (docs/DEVICE_MODE.md)
   stage.setLibrary(tlib = mountTurntableLibrary(stage.libHost, { ...libraryDeps(), scanLabel: deviceLibrary.isAvailable() ? { long: 'Scan phone', short: 'Scan', hint: 'Scan your phone to fill the shelf' } : undefined }));
   wireLibrary();
   stage.setSpeedUI(state.speedBase);
@@ -740,10 +743,10 @@ function installControls() {
 
   // Palm brake: the spacebar (hold) mirrors a hold on the platter label. A focused control keeps Space for itself.
   const inControl = () => { const a = document.activeElement; return !!(a && a.closest && a.closest('[role="button"], button, input, select, textarea, [role="slider"]')); };
-  window.addEventListener('keydown', (e) => { if (e.code === 'Space' && !inControl()) { e.preventDefault(); state.braking = true; } });
+  window.addEventListener('keydown', (e) => { if (e.code === 'Space' && !inControl() && allowsGesture('platter-brake')) { e.preventDefault(); state.braking = true; } });
   window.addEventListener('keyup', (e) => { if (e.code === 'Space' && state.braking && !inControl()) { e.preventDefault(); state.braking = false; } });
   // Esc zooms back in from the library
-  window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && stage.zoom > 0.5 && !document.querySelector('.wt-overlay:not(.hidden)')) { stage.dispatch({ type: 'zoomTo', z: 0 }); } });
+  window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && allowsGesture('pinch-zoom') && stage.zoom > 0.5 && !document.querySelector('.wt-overlay:not(.hidden)')) { stage.dispatch({ type: 'zoomTo', z: 0 }); } });
 
   const saved = lsGet(LS.speed);
   if (saved && SPEEDS[saved.base]) { state.speedBase = saved.base; state.trim = clamp(Number(saved.trim) || 1, TRIM.min, TRIM.max); applyRpm(); }

@@ -21,6 +21,7 @@
 import { Cassette } from './index.js';
 import { DECK_SVG, PLAYER_SVG } from './player-skins.js';
 import { createReelDriver } from './reels-driver.js';
+import { allowsGesture } from '../devicemode/guard.js';   // device mode: transport / wind / AUTO / FLIP / eject stay live while locked, the tape tap does not
 
 const NS = 'http://www.w3.org/2000/svg';
 const UI = 'system-ui,-apple-system,"Segoe UI",Roboto,sans-serif';
@@ -124,8 +125,8 @@ function deckSkin(X) {
   sv('path', { d: 'M20 -70L40 -48L14 -34M-20 70L-40 48L-14 34' }, fi);
   sv('text', { x: PC, y: 1438, 'text-anchor': 'middle', 'font-family': UI, 'font-weight': 600, 'font-size': 32, fill: '#6c6d75', 'letter-spacing': 3 }, sideG).textContent = 'FLIP TAPE';
   const pressKey = (k) => { k.g.classList.add('down'); };
-  autoKey.g.addEventListener('pointerdown', (e) => { e.preventDefault(); api.auto(!X.state.auto); });
-  flipKey.g.addEventListener('pointerdown', (e) => { e.preventDefault(); pressKey(flipKey); api.flip(); });
+  autoKey.g.addEventListener('pointerdown', (e) => { e.preventDefault(); if (!allowsGesture('button')) return; api.auto(!X.state.auto); });
+  flipKey.g.addEventListener('pointerdown', (e) => { e.preventDefault(); if (!allowsGesture('button')) return; pressKey(flipKey); api.flip(); });
   ['pointerup', 'pointercancel', 'pointerleave'].forEach((t) => flipKey.g.addEventListener(t, () => flipKey.g.classList.remove('down')));
   for (const [k, fn] of [[autoKey, () => api.auto(!X.state.auto)], [flipKey, () => { pressKey(flipKey); api.flip(); setTimeout(() => flipKey.g.classList.remove('down'), 140); }]]) {
     k.g.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fn(); } });
@@ -151,7 +152,7 @@ function deckSkin(X) {
   keysG.addEventListener('pointerdown', (e) => {
     const g = e.target.closest ? e.target.closest('.key') : null; if (!g) return; e.preventDefault();
     const id = g.getAttribute('data-key');
-    if (id === 'rew' || id === 'ff') { heldKey = g; g.classList.add('down'); api.hold(id === 'ff' ? 1 : -1); } else act(id, g);
+    if (id === 'rew' || id === 'ff') { if (!allowsGesture('wind-hold')) return; heldKey = g; g.classList.add('down'); api.hold(id === 'ff' ? 1 : -1); } else act(id, g);
   });
   ['pointerup', 'pointercancel', 'pointerleave'].forEach((t) => keysG.addEventListener(t, release));
   keysG.addEventListener('keydown', (e) => {
@@ -431,7 +432,7 @@ export function mountPlayer(el, opts = {}) {
   resize();
   poseNow('out'); cass.style.opacity = 0;
   // tap the cassette (anywhere except the reels, which wind) -> host reveals the song list
-  win.addEventListener('click', () => emit('tap'));
+  win.addEventListener('click', () => { if (allowsGesture('tape-tap')) emit('tap'); });
   paint(true);
   if (opts.cassette) { api.insert(opts.cassette); poseNow('in'); }
   return api;

@@ -5,6 +5,7 @@
 //       const loadFxSection = () => import('../fx/section.js');      // whatever module exports mountFxSection
 //   (the module is then lazy: it is fetched the first time the section is shown, never at boot).
 import { BOOTH_LABEL } from './sections.js';
+import { onAodOutlineMode } from '../devicemode/aodhooks.js';
 
 // MOUNT POINT (one line): null = placeholder.
 const loadFxSection = () => import('../fx/section.js');
@@ -13,7 +14,9 @@ const loadFxSection = () => import('../fx/section.js');
 export async function mountBooth(host, deps = {}) {
   if (loadFxSection) {
     const mod = await loadFxSection();
-    return mod.mountFxSection(host, deps);
+    const h = await mod.mountFxSection(host, deps);
+    if (h && h.setAod) { const off = onAodOutlineMode((on) => h.setAod(on)); const un = h.unmount; h.unmount = (...a) => { off(); return un && un.apply(h, a); }; }   // device mode AOD: no drawing
+    return h;
   }
   const note = document.createElement('div');
   note.className = 'booth-note'; note.dataset.placeholder = 'fx';
