@@ -33,7 +33,7 @@ import { createEngineGate } from './engine-gate.js';
 import { LibraryManager } from './library.js';
 import { createStage } from './turntable/stage.js';
 import { FINISHED } from './turntable/state.js';
-import { mountTurntableLibrary } from './turntable/library-stub.js';   // ← T2's ./turntable/library.js replaces this one line
+import { mountTurntableLibrary } from './turntable/library.js';
 import { albumsToCoverflow, builtinTestPressing, TEST_PRESSING_ID } from './turntable/library-layout.js';
 import {
   parseTheme, setThemeVars, clearThemeVars,
@@ -634,7 +634,7 @@ let shell = null;   // the navigation shell (src/shell/nav.js), created by insta
 let radio = null;   // RadioUI, once the Radio section has been opened
 
 function libraryDeps() {
-  return { storage: (() => { try { return window.localStorage; } catch { return null; } })(), dpr: () => Math.min(2.5, window.devicePixelRatio || 1) };
+  return { dpr: Math.min(2.5, window.devicePixelRatio || 1) };
 }
 
 // albums for the component: the scanned library (filtered / sorted), or the built-in test pressing when there is nothing yet

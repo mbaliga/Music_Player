@@ -298,7 +298,11 @@ export function createStage(host, hooks = {}) {
     isGestureLive: () => !!(scratch || arm || pinch || ptrs.size > 1),
     scratchAngle: () => (scratch && scratch.mode === 'scratch' ? scratch.angle : null),
     isScratching: () => !!(scratch && scratch.mode === 'scratch'),
-    setLibrary(l) { lib = l; if (l && W && l.layout) l.layout({ width: W, height: H, portrait }); applyCam(); },
+    setLibrary(l) {   // the component fades its own root, so the wrapper stays fully opaque
+      lib = l; if (l && l.setOpacity) libEl.style.opacity = '1';
+      if (l && W && l.layout) l.layout({ width: W, height: H, portrait });
+      applyCam();
+    },
     /** what the dot display shows */
     setDisplay(o) { Object.assign(view, o); dirty = true; },
     setSpeedUI(id) {
