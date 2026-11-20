@@ -110,7 +110,7 @@ test('parseMixtape names every malformed case and never throws', () => {
   assert.match(parseMixtape('[]').error, /an array/);
   assert.match(parseMixtape('3').error, /number/);
   bad((o) => delete o.version, /Missing "version"/);
-  bad((o) => { o.version = 4; }, /Unsupported "version"/);
+  bad((o) => { o.version = 5; }, /Unsupported "version"/);
   bad((o) => { o.version = 0; }, /Unsupported "version"/);
   bad((o) => { o.name = ' '; }, /Missing "name"/);
   bad((o) => { o.cfg.style = 'zzz'; }, /Unknown "cfg.style"/);
@@ -118,8 +118,9 @@ test('parseMixtape names every malformed case and never throws', () => {
   bad((o) => { delete o.cfg; }, /Missing "cfg"/);
   bad((o) => { o.cfg.slots.ink = 'red'; }, /ink.*missing leading/);
   bad((o) => { o.cfg.slots.ink = '#12'; }, /ink/);
-  bad((o) => { o.tracks = 'x'; }, /Missing "tracks"/);
-  bad((o) => { o.tracks[1] = { artist: 'q' }; }, /tracks\[1\]/);
+  bad((o) => { o.sides = 'x'; }, /Missing "sides"/);
+  bad((o) => { o.sides.A[1] = { artist: 'q' }; }, /sides\.A\[1\]/);
+  bad((o) => { o.tape = { length: 'C99' }; }, /Unknown "tape.length"/);
   assert.ok(parseMixtape(JSON.stringify({ ...good, cfg: { ...good.cfg, slots: { ink: '#80112233' } } })).ok); // 8-digit hex accepted
 });
 
@@ -166,7 +167,7 @@ test('v1 documents migrate: single parse and collection, ids round-trip in v2', 
   const p = parseMixtape(v1);
   assert.ok(p.ok); assert.equal(p.mixtape.tracks[0].id, undefined);
   assert.equal(p.mixtape.cfg.style, 'noir'); assert.equal(p.mixtape.cfg.pen, 'type'); assert.equal(p.mixtape.cfg.slots.ink, '#112233');
-  const out = JSON.parse(serializeMixtape({ ...p.mixtape, tracks: [{ title: 'a', artist: 'b', album: 'c', id: 'tid' }] }));
+  const out = JSON.parse(serializeMixtape({ ...p.mixtape, sides: { A: [{ title: 'a', artist: 'b', album: 'c', id: 'tid' }], B: [] } }));
   assert.equal(out.version, MIXTAPE_VERSION);
   assert.equal(parseMixtape(JSON.stringify(out)).mixtape.tracks[0].id, 'tid');
   const col = parseCollection(JSON.stringify({ version: 1, mixtapes: [{ id: 'm', name: 'N', tracks: [{ title: 't' }] }] }));

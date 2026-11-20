@@ -22,9 +22,16 @@
 //   v3  the owner's cassette system: `cfg` {style (one of 37), pen, wear,
 //       gloss, slots{ink}, text{subtitle,note,side}} + `author`. The mixtape
 //       name is cfg.text.title in the renderer (single source: `name`).
-// Writers emit v3; readers accept v1, v2 and v3. v1/v2 style/font/colour ids
-// migrate to the nearest new style / pen (LEGACY_* tables below). Anything
-// newer than v3 is refused/ignored, never guessed (the UI backs the blob up).
+//   v4  a real cassette: `tape {length: C30|C60|C90}`, TWO SIDES
+//       `sides {A:[refs], B:[refs]}`, `autoReverse`, refs may carry a duration
+//       hint `dur` (seconds) and every side has a hard capacity (see CAPS).
+//       `m.tracks` is kept as the derived flat list (A then B) so the
+//       resolver / queue code that predates sides keeps working.
+// Writers emit v4; readers accept v1..v4. v1/v2 style/font/colour ids migrate
+// to the nearest new style / pen (LEGACY_* tables below); a v1-v3 single list
+// migrates to side A on a C60 (a C90 when it does not fit) (spilling to side B
+// only when even a C90 side A cannot, and never dropping a song). Anything
+// newer than v4 is refused/ignored, never guessed (the UI backs the blob up).
 //
 // JSON follows theme.js conventions: { version, ... }, never-throwing parser
 // that names the exact failure, colours "#RRGGBB"/"#AARRGGBB" validated by
@@ -35,7 +42,7 @@
 import { validateHexColor } from './theme.js';
 import { Cassette } from './cassette/index.js';
 
-export const MIXTAPE_VERSION = 3;
+export const MIXTAPE_VERSION = 4;
 export const MIN_MIXTAPE_VERSION = 1;
 const versionOk = (v) => Number.isInteger(v) && v >= MIN_MIXTAPE_VERSION && v <= MIXTAPE_VERSION;
 export const MAX_NAME = 40;
@@ -52,6 +59,25 @@ export const DEFAULT_STYLE_ID = 'clear';
 export const DEFAULT_PEN = 'marker';
 export const DEFAULT_WEAR = 0.15;
 export const DEFAULT_GLOSS = 0.6;
+
+// ── Tape CAPS (the owner asked for fixed maxima) ─────────────────────────────
+// Each tape length is a real cassette: C30 = 15 min per side, C60 = 30, C90 = 45.
+// Tolerance is 0 seconds: a song that does not fit is refused, never squeezed.
+// On top of the time cap there is a hard 20-songs-per-side limit (40 per tape).
+export const TAPES = Object.freeze({
+  C30: Object.freeze({ id: 'C30', name: 'C30', minutes: 30, sideSec: 15 * 60 }),
+  C60: Object.freeze({ id: 'C60', name: 'C60', minutes: 60, sideSec: 30 * 60 }),
+  C90: Object.freeze({ id: 'C90', name: 'C90', minutes: 90, sideSec: 45 * 60 }),
+});
+export const TAPE_IDS = Object.freeze(Object.keys(TAPES));
+export const DEFAULT_TAPE = 'C60';
+export const MAX_SONGS_PER_SIDE = 20;
+export const TOLERANCE_SEC = 0;
+export const UNKNOWN_DURATION_SEC = 240;     // conservative estimate, shown with '~'
+export const MAX_DUR_SEC = 24 * 3600;        // hint sanity bound
+export const SIDES = Object.freeze(['A', 'B']);
+export const hasTape = (id) => typeof id === 'string' && Object.prototype.hasOwnProperty.call(TAPES, id);
+export const isSide = (s) => s === 'A' || s === 'B';
 
 /** Ink colours offered by the label editor (plain hex, so JSON can carry any). */
 export const FONT_COLOURS = Object.freeze([
@@ -96,7 +122,19 @@ export function makeTrackRef(t) {
     album: String(t.album || '').trim(),
   };
   if (typeof t.id === 'string' && t.id && t.id.length <= 64) ref.id = t.id;
+  const d = cleanDur(t.dur != null ? t.dur : t.durationSec);
+  if (d) ref.dur = d;
   return ref;
+}
+
+/** A duration hint in whole seconds (rounded UP so a tape is never over-filled), or 0 when unusable. */
+export function cleanDur(v) {
+  return typeof v === 'number' && isFinite(v) && v > 0 && v <= MAX_DUR_SEC ? Math.ceil(v - 1e-9) : 0;
+}
+/** { sec, est } of one ref: its hint, else the conservative 4:00 estimate (est = true). */
+export function refSeconds(ref) {
+  const d = cleanDur(ref && ref.dur);
+  return d ? { sec: d, est: false } : { sec: UNKNOWN_DURATION_SEC, est: true };
 }
 
 /**
@@ -157,19 +195,239 @@ function cleanCfg(c = {}, legacy = {}) {
   return cfg;
 }
 
+// ── Sides, caps, pure side edits ────────────────────────────────────────────
+const cleanRefs = (arr) => (Array.isArray(arr) ? arr : []).filter((t) => t && typeof t === 'object' && !Array.isArray(t)).map(makeTrackRef);
+
+/** Seconds a list of refs occupies (unknown durations count as the 4:00 estimate). */
+export function listSeconds(refs) { return refs.reduce((a, r) => a + refSeconds(r).sec, 0); }
+
+/** The sides a mixtape has, with the flat `tracks` list re-derived. The ONE place `tracks` is written. */
+function withSides(m, A, B) {
+  return { ...m, sides: { A, B }, tracks: [...A, ...B] };
+}
+
+/** Per-side capacity in seconds for this tape. */
+export const sideCapacity = (m) => TAPES[m.tape.length].sideSec;
+export const sideRefs = (m, side) => m.sides[side === 'B' ? 'B' : 'A'];
+
+/** { sec, est, count } — est is true when any song on the side has no real duration yet. */
+export function sideInfo(m, side) {
+  const refs = sideRefs(m, side);
+  let sec = 0, est = false;
+  for (const r of refs) { const d = refSeconds(r); sec += d.sec; if (d.est) est = true; }
+  return { sec, est, count: refs.length };
+}
+export const sideDuration = (m, side) => sideInfo(m, side).sec;
+/** Free space on a side: { sec, slots } (never negative). */
+export function remaining(m, side) {
+  const i = sideInfo(m, side);
+  return { sec: Math.max(0, sideCapacity(m) - i.sec), slots: Math.max(0, MAX_SONGS_PER_SIDE - i.count) };
+}
+/** True when a side holds more than its caps allow (only reachable by migration or by a decoded real duration). */
+export const isOverCap = (m, side) => {
+  if (!side) return isOverCap(m, 'A') || isOverCap(m, 'B');
+  const i = sideInfo(m, side);
+  return i.sec > sideCapacity(m) || i.count > MAX_SONGS_PER_SIDE;
+};
+export const tapeSeconds = (m) => sideDuration(m, 'A') + sideDuration(m, 'B');
+export const songCount = (m) => m.sides.A.length + m.sides.B.length;
+
+/** 4:05 / 1:02:03 */
+export function fmtDur(sec, est = false) {
+  const s = Math.max(0, Math.round(sec));
+  const h = Math.floor(s / 3600), mm = Math.floor((s % 3600) / 60), ss = s % 60;
+  const body = h ? `${h}:${String(mm).padStart(2, '0')}:${String(ss).padStart(2, '0')}` : `${mm}:${String(ss).padStart(2, '0')}`;
+  return (est ? '~' : '') + body;
+}
+
+/**
+ * Can `track` (library track or ref) go on `side`? -> { ok, reason, code }.
+ * Zero tolerance: used + duration must be <= capacity. A reason is a sentence
+ * the UI shows verbatim ("Side A has 2:10 left; this song is 3:45").
+ */
+export function canAdd(m, side, track, { extraSec = 0, extraCount = 0 } = {}) {
+  if (!isSide(side)) return { ok: false, code: 'side', reason: 'Pick side A or B.' };
+  const info = sideInfo(m, side), d = refSeconds(makeTrackRef(track || {}));
+  if (info.count + extraCount >= MAX_SONGS_PER_SIDE) {
+    return { ok: false, code: 'count', reason: `Side ${side} is full: ${MAX_SONGS_PER_SIDE} songs is the most a side holds.` };
+  }
+  const left = sideCapacity(m) - info.sec - extraSec;
+  if (d.sec > left) {
+    const l = Math.max(0, left);
+    return { ok: false, code: 'time', reason: `Side ${side} has ${fmtDur(l)} left; this song is ${fmtDur(d.sec, d.est)}.` };
+  }
+  return { ok: true, code: 'ok', reason: '' };
+}
+
+/** Append to a side if it fits (else unchanged). Use tryAdd when the reason matters. */
+export function addTrack(m, t, side = 'A') { return tryAdd(m, side, t).mixtape; }
+
+/** { mixtape, ok, reason } — add at the end of `side` (or at `index`). */
+export function tryAdd(m, side, t, index) {
+  const c = canAdd(m, side, t);
+  if (!c.ok) return { mixtape: m, ...c };
+  const ref = makeTrackRef(t), list = sideRefs(m, side).slice();
+  const at = Number.isInteger(index) ? Math.max(0, Math.min(list.length, index)) : list.length;
+  list.splice(at, 0, ref);
+  return { mixtape: side === 'B' ? withSides(m, m.sides.A, list) : withSides(m, list, m.sides.B), ok: true, code: 'ok', reason: '' };
+}
+
+/**
+ * Add several in order; each that fits goes on, the rest are skipped with a reason.
+ * -> { mixtape, added, skipped: [{ track, reason, code }] }
+ */
+export function addMany(m, side, tracks) {
+  let cur = m, added = 0;
+  const skipped = [];
+  for (const t of tracks) {
+    const r = tryAdd(cur, side, t);
+    if (r.ok) { cur = r.mixtape; added++; } else skipped.push({ track: t, reason: r.reason, code: r.code });
+  }
+  return { mixtape: cur, added, skipped };
+}
+
+/** Remove the song at `i` of `side`. */
+export function removeFromSide(m, side, i) {
+  if (!isSide(side)) return m;
+  const list = sideRefs(m, side);
+  if (!(i >= 0 && i < list.length)) return m;
+  const next = list.filter((_, j) => j !== i);
+  return side === 'B' ? withSides(m, m.sides.A, next) : withSides(m, next, m.sides.B);
+}
+/** Legacy flat-index remove (A then B). */
+export function removeTrack(m, i) {
+  const nA = m.sides.A.length;
+  if (!(i >= 0 && i < m.tracks.length)) return m;
+  return i < nA ? removeFromSide(m, 'A', i) : removeFromSide(m, 'B', i - nA);
+}
+
+/** Move within one side (dest clamped). Out-of-range `from` is a no-op. */
+export function moveInSide(m, side, from, to) {
+  if (!isSide(side)) return m;
+  const list = sideRefs(m, side), n = list.length;
+  if (!(from >= 0 && from < n)) return m;
+  const dest = Math.max(0, Math.min(n - 1, to));
+  if (dest === from) return m;
+  const next = list.slice();
+  const [t] = next.splice(from, 1);
+  next.splice(dest, 0, t);
+  return side === 'B' ? withSides(m, m.sides.A, next) : withSides(m, next, m.sides.B);
+}
+/** Legacy flat move: reorders inside whichever side `from` is on (dest clamped to that side). */
+export function moveTrack(m, from, to) {
+  const nA = m.sides.A.length;
+  if (!(from >= 0 && from < m.tracks.length)) return m;
+  return from < nA ? moveInSide(m, 'A', from, to) : moveInSide(m, 'B', from - nA, to - nA);
+}
+/** Move a song to the OTHER side (or `toSide`), at `toIndex` (default end), honouring the caps there. -> { mixtape, ok, reason } */
+export function moveAcross(m, fromSide, i, toSide = fromSide === 'A' ? 'B' : 'A', toIndex) {
+  const src = sideRefs(m, fromSide);
+  if (!isSide(fromSide) || !isSide(toSide) || !(i >= 0 && i < src.length)) return { mixtape: m, ok: false, code: 'range', reason: 'No such song.' };
+  if (fromSide === toSide) return { mixtape: moveInSide(m, fromSide, i, toIndex == null ? i : toIndex), ok: true, code: 'ok', reason: '' };
+  const ref = src[i];
+  const c = canAdd(removeFromSide(m, fromSide, i), toSide, ref);
+  if (!c.ok) return { mixtape: m, ...c };
+  return { ...tryAdd(removeFromSide(m, fromSide, i), toSide, ref, toIndex) };
+}
+
+/**
+ * Fill `side` with as many of `pool` (in order) as fit, skipping songs already on the tape
+ * (by id, else artist/album/title). -> same shape as addMany.
+ */
+export function autoFill(m, side, pool) {
+  const have = new Set([...m.sides.A, ...m.sides.B].map((r) => r.id || trackKey(r)));
+  const fresh = pool.filter((t) => !have.has(t.id || trackKey(t)));
+  return addMany(m, side, fresh);
+}
+
+/** Replace the flat tape contents: pour `tracks` into A then B honouring caps. Returns { mixtape, skipped }. */
+export function fillTape(m, tracks) {
+  const empty = withSides(m, [], []);
+  const a = addMany(empty, 'A', tracks);
+  const b = addMany(a.mixtape, 'B', a.skipped.map((s) => s.track));
+  return { mixtape: b.mixtape, skipped: b.skipped };
+}
+
+export function withTape(m, length) {
+  return hasTape(length) ? { ...m, tape: { length } } : m;
+}
+export const withAutoReverse = (m, on) => ({ ...m, autoReverse: !!on });
+
+/** Does the tape fit a different length? (the editor refuses a shrink that would drop songs) */
+export function canResize(m, length) {
+  if (!hasTape(length)) return { ok: false, reason: 'Unknown tape length.' };
+  const cap = TAPES[length].sideSec;
+  for (const side of SIDES) {
+    const i = sideInfo(m, side);
+    if (i.sec > cap) return { ok: false, reason: `Side ${side} holds ${fmtDur(i.sec, i.est)}; a ${length} side takes ${fmtDur(cap)}.` };
+  }
+  return { ok: true, reason: '' };
+}
+
+/**
+ * Refresh the duration hints from the resolved library (real durations beat estimates):
+ * `resolved` is resolveTracks(m, lib) (parallel to m.tracks). Returns the same object when nothing changed.
+ */
+export function withDurations(m, resolved) {
+  let changed = false;
+  const fix = (refs, off) => refs.map((r, i) => {
+    const t = resolved[off + i], d = t ? cleanDur(t.durationSec) : 0;
+    if (d && d !== r.dur) { changed = true; return { ...r, dur: d }; }
+    return r;
+  });
+  const A = fix(m.sides.A, 0), B = fix(m.sides.B, m.sides.A.length);
+  return changed ? withSides(m, A, B) : m;
+}
+
+/**
+ * Legacy list -> sides on the smallest tape that holds it in side A; when even a C90 side A can't,
+ * A is filled to its caps and the REST stays on B (even past B's caps): nothing is ever dropped.
+ */
+export function sidesFromLegacy(refs, wantTape) {
+  const probe = (len) => {
+    const cap = TAPES[len].sideSec;
+    return refs.length <= MAX_SONGS_PER_SIDE && listSeconds(refs) <= cap;
+  };
+  // At least the default C60 (a C30 filled with 4:00 estimates would leave no room to add), else C90.
+  const length = hasTape(wantTape) ? wantTape : (['C60', 'C90'].find(probe) || 'C90');
+  const cap = TAPES[length].sideSec;
+  const A = [];
+  let used = 0, i = 0;
+  for (; i < refs.length; i++) {
+    const d = refSeconds(refs[i]).sec;
+    if (A.length >= MAX_SONGS_PER_SIDE || used + d > cap) break;
+    A.push(refs[i]); used += d;
+  }
+  return { length, A, B: refs.slice(i) };
+}
+
 /**
  * `id` is a parameter (not generated here) so the model stays deterministic.
- * Accepts the v3 shape ({name, author, cfg, tracks}) and, for migration, the
- * v1/v2 fields {styleId, fontId, fontColor}.
+ * Accepts the v4 shape ({name, author, cfg, tape, sides, autoReverse}), the
+ * v1-v3 shape (tracks[] -> side A) and, for migration, {styleId, fontId, fontColor}.
  */
-export function createMixtape({ id, name, author, tracks = [], cfg, styleId, fontId, fontColor } = {}) {
-  return {
+export function createMixtape({ id, name, author, tracks, sides, tape, autoReverse, cfg, styleId, fontId, fontColor } = {}) {
+  let A, B, length;
+  if (sides && typeof sides === 'object') {
+    A = cleanRefs(sides.A); B = cleanRefs(sides.B);
+    length = hasTape(tape && tape.length) ? tape.length : (hasTape(tape) ? tape : null);
+    if (!length) {
+      const probe = TAPE_IDS.find((l) => listSeconds(A) <= TAPES[l].sideSec && listSeconds(B) <= TAPES[l].sideSec && A.length <= MAX_SONGS_PER_SIDE && B.length <= MAX_SONGS_PER_SIDE);
+      length = probe || 'C90';
+    }
+  } else {
+    const r = sidesFromLegacy(cleanRefs(tracks), hasTape(tape && tape.length) ? tape.length : (hasTape(tape) ? tape : undefined));
+    A = r.A; B = r.B; length = r.length;
+    if (!(Array.isArray(tracks) && tracks.length)) length = hasTape(tape && tape.length) ? tape.length : DEFAULT_TAPE;
+  }
+  return withSides({
     id: id || 'mt-0',
     name: cleanName(name),
     author: str(author, MAX_AUTHOR),
-    tracks: tracks.map(makeTrackRef),
+    tape: { length },
+    autoReverse: autoReverse === undefined ? true : !!autoReverse,
     cfg: cleanCfg(cfg, { styleId, fontId, fontColor }),
-  };
+  }, A, B);
 }
 
 export const withName = (m, name) => ({ ...m, name: cleanName(name) });
@@ -188,37 +446,27 @@ export function withText(m, patch) {
   return { ...m, cfg: { ...m.cfg, text: cleanCfg({ text: { ...m.cfg.text, ...patch } }).text } };
 }
 export const inkHex = (m) => (m.cfg.slots && m.cfg.slots.ink) || null;
-export const addTrack = (m, t) => ({ ...m, tracks: [...m.tracks, makeTrackRef(t)] });
-export const removeTrack = (m, i) =>
-  (i >= 0 && i < m.tracks.length ? { ...m, tracks: m.tracks.filter((_, j) => j !== i) } : m);
-
-/** Move track `from` to index `to` (clamped). Out-of-range `from` is a no-op. */
-export function moveTrack(m, from, to) {
-  const n = m.tracks.length;
-  if (from < 0 || from >= n) return m;
-  const dest = Math.max(0, Math.min(n - 1, to));
-  if (dest === from) return m;
-  const tracks = m.tracks.slice();
-  const [t] = tracks.splice(from, 1);
-  tracks.splice(dest, 0, t);
-  return { ...m, tracks };
+/** The label note the cassette prints when the user left it blank: "Side A · 6 songs". */
+export function autoNote(m, side) {
+  const sd = isSide(side) ? side : (m.cfg.text.side === 'B' ? 'B' : 'A');
+  const n = m.sides[sd].length;
+  return `Side ${sd} · ${n} ${n === 1 ? 'song' : 'songs'}`;
 }
 
-/** The label note the cassette prints when the user left it blank. */
-export function autoNote(m) {
-  const n = m.tracks.length;
-  return `Side ${m.cfg.text.side || 'A'} · ${n} ${n === 1 ? 'song' : 'songs'}`;
-}
-
-/** Mixtape -> the cfg the Cassette renderer takes (title = name, blank note = auto). */
+/**
+ * Mixtape -> the cfg the Cassette renderer takes (title = name, blank note = auto).
+ * extra.side ('A'|'B') picks which side the label shows (default: cfg.text.side).
+ */
 export function cassetteCfg(m, extra = {}) {
   const t = m.cfg.text;
+  const { side: sideX, ...rest } = extra;
+  const side = isSide(sideX) ? sideX : (t.side === 'B' ? 'B' : 'A');
   return {
     style: m.cfg.style, pen: m.cfg.pen, wear: m.cfg.wear, gloss: m.cfg.gloss,
     ...(m.cfg.slots ? { slots: { ...m.cfg.slots } } : {}),
     seed: m.id,
-    text: { title: m.name, subtitle: t.subtitle, note: t.note || autoNote(m), side: t.side || 'A' },
-    ...extra,
+    text: { title: m.name, subtitle: t.subtitle, note: t.note || autoNote(m, side), side },
+    ...rest,
   };
 }
 
@@ -289,15 +537,48 @@ export function locateTape(p, n, durations) {
   return { index: n - 1, frac: 1 };
 }
 
+// ── Per-side tape position ───────────────────────────────────────────────────
+// Each side is its own tape with its own 0..1 position (side B's progress is NOT
+// a mirror of A's). `durations` are that side's per-song seconds (real where known).
+/** Durations of a side's songs: hint, else the library's real value via `real(ref, i)`, else null. */
+export function sideDurations(m, side, real) {
+  return sideRefs(m, side).map((r, i) => {
+    const d = (real && real(r, i)) || cleanDur(r.dur);
+    return d > 0 ? d : null;
+  });
+}
+/** Whole-side progress from (song index within the side, fraction of that song). */
+export function sideProgress(m, side, index, frac, durations) {
+  return tapeProgress(index, sideRefs(m, side).length, frac, durations);
+}
+/**
+ * Inverse for one side: progress in [0,1] -> { side, index, frac } (index within the side).
+ * `durations` null entries are tolerated (equal weighting then, like locateTape).
+ */
+export function locate(m, side, progress, durations) {
+  const n = sideRefs(m, side).length;
+  return { side: side === 'B' ? 'B' : 'A', ...locateTape(progress, n, durations) };
+}
+/** Flat index (A then B) of a song `i` on `side`. */
+export const flatIndex = (m, side, i) => (side === 'B' ? m.sides.A.length : 0) + i;
+/** Inverse: flat index -> { side, index }. */
+export function sideOfFlat(m, flat) {
+  const nA = m.sides.A.length;
+  return flat < nA ? { side: 'A', index: flat } : { side: 'B', index: flat - nA };
+}
+
 // ── JSON (theme.js conventions) ──────────────────────────────────────────────
 
 function isPlainObject(v) {
   return typeof v === 'object' && v !== null && !Array.isArray(v);
 }
 
-const refOut = (t) => (t.id
-  ? { title: t.title, artist: t.artist, album: t.album, id: t.id }
-  : { title: t.title, artist: t.artist, album: t.album });
+const refOut = (t) => ({
+  title: t.title, artist: t.artist, album: t.album,
+  ...(t.id ? { id: t.id } : {}),
+  ...(t.dur ? { dur: t.dur } : {}),
+});
+const sidesOut = (m) => ({ A: m.sides.A.map(refOut), B: m.sides.B.map(refOut) });
 
 const cfgOut = (m) => ({
   style: m.cfg.style, pen: m.cfg.pen, wear: m.cfg.wear, gloss: m.cfg.gloss,
@@ -312,7 +593,9 @@ export function serializeMixtape(m) {
     name: m.name,
     author: m.author,
     cfg: cfgOut(m),
-    tracks: m.tracks.map(refOut),
+    tape: { length: m.tape.length },
+    autoReverse: m.autoReverse,
+    sides: sidesOut(m),
   }, null, 2);
 }
 
@@ -364,6 +647,25 @@ function parseMixtapeObject(raw, { id } = {}) {
     const colErr = validateHexColor(raw.fontColor, 'fontColor');
     if (colErr) return { ok: false, error: colErr };
     legacy = { styleId: raw.style, fontId: raw.font, fontColor: raw.fontColor };
+  }
+  if (raw.version >= 4) {
+    if (!isPlainObject(raw.sides)) return { ok: false, error: 'Missing "sides" object (with "A" and "B" arrays).' };
+    for (const sd of SIDES) {
+      const list = raw.sides[sd];
+      if (list === undefined && sd === 'B') continue;
+      if (!Array.isArray(list)) return { ok: false, error: `Missing "sides.${sd}" array.` };
+      for (let i = 0; i < list.length; i++) {
+        const t = list[i];
+        if (!isPlainObject(t) || typeof t.title !== 'string' || !t.title.trim()) {
+          return { ok: false, error: `Invalid "sides.${sd}[${i}]": needs a non-empty "title".` };
+        }
+      }
+    }
+    if (raw.tape !== undefined && !(isPlainObject(raw.tape) && hasTape(raw.tape.length))) {
+      return { ok: false, error: `Unknown "tape.length": ${JSON.stringify(raw.tape && raw.tape.length)} (one of ${TAPE_IDS.join(', ')}).` };
+    }
+    return { ok: true, mixtape: createMixtape({ id, name: raw.name, author: raw.author, sides: raw.sides, tape: raw.tape,
+      autoReverse: typeof raw.autoReverse === 'boolean' ? raw.autoReverse : undefined, cfg, ...legacy }) };
   }
   if (!Array.isArray(raw.tracks)) return { ok: false, error: 'Missing "tracks" array.' };
   for (let i = 0; i < raw.tracks.length; i++) {
@@ -428,7 +730,8 @@ export function serializeCollection(list) {
   return JSON.stringify({
     version: MIXTAPE_VERSION,
     mixtapes: list.map((m) => ({
-      id: m.id, name: m.name, author: m.author, cfg: cfgOut(m), tracks: m.tracks.map(refOut),
+      id: m.id, name: m.name, author: m.author, cfg: cfgOut(m),
+      tape: { length: m.tape.length }, autoReverse: m.autoReverse, sides: sidesOut(m),
     })),
   });
 }
@@ -447,7 +750,17 @@ export function parseCollection(text) {
   if (!isPlainObject(raw) || !versionOk(raw.version) || !Array.isArray(raw.mixtapes)) return [];
   const out = [];
   for (const e of raw.mixtapes) {
-    if (!isPlainObject(e) || typeof e.id !== 'string' || !Array.isArray(e.tracks)) continue;
+    if (!isPlainObject(e) || typeof e.id !== 'string') continue;
+    if (raw.version >= 4) {
+      if (!isPlainObject(e.sides)) continue;
+      out.push(createMixtape({
+        id: e.id, name: e.name, author: e.author, sides: e.sides, tape: isPlainObject(e.tape) ? e.tape : undefined,
+        autoReverse: typeof e.autoReverse === 'boolean' ? e.autoReverse : undefined,
+        cfg: isPlainObject(e.cfg) ? e.cfg : {},
+      }));
+      continue;
+    }
+    if (!Array.isArray(e.tracks)) continue;
     out.push(createMixtape({
       id: e.id, name: e.name, author: e.author, tracks: e.tracks.filter((t) => isPlainObject(t)),
       ...(raw.version >= 3

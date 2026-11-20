@@ -12,8 +12,8 @@ import {
 
 const tr = (title, artist = 'A', album = 'X') => ({ title, artist, album });
 
-test('version is 3 and the storage key is unchanged', () => {
-  assert.equal(MIXTAPE_VERSION, 3);
+test('version is 4 and the storage key is unchanged', () => {
+  assert.equal(MIXTAPE_VERSION, 4);
   assert.equal(STORAGE_KEY, 'runout.mixtapes');
 });
 
@@ -57,7 +57,7 @@ test('v3 serialize -> parse round-trips with stable text', () => {
   const m = createMixtape({ id: 'a', name: 'Road Trip', author: 'M', tracks: [tr('One'), { ...tr('Two'), id: 't1-abc' }],
     cfg: { style: 'glass', pen: 'type', wear: 0.3, gloss: 0.9, slots: { ink: '#1F4FD8' }, text: { subtitle: 'tag', note: 'n', side: 'B' } } });
   const text = serializeMixtape(m);
-  assert.equal(JSON.parse(text).version, 3);
+  assert.equal(JSON.parse(text).version, 4);
   const p = parseMixtape(text, { id: 'a' });
   assert.ok(p.ok, p.error);
   assert.deepEqual(p.mixtape, m);
@@ -83,7 +83,7 @@ test('v1/v2 style + font + colour ids migrate to the nearest new style/pen; none
   assert.match(parseMixtape(JSON.stringify({ version: 1, name: 'N', style: 'noir', font: 'zzz', fontColor: '#111111', tracks: [] })).error, /Unknown "font"/);
 });
 
-test('v2 collection blobs migrate in place, keep ref ids, and re-save as v3', () => {
+test('v2 collection blobs migrate in place, keep ref ids, and re-save as v4', () => {
   const v2 = JSON.stringify({ version: 2, mixtapes: [
     { id: 'm1', name: 'Neon', style: 'neon-grid', font: 'typewriter', fontColor: '#2de2e6', tracks: [{ title: 't', artist: 'a', album: 'b', id: 'tid' }] },
     { id: 'm2', name: 'Plain', style: 'checker', font: 'marker', fontColor: '#1a1a1f', tracks: [] },
@@ -96,14 +96,14 @@ test('v2 collection blobs migrate in place, keep ref ids, and re-save as v3', ()
   assert.equal(list[0].tracks[0].id, 'tid');
   assert.equal(list[1].cfg.style, 'checker');
   const out = JSON.parse(serializeCollection(list));
-  assert.equal(out.version, 3);
+  assert.equal(out.version, 4);
   assert.deepEqual(parseCollection(JSON.stringify(out)), list);
 });
 
 test('collections: corrupt -> [], future (v4) detectable and never parsed, v3 round-trip', () => {
   const list = [createMixtape({ id: 'a', name: 'A', cfg: { style: 'noir' } }), createMixtape({ id: 'b', name: 'B', tracks: [tr('x')] })];
   assert.deepEqual(parseCollection(serializeCollection(list)), list);
-  const fut = JSON.stringify({ version: 4, mixtapes: [{ id: 'x', tracks: [] }] });
+  const fut = JSON.stringify({ version: 5, mixtapes: [{ id: "x", tracks: [] }] });
   assert.deepEqual(parseCollection(fut), []); assert.equal(isFutureCollection(fut), true);
   assert.equal(isFutureCollection(serializeCollection(list)), false);
   for (const junk of ['', 'null', '[]', '"s"', '{"version":"3"}', '{"version":3}', '{nope', undefined, null]) assert.deepEqual(parseCollection(junk), []);
