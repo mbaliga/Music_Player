@@ -28,6 +28,8 @@ import { CdView } from './cd-view.js';
 import { CD_KNOBS, formatTime } from './cd.js';
 import { MixtapeUI } from './mixtape-ui.js';
 import { createShell } from './shell/nav.js';
+import { initDeviceMode } from './devicemode/index.js';   // Device mode: lock key, frozen face, keep-awake, always-on display (docs/DEVICE_MODE.md)
+let deviceMode = null;
 import { mountBooth } from './shell/booth.js';
 import { createEngineGate } from './engine-gate.js';
 import { LibraryManager } from './library.js';
@@ -101,6 +103,7 @@ const view = { kind: 'all', sort: 'artist' };
 
 // ── boot ─────────────────────────────────────────────────────────────────────
 async function boot() {
+  deviceMode = initDeviceMode(); window.runoutDeviceMode = deviceMode;   // first: its capture-phase guards must come before the shell's and the stage's listeners
   await state.engine.init();
   state.fx = new NeedleFX(state.engine.ctx);
   installTurntable();
@@ -835,6 +838,7 @@ function installLibrary() {
       },
     },
   });
+  deviceMode.mountKeys();   // the lock key goes into every section header the shell just built
   setInterval(refreshNowPlaying, 500);
 }
 
@@ -1063,6 +1067,7 @@ function refreshNowPlaying() {
     src.album = { title: q.items[q.index].title || (state.track && state.track.name) || 'Album', sub: `${q.kind === 'cd' ? 'CD' : 'Vinyl'} · track ${q.index + 1} of ${q.items.length}` };
   }
   shell.setNowPlaying(src, { stop: () => radio && radio.stop() });
+  if (deviceMode) { const n = src.radio || src.mixtape || src.album; deviceMode.setNowPlaying({ title: n ? n.title : '', playing: !!n }); }
 }
 
 // ── You Radio host port (src/radio/offline/station-session.js) ────────────────

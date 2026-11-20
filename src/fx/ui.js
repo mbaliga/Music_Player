@@ -19,6 +19,7 @@ import { waveColumns, playheadFrac, sliceSpan } from './waveform.js';
 import { drawRing, ringSignature } from './ring-draw.js';
 import { formatPercent } from './gesture.js';
 import { computeEnvelope } from '../model.js';
+import { allowsGesture } from '../devicemode/guard.js';
 
 const h = (tag, props = {}, ...kids) => {
   const e = document.createElement(tag);
@@ -96,7 +97,7 @@ export function mountFxSection(root, deps) {
   let padPtr = null;
   const padSurface = () => { const r = pad.getBoundingClientRect(); const R = r.width / 2; return { cx: r.left + R, cy: r.top + R, rIn: R * 0.1, rOut: R * 0.96 }; };
   on(pad, 'pointerdown', async (e) => {
-    if (padPtr !== null) return;
+    if (padPtr !== null || !allowsGesture('fx-pad')) return;
     e.preventDefault(); pad.setPointerCapture(e.pointerId); padPtr = e.pointerId;
     try { await api.resume(); } catch { /* */ }
     ctl.pointerDown({ x: e.clientX, y: e.clientY }, padSurface(), performance.now());
@@ -106,6 +107,7 @@ export function mountFxSection(root, deps) {
   on(pad, 'pointerup', padUp); on(pad, 'pointercancel', padUp); on(pad, 'lostpointercapture', padUp);
   on(pad, 'keydown', (e) => {
     const k = e.key;
+    if (!allowsGesture('fx-pad')) return;
     if (k === ' ' || k === 'Enter') { e.preventDefault(); e.stopPropagation(); if (!e.repeat) { api.resume().catch(() => {}); if (ctl.state.latch && ctl.engaged) ctl.release(); else ctl.keyDown(padSurface(), performance.now()); } return; }
     if (k === 'Escape') { ctl.release(); return; }
     const d = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, 1], ArrowDown: [0, -1] }[k];

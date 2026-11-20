@@ -10,6 +10,7 @@ import {
 import { drawerMayStart } from './arbitration.js';
 import { SECTIONS, loadSection, saveSection, resolveSection, stepMenu } from './sections.js';
 import { pickNowPlaying, miniBarVisible } from './nowplaying.js';
+import { allowsGesture } from '../devicemode/guard.js';
 
 const PAGE_MS = 300;   // the new page's slide/fade-in; the card's spring runs alongside (≈ 250-320 ms end to end)
 const OVERLAYS = '.wt-overlay:not(.hidden), .theme-overlay:not(.hidden), .tp:not(.hidden), .mt-dialog, .ed-ov, .bk-ov, .ed, .search-ov:not(.hidden)';
@@ -140,6 +141,7 @@ export function createShell(opts = {}) {
   function attach(el, where) {
     el.addEventListener('pointerdown', (e) => {
       if (!e.isPrimary || (e.pointerType === 'mouse' && e.button !== 0)) return;
+      if (!allowsGesture('drawer-drag')) return;   // Device mode: a locked device has a fixed face
       const others = [...live].filter((id) => id !== e.pointerId).length;
       const ok = drawerMayStart({ open: isOpen, where, pageGestureLive: !!(opts.isPageGestureLive && opts.isPageGestureLive()), otherPointers: others, overlayOpen: overlayOpen() });
       if (!ok) return;

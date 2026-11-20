@@ -1,0 +1,87 @@
+/* devicemode.css — Device mode: the lock key, the frozen face, hints, the settings sheet and the always-on display (AOD) theme layer.
+   The per-section allowlist rules are GENERATED (faces.js faceCss) and injected as <style id="dm-face-css">. Docs: docs/DEVICE_MODE.md */
+:root {
+  --dm-accent: color-mix(in srgb, var(--violet, #8E7BFF) var(--dm-glow-pct, 30%), #000);
+  --dm-glow: color-mix(in srgb, var(--violet, #8E7BFF) calc(var(--dm-glow-pct, 30%) * .6), transparent);
+  --dm-ink: #3b3b3b;
+  --dm-line: #1b1b1b;
+  --dm-sx: 0px; --dm-sy: 0px;
+}
+
+/* ── the lock key ─────────────────────────────────────────────────────────────────────────────────────────────────────── */
+.page-actions:has(.dm-key) { padding-right: 4px; }
+.dm-key { position: relative; width: 44px; height: 44px; flex: none; padding: 0; border: 0; background: none; cursor: pointer; color: var(--ink2, #888); order: 99; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+.dm-key:focus-visible { outline: 2px solid var(--shell-accent, var(--violet)); outline-offset: 1px; border-radius: 12px; }
+.dm-housing { position: absolute; left: 4px; top: 10px; width: 36px; height: 24px; border-radius: 12px; background: #050507; box-shadow: inset 0 2px 4px rgba(0,0,0,.9), inset 0 -1px 0 rgba(255,255,255,.06), 0 1px 0 rgba(255,255,255,.06); border: 1px solid var(--border, rgba(255,255,255,.07)); }
+:root[data-theme="light"] .dm-housing { background: #cfd0d6; box-shadow: inset 0 2px 4px rgba(0,0,0,.35), 0 1px 0 rgba(255,255,255,.8); }
+.dm-thumb { position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; border-radius: 9px; display: grid; place-items: center; color: #b9b9c3; background: linear-gradient(180deg, #3a3a44, #1c1c22); box-shadow: 0 1px 2px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.18); transition: transform .16s var(--ease, ease), color .16s; }
+:root[data-theme="light"] .dm-thumb { background: linear-gradient(180deg, #fff, #cfd0d6); color: #44444c; }
+.dm-key[aria-pressed="true"] .dm-thumb { transform: translateX(12px); color: var(--violet, #8E7BFF); }
+.dm-key[aria-pressed="true"] .dm-thumb[style] { transition: none; }
+.dm-led { position: absolute; right: 3px; top: 7px; width: 6px; height: 6px; border-radius: 50%; background: #2a2a30; box-shadow: inset 0 1px 1px rgba(0,0,0,.8); }
+.dm-key[aria-pressed="true"] .dm-led { background: var(--violet, #8E7BFF); box-shadow: 0 0 6px var(--violet, #8E7BFF); }
+.dm-ring { position: absolute; inset: 0; width: 44px; height: 44px; transform: rotate(-90deg); pointer-events: none; opacity: 0; }
+.dm-holding .dm-ring { opacity: 1; }
+.dm-ring circle { fill: none; stroke-width: 2.4; }
+.dm-ring-bg { stroke: rgba(255,255,255,.1); }
+.dm-ring-fg { stroke: var(--violet, #8E7BFF); stroke-dasharray: 100; stroke-dashoffset: 100; stroke-linecap: round; }
+.dm-key-float { position: fixed; z-index: 400; right: 12px; bottom: max(14px, env(safe-area-inset-bottom)); display: none; background: color-mix(in srgb, var(--surface, #111) 85%, transparent); border-radius: 14px; }
+body[data-dm-overlay="1"] .dm-key-float { display: block; }
+.dm-gear { width: 36px; height: 36px; flex: none; border: 0; border-radius: 50%; background: none; color: var(--ink2, #888); font-size: 15px; cursor: pointer; order: 98; }
+body[data-devicemode~="locked"] .dm-gear { display: none; }
+@media (prefers-reduced-motion: reduce) { .dm-thumb { transition: none; } }
+:root[data-reduce-motion="reduce"] .dm-thumb { transition: none; }
+
+/* ── hints, the timeout notice, the AOD title ─────────────────────────────────────────────────────────────────────────── */
+.dm-hint, .dm-notice { position: fixed; z-index: 500; left: 50%; transform: translateX(-50%); top: calc(env(safe-area-inset-top) + 64px); max-width: min(88vw, 420px); padding: 10px 14px; border-radius: 12px; background: rgba(20,20,26,.94); color: #e8e8f0; font-size: 13px; text-align: center; box-shadow: 0 6px 20px rgba(0,0,0,.5); pointer-events: none; }
+.dm-notice { top: calc(env(safe-area-inset-top) + 120px); }
+.dm-hint[hidden], .dm-notice[hidden] { display: none; }
+.dm-np { display: none; }
+
+/* ── the frozen face (generated allowlist rules widen this per section) ──────────────────────────────────────────────── */
+body[data-devicemode~="locked"] { overscroll-behavior: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+body[data-devicemode~="locked"] * { pointer-events: none; touch-action: none; -webkit-user-select: none; user-select: none; overscroll-behavior: none; }
+body[data-devicemode~="locked"] :is(.dm-key, .dm-ui, .dm-sheet, .dm-sheet *) { pointer-events: auto; touch-action: manipulation; }
+body[data-devicemode~="locked"] .dm-hint, body[data-devicemode~="locked"] .dm-notice { pointer-events: none; }
+
+/* ── the settings sheet ──────────────────────────────────────────────────────────────────────────────────────────────── */
+.dm-sheet { position: fixed; inset: 0; z-index: 600; display: flex; align-items: flex-end; justify-content: center; background: rgba(0,0,0,.55); }
+.dm-sheet-card { width: min(100%, 560px); max-height: 86vh; overflow: auto; background: var(--surface, #111); color: var(--ink, #eee); border-radius: 22px 22px 0 0; padding: 18px 18px calc(18px + env(safe-area-inset-bottom)); }
+.dm-sheet-card h2 { font-size: 18px; margin-bottom: 10px; }
+.dm-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; min-height: 48px; border-top: 1px solid var(--border, rgba(255,255,255,.07)); font-size: 14px; }
+.dm-row small { color: var(--ink2, #888); font-size: 12px; }
+.dm-row select, .dm-row input[type="range"] { max-width: 48%; background: var(--surface2, #222); color: inherit; border: 1px solid var(--border); border-radius: 8px; padding: 6px; }
+.dm-row input[type="checkbox"] { width: 22px; height: 22px; }
+.dm-done { margin-top: 12px; width: 100%; min-height: 44px; border: 0; border-radius: 12px; background: var(--violet, #8E7BFF); color: #fff; font-size: 15px; cursor: pointer; }
+
+/* ── ALWAYS-ON DISPLAY: one theme layer over the same layout ─────────────────────────────────────────────────────────── */
+:root:has(body[data-devicemode~="aod"]) { background: #000; }
+body[data-devicemode~="aod"] {
+  --bg: #000; --surface: #000; --surface2: #000; --card-bg: #000; --shell-bg: #000; --peek: #000; --card-veil: transparent;
+  --border: var(--dm-line); --ink: var(--dm-ink); --ink2: #262626; --ink-bg: var(--dm-ink); --violet-glow: transparent;
+  background: #000;
+}
+body[data-devicemode~="aod"] #shell, body[data-devicemode~="aod"] .tp, body[data-devicemode~="aod"] .dm-key-float { translate: var(--dm-sx) var(--dm-sy); }
+body[data-devicemode~="aod"] *, body[data-devicemode~="aod"] *::before, body[data-devicemode~="aod"] *::after {
+  background: transparent !important; background-image: none !important; box-shadow: none !important; text-shadow: none !important; filter: none !important;
+  animation: none !important; transition: none !important; backdrop-filter: none !important;
+  border-color: var(--dm-line) !important; caret-color: transparent;
+  color: transparent !important; -webkit-text-fill-color: transparent !important;
+}
+body[data-devicemode~="aod"] :is(.page, .stage, .nowline, .shelf, .minibar, .tp-host, .fx-pad, .fx-row, .fx-chip, .radio-now, .dial-card, .alb-card):not(.hidden) { outline: 1px solid var(--dm-line); outline-offset: -1px; }
+body[data-devicemode~="aod"] :is(canvas, img, video, picture, svg image, svg foreignObject) { visibility: hidden !important; }
+body[data-devicemode~="aod"] #arm, body[data-devicemode~="aod"] .shell-peek, body[data-devicemode~="aod"] .card-handle, body[data-devicemode~="aod"] #edgeStrip { display: none !important; }
+body[data-devicemode~="aod"] svg *:not(.dm-key *) { fill: none !important; stroke: var(--dm-line) !important; stroke-width: 1px !important; opacity: 1 !important; }
+body[data-devicemode~="aod"] :is(button, [role=button], input, select) { border: 1px solid var(--dm-line) !important; }
+/* the lock key in AOD: lit, small, and it never sits at one fixed full-white point (shifted with the whole face) */
+body[data-devicemode~="aod"] .dm-key { -webkit-text-fill-color: initial; }
+body[data-devicemode~="aod"] .dm-key * { -webkit-text-fill-color: initial !important; }
+body[data-devicemode~="aod"] .dm-housing { border-color: var(--dm-accent) !important; box-shadow: 0 0 8px var(--dm-glow) !important; background: #000 !important; }
+body[data-devicemode~="aod"] .dm-thumb { background: #000 !important; border: 1px solid var(--dm-accent) !important; color: var(--dm-accent) !important; }
+body[data-devicemode~="aod"] .dm-glyph, body[data-devicemode~="aod"] .dm-glyph * { fill: var(--dm-accent) !important; stroke: var(--dm-accent) !important; color: var(--dm-accent) !important; opacity: 1 !important; }
+body[data-devicemode~="aod"] .dm-led { background: var(--dm-accent) !important; box-shadow: 0 0 5px var(--dm-glow) !important; }
+body[data-devicemode~="aod"] .dm-ring-fg { transition: stroke-dashoffset .8s linear !important; stroke: var(--dm-accent) !important; }
+body[data-devicemode~="aod"] .dm-ring circle { stroke-width: 2.4px !important; }
+body[data-devicemode~="aod"] .dm-ui { background: none !important; }
+body[data-devicemode~="aod"] .dm-np { display: block; position: fixed; left: 50%; bottom: calc(max(14px, env(safe-area-inset-bottom)) + 70px); transform: translateX(-50%); max-width: 78vw; text-align: center; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--dm-ink) !important; -webkit-text-fill-color: var(--dm-ink) !important; pointer-events: none; translate: var(--dm-sx) var(--dm-sy); }
+body[data-devicemode~="aod"] .dm-hint, body[data-devicemode~="aod"] .dm-notice { background: #000 !important; border: 1px solid var(--dm-line) !important; color: var(--dm-ink) !important; -webkit-text-fill-color: var(--dm-ink) !important; }
