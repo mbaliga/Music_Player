@@ -42,7 +42,7 @@ export const LIB_KNOBS = Object.freeze({
  *   f1  main font px          f2  small font px      pad  track-list side padding
  *   rh  track row height (>= 44: the prototype's 34..48 clamped up to a touch target); rhProto = the prototype's own
  *   step  px per album while dragging / the first neighbour's x offset
- *   tbRows / tbH  toolbar rows (1, or 2 on narrow portrait) and height
+ *   tbRows / tbH  toolbar rows (1, or 2 in portrait under 700 px wide) and height;  tight  = width < 400 (compact chips)
  * Portrait: cover = 62% of the width; landscape: 44% of the height.
  */
 export function libraryLayout({ width, height, portrait } = {}) {
@@ -53,7 +53,7 @@ export function libraryLayout({ width, height, portrait } = {}) {
   const fh = ct + cs + Math.round(cs * 0.07);
   const f1 = Math.max(11, Math.min(16, pw / (port ? 26 : 70)));
   const rhProto = Math.round(Math.max(34, Math.min(48, f1 * 3.1)));
-  const tbRows = port && pw < 520 ? 2 : 1;
+  const tbRows = port && pw < 700 ? 2 : 1;
   return {
     portrait: port, cs, ct, fh,
     mh: Math.round(f1 * 4.4),
@@ -62,6 +62,7 @@ export function libraryLayout({ width, height, portrait } = {}) {
     rh: Math.max(LIB_KNOBS.rowMin, rhProto), rhProto,
     step: cs * LIB_KNOBS.stepRatio,
     tbRows, tbH: tbRows * 44,
+    tight: pw < 400,                         // narrow: short scan label, tighter chips, no 'Sort' caption
   };
 }
 

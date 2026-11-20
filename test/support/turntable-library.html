@@ -1,0 +1,80 @@
+<!doctype html>
+<!-- Harness for src/turntable/library.js (scripts/verify-turntable-library.py drives it; open it by hand with
+     python3 serve.py and /test/support/turntable-library.html?set=5&z=1 ). Not shipped: build-web copies index.html + src only.
+     ?set=5|40|odd|empty|2000   which fake library      ?z=1   opacity 1 (default)     ?fit=1  container = the window -->
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>turntable library harness</title><link rel="icon" href="data:,">
+<style>html,body{margin:0;height:100%;background:#0b0b0e;overflow:hidden}#host{position:fixed;inset:0}</style>
+</head><body><div id="host"></div>
+<script type="module">
+import { mountTurntableLibrary, albumsToCoverflow, builtinTestPressing } from '../../src/turntable/library.js';
+import { groupTracks, shelfItems } from '../../src/albums.js';
+const q = new URLSearchParams(location.search);
+const set = q.get('set') || '5';
+const host = document.getElementById('host');
+const log = []; window.__log = log; window.__errors = [];
+addEventListener('error', (e) => window.__errors.push(String(e.message)));
+const ce = console.error; console.error = (...a) => { window.__errors.push(a.join(' ')); ce(...a); };
+
+// The prototype's five demo albums (hue / style / track names / bpm), so the render can be compared with the original.
+const PROTO = [
+  { name: 'Slow Tide', bpm: 72, hue: [168, 226], style: 1, names: ['LOW WATER', 'DRIFT', 'SWELL', 'RIP CURRENT', 'SLACK'] },
+  { name: 'Night Shift', bpm: 112, hue: [262, 330], style: 3, names: ['CLOCK IN', 'NEON', 'GRAVEYARD', 'LAST TRAIN', 'CLOCK OUT'] },
+  { name: 'Demo Tape', bpm: 96, hue: [212, 322], style: 0, names: ['INTRO', 'GROOVE', 'LIFT', 'DRIVE', 'OUTRO'] },
+  { name: 'Glass Hours', bpm: 104, hue: [18, 48], style: 2, names: ['PRISM', 'FACET', 'REFRACT', 'SHARDS', 'POLISH'] },
+  { name: 'Low Light', bpm: 84, hue: [352, 22], style: 4, names: ['DUSK', 'EMBER', 'FILAMENT', 'BLACKOUT', 'AFTERGLOW'] },
+];
+const BARS = [0, 4, 12, 16, 19, 22];
+function protoAlbums() {
+  return PROTO.map((a, i) => {
+    const dur = 22 * 4 * 60 / a.bpm;
+    return { id: 'p' + i, title: a.name, artist: 'Runout', kind: 'vinyl', coverSeed: i + 1, coverSpec: { hue: a.hue, style: a.style, idx: i },
+      tracks: a.names.map((n, k) => ({ title: n, durationSec: (BARS[k + 1] - BARS[k]) / 22 * dur })) };
+  });
+}
+function jpegCover(hue) {
+  const c = document.createElement('canvas'); c.width = c.height = 600; const g = c.getContext('2d');
+  const gr = g.createLinearGradient(0, 0, 600, 600); gr.addColorStop(0, `hsl(${hue},80%,55%)`); gr.addColorStop(1, `hsl(${(hue + 90) % 360},70%,20%)`);
+  g.fillStyle = gr; g.fillRect(0, 0, 600, 600); g.fillStyle = '#fff'; g.font = '700 120px sans-serif'; g.fillText('ART', 120, 340);
+  return c.toDataURL('image/jpeg', 0.8);
+}
+function realistic(n) {
+  const tracks = [];
+  const T = (title, artist, album, path, no, dur) => tracks.push({ title, artist, album, path, trackNo: no, durationSec: dur });
+  const hostile = ['<img src=x onerror=window.__pwned=1>', '"><script>window.__pwned=2<\/script>', '</div><b>bold</b>&amp;'];
+  for (let i = 0; i < n; i++) {
+    const artist = i % 7 === 3 ? '山下達郎' : ['Nina Hale', 'The Quiet Rooms', 'Okafor & Sons', 'Ünïcode Ensemble', 'Dub Lantern', 'Mira Vance', 'Static Bloom'][i % 7];
+    let album = ['Slow Harbour', 'Night Bus', 'Paper Planets', 'Low Orbit', 'Glass Rooms', 'Salt', 'Wide Open Sundays', 'Ride on Time'][i % 8] + (i >= 8 ? ' ' + (i + 1) : '');
+    if (i === 4) album = 'An Exceedingly Long Album Title That Keeps Going ' + 'and going '.repeat(40);
+    if (i === 6) album = hostile[0];
+    if (i === 9) album = hostile[1];
+    if (i === 11) album = 'ライド・オン・タイム';
+    if (i === 13) album = 'x'.repeat(5000);
+    const cd = i % 6 === 1;
+    const disc = cd ? ' [CD1]' : '';
+    const nt = i === 2 ? 1 : i === 5 ? 24 : 4 + (i % 7);
+    for (let k = 1; k <= nt; k++) {
+      let title = ['Opening', 'Lanterns', 'Salt Road', 'Interlude', 'Afterglow', 'Undertow', 'Last Light'][k % 7] + (k > 6 ? ' ' + k : '');
+      if (i === 0 && k === 2) title = 'A really long track title that will certainly not fit on a single line of a phone screen at all ' + 'x'.repeat(30);
+      if (i === 0 && k === 3) title = hostile[2];
+      T(title, artist, album + disc, `Music/${artist}/${album}${disc}/${String(k).padStart(2, '0')}.mp3`, k, i % 5 === 2 ? null : 140 + ((i * 31 + k * 17) % 160));
+    }
+    if (cd) for (let k = 1; k <= 3; k++) T('Disc two ' + k, artist, album + ' [CD2]', `Music/${artist}/${album} [CD2]/0${k}.mp3`, k, 200 + k);
+  }
+  const al = albumsToCoverflow(shelfItems(groupTracks(tracks)));
+  al.forEach((a, i) => { if (i % 5 === 0) a.coverUrl = jpegCover((i * 53) % 360); });
+  return al;
+}
+const albums = set === 'empty' ? [] : set === '5' ? protoAlbums() : set === '2000' ? realistic(2000) : realistic(+set || 40);
+
+const lib = mountTurntableLibrary(host, {});
+for (const ev of ['focus', 'selectTrack', 'tapCover', 'scan', 'filter', 'sort']) lib.on(ev, (...a) => log.push([ev, ...a]));
+lib.layout({ width: innerWidth, height: innerHeight, portrait: innerHeight > innerWidth });
+lib.setAlbums(albums);
+if (set === '5') lib.focus(2, { animate: false });
+lib.setOpacity(q.get('z') === '0' ? 0 : 1);
+if (q.get('np')) { const [a, t] = q.get('np').split(','); lib.setNowPlaying({ albumId: a, trackIndex: +t }); }
+addEventListener('resize', () => lib.layout({ width: innerWidth, height: innerHeight, portrait: innerHeight > innerWidth }));
+window.__lib = lib; window.__albums = albums; window.__ready = true;
+</script></body></html>
