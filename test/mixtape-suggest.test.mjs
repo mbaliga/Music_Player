@@ -93,3 +93,12 @@ test('hostile titles stay plain text in the draft and the mixtape', () => {
   assert.equal(m.tracks[0].title, '<img src=x onerror=alert(0)>');   // untouched data; the UI uses textContent only
   assert.ok(createMixtape({ id: 'k', name: m.name }).name.length > 0);
 });
+
+test('draftToMixtape with more songs than a C90 holds fills A then B and drops only what cannot fit (never over caps)', () => {
+  const tracks = Array.from({ length: 70 }, (_, i) => ({ id: 'x' + i, title: 'S' + i, artist: 'A', album: 'B', durationSec: 200 }));
+  const m = draftToMixtape({ id: 'sg-big', name: 'Big', tagline: '', tracks }, { id: 'mt-big' });
+  assert.equal(m.tape.length, 'C90');
+  assert.equal(isOverCap(m), false);
+  assert.equal(m.sides.A.length, 13); assert.equal(m.sides.B.length, 13);     // 13 x 3:20 = 43:20; a 14th would be 46:40
+  assert.deepEqual(m.sides.A[0].title, 'S0');
+});

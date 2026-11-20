@@ -101,6 +101,8 @@ def stored(page):
 
 def toast_text(page):
     page.wait_for_selector('.ed-toast:not(.hidden)', timeout=3000)
+    whole = page.inner_text('.ed-toast')
+    if 'null' in whole or 'undefined' in whole: fails.append('a toast printed a stray null/undefined: ' + whole)
     return page.inner_text('.ed-toast span')
 
 def search(page, text):
@@ -157,6 +159,7 @@ def run_viewport(b, w, h):
     # ── create a tape end to end
     page.tap('#mtNew'); page.wait_for_selector('.ed'); page.wait_for_timeout(500)
     shot(page, 'editor-tape-tab')
+    check('null' not in page.inner_text('.ed-panel') and 'undefined' not in page.inner_text('.ed-panel'), f'{tag}: no stray "null" text in the Tape tab')
     page.fill('.ed-tape-tab input[aria-label="Title"]', 'Café Road <b>Mix</b>')
     page.fill('.ed-tape-tab input[aria-label="Line on the label"]', 'for the long way home')
     page.fill('.ed-tape-tab input[aria-label="Made by"]', 'Madhav')
@@ -361,7 +364,7 @@ def run_5k(b):
     n = 5000
     page.evaluate("""async (n) => {
       const tracks = [];
-      for (let i = 0; i < n; i++) tracks.push({ id: 'k5-' + i, title: 'Song ' + i + (i % 7 ? ' Night' : ' Dáy'), artist: 'Artist ' + (i % 25), albumArtist: '', album: 'Album ' + (i % 400), path: 'x/Album ' + (i % 400) + '/' + i + '.mp3', genre: 'Rock', size: 1000 + i, hue: 10, color: '#222233', durationSec: 200 + (i % 60), trackNo: (i % 12) + 1 });
+      for (let i = 0; i < n; i++) tracks.push({ id: 'k5-' + i, title: 'Song ' + i + (i % 7 ? ' Night' : ' Dáy'), artist: 'Artist ' + (i % 25), albumArtist: '', album: 'Album ' + (i % 400), path: 'x/Album ' + (i % 400) + '/' + i + '.mp3', genre: 'Rock', size: 1000 + i, hue: 10, color: '#222233', durationSec: 90 + (i % 20), trackNo: (i % 12) + 1 });
       await new Promise((res) => { const r = indexedDB.open('runout-library', 1); r.onupgradeneeded = () => { r.result.createObjectStore('kv'); r.result.createObjectStore('handles', { autoIncrement: true }); };
         r.onsuccess = () => { const t = r.result.transaction('kv', 'readwrite'); t.objectStore('kv').put({ version: 1, savedAt: 0, tracks }, 'index'); t.oncomplete = () => { r.result.close(); res(); }; }; });
     }""", n)

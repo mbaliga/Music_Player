@@ -66,7 +66,12 @@ export function draftToMixtape(draft, { id } = {}) {
   let m = createMixtape({ id: id || draft.id, name: draft.name, tape: { length },
     cfg: { style: styleFor(draft.id), pen: PEN_IDS[hash(draft.id + 'pen') % PEN_IDS.length] } });
   m = withText(m, { subtitle: draft.tagline || '' });
-  const k = Math.max(0, splitIndex(secs, TAPES[length].sideSec));
+  const k = splitIndex(secs, TAPES[length].sideSec);
+  if (k < 0) {
+    // more than a C90 holds in any even split (e.g. a long list handed over by "add to mixtape"): fill A, then B, and drop what does not fit
+    const a = addMany(m, 'A', draft.tracks);
+    return addMany(a.mixtape, 'B', a.skipped.map((x) => x.track)).mixtape;
+  }
   const A = addMany(m, 'A', draft.tracks.slice(0, k)).mixtape;
   return addMany(A, 'B', draft.tracks.slice(k)).mixtape;
 }

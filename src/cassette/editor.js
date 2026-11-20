@@ -165,7 +165,7 @@ export function openEditor(ctx) {
   function announce(t) { live.textContent = ''; setTimeout(() => { live.textContent = t; }, 30); }
   function toast(msg, o = {}) {
     clearTimeout(toastT);
-    toastEl.replaceChildren(h('span', {}, msg), o.undo ? h('button', { type: 'button', onclick: () => { o.undo(); toastEl.classList.add('hidden'); } }, 'Undo') : null);
+    toastEl.replaceChildren(...[h('span', {}, msg), o.undo ? h('button', { type: 'button', onclick: () => { o.undo(); toastEl.classList.add('hidden'); } }, 'Undo') : null].filter(Boolean));
     toastEl.classList.toggle('bad', !!o.bad); toastEl.classList.remove('hidden');
     toastT = setTimeout(() => toastEl.classList.add('hidden'), o.undo ? 5200 : (o.bad ? 4600 : 3200));
     announce(msg);
@@ -246,10 +246,10 @@ export function openEditor(ctx) {
     }));
     caps.textContent = `A ${m.tape.length} side holds ${fmtDur(sideCapacity(m))} and at most ${MAX_SONGS_PER_SIDE} songs. A song that does not fit is refused, never squeezed. Songs with an unknown length count as ~4:00 until they have played once.`;
     autoSw.setAttribute('aria-checked', String(!!m.autoReverse)); autoSw.classList.toggle('on', !!m.autoReverse);
-    manage.replaceChildren(
+    manage.replaceChildren(...[
       !isNew && ctx.onDuplicate ? h('button', { type: 'button', class: 'ed-act', onclick: () => { finalizeName(); const copy = ctx.onDuplicate(m); if (copy) toast(`Duplicated as “${copy.name}”.`); } }, 'Duplicate') : null,
       ctx.onExport ? h('button', { type: 'button', class: 'ed-act', onclick: () => { finalizeName(); ctx.onExport(m); } }, 'Export JSON') : null,
-      !isNew ? delBtn : null);
+      !isNew ? delBtn : null].filter(Boolean));
   }
   let armed = null;
   const delBtn = h('button', { type: 'button', class: 'ed-act danger', onclick: () => {

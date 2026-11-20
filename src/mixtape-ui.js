@@ -181,7 +181,15 @@ export class MixtapeUI {
     // its blob, not an import: the radio code is only reachable through its own door, see boot-path.test.mjs).
     let history = null;
     try { const j = JSON.parse(ls.get('runout.radio.offline.history.v1') || 'null'); if (j && j.v === 1 && j.tracks && typeof j.tracks === 'object') history = j; } catch { /* no history yet */ }
-    try { return suggestTapes(this.d.getLibraryTracks(), { history, dismissed: this._dismissed() }); } catch { return []; }
+    try {
+      const lib = this.d.getLibraryTracks(), dismissed = this._dismissed();
+      // the generators walk the whole library: recompute only when it (or the history / dismissals) changed
+      const sig = `${lib.length}:${lib[0] ? lib[0].id : ''}:${lib.length ? lib[lib.length - 1].id : ''}:${history ? Object.keys(history.tracks).length : 0}:${dismissed.join(',')}`;
+      if (this._sugCache && this._sugCache.sig === sig) return this._sugCache.list;
+      const list = suggestTapes(lib, { history, dismissed });
+      this._sugCache = { sig, list };
+      return list;
+    } catch { return []; }
   }
   _suggestRow() {
     const list = this._suggestions();
