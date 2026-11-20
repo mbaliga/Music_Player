@@ -355,6 +355,7 @@ export function createStage(host, hooks = {}) {
     live() { preview = null; dirty = true; kick(); },
     tip: (s) => armPose(s, 1),
     setName(n) { view.name = n; dirty = true; },
+    setScroll(ms) { scrollT = ms / 1000; dirty = true; },
     geom: { C, RDISC },
   };
   resize();

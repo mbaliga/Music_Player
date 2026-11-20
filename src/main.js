@@ -996,6 +996,7 @@ function installLibrary() {
   shell = createShell({
     onSearch: () => search && search.open(),
     isPageGestureLive: () => state.touchingPlatter || state.seeking || (stage && stage.isGestureLive()),
+    onSection: (id) => { el('shell').dataset.section = id; },
     hooks: {
       albums: { onShow: () => { stage.resize(); stage.kick(); } },
       mixtapes: { onShow: () => state.mixtapes.refresh() },
@@ -1036,6 +1037,7 @@ function installLibrary() {
     },
   });
   deviceMode.mountKeys();   // the lock key goes into every section header the shell just built
+  el('shell').dataset.section = shell.current;
   setInterval(refreshNowPlaying, 500);
 }
 

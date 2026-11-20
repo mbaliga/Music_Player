@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Turntable stage harness</title>
+<link rel="stylesheet" href="./src/turntable/turntable.css">
+<style>html,body{margin:0;height:100%;background:#000;overflow:hidden;overscroll-behavior:none}#host{position:fixed;inset:0}</style>
+</head><body>
+<!-- Dev-only (never shipped): the stage + library on their own, full viewport, no shell. scripts/fidelity-turntable.py renders it next to the
+     prototype. window.__makeDemo(sr, album) is injected by the script (the prototype's own synthesized audio) so both pages draw the same peaks. -->
+<div id="host"></div>
+<script type="module">
+import { createStage } from './src/turntable/stage.js';
+import { mountTurntableLibrary } from './src/turntable/library.js';
+const q = new URLSearchParams(location.search);
+const host = document.getElementById('host');
+const stage = createStage(host, {});
+const lib = mountTurntableLibrary(stage.libHost, { dpr: Math.min(2.5, devicePixelRatio || 1) });
+stage.setLibrary(lib);
+const names = ['Slow Tide', 'Night Shift', 'Demo Tape', 'Glass Hours', 'Low Light'];
+const trk = ['INTRO', 'GROOVE', 'LIFT', 'DRIVE', 'OUTRO'];
+lib.setAlbums(names.map((n, i) => ({ id: 'd' + i, title: n, artist: 'Runout', kind: 'vinyl', coverSeed: 11 * (i + 1), tracks: trk.map((t) => ({ title: t, durationSec: 40 })) })));
+lib.focus(2, { animate: false });
+const sr = 22050, A = { bpm: 96, tr: 1, seed: 7 };
+const x = window.__makeDemo ? window.__makeDemo(sr, A) : new Float32Array(sr * 50).map((_, i) => Math.sin(i / 30) * Math.sin(i / 9000));
+stage.setRecord({ layout: null, current: 0, channels: [x], frames: x.length });
+stage.setDisplay({ name: 'RUNOUT - DEMO TAPE', trackCount: 1, trackIndex: 0 });
+window.__rt = stage.rt; window.__stage = stage; window.__lib = lib; window.__ready = true;
+</script></body></html>
