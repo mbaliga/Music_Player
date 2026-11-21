@@ -375,7 +375,6 @@ function flash(text) {   // a short message on the dot display ("RADIO ON", "RE-
 // coverflow is up and gone after 2.4 s.
 let toastEl = null, toastT = 0;
 function toast(text) {
-  try { console.warn('[runout]', text); } catch { /* */ }
   try {
     if (!toastEl) {
       toastEl = document.createElement('div');
