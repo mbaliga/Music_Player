@@ -268,7 +268,9 @@ function searchActionsImpl() {
       await gotoSection('albums');
       await state.engine.resume();
       stage.dispatch({ type: 'zoomTo', z: 0 }); stage.dispatch({ type: 'stop', s: 0 });
-      const track = await loadFile(list[first].file, state.engine.ctx);
+      let track;
+      try { track = await loadFile(list[first].file, state.engine.ctx, { copy: false }); }
+      catch (err) { console.error('play all failed', err); toast(`Cannot play "${list[first].title || 'this track'}": ${errMsg(err)}`); return false; }
       state.albumId = null;
       await loadTrack(track, queueFor({ kind: 'vinyl', id: null, tracks: list }, first));
       stage.setDisplay({ lit: true });
@@ -366,6 +368,51 @@ let flashT = 0;
 function flash(text) {   // a short message on the dot display ("RADIO ON", "RE-LINK FILES")
   stage.setDisplay({ name: text, lit: true, trackCount: 1 });
   clearTimeout(flashT); flashT = setTimeout(() => syncDisplay(), 2400);
+}
+
+// A LOUD message: a visible pill (role=status) over every section, for failures the user must see (a track that cannot be read must never
+// silently leave the built-in test pressing on the platter). `flash` above only writes to the dot display, which is hidden while the
+// coverflow is up and gone after 2.4 s.
+let toastEl = null, toastT = 0;
+function toast(text) {
+  try { console.warn('[runout]', text); } catch { /* */ }
+  try {
+    if (!toastEl) {
+      toastEl = document.createElement('div');
+      toastEl.id = 'rtToast'; toastEl.setAttribute('role', 'status'); toastEl.setAttribute('aria-live', 'assertive');
+      toastEl.style.cssText = 'position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 72px);transform:translateX(-50%);max-width:min(92vw,420px);z-index:2147483000;'
+        + 'padding:10px 16px;border-radius:12px;background:#1b1b1f;color:#fff;font:600 13px/1.4 system-ui,sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.45);'
+        + 'pointer-events:none;text-align:center;border:1px solid rgba(255,255,255,.18)';
+      document.body.appendChild(toastEl);
+    }
+    toastEl.textContent = String(text);
+    toastEl.style.display = 'block';
+    clearTimeout(toastT); toastT = setTimeout(() => { if (toastEl) toastEl.style.display = 'none'; }, 6000);
+  } catch { /* no DOM */ }
+}
+const errMsg = (e) => String((e && e.message) || e || 'unknown error').slice(0, 120);
+
+// The platter still holds the built-in synthesized test pressing although the library has real albums. The demo is only for an empty
+// library (or when the user picks it); with real albums on the shelf it must be replaced by the focused album before anything plays.
+const platterIsDemo = () => state.albumId === TEST_PRESSING_ID && shelf.length > 0;
+let adoptTimer = 0;
+function scheduleAdopt() {   // after the library settles (a device scan rebuilds the shelf every 400 ms): put the focused album on the platter, silently
+  clearTimeout(adoptTimer);
+  adoptTimer = setTimeout(async () => {
+    if (!platterIsDemo() || !stage || stage.player.playing || stage.player.starting || state.jumping) return;
+    if (engineOwner() || state.radioOn || !state.vinylOwned) return;     // a station / tape owns the engine: do not stomp it
+    const i = tlib.getFocus();
+    const a = albums[i];
+    if (!a || a.builtin || a.kind === 'cd') return;
+    await loadAlbum(i, 0);
+  }, 700);
+}
+// Play with the demo on the platter and real albums on the shelf: load the focused album's first track (loud on failure) and report whether it is there.
+async function adoptFocusedAlbum() {
+  let i = tlib.getFocus();
+  if (!albums[i] || albums[i].builtin) i = albums.findIndex((a) => !a.builtin);
+  if (i < 0) return false;
+  return loadAlbum(i, 0);
 }
 
 // arm position s (0..1 along the album chord) for the audio time t
@@ -523,6 +570,14 @@ async function onToggle() {
   }
   const owner = engineOwner();
   if (owner) { flash(owner === 'radio' ? 'RADIO ON' : 'TAPE ON'); return; }   // the engine is a station's / a tape's right now
+  if (platterIsDemo()) {   // real albums on the shelf but the demo on the platter: never play the demo, load the focused album (loud on failure)
+    const a0 = albums[tlib.getFocus()];
+    stage.setDisplay({ lit: true });
+    if (!(await adoptFocusedAlbum())) return;
+    if (a0 && a0.kind === 'cd') { state.cdPlaying = true; return; }
+    playTarget({ index: 0, time: 0 }, { needle: false });
+    return;
+  }
   stage.setDisplay({ lit: true });
   if (!state.vinylOwned) {   // a loose track left by a mixtape / radio: take it over, resume where it is
     state.vinylOwned = true;
@@ -620,12 +675,15 @@ async function jumpTo(target, needle) {
   state.engine.setPlaying(false);
   try {
     await state.engine.resume();
-    const track = await loadFile(q.items[target.index].file, state.engine.ctx);
+    const it = q.items[target.index];
+    if (!it || !it.file) throw new Error('its file is not linked');
+    const track = await loadFile(it.file, state.engine.ctx, { copy: false });
     q.index = target.index;
     await loadTrack(track, q);
     state.engine.seek(target.time * state.engine.sampleRate);
   } catch (err) {
     console.error('track jump failed', err);
+    toast(`Cannot play "${(q.items[target.index] || {}).title || 'that track'}": ${errMsg(err)}`);
   } finally {
     state.jumping = false;
     syncDisplay({ loading: false });
@@ -825,6 +883,7 @@ function rebuildAlbums() {
   const at = albums.findIndex((a) => a.id === state.albumId);
   if (at >= 0) tlib.focus(at, { animate: false });
   syncAlbumUI();
+  if (platterIsDemo()) scheduleAdopt();
 }
 const indexOfAlbum = (id) => albums.findIndex((a) => a.id === id);
 
@@ -847,18 +906,19 @@ async function loadAlbum(index, trackIndex = 0) {
   const item = shelf[index];
   const trackObj = item && item.tracks[trackIndex];
   if (!trackObj) return false;
-  if (!trackObj.file) { flash('RE-LINK FILES'); return false; }   // persisted metadata only: needs the file back (a user gesture)
+  if (!trackObj.file) { flash('RE-LINK FILES'); toast(`"${trackObj.title || 'This track'}" needs its file back: tap Scan to re-link your music.`); return false; }   // persisted metadata only: needs the file back (a user gesture)
   const tok = ++loadToken;
   stage.setDisplay({ loading: true });
   try {
     await state.engine.resume();
-    const track = await loadFile(trackObj.file, state.engine.ctx);
+    const track = await loadFile(trackObj.file, state.engine.ctx, { copy: false });   // no second copy of a 100 MB decode: the engine packs its own
     if (tok !== loadToken) return false;      // a newer pick superseded this decode
     state.albumId = item.id;
     await loadTrack(track, queueFor(item, trackIndex));
   } catch (err) {
     console.error('album load failed', err);
     flash('CANNOT READ FILE');
+    toast(`Cannot play "${trackObj.title || 'this track'}": ${errMsg(err)}`);
     return false;
   } finally {
     if (tok === loadToken) stage.setDisplay({ loading: false });
@@ -893,9 +953,11 @@ function wireLibrary() {
     }
   });
   // tap the centre cover: back to the player (a CD goes back to its CD view)
-  tlib.on('tapCover', (albumId) => {
-    const a = albums[indexOfAlbum(albumId)];
+  tlib.on('tapCover', async (albumId) => {
+    const ai = indexOfAlbum(albumId);
+    const a = albums[ai];
     stage.dispatch({ type: 'zoomTo', z: 0 });
+    if (a && !a.builtin && a.kind !== 'cd' && state.albumId !== a.id && !state.jumping) { stage.dispatch({ type: 'stop', s: 0 }); await loadAlbum(ai, 0); }   // the cover you tapped is the record you get
     if (a && a.kind === 'cd' && state.queue && state.queue.kind === 'cd') delete el('pageAlbums').dataset.lib;
   });
   // swipe sideways: when the carousel settles on another album, load it (debounced: a fling past covers decodes nothing)

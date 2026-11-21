@@ -12,7 +12,7 @@ SCRIPTS = [  # (name, file, timeout seconds)
     ('shell', 'verify-shell.py', 600), ('turntable', 'verify-turntable.py', 600), ('turntable-library', 'verify-turntable-library.py', 600),
     ('fx', 'verify-fx.py', 900), ('mixtapes', 'verify-mixtapes.py', 900), ('search-settings', 'verify-search-settings.py', 600),
     ('devicemode', 'verify-devicemode.py', 900), ('device-library', 'verify-device-library.py', 600), ('radio-layout', 'verify-radio-layout.py', 300),
-    ('you-radio', 'verify-you-radio.py', 600), ('canned-radio', 'verify-canned-radio.py', 600), ('tour', 'verify-tour.py', 1200),
+    ('you-radio', 'verify-you-radio.py', 600), ('canned-radio', 'verify-canned-radio.py', 600), ('tour', 'verify-tour.py', 1200), ('real-playback', 'verify-real-playback.py', 900),
 ]
 args = sys.argv[1:]
 OUT = next((a for a in args if "/" in a), "/tmp/verify-all")
