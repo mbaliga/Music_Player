@@ -53,7 +53,7 @@ export function createAddTab(E) {
   const segB = h('button', { class: 'pk-sidebtn', type: 'button', onclick: () => E.setSide('B') });
   const seg = h('div', { class: 'pk-seg', role: 'group', 'aria-label': 'Add songs to side' }, segA, segB);
   const input = h('input', { class: 'pk-q', type: 'search', placeholder: 'Search songs, artists, albums', 'aria-label': 'Search your whole library', autocomplete: 'off', spellcheck: 'false', enterkeyhint: 'search' });
-  const selBtn = h('button', { class: 'pk-sel-toggle', type: 'button', 'aria-pressed': 'false', onclick: () => { selectMode = !selectMode; if (!selectMode) selected.clear(); paintAll(); } }, 'Select');
+  const selBtn = h('button', { class: 'pk-sel-toggle', type: 'button', 'aria-pressed': 'false', title: 'Pick several songs at once, then add them together', onclick: () => { selectMode = !selectMode; if (!selectMode) selected.clear(); paintAll(); } }, 'Pick several');
   const status = h('div', { class: 'pk-status', 'aria-live': 'polite' });
   const scroller = h('div', { class: 'pk-scroll', tabindex: '-1' });
   const spacer = h('div', { class: 'pk-spacer' });
@@ -83,7 +83,7 @@ export function createAddTab(E) {
 
   function sideTitle(side) {
     const r = remaining(E.m, side), info = sideInfo(E.m, side);
-    return [h('b', {}, `Side ${side}`), h('small', {}, `${fmtDur(r.sec)} left · ${info.count}/${MAX_SONGS_PER_SIDE}`)];
+    return [h('b', {}, `Side ${side}`), h('small', {}, `${fmtDur(r.sec)} left · ${info.count} of ${MAX_SONGS_PER_SIDE} songs`)];
   }
   function paintHead() {
     onTape = tapeSides(E.m);
@@ -97,6 +97,7 @@ export function createAddTab(E) {
     else if (result && !result.empty) status.textContent = result.total ? `${result.total} song${result.total === 1 ? '' : 's'}${result.truncated ? ' (showing the first 400, refine to see more)' : ''}` : `No songs match “${q.trim()}”.`;
     else status.textContent = `${picker ? picker.browse().length : 0} albums · ${lib.length} songs`;
     selBtn.setAttribute('aria-pressed', String(selectMode)); selBtn.classList.toggle('on', selectMode);
+    if (selectMode && lib.length) status.textContent = selected.size ? `${selected.size} picked. Tap more songs, then Add.` : 'Tap songs to pick several, then tap Add. Tap “Pick several” again to stop.';
     bar.classList.toggle('hidden', !(selectMode && selected.size));
     if (selectMode && selected.size) {
       bar.replaceChildren(h('span', {}, `${selected.size} selected`),
@@ -254,16 +255,15 @@ export function createTracksTab(E) {
       list.replaceChildren(h('li', { class: 'tk-empty' }, `Nothing on side ${side} yet. Use Add to search your library.`));
       return;
     }
-    let cum = 0;
     list.replaceChildren(...refs.map((r, i) => {
-      const d = refSeconds(r); cum += d.sec;
+      const d = refSeconds(r);
       const st = status(resolved, off + i);
       const tag = st === 'miss' ? h('span', { class: 'tag miss' }, 'not in library') : st === 'relink' ? h('span', { class: 'tag' }, 'needs re-link') : null;
       const grip = h('button', { class: 'tk-grip', type: 'button', 'data-i': i, 'aria-label': `Reorder ${r.title}: drag, or use the up and down arrow keys`, onkeydown: (e) => gripKey(e, i) }, icon(ICONS.grip, { size: 20, stroke: 2.4 }));
       const main = h('div', { class: 'tk-main' },
         h('span', { class: 'tk-n' }, String(i + 1).padStart(2, '0')),
         h('span', { class: 'tk-text' }, h('b', {}, r.title), h('small', {}, [r.artist, r.album].filter(Boolean).join(' · ') || 'Unknown artist', tag)),
-        h('span', { class: 'tk-time' }, h('span', {}, fmtDur(d.sec, d.est)), h('small', {}, fmtDur(cum))));
+        h('span', { class: 'tk-time' }, h('span', {}, fmtDur(d.sec, d.est))));
       const dots = h('button', { class: 'tk-dots', type: 'button', 'aria-label': `More for ${r.title}`, 'aria-haspopup': 'true', 'aria-expanded': String(menuAt === i),
         onclick: (e) => { e.stopPropagation(); menuAt = menuAt === i ? -1 : i; paintList(); } }, icon(ICONS.dots, { size: 20, stroke: 2.6 }));
       const li = h('li', { class: 'tk-row' + (st === 'miss' ? ' dim' : ''), 'data-i': i }, grip, main, dots);
@@ -272,6 +272,8 @@ export function createTracksTab(E) {
       attachSwipe(li, main, i, r);
       return li;
     }));
+    const tot = sideInfo(m, side);
+    list.append(h('li', { class: 'tk-foot' }, h('span', {}, `Side ${side} total`), h('b', {}, fmtDur(tot.sec, tot.est)), h('small', {}, `of ${fmtDur(sideCapacity(m))} · ${refs.length} of ${MAX_SONGS_PER_SIDE} songs`)));
   }
 
   function menuEl(i, r, side) {

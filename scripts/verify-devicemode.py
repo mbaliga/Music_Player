@@ -306,9 +306,9 @@ def run_size(p, w, h):
     keys = page.evaluate("document.querySelectorAll('.tp [role=button]').length")
     shot('mixtapes-locked')
     # a transport key works, a skin chip is frozen
-    chip_before = page.evaluate("[...document.querySelectorAll('.tp-chip')].map(c => c.getAttribute('aria-pressed')).join()")
+    chip_before = page.evaluate("[...document.querySelectorAll('.tp-chip')].map(c => c.getAttribute('aria-pressed') + c.textContent).join()")
     cx, cy = center(page, '.tp-chip'); T.tap(cx, cy); time.sleep(0.3)
-    chip_after = page.evaluate("[...document.querySelectorAll('.tp-chip')].map(c => c.getAttribute('aria-pressed')).join()")
+    chip_after = page.evaluate("[...document.querySelectorAll('.tp-chip')].map(c => c.getAttribute('aria-pressed') + c.textContent).join()")
     check(chip_before == chip_after, f'{tag}: Mixtapes: skin chips are frozen while locked')
     kx, ky = page.evaluate("() => { const k = document.querySelector('.tp [data-key=play]') || document.querySelector('.tp [data-key]'); const r = k.getBoundingClientRect(); return [r.x + r.width / 2, r.y + r.height / 2]; }")
     page.evaluate("window.__keyHits = 0; document.querySelectorAll('.tp [data-key]').forEach(k => k.addEventListener('pointerdown', () => window.__keyHits++))")
@@ -526,9 +526,9 @@ def new_ui_cassette(p, w, h):
     stx, sty = center(page, '.sk-deck .key[data-key=stop]'); T.tap(stx, sty); time.sleep(0.8)
     check(not playing(), f'{tag}: LOCKED: STOP stops the tape')
     # chips frozen
-    before = page.evaluate("[...document.querySelectorAll('.tp-chip')].map(c => c.getAttribute('aria-pressed')).join()")
+    before = page.evaluate("[...document.querySelectorAll('.tp-chip')].map(c => c.getAttribute('aria-pressed') + c.textContent).join()")
     cx, cy = center(page, '.tp-chip'); T.tap(cx, cy); time.sleep(0.3)
-    check(before == page.evaluate("[...document.querySelectorAll('.tp-chip')].map(c => c.getAttribute('aria-pressed')).join()"), f'{tag}: LOCKED: the skin chips are frozen')
+    check(before == page.evaluate("[...document.querySelectorAll('.tp-chip')].map(c => c.getAttribute('aria-pressed') + c.textContent).join()"), f'{tag}: LOCKED: the skin chips are frozen')
     ejx, ejy = center(page, '.sk-deck .key[data-key=eject]'); T.tap(ejx, ejy); time.sleep(1.4)
     check(dm(page)['locked'], f'{tag}: LOCKED: eject works and the device stays locked')
     check(not errs, f'{tag}: no page errors {errs[:3]}')

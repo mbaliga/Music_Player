@@ -13,6 +13,25 @@ const MARKER = "'Permanent Marker','Marker Felt',cursive";
 const TYPEW = "'Special Elite','American Typewriter','Courier New',monospace";
 let uid = 0;
 
+/** The visible per-tape menu button (a real 44px target) and the long-press shortcut to the same menu. */
+function moreBtn(it, opts) {
+  var m = document.createElement('button'); m.type = 'button'; m.className = 'cs-more';
+  m.setAttribute('aria-label', 'More for ' + ((it.cfg.text && it.cfg.text.title) || 'Untitled') + ': play, edit, export'); m.setAttribute('aria-haspopup', 'dialog');
+  var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); svg.setAttribute('viewBox', '0 0 24 24'); svg.setAttribute('width', '22'); svg.setAttribute('height', '22'); svg.setAttribute('aria-hidden', 'true');
+  [5, 12, 19].forEach(function (x) { var c = document.createElementNS('http://www.w3.org/2000/svg', 'circle'); c.setAttribute('cx', x); c.setAttribute('cy', 12); c.setAttribute('r', 2.2); c.setAttribute('fill', 'currentColor'); svg.appendChild(c); });
+  m.appendChild(svg);
+  m.addEventListener('click', function (e) { e.stopPropagation(); if (!allowsGesture('shelf-tap')) return; opts.onMenu && opts.onMenu(it, m); });
+  return m;
+}
+function longPress(b, it, opts) {
+  var t = 0, fired = false, x0 = 0, y0 = 0;
+  b.addEventListener('pointerdown', function (e) { fired = false; x0 = e.clientX; y0 = e.clientY; clearTimeout(t); t = setTimeout(function () { if (!allowsGesture('shelf-tap')) return; fired = true; opts.onMenu && opts.onMenu(it, b); }, 520); });
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (n) { b.addEventListener(n, function () { clearTimeout(t); }); });
+  b.addEventListener('pointermove', function (e) { if (Math.abs(e.clientX - x0) + Math.abs(e.clientY - y0) > 10) clearTimeout(t); });
+  b.addEventListener('contextmenu', function (e) { if (opts.onMenu) e.preventDefault(); });
+  b.addEventListener('click', function (e) { if (fired) { fired = false; e.stopImmediatePropagation(); e.preventDefault(); } }, true);
+}
+
   /* ---- stack: cassettes piled with later ones on top, each showing its label strip ---- */
   export function mountStack(el, items, opts) {
     
@@ -21,12 +40,13 @@ let uid = 0;
     var selected = opts.selected || null, cards = {};
     // bringToTop (the Mixtapes page): the stack has a TOP tape (the last in `order`, drawn lowest and in front). Tapping the top tape
     // opens it (onOpen); tapping any other tape brings it to the top (animated by the card transitions) and selects it.
-    var bringToTop = !!opts.bringToTop;
+    var bringToTop = !!opts.bringToTop && !opts.grid, grid = !!opts.grid, mores = {};
     var order = items.map(function (i) { return i.id; });
     if (bringToTop && selected && order.indexOf(selected) >= 0) { order = order.filter(function (id) { return id !== selected; }).concat(selected); }
-    el.classList.add('cs-stack');
+    el.classList.add(grid ? 'cs-grid' : 'cs-stack');
     function ratio(it) { var st = Cassette.style(it.cfg.style) || {}, vb = st.vb || [808, 495]; return vb[1] / vb[0]; }
     function layout() {
+      if (grid) return;
       var w = el.clientWidth || 360, ch = w * 495 / 808;
       var n = items.length, total = ch + (n - 1) * ch * step;
       el.style.height = total + 'px';
@@ -34,13 +54,14 @@ let uid = 0;
         var i = bringToTop ? order.indexOf(it.id) : idx;
         var b = cards[it.id], isSel = !bringToTop && it.id === selected, jig = ((i * 37) % 7 - 3) * 0.5, lx = ((i * 53) % 9 - 4) * 1.2;
         b.style.top = (i * ch * step) + 'px';
-        b.style.zIndex = isSel ? 100 : i + 1;
+        b.style.zIndex = isSel ? 100 : (i + 1) * 2;
+        if (mores[it.id]) { mores[it.id].style.top = (i * ch * step + 4) + 'px'; mores[it.id].style.zIndex = isSel ? 101 : (i + 1) * 2 + 1; }
         b.style.transform = isSel ? 'translate(18px,-8px) rotate(0deg) scale(1.02)' : 'translate(' + lx + 'px,0) rotate(' + jig + 'deg)';
         b.setAttribute('aria-pressed', String(bringToTop ? i === n - 1 : isSel));
       });
     }
     function build() {
-      el.textContent = ''; cards = {};
+      el.textContent = ''; cards = {}; mores = {};
       order = order.filter(function (id) { return items.some(function (i) { return i.id === id; }); });
       items.forEach(function (it) { if (order.indexOf(it.id) < 0) order.push(it.id); });
       items.forEach(function (it) {
@@ -48,18 +69,27 @@ let uid = 0;
         if (it.meta) b.setAttribute('aria-label', b.getAttribute('aria-label') + ', ' + it.meta);
         var holder = document.createElement('div'); b.appendChild(holder);
         Cassette.mount(holder, Object.assign({}, it.cfg, { static: true }));
-        if (it.meta) { var mt = document.createElement('span'); mt.className = 'cs-meta'; mt.textContent = it.meta; b.appendChild(mt); }
+        if (it.meta && !grid) { var mt = document.createElement('span'); mt.className = 'cs-meta'; mt.textContent = it.meta; b.appendChild(mt); }
+        longPress(b, it, opts);
         b.addEventListener('click', function () {
           if (!allowsGesture('shelf-tap')) return;
+          if (grid) { selected = it.id; opts.onSelect && opts.onSelect(it); opts.onOpen && opts.onOpen(it); return; }
           if (bringToTop) {
             if (order[order.length - 1] === it.id) { selected = it.id; opts.onOpen && opts.onOpen(it); return; }
             api.select(it.id); return;
           }
           api.select(it.id); opts.onOpen && opts.onOpen(it);
         });
-        b.addEventListener('mouseenter', function () { if (!bringToTop && it.id !== selected) b.style.transform += ' translateY(-10px)'; });
+        b.addEventListener('mouseenter', function () { if (!grid && !bringToTop && it.id !== selected) b.style.transform += ' translateY(-10px)'; });
         b.addEventListener('mouseleave', layout);
-        el.appendChild(b); cards[it.id] = b;
+        cards[it.id] = b;
+        var mb = opts.onMenu ? moreBtn(it, opts) : null;
+        if (grid) {
+          var cell = document.createElement('div'); cell.className = 'cs-cell'; cell.appendChild(b);
+          if (mb) cell.appendChild(mb);
+          if (it.caption) { var cap = document.createElement('div'); cap.className = 'cs-cap'; cap.textContent = it.caption; cell.appendChild(cap); }
+          el.appendChild(cell);
+        } else { el.appendChild(b); if (mb) { el.appendChild(mb); mores[it.id] = mb; } }
       });
       layout();
     }
@@ -139,7 +169,7 @@ let uid = 0;
     var root = document.createElement('div');
     root.className = 'cs-lib';
     var list = document.createElement('div'); list.className = 'lib-list';
-    list.style.cssText = 'display:grid;gap:5px;align-content:start;padding:14px 16px 24px 0';
+    list.style.cssText = 'display:grid;gap:10px;align-content:start;padding:14px 4px 24px 0';
     root.appendChild(list); el.textContent = ''; el.appendChild(root);
     var btns = {};
     function find(id) { return items.filter(function (i) { return i.id === id; })[0]; }
@@ -154,12 +184,18 @@ let uid = 0;
     function build() {
       list.textContent = ''; btns = {};
       items.forEach(function (it, i) {
+        var row = document.createElement('div'); row.className = 'cs-row';
         var b = document.createElement('button'); b.type = 'button'; b.setAttribute('aria-label', 'Mixtape: ' + ((it.cfg.text && it.cfg.text.title) || 'Untitled'));
         b.style.cssText = 'display:block;width:100%;border:0;padding:0;background:none;cursor:pointer;transition:transform .35s cubic-bezier(.25,.8,.25,1),filter .25s;flex:none';
         b.innerHTML = spineSvg(it, i); b.firstChild.style.cssText = 'display:block;width:100%;height:auto';
-        if (it.meta) { b.style.position = 'relative'; b.setAttribute('aria-label', b.getAttribute('aria-label') + ', ' + it.meta); var sm = document.createElement('span'); sm.className = 'cs-meta spine'; sm.textContent = it.meta; b.appendChild(sm); }
+        if (it.meta) b.setAttribute('aria-label', b.getAttribute('aria-label') + ', ' + it.meta);
+        longPress(b, it, opts);
         b.addEventListener('click', function () { if (!allowsGesture('shelf-tap')) return; api.select(it.id); opts.onOpen && opts.onOpen(it); });
-        list.appendChild(b); btns[it.id] = b;
+        var main = document.createElement('div'); main.className = 'cs-rowmain'; main.appendChild(b);
+        if (it.caption || it.meta) { var cap = document.createElement('div'); cap.className = 'cs-cap'; cap.textContent = it.caption || it.meta; main.appendChild(cap); }
+        row.appendChild(main);
+        if (opts.onMenu) row.appendChild(moreBtn(it, opts));
+        list.appendChild(row); btns[it.id] = b;
       });
       paint(); Cassette.refit();
     }

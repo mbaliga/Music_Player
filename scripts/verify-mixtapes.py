@@ -147,7 +147,7 @@ def run_viewport(b, w, h):
     shot(page, 'shelf-with-suggestions')
 
     # ── a suggestion opens a DRAFT in the editor; nothing is saved until Save
-    page.locator('.mt-sug-open').first.tap(); page.wait_for_selector('.ed'); page.wait_for_timeout(500)
+    page.locator('.mt-sug-create').first.tap(); page.wait_for_selector('.ed'); page.wait_for_timeout(500)
     before = len(stored(page)['mixtapes'])
     check(page.locator('.tk-row').count() >= 5, f'{tag}: the suggestion is pre-filled ({page.locator(".tk-row").count()} songs on side A)')
     shot(page, 'editor-suggestion-draft')
@@ -250,7 +250,12 @@ def run_viewport(b, w, h):
     check(page.evaluate('!document.querySelector(".cs-card b, .ed b[data-x]")'), f'{tag}: no HTML was injected from the title')
     shot(page, 'shelf-stack')
     metas = page.eval_on_selector_all('.cs-meta', 'els => els.map(e => e.textContent)'); check(any('C30 · A 4 · B 3' in x for x in metas), f'{tag}: strips: {metas}')
-    page.click('#mtBar .sort-chip:has-text("Spines")'); page.wait_for_timeout(500); shot(page, 'shelf-spines'); page.click('#mtBar .sort-chip:has-text("Stack")'); page.wait_for_timeout(400)
+    page.click('#mtBar .mt-view-btn:has-text("Spines")'); page.wait_for_timeout(500); shot(page, 'shelf-spines')
+    # spines: the badge no longer sits on the tape name; every spine has a caption line and a visible 44px menu button
+    check(page.locator('.cs-meta').count() == 0, f'{tag}: spines carry no overlapping badge')
+    caps = page.eval_on_selector_all('.cs-rowmain .cs-cap', 'els => els.map(e => e.textContent)')
+    check(any('Side A 4 songs' in c and 'Side B 3 songs' in c for c in caps), f'{tag}: spines say what is on each side in words ({caps})')
+    page.click('#mtBar .mt-view-btn:has-text("Stack")'); page.wait_for_timeout(400)
     # reload: persisted
     page.reload(); page.wait_for_function('document.getElementById("latency") && !/boot error/.test(document.getElementById("latency").textContent)'); page.wait_for_timeout(1200)
     to_section(page, 'mixtapes')
@@ -289,7 +294,7 @@ def run_viewport(b, w, h):
     check(not deck_playing(page), f'{tag}: the end of side B stops (the deck stops playing)')
     shot(page, 'player-deck-end-of-b')
     # skins: the Player skin with AUTO
-    page.locator('.tp-chip', has_text='Player').tap(); page.wait_for_timeout(1700)
+    page.locator('.tp-look').tap(); page.wait_for_timeout(1700)
     shot(page, 'player-skin-player')
     check(side_state(page) == ['A', True] or side_state(page)[1] is True, f'{tag}: the Player skin has the AUTO key engaged {side_state(page)}')
     shot(page, 'player-skin-player-auto-on')
@@ -304,7 +309,7 @@ def run_viewport(b, w, h):
     shot(page, 'player-skin-player-flipped')
     page.locator('.sk-player [aria-label^="Flip the tape"]').click(); page.wait_for_timeout(900)
     check(side_state(page)[0] == s0, f'{tag}: ...and back ({side_state(page)[0]})')
-    page.locator('.tp-chip', has_text='Deck').tap(); page.wait_for_timeout(1700)
+    page.locator('.tp-look').tap(); page.wait_for_timeout(1700)
     # AUTO off via the key: persisted on the mixtape and as the default
     page.locator('.sk-deck .side-key[data-key=auto]').click(); page.wait_for_timeout(400)
     check(side_state(page)[1] is False, f'{tag}: pressing AUTO releases the latch')
@@ -421,6 +426,120 @@ def run_layout(b, w, h):
     check(errs == [], f'{tag}: no page errors {errs[:3]}')
     ctx.close()
 
+
+def blob_ux():
+    r = lambda t, a, al, d: {'title': t, 'artist': a, 'album': al, 'dur': d}
+    cfg = lambda st: {'style': st, 'pen': 'marker', 'wear': 0.2, 'gloss': 0.5, 'text': {'subtitle': '', 'note': '', 'side': 'A'}}
+    return {'version': 4, 'mixtapes': [
+        {'id': 'u1', 'name': 'Road Songs', 'author': 'me', 'cfg': cfg('brass'), 'tape': {'length': 'C60'}, 'autoReverse': True,
+         'sides': {'A': [r('Harbor Lights', 'Mara Quill', 'Night Shift', 215), r('Paper Moon', 'Mara Quill', 'Night Shift', 232), r('Slow Window', 'Mara Quill', 'Night Shift', 198)],
+                   'B': [r('Salt and Ember', 'Low Tide Orchestra', 'Tidal', 205)]}},
+        {'id': 'u2', 'name': 'Late Night', 'author': 'me', 'cfg': cfg('clear'), 'tape': {'length': 'C90'}, 'autoReverse': True,
+         'sides': {'A': [r('Glass Hours', 'Low Tide Orchestra', 'Tidal', 223)], 'B': []}}]}
+
+def run_ux(b, w, h):
+    """The UX review's defects in the Mixtapes shelf and the cassette player, asserted as geometry and text (not just pictures)."""
+    tag = f'ux {w}x{h}'
+    print(f'--- {tag}', flush=True)
+    land = w > h
+    shot = lambda page, name: page.screenshot(path=f'{SHOTS}/ux-{w}x{h}-{name}.png')
+    ctx, page, errs = boot(b, w, h, blob_ux())
+    scan(page); to_section(page, 'mixtapes'); page.wait_for_timeout(800)
+    small = lambda sel: page.evaluate("""(s) => [...document.querySelectorAll(s)].filter((e) => e.offsetParent !== null).map((e) => { const r = e.getBoundingClientRect(); return [(e.id || e.className || e.tagName).toString().slice(0, 28), Math.round(r.width), Math.round(r.height)]; }).filter((x) => x[1] < 44 || x[2] < 44)""", sel)
+    # ── shelf bar: labelled, no jargon, every target >= 44 px
+    check(page.locator('#mtBar .sort-chip:has-text("Edit")').count() == 0 and page.locator('.pk-sel-toggle').count() == 0, f'{tag}: no stray Edit chip in the shelf bar')
+    check([t.strip() for t in page.eval_on_selector_all('.mt-view-btn', 'els => els.map(e => e.textContent)')] == ['Stack', 'Spines'], f'{tag}: the view toggle is Stack | Spines')
+    check(not small('#mtBar button, .mt-view-btn, .mt-sug button, .cs-more'), f'{tag}: shelf targets (+New, Import, view toggle, suggestions, tape menu) are >= 44 px ({small("#mtBar button, .mt-view-btn, .mt-sug button, .cs-more")[:4]})')
+    # ── suggestions: a real cassette preview and a clear Create
+    chips = page.locator('.mt-sug-chip').count()
+    check(chips >= 2 and page.evaluate("[...document.querySelectorAll('.mt-sug-chip')].every((c) => c.querySelector('.mt-sug-prev svg'))"), f'{tag}: every suggestion shows a cassette preview ({chips})')
+    check(all(t.strip() == 'Create' for t in page.eval_on_selector_all('.mt-sug-create', 'els => els.map(e => e.textContent)')), f'{tag}: every suggestion has a Create button')
+    shot(page, 'shelf')
+    # ── the per-tape menu: the visible ⋯ button and a long press both open it; Edit lives there
+    page.locator('.cs-more').first.tap(); page.wait_for_selector('.mt-menu')
+    items = page.eval_on_selector_all('.mt-menu-item b', 'els => els.map(e => e.textContent)')
+    check(items[:1] == ['Play'] and 'Edit tape' in items and 'Export' in items, f'{tag}: the tape menu offers Play / Edit / Export ({items})')
+    check(not small('.mt-menu button'), f'{tag}: menu rows are >= 44 px')
+    shot(page, 'menu')
+    page.keyboard.press('Escape'); page.wait_for_timeout(200)
+    check(page.locator('.mt-menu').count() == 0, f'{tag}: Esc closes the tape menu')
+    page.evaluate("""() => { const c = document.querySelector('.cs-card'); const r = c.getBoundingClientRect(); const o = { bubbles: true, pointerId: 1, clientX: r.x + 40, clientY: r.y + 20, pointerType: 'touch' }; c.dispatchEvent(new PointerEvent('pointerdown', o)); }""")
+    page.wait_for_timeout(750)
+    check(page.locator('.mt-menu').count() == 1, f'{tag}: a long press on a tape opens the same menu')
+    page.locator('.mt-menu-item', has_text='Edit tape').tap(); page.wait_for_selector('.ed'); page.wait_for_timeout(400)
+    # ── editor Tracks: the duration once, the side total labelled
+    page.tap('#edtab-tracks'); page.wait_for_timeout(350)
+    check(page.locator('.tk-time small').count() == 0, f'{tag}: a song shows its length once (no second running figure)')
+    foot = page.inner_text('.tk-foot') if page.locator('.tk-foot').count() else ''
+    check('Side A total' in foot, f'{tag}: the running figure is a labelled "Side A total" footer ({foot!r})')
+    page.tap('#edtab-add'); page.wait_for_timeout(350)
+    sides = page.eval_on_selector_all('.pk-sidebtn small', 'els => els.filter((e) => e.offsetParent !== null).map(e => e.textContent)')
+    check(len(sides) == 2 and all(' of 20 songs' in x and '/20' not in x for x in sides), f'{tag}: side headers read "N of 20 songs" ({sides})')
+    sel = page.inner_text('.pk-sel-toggle')
+    page.tap('.pk-sel-toggle'); page.wait_for_timeout(200)
+    check(sel == 'Pick several' and 'pick several' in page.inner_text('.pk-status').lower(), f'{tag}: "Select" is "Pick several" and says how it works ({sel!r})')
+    shot(page, 'editor-add')
+    page.tap('#ed-back'); page.wait_for_timeout(400)
+    if page.locator('.ed-warn').count(): page.tap('.ed-warn .dc'); page.wait_for_timeout(300)
+    # ── the player
+    card = page.locator('.cs-card[aria-label^="Mixtape: Road Songs"]').first
+    card.tap(position={'x': 120, 'y': 8}); page.wait_for_timeout(700)
+    if page.locator('.tp:not(.hidden)').count() == 0: card.tap(position={'x': 120, 'y': 8})
+    page.wait_for_selector('.tp:not(.hidden)'); page.wait_for_timeout(1800)
+    shot(page, 'player')
+    np_ = page.inner_text('.tp-np')
+    check('road songs' in np_.lower() and 'side a' in np_.lower(), f'{tag}: the tape name and side are printed upright ({np_[:40]!r})')
+    song = page.inner_text('.tp-np-song'); art = page.inner_text('.tp-np-artist'); tm = page.inner_text('.tp-np-time'); nx = page.inner_text('.tp-np-next')
+    check(song == 'Harbor Lights' and art == 'Mara Quill', f'{tag}: now playing shows the song and artist ({song!r}, {art!r})')
+    check('/' in tm and 'Side A' in tm, f'{tag}: elapsed / side length and the side ({tm!r})')
+    check(nx.startswith('Next: Paper Moon'), f'{tag}: next up ({nx!r})')
+    check(page.evaluate("[...document.querySelectorAll('.tp-np, .tp-np *')].every((e) => getComputedStyle(e).writingMode === 'horizontal-tb' && (getComputedStyle(e).transform === 'none'))"), f'{tag}: the now-playing text is not rotated')
+    page.wait_for_timeout(1200)
+    tm2 = page.inner_text('.tp-np-time'); check(tm2 != tm, f'{tag}: the elapsed time advances ({tm!r} -> {tm2!r})')
+    labels = [t.strip() for t in page.eval_on_selector_all('.tp-chip, .tp-back, .tp-songs-btn', 'els => els.map(e => e.textContent)')]
+    for want in ['Back', 'Songs', 'Auto-flip: On', 'Click sounds: Off', 'Vibration:']:
+        check(any(want in l for l in labels), f'{tag}: a control is labelled "{want}" ({labels})')
+    check(not any(l in ('Deck', 'Player', 'Haptics', 'Click') for l in labels), f'{tag}: the old jargon chips are gone')
+    check(not small('.tp-chip, .tp-back, .tp-songs-btn'), f'{tag}: every player control is >= 44 px ({small(".tp-chip, .tp-back, .tp-songs-btn")})')
+    rect = lambda sel: page.evaluate('(s) => { const e = document.querySelector(s); if (!e) return null; const r = e.getBoundingClientRect(); return [r.x, r.y, r.right, r.bottom]; }', sel)
+    lock = rect('.dm-key-float')
+    hit = lambda a, b2: a and b2 and not (a[2] <= b2[0] or b2[2] <= a[0] or a[3] <= b2[1] or b2[3] <= a[1])
+    if lock:
+        for sel in ['.tp-np-next', '.tp-np-time', '.tp-np-song', '.tp-np-artist', '.tp-songs-btn', '.tp-back', '.tp-ctl', '.tp-look']:
+            # text blocks are measured by their text, not their (full-width) box
+            r_ = page.evaluate("""(s) => { const e = document.querySelector(s); const g = document.createRange(); g.selectNodeContents(e); const r = (s.startsWith('.tp-np-') ? g : e).getBoundingClientRect(); return [r.x, r.y, r.right, r.bottom]; }""", sel)
+            check(not hit(r_, lock), f'{tag}: the lock key does not cover {sel}')
+    check(page.evaluate('document.documentElement.scrollWidth <= innerWidth + 1'), f'{tag}: no horizontal scroll in the player')
+    hostr, npr = rect('.tp-host'), rect('.tp-np')
+    check(npr[3] <= h + 1 and hostr[3] <= h + 1, f'{tag}: deck and now-playing block fit the screen (np bottom {npr[3]:.0f} of {h})')
+    if land: check(hostr[2] <= npr[0] + 1, f'{tag}: landscape puts the info beside the deck')
+    # Songs button reveals the list, and closes it again
+    page.tap('.tp-songs-btn'); page.wait_for_timeout(300)
+    check(not page.evaluate("document.querySelector('.tp-list').classList.contains('hidden')") and page.get_attribute('.tp-songs-btn', 'aria-expanded') == 'true', f'{tag}: the Songs button opens the song list')
+    check(page.locator('.tp-songs li').count() == 3, f'{tag}: ... with the three songs of side A')
+    shot(page, 'player-songs')
+    page.tap('.tp-songs-btn'); page.wait_for_timeout(250)
+    check(page.evaluate("document.querySelector('.tp-list').classList.contains('hidden')"), f'{tag}: ... and the same button closes it')
+    # side flip + auto-flip toggles reflect state
+    page.tap('.tp-auto'); page.wait_for_timeout(250)
+    check('Off' in page.inner_text('.tp-auto') and page.get_attribute('.tp-auto', 'aria-pressed') == 'false', f'{tag}: Auto-flip toggles off ({page.inner_text(".tp-auto")!r})')
+    page.tap('.tp-auto'); page.wait_for_timeout(200)
+    page.tap('.tp-flip'); page.wait_for_timeout(1500)
+    check('Side B' in page.inner_text('.tp-np-time') and page.inner_text('.tp-np-song') == 'Salt and Ember', f'{tag}: Flip side shows side B and its song ({page.inner_text(".tp-np-time")!r})')
+    shot(page, 'player-side-b')
+    page.tap('.tp-back'); page.wait_for_timeout(500)
+    check(page.locator('.tp:not(.hidden)').count() == 0, f'{tag}: Back closes the player')
+    # ── wide: the shelf uses the width
+    if w >= 700:
+        xs = page.evaluate("[...document.querySelectorAll('.cs-cell')].map((e) => Math.round(e.getBoundingClientRect().x))")
+        check(len(set(xs)) >= 2, f'{tag}: wide screens lay the tapes out in columns ({xs})')
+        page.locator('.mt-view-btn', has_text='Spines').tap(); page.wait_for_timeout(400)
+        xs = page.evaluate("[...document.querySelectorAll('.cs-row')].map((e) => Math.round(e.getBoundingClientRect().x))")
+        check(len(set(xs)) >= 2, f'{tag}: ... and the spines too ({xs})')
+        shot(page, 'spines-wide')
+    check(errs == [], f'{tag}: no page errors {errs[:3]}')
+    ctx.close()
+
 def run_reduced(b):
     print('--- reduced motion', flush=True)
     blob = {'version': 4, 'mixtapes': [{'id': 'b1', 'name': 'Blips', 'author': '', 'cfg': {'style': 'clear', 'pen': 'marker', 'wear': 0.1, 'gloss': 0.5, 'text': {'subtitle': '', 'note': '', 'side': 'A'}}, 'tape': {'length': 'C30'}, 'autoReverse': True,
@@ -475,12 +594,17 @@ def main():
     make_fixtures()
     with sync_playwright() as p:
         b = launch(p)
-        for (w, h) in [(360, 780), (412, 915)]:
-            run_viewport(b, w, h)
+        only = os.environ.get('ONLY', '')      # ONLY=ux runs just the shelf / player UX checks (a few minutes faster)
+        if only != 'ux':
+            for (w, h) in [(360, 780), (412, 915)]:
+                run_viewport(b, w, h)
+            for (w, h) in [(360, 780), (412, 915), (915, 412)]:
+                run_layout(b, w, h)
         for (w, h) in [(360, 780), (412, 915), (915, 412)]:
-            run_layout(b, w, h)
-        run_reduced(b)
-        run_5k(b)
+            run_ux(b, w, h)
+        if only != 'ux':
+            run_reduced(b)
+            run_5k(b)
         b.close()
     print('\nFAILED:' if fails else '\nall checks passed', *fails, sep='\n  ' if fails else '')
     sys.exit(1 if fails else 0)

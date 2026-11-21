@@ -16,13 +16,14 @@ import {
   STORAGE_KEY, cassetteCfg, resolveTracks, tapeProgress, locateTape, estimateTapeSeconds,
   serializeMixtape, parseImport, serializeCollection, parseCollection, newMixtapeId,
   isFutureCollection, collectionVersion, MIXTAPE_VERSION, withAutoReverse, withRefDuration, withDurations,
-  sideOfFlat, flatIndex, sideRefs, cleanDur,
+  sideOfFlat, flatIndex, sideRefs, cleanDur, fmtDur,
 } from './mixtape.js';
 import { createTransport, reduce as tpReduce, runMode, deckMessage } from './cassette/transport.js';
 import { suggestTapes, draftToMixtape, SUGGEST_KEYS, suggestionBlurb } from './mixtape-suggest.js';
 import { createQueue, reduce as queueReduce } from './queue.js';
 import { mountPlayer, SKINS, SKIN_IDS } from './cassette/players.js';
 import { mountStack, mountLibrary } from './cassette/shelf.js';
+import { Cassette } from './cassette/index.js';
 import { openEditor, openBack, closeBack } from './cassette/editor.js';
 import { allowsGesture } from './devicemode/guard.js';
 import { onAodOutlineMode } from './devicemode/aodhooks.js';
@@ -37,6 +38,18 @@ const h = (tag, props = {}, ...kids) => {
   for (const c of kids.flat()) if (c != null) e.append(c);
   return e;
 };
+
+/** Small stroked icons (static path data only; nothing untrusted ever reaches an attribute here). */
+const IC = {
+  back: 'M15 5l-7 7 7 7', flip: 'M4 9h13l-3-3M20 15H7l3 3', auto: 'M20 12a8 8 0 1 1-2.6-5.9M20 4v4h-4',
+  click: 'M9 18V6l10-2v12M9 18a3 3 0 1 1-3-3M19 16a3 3 0 1 1-3-3', vib: 'M8 4h8v16H8zM4 8v8M20 8v8', list: 'M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01',
+  look: 'M4 7h16v10H4zM8 11h8', close: 'M6 6l12 12M18 6L6 18', stack: 'M4 7h16M5 12h14M6 17h12', more: 'M5 12h.01M12 12h.01M19 12h.01', plus: 'M12 5v14M5 12h14',
+};
+function ico(d, size = 20) {
+  const NS = 'http://www.w3.org/2000/svg', s = document.createElementNS(NS, 'svg'), p = document.createElementNS(NS, 'path');
+  for (const [k, v] of Object.entries({ viewBox: '0 0 24 24', width: size, height: size, fill: 'none', stroke: 'currentColor', 'stroke-width': 2.2, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'aria-hidden': 'true', class: 'tp-ico' })) s.setAttribute(k, v);
+  p.setAttribute('d', d); s.append(p); return s;
+}
 
 const ls = {
   get(k) { try { return localStorage.getItem(k); } catch { return null; } },
@@ -90,6 +103,11 @@ function fillDurations(durations) {
 export function tapeMeta(m) {
   return `${m.tape.length} · A ${m.sides.A.length} · B ${m.sides.B.length}`;
 }
+/** The plain-words line under a tape on the shelf: "C60 tape · Side A 7 songs · Side B 0 songs". */
+export function tapeCaption(m) {
+  const n = (k) => `${k} song${k === 1 ? '' : 's'}`;
+  return `${m.tape.length} tape · Side A ${n(m.sides.A.length)} · Side B ${n(m.sides.B.length)}`;
+}
 
 export class MixtapeUI {
   /**
@@ -134,12 +152,19 @@ export class MixtapeUI {
     this.listEl = listEl;
     newBtn.addEventListener('click', () => this.edit(null));
     importBtn.addEventListener('click', () => this.importDialog());
+    newBtn.textContent = '+ New'; newBtn.title = 'Make a new mixtape from your library';
+    importBtn.title = 'Bring in a mixtape from its exported text';
     const bar = newBtn.parentNode;
     bar.append(h('span', { class: 'mt-bar-sp' }));
-    this.viewStack = h('button', { class: 'sort-chip', type: 'button', onclick: () => this.setView('stack') }, 'Stack');
-    this.viewSpines = h('button', { class: 'sort-chip', type: 'button', onclick: () => this.setView('spines') }, 'Spines');
-    this.editSel = h('button', { class: 'sort-chip', type: 'button', disabled: '', onclick: () => { const m = this.byId(this.sel); if (m) this.edit(m); } }, 'Edit');
-    bar.append(this.viewStack, this.viewSpines, this.editSel);
+    this.viewStack = h('button', { class: 'mt-view-btn', type: 'button', 'aria-label': 'Show the tapes as a stack', onclick: () => this.setView('stack') }, ico(IC.stack, 18), h('span', {}, 'Stack'));
+    this.viewSpines = h('button', { class: 'mt-view-btn', type: 'button', 'aria-label': 'Show the tapes as spines', onclick: () => this.setView('spines') }, ico(IC.list, 18), h('span', {}, 'Spines'));
+    bar.append(h('div', { class: 'mt-view', role: 'group', 'aria-label': 'Shelf view' }, this.viewStack, this.viewSpines));
+    // a wide screen (landscape phone, tablet) lays the tapes out as a grid: re-render when that changes
+    try {
+      this._wide = window.matchMedia('(min-width:700px)');
+      const re = () => { if (this.listEl) this.render(); };
+      this._wide.addEventListener ? this._wide.addEventListener('change', re) : this._wide.addListener?.(re);
+    } catch { /* no matchMedia */ }
     this.render();
   }
 
@@ -153,27 +178,49 @@ export class MixtapeUI {
   render() {
     const el = this.listEl;
     el.replaceChildren();
-    this.viewStack?.classList.toggle('active', this.view === 'stack');
-    this.viewSpines?.classList.toggle('active', this.view === 'spines');
-    if (this.editSel) this.editSel.disabled = !this.byId(this.sel);
+    for (const [b, on] of [[this.viewStack, this.view === 'stack'], [this.viewSpines, this.view === 'spines']]) { b?.classList.toggle('active', on); b?.setAttribute('aria-pressed', String(on)); }
     const sug = this._suggestRow();
     if (sug) el.append(sug);
     if (!this.list.length) {
       el.append(h('div', { class: 'mt-empty' }, 'No mixtapes yet. Tap “+ New” to make one from your library.'));
       return;
     }
-    const items = this.list.map((m) => ({ id: m.id, cfg: cassetteCfg(m), meta: tapeMeta(m) }));
-    const onSelect = (it) => { this.sel = it ? it.id : null; if (this.editSel) this.editSel.disabled = !this.byId(this.sel); };
+    const items = this.list.map((m) => ({ id: m.id, cfg: cassetteCfg(m), meta: tapeMeta(m), caption: tapeCaption(m) }));
+    const onSelect = (it) => { this.sel = it ? it.id : null; };
+    const onMenu = (it) => { const m = this.byId(it.id); if (m) this._tapeMenu(m); };
     const host = h('div', {});
     el.append(host);
+    const wide = !!(this._wide && this._wide.matches);
     if (this.view === 'stack') {
-      // the top tape is the one on top of the stack: tap it to play, tap another to bring it up; Edit acts on the top tape
+      // the top tape is the one on top of the stack: tap it to play, tap another to bring it up; the ⋯ button (or a long press) opens the tape's menu
       const top = this.byId(this.sel) ? this.sel : (this.list.length ? this.list[this.list.length - 1].id : null);
-      if (!this.sel && top) { this.sel = top; if (this.editSel) this.editSel.disabled = false; }
-      mountStack(host, items, { selected: top, bringToTop: true, step: this.list.length <= 4 ? 0.45 : this.list.length <= 6 ? 0.36 : 0.24, onSelect, onOpen: (it) => { const m = this.byId(it.id); if (m) this.startPlayback(m); } });
+      if (!this.sel && top) this.sel = top;
+      mountStack(host, items, { selected: top, bringToTop: true, grid: wide, onMenu, step: this.list.length <= 4 ? 0.45 : this.list.length <= 6 ? 0.36 : 0.24, onSelect, onOpen: (it) => { const m = this.byId(it.id); if (m) this.startPlayback(m); } });
     } else {
-      mountLibrary(host, items, { selected: this.sel, onSelect, onOpen: (it) => { const m = this.byId(it.id); if (m) this.back(m); } });
+      host.classList.toggle('cs-wide', wide);
+      mountLibrary(host, items, { selected: this.sel, onMenu, onSelect, onOpen: (it) => { const m = this.byId(it.id); if (m) this.back(m); } });
     }
+  }
+
+  /** The per-tape menu (the ⋯ button, or a long press on a tape): play, edit, export. A bottom sheet; text nodes only. */
+  _tapeMenu(m) {
+    if (document.querySelector('.mt-menu-ov')) return;
+    const ov = h('div', { class: 'mt-dialog mt-menu-ov', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Tape menu' });
+    const done = () => { ov.remove(); document.removeEventListener('keydown', esc, true); };
+    const esc = (e) => { if (e.key === 'Escape') { e.stopPropagation(); done(); } };
+    const item = (label, sub, fn, cls = '') => h('button', { class: 'mt-menu-item ' + cls, type: 'button', onclick: () => { done(); fn(); } }, h('b', {}, label), sub ? h('small', {}, sub) : null);
+    const sheet = h('div', { class: 'mt-menu' },
+      h('div', { class: 'mt-menu-title' }, m.name || 'Untitled tape', h('small', {}, tapeCaption(m))),
+      item('Play', 'Open the cassette player', () => this.startPlayback(m)),
+      item('Songs and details', 'See the tracklist on the back of the case', () => this.back(m)),
+      item('Edit tape', 'Change the songs, sides, title and look', () => this.edit(m)),
+      item('Export', 'Copy this mixtape as text to back it up or share it', () => this.exportDialog(m)),
+      item('Cancel', '', () => {}, 'mt-menu-cancel'));
+    ov.append(sheet);
+    ov.addEventListener('click', (e) => { if (e.target === ov) done(); });
+    document.addEventListener('keydown', esc, true);
+    document.body.append(ov);
+    sheet.querySelector('button')?.focus();
   }
 
   // ── Suggested tapes: a small dismissible row of auto-generated drafts (docs/MIXTAPES.md) ──
@@ -200,13 +247,17 @@ export class MixtapeUI {
     if (!list.length) return null;
     const row = h('section', { class: 'mt-sug', 'aria-label': 'Suggested tapes' },
       h('div', { class: 'mt-sug-head' }, h('span', {}, 'Suggested tapes'),
-        h('button', { class: 'mt-sug-hide', type: 'button', 'aria-label': 'Hide suggested tapes', title: 'Hide suggestions (switch them back on in Settings)', onclick: () => { ls.set(SUGGEST_KEYS.enabled, '0'); this.render(); } }, '✕')),
+        h('button', { class: 'mt-sug-hide', type: 'button', 'aria-label': 'Hide suggested tapes', title: 'Hide suggestions (switch them back on in Settings)', onclick: () => { ls.set(SUGGEST_KEYS.enabled, '0'); this.render(); } }, ico(IC.close, 18))),
       h('div', { class: 'mt-sug-row' }, ...list.map((sg) => {
-        const chip = h('div', { class: 'mt-sug-chip' },
-          h('button', { class: 'mt-sug-open', type: 'button', title: 'Open as a draft in the editor', onclick: () => this._openSuggestion(sg) },
-            h('b', {}, sg.name), h('small', {}, sg.tagline), h('em', {}, suggestionBlurb(sg))),
-          h('button', { class: 'mt-sug-x', type: 'button', 'aria-label': 'Dismiss ' + sg.name, onclick: () => { ls.set(SUGGEST_KEYS.dismissed, JSON.stringify([...this._dismissed(), sg.id])); this.render(); } }, '×'));
-        return chip;
+        // a real cassette preview of the draft (style, label and tape length as it would be created)
+        const prev = h('div', { class: 'mt-sug-prev', 'aria-hidden': 'true' });
+        try { Cassette.mount(prev, { ...cassetteCfg(draftToMixtape(sg, { id: sg.id })), static: true }); } catch { /* preview is decoration */ }
+        return h('div', { class: 'mt-sug-chip' },
+          h('button', { class: 'mt-sug-open', type: 'button', 'aria-label': `Create the tape ${sg.name}: ${suggestionBlurb(sg)}`, title: 'Preview it as a draft in the editor', onclick: () => this._openSuggestion(sg) },
+            prev, h('b', {}, sg.name), h('small', {}, sg.tagline), h('em', {}, suggestionBlurb(sg))),
+          h('div', { class: 'mt-sug-acts' },
+            h('button', { class: 'mt-sug-create', type: 'button', onclick: () => this._openSuggestion(sg) }, ico(IC.plus, 18), h('span', {}, 'Create')),
+            h('button', { class: 'mt-sug-x', type: 'button', 'aria-label': 'Dismiss ' + sg.name, title: 'Not interested', onclick: () => { ls.set(SUGGEST_KEYS.dismissed, JSON.stringify([...this._dismissed(), sg.id])); this.render(); } }, ico(IC.close, 18))));
       })));
     return row;
   }
@@ -330,21 +381,80 @@ export class MixtapeUI {
     this.listBody = h('ol', { class: 'tp-songs' });
     this.listPanel = h('div', { class: 'tp-list hidden' }, this.listHead, this.listBody);
     this.msg = h('div', { class: 'tp-msg hidden' });
-    this.skinBtns = SKIN_IDS.map((id) => h('button', { class: 'tp-chip', type: 'button', 'aria-pressed': String(id === this.skin), onclick: () => this._setSkin(id) }, SKINS[id].name));
-    this.hapBtn = h('button', { class: 'tp-chip', type: 'button', 'aria-pressed': String(this.haptics), title: 'Vibrate on the keys', onclick: () => {
-      this.haptics = !this.haptics; ls.set(KEY_HAPTICS, this.haptics ? '1' : '0'); this.hapBtn.setAttribute('aria-pressed', String(this.haptics));
-      this._buzz(20);
-    } }, 'Haptics');
-    this.clickBtn = h('button', { class: 'tp-chip', type: 'button', 'aria-pressed': String(this.clicks), title: 'A soft click on the AUTO and FLIP keys', onclick: () => {
-      this.clicks = !this.clicks; ls.set(KEY_CLICKS, this.clicks ? '1' : '0'); this.clickBtn.setAttribute('aria-pressed', String(this.clicks));
+    // top controls: every control says what it does, in words, with an icon (>=44px)
+    this.backBtn = h('button', { class: 'btn-close tp-back', type: 'button', 'aria-label': 'Back to the shelf', onclick: () => this._closePlayer() }, ico(IC.back), h('span', {}, 'Back'));
+    this.skinBtn = h('button', { class: 'tp-chip tp-look', type: 'button', title: 'Change the look of the player', onclick: () => this._setSkin(SKIN_IDS[(SKIN_IDS.indexOf(this.skin) + 1) % SKIN_IDS.length]) });
+    this.flipBtn = h('button', { class: 'tp-chip tp-flip', type: 'button', title: 'Turn the tape over to the other side', onclick: () => { if (allowsGesture('button')) this._flipKey(); } }, ico(IC.flip), h('span', {}, 'Flip side A/B'));
+    this.autoBtn = h('button', { class: 'tp-chip tp-auto', type: 'button', 'aria-pressed': 'true', title: 'At the end of side A, turn over and play side B by itself', onclick: () => { const p = this.play; if (p && allowsGesture('button')) this._setAuto(!p.tp.auto); } }, ico(IC.auto), h('span', {}, 'Auto-flip: On'));
+    this.clickBtn = h('button', { class: 'tp-chip tp-click', type: 'button', 'aria-pressed': String(this.clicks), title: 'A soft click when you press Flip or Auto-flip', onclick: () => {
+      this.clicks = !this.clicks; ls.set(KEY_CLICKS, this.clicks ? '1' : '0'); this._syncToggles();
       this._click();
-    } }, 'Click');
-    this.root = h('div', { class: 'tp hidden', role: 'dialog', 'aria-label': 'Mixtape player' },
-      h('div', { class: 'tp-bar' }, ...this.skinBtns, this.hapBtn, this.clickBtn, h('span', { class: 'sp' }),
-        h('button', { class: 'btn-close', type: 'button', 'aria-label': 'Close', onclick: () => this._closePlayer() }, '✕')),
-      this.host, this.msg, this.listPanel,
-      h('div', { class: 'tp-hint' }, 'Tap the cassette for the songs'));
+    } }, ico(IC.click), h('span', {}));
+    this.hapBtn = h('button', { class: 'tp-chip tp-vib', type: 'button', 'aria-pressed': String(this.haptics), title: 'Vibrate your phone when you press the keys', onclick: () => {
+      this.haptics = !this.haptics; ls.set(KEY_HAPTICS, this.haptics ? '1' : '0'); this._syncToggles();
+      this._buzz(20);
+    } }, ico(IC.vib), h('span', {}));
+    // the now-playing block: upright, readable text (the deck art's own title and counter are printed sideways)
+    this.npTape = h('div', { class: 'tp-np-tape' });
+    this.npSong = h('div', { class: 'tp-np-song' });
+    this.npArtist = h('div', { class: 'tp-np-artist' });
+    this.npTime = h('div', { class: 'tp-np-time' });
+    this.npNext = h('div', { class: 'tp-np-next' });
+    this.songsBtn = h('button', { class: 'tp-songs-btn', type: 'button', 'aria-expanded': 'false', 'aria-label': 'Show the songs on this tape', onclick: () => this._toggleList() }, ico(IC.list), h('span', {}, 'Songs'));
+    this.np = h('div', { class: 'tp-np', 'aria-live': 'off' },
+      h('div', { class: 'tp-np-main' }, h('div', { class: 'tp-np-text' }, this.npTape, this.npSong, this.npArtist), this.songsBtn),
+      this.npTime, this.npNext, this.msg);
+    this.top = h('div', { class: 'tp-top' },
+      h('div', { class: 'tp-row' }, this.backBtn, h('span', { class: 'sp' }), this.skinBtn),
+      h('div', { class: 'tp-ctl' }, this.flipBtn, this.autoBtn, this.clickBtn, this.hapBtn));
+    this.root = h('div', { class: 'tp hidden', role: 'dialog', 'aria-label': 'Mixtape player' }, this.top, this.host, this.np, this.listPanel);
+    this._syncToggles();
     document.body.append(this.root);
+  }
+
+  _toggleList() { this.listPanel.classList.toggle('hidden'); if (!this.listPanel.classList.contains('hidden')) this._placeList(); this._syncSongsBtn(); }
+  /** Portrait: the song list opens above the now-playing block (the Songs button stays reachable to close it); landscape: over the lower part of the right column, clear of the lock key. */
+  _placeList() {
+    const st = this.listPanel.style, r = this.np.getBoundingClientRect(), land = r.left > innerWidth * 0.25;
+    st.maxHeight = ''; st.top = ''; st.bottom = ''; st.left = ''; st.right = '';
+    if (land) { st.left = r.left + 'px'; st.right = '76px'; st.top = Math.round(r.top + 96) + 'px'; st.bottom = '10px'; st.maxHeight = 'none'; }
+    else st.bottom = Math.round(innerHeight - r.top + 6) + 'px';
+  }
+  _syncSongsBtn() { this.songsBtn.setAttribute('aria-expanded', String(!this.listPanel.classList.contains('hidden'))); }
+  _syncToggles() {
+    const set = (b, on, label, aria) => { b.setAttribute('aria-pressed', String(on)); b.lastChild.textContent = `${label}: ${on ? 'On' : 'Off'}`; if (aria) b.setAttribute('aria-label', `${label}: ${on ? 'on' : 'off'}`); };
+    set(this.clickBtn, this.clicks, 'Click sounds'); set(this.hapBtn, this.haptics, 'Vibration');
+    const p = this.play, a = p ? !!p.tp.auto : !!this._st.auto;
+    set(this.autoBtn, a, 'Auto-flip');
+    this.skinBtn.replaceChildren(ico(IC.look), h('span', {}, 'Look: ' + SKINS[this.skin].name));
+    if (this.flipBtn) this.flipBtn.lastChild.textContent = p ? `Flip to side ${p.tp.side === 'A' ? 'B' : 'A'}` : 'Flip side A/B';
+  }
+
+  /** The upright now-playing block: tape, song, artist, side, elapsed / side length, next up. */
+  _updateNow(force) {
+    const p = this.play; if (!p) return;
+    const now = performance.now();
+    if (!force && now - (this._npAt || 0) < 200) return;
+    this._npAt = now;
+    const side = p.tp.side, refs = p.mix.sides[side], durs = p.sideDurs ? p.sideDurs[side] : [];
+    const cur = p.idx >= 0 ? sideOfFlat(p.mix, p.idx) : null;
+    const onSide = !!cur && cur.side === side;
+    const i = onSide ? cur.index : Math.max(0, Math.min(refs.length - 1, (p.tp.pos[side] && p.tp.pos[side].index) || 0));
+    let el = 0, total = 0;
+    durs.forEach((d, k) => { total += d || 0; if (k < i) el += d || 0; });
+    if (onSide) { const t = this._st.time || 0, d = durs[i] || 0; el += d ? Math.min(t, d) : t; }
+    const r = refs[i];
+    this.npTape.replaceChildren(p.mix.name || 'Untitled tape', ' · Side ' + side);
+    this.npSong.textContent = r ? r.title : 'Nothing on this side';
+    this.npArtist.textContent = r ? (r.artist || 'Unknown artist') : '';
+    const sideSongs = refs.length;
+    this.npTime.textContent = `${fmtDur(Math.floor(el))} / ${fmtDur(Math.round(total))} · Side ${side}${sideSongs ? ` · song ${i + 1} of ${sideSongs}` : ''}`;
+    let nx = '';
+    if (r && i + 1 < refs.length) nx = `Next: ${refs[i + 1].title}${refs[i + 1].artist ? ' — ' + refs[i + 1].artist : ''}`;
+    else if (side === 'A' && p.mix.sides.B.length) nx = p.tp.auto ? `Next: side B, ${p.mix.sides.B[0].title}` : 'End of side A: flip the tape for side B';
+    else if (refs.length) nx = `End of side ${side}`;
+    this.npNext.textContent = nx;
+    this._syncSongsBtn();
   }
 
   _buzz(ms) { if (this.haptics) { try { navigator.vibrate?.(ms); } catch { /* unsupported */ } } }
@@ -368,7 +478,7 @@ export class MixtapeUI {
   _setSkin(id) {
     if (id === this.skin && this.pl) return;
     this.skin = id; ls.set('runout.mixtapes.skin', id);
-    this.skinBtns.forEach((b, i) => b.setAttribute('aria-pressed', String(SKIN_IDS[i] === id)));
+    this._syncToggles();
     if (!this.root.classList.contains('hidden')) this._mountSkin();
   }
 
@@ -381,7 +491,7 @@ export class MixtapeUI {
       .on('next', () => this._step(1)).on('prev', () => this._step(-1)).on('skip', (s) => this._skip(s))
       .on('hold', (dir) => this._windStart(dir)).on('release', () => this._windEnd())
       .on('auto', (on) => this._setAuto(on)).on('flip', () => this._flipKey())
-      .on('tap', () => this.listPanel.classList.toggle('hidden'));
+      .on('tap', () => this._toggleList());
     const p = this.play;
     if (p) {
       this._pushState(0, 0, performance.now(), true);
@@ -477,6 +587,7 @@ export class MixtapeUI {
       }, t.title, h('small', {}, ` ${t.artist}`), p.relink[f] ? h('small', { class: 'relink' }, ' · needs re-link') : null);
     }));
     if (!p.mix.sides[view].length) this.listBody.append(h('li', { class: 'missing' }, 'Nothing on this side'));
+    this._updateNow(true);
   }
 
   // ── Transport: the pure state machine (src/cassette/transport.js) decides, this performs ──
@@ -487,6 +598,7 @@ export class MixtapeUI {
     if (p.tp.phase === 'flip' || p.tp.phase === 'end') p.ended = true;
     for (const a of r.actions) this._act(a);
     if (this.pl) this.pl.update({ side: p.tp.side, auto: p.tp.auto, msg: this._msgOverride != null ? this._msgOverride : deckMessage(p.tp) });
+    this._syncToggles(); this._updateNow(true);
     return r.actions;
   }
 
@@ -760,6 +872,7 @@ export class MixtapeUI {
     s.level = level;
     if (p) { s.side = p.tp.side; s.auto = p.tp.auto; s.msg = this._msgOverride != null ? this._msgOverride : deckMessage(p.tp); }
     if (this.pl) this.pl.update(s);
+    this._updateNow(!!force);
   }
 
   /** A real duration is known (decoded): write it onto the tape's ref (and save), so caps use the truth from now on. */

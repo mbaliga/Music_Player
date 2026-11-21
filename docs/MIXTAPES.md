@@ -3,7 +3,7 @@
 A mixtape is a custom playlist drawn as a real cassette: it has a **tape length**, **two sides** with their own
 capacity, an **auto-reverse** latch, and the owner's cassette look (37 styles, 4 pens, inks, wear, gloss).
 Songs are always the user's own library tracks. While a tape plays you see the mixtape **name only** (tap the
-cassette to reveal the current side's song list).
+cassette, or the **Songs** button, to reveal the current side's song list).
 
 Files
 
@@ -218,3 +218,21 @@ import / export / custom-theme paste flow (`.theme-overlay`, with a Back header)
 sheet (`.dm-sheet`, Done in the header) full-screen. Tablets and desktop keep the cards. The editor and importer are still refused while locked
 (`allowsGesture('editor')`), and untrusted text still goes through text nodes. `scripts/verify-mixtapes.py` `run_layout` asserts the geometry at
 360x780, 412x915 and 915x412.
+
+## UX pass: shelf and player (workstream D, UX review)
+
+* **Player** (`.tp`): top row = **Back** (44 px) and **Look: Deck/Player**; four labelled toggles (`Flip to side B`, `Auto-flip: On/Off`,
+  `Click sounds: On/Off`, `Vibration: On/Off`, icon + words, 44 px). Under the deck an upright **now-playing block** (`.tp-np`): tape name and side,
+  current song and artist, `elapsed / side length · Side A · song 2 of 7`, `Next: ...` (or the end-of-side hint), and a **Songs** button
+  (`aria-expanded`) that toggles the same list as tapping the cassette. The deck art's own sideways name and counter remain (they are skin art).
+  The bottom-right is left clear for the floating lock key (`.tp-np-next` pads 64 px; the list opens above the block). Landscape puts the info in a
+  column beside the deck. The old `.tp-hint` is gone. Controls are native buttons (frozen while locked, like the old chips); the deck keys keep
+  `data-key` / `role=button` and stay live.
+* **Shelf**: `+ New`, `Import`, and a **Stack | Spines** view toggle (44 px). Per-tape actions (Play / Songs and details / Edit tape / Export)
+  live in a bottom sheet opened by the visible `...` button (`.cs-more`) or a long press on a tape. Spines show a caption line ("C60 tape - Side A 3
+  songs - Side B 1 song") under the spine instead of a badge on the name. At >= 700 px wide the stack becomes a grid (`.cs-grid`) and the spines
+  flow in columns.
+* **Suggested tapes**: each suggestion is a card with a static cassette preview of the draft, its blurb, a **Create** button (opens the draft in the
+  editor, nothing is saved) and a 44 px dismiss.
+* **Editor**: Add tab "Select" is **Pick several** (with an on-screen explanation); side headers read `30:00 left - 0 of 20 songs`; Tracks shows each
+  song's length once and a labelled **Side A total** footer.
