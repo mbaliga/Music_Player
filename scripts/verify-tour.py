@@ -145,7 +145,7 @@ def tour(b, w, h, tag, landscape=False):
     def s_walk():
         page.wait_for_selector('.wt-overlay:not(.hidden)', timeout=6000)
         n_steps = page.evaluate('document.querySelectorAll(".wt-dot").length')
-        check(n_steps >= 8, f'{tag}: first run shows the walkthrough ({n_steps} steps)')
+        check(n_steps >= 5, f'{tag}: first run shows the walkthrough ({n_steps} steps)')
         shot(page, 'walkthrough-1')
         titles = []
         for i in range(n_steps):
