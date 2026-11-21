@@ -61,7 +61,7 @@ export function createSearchOverlay(deps) {
 
   // ── DOM ──
   function build() {
-    input = h('input', { class: 'so-input', type: 'search', role: 'combobox', 'aria-expanded': 'true', 'aria-controls': 'so-list', 'aria-autocomplete': 'list', 'aria-label': 'Search songs, albums, artists, mixtapes and radio', placeholder: 'Search songs, albums, artists, radio…', enterkeyhint: 'search', autocomplete: 'off', autocapitalize: 'off', autocorrect: 'off', spellcheck: 'false', maxlength: '200' });
+    input = h('input', { class: 'so-input', type: 'search', role: 'combobox', 'aria-expanded': 'true', 'aria-controls': 'so-list', 'aria-autocomplete': 'list', 'aria-label': 'Search songs, albums, artists, mixtapes and radio', placeholder: 'Search your music and radio', enterkeyhint: 'search', autocomplete: 'off', autocapitalize: 'off', autocorrect: 'off', spellcheck: 'false', maxlength: '200' });
     clearBtn = h('button', { type: 'button', class: 'so-clear', 'aria-label': 'Clear search', hidden: true, onclick: () => { input.value = ''; onInput(); input.focus(); } }, '×');
     backBtn = h('button', { type: 'button', class: 'so-back', 'aria-label': 'Close search', onclick: () => back() });
     backBtn.innerHTML = ICONS.back;

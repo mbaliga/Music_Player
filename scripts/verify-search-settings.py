@@ -103,6 +103,12 @@ def run_viewport(b, w, h):
     check(page.evaluate('document.getElementById("shell").dataset.open') == 'false', f'{tag}: the drawer closed behind the overlay')
     check(page.get_attribute('.so-input', 'role') == 'combobox' and page.get_attribute('#so-list', 'role') == 'listbox', f'{tag}: combobox + listbox roles')
     shot('search-empty')
+    ph = page.evaluate('''() => { const i = document.querySelector(".so-input"); const c = document.createElement("canvas").getContext("2d"); const cs = getComputedStyle(i); c.font = cs.fontWeight + " " + cs.fontSize + " " + cs.fontFamily;
+        return {text: i.placeholder, textW: c.measureText(i.placeholder).width, boxW: i.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight)}; }''')
+    check(ph['text'] == 'Search your music and radio' and ph['textW'] <= ph['boxW'], f'{tag}: the placeholder "{ph["text"]}" fits its field ({ph["textW"]:.0f} <= {ph["boxW"]:.0f} px)')
+    ch = page.evaluate('''() => { const card = document.querySelector(".so-card").getBoundingClientRect(); const bs = [...document.querySelectorAll(".so-chips .so-chip")].map((b) => b.getBoundingClientRect());
+        return {n: bs.length, inside: bs.every((r) => r.left >= card.left - 0.5 && r.right <= card.right + 0.5), minH: Math.min(...bs.map((r) => r.height))}; }''')
+    check(ch['n'] >= 5 and ch['inside'] and ch['minH'] >= 43.5, f'{tag}: all {ch["n"]} filter chips are on screen (wrapped, none scrolled off) and >= 44 px tall')
     n_dir = len([u for u in reqs if 'radio-browser' in u])
     # ── typing: every group
     type_q(page, 'night')

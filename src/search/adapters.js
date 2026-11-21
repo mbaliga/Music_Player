@@ -132,7 +132,7 @@ export function adaptStations({ radioModel = null, cannedIndex = [], aiOn = fals
     seen.add(key);
     out.push({
       key, id: e.id, type: CANNED_TYPE, name: e.name, dial: e.dial, tagline: e.tagline, hosts: e.hosts, source: 'canned', station: st,
-      subtitle: `${e.dial ? e.dial + ' · ' : ''}Pre-written show`, fav: !!(sv && sv.fav), plays: sv ? (sv.fav ? 5 : 1) : 0, lastPlayed: sv ? sv.at : 0,
+      subtitle: `${e.dial ? e.dial + ' · ' : ''}Works offline`, fav: !!(sv && sv.fav), plays: sv ? (sv.fav ? 5 : 1) : 0, lastPlayed: sv ? sv.at : 0,
     });
   }
   for (const [key, sv] of saved) {

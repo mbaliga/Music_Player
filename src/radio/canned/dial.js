@@ -8,48 +8,10 @@
 // Loaded lazily from the Radio tab (radio-player.js), never from boot. Real stations and You Radio stay in radio-player.js.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { buildCatalog, PRE_WRITTEN_LABEL, NEEDS_INTERNET } from './catalog.js';
+import { buildCatalog, OFFLINE_LABEL, NEEDS_INTERNET } from './catalog.js';
 import { hostProsody } from './ai-styles.js';
 import { loadStationsIndex } from './session.js';
 import { createAuditioner } from './audition.js';
-
-const CSS = `
-.dial-sec{margin-bottom:14px}
-.dial-sub{font-size:12px;color:var(--ink2);margin:0 2px 8px;line-height:1.35}
-.dial-cards{display:flex;flex-direction:column;gap:10px}
-.dial-card{position:relative;padding:12px;border-radius:12px;background:var(--surface);border:1px solid var(--border);color:var(--ink);cursor:pointer;text-align:left}
-.dial-card.on{border-color:var(--violet);box-shadow:0 0 0 1px var(--violet) inset}
-.dial-card:has(.dial-play:focus-visible){outline:2px solid var(--violet);outline-offset:2px}
-.dial-card.grey{opacity:.62;cursor:pointer}
-.dial-play{display:block;width:100%;margin:0;padding:0;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
-.dial-play:focus{outline:none}
-.dial-play::after{content:"";position:absolute;inset:0;border-radius:12px}
-.dial-card .dial-info{position:relative;z-index:1;cursor:auto}
-.dial-top{display:flex;align-items:baseline;gap:8px;padding-right:44px}
-.dial-name{font-size:16px;font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis}
-.dial-num{font-size:12px;font-weight:700;color:var(--ink2);border:1px solid var(--border);border-radius:8px;padding:0 6px;white-space:nowrap}
-.dial-tag{font-size:14px;margin-top:3px}
-.dial-vibe{font-size:12px;color:var(--ink2);margin-top:4px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.dial-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.dial-chip{font-size:11px;padding:2px 8px;border-radius:999px;background:var(--surface2);border:1px solid var(--border);color:var(--ink)}
-.dial-chip.dim{color:var(--ink2)}
-.dial-meta{display:flex;flex-wrap:wrap;gap:6px 10px;margin-top:8px;font-size:11px;color:var(--ink2);align-items:center}
-.dial-badge{font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink)}
-.dial-badge.soon{color:var(--ink2)}
-.dial-star{position:absolute;top:0;right:0;z-index:2;width:44px;height:44px;margin:0}
-.dial-bar{height:6px;border-radius:3px;background:var(--surface2);overflow:hidden;margin-top:8px;display:flex}
-.dial-bar i{display:block;height:100%;background:var(--violet)}
-.dial-bar b{display:block;height:100%;background:var(--border)}
-.dial-info{margin-top:10px;font-size:13px;line-height:1.4;border-top:1px solid var(--border);padding-top:10px}
-.dial-info dl{margin:6px 0 0;display:grid;grid-template-columns:auto 1fr;gap:2px 10px;font-size:12px}
-.dial-info dt{color:var(--ink2)}
-.dial-info dd{margin:0}
-.dial-host{margin-top:8px;padding:8px;border-radius:8px;background:var(--surface2)}
-.dial-host button{margin-top:6px;min-height:40px;padding:6px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--ink);font:inherit;font-size:12px;cursor:pointer}
-.dial-aud{min-height:1.2em;font-size:12px;color:var(--ink2);margin-top:4px}
-`;
-let styled = false;
-function ensureStyles() { if (styled || typeof document === 'undefined') return; styled = true; const s = document.createElement('style'); s.setAttribute('data-dial', ''); s.textContent = CSS; document.head.append(s); }
 
 const h = (tag, props = {}, ...kids) => {
   const e = document.createElement(tag);
@@ -70,7 +32,6 @@ let auditioner = null;
  * Renders into `root`. -> Promise<{ canned: number, styles: number }>
  */
 export async function renderDial(root, ctx) {
-  ensureStyles();
   const baseUrl = ctx.baseUrl || document.baseURI;
   const fetchFn = ctx.fetchFn || ((u, o) => fetch(u, o));
   const index = await loadStationsIndex({ fetchFn, baseUrl });
@@ -81,11 +42,11 @@ export async function renderDial(root, ctx) {
 
   if (cat.canned.length) {
     kids.push(h('section', { class: 'dial-sec', 'data-sec': 'canned' },
-      h('div', { class: 'radio-sec-head' }, h('span', {}, 'Pre-written shows')),
-      h('p', { class: 'dial-sub' }, 'Fictional stations with hosts who talk between your own songs. Written in advance, so they work with no internet. The stations that suit this time of day are listed first.'),
+      h('div', { class: 'radio-sec-head' }, h('span', {}, 'Offline shows')),
+      h('p', { class: 'dial-sub' }, 'Made-up stations with hosts who chat between your own songs. Everything is written in advance, so they work without internet. The ones that suit this time of day come first.'),
       h('div', { class: 'dial-cards' }, cat.canned.map((c) => cannedCard(c, ctx)))));
   } else {
-    kids.push(h('section', { class: 'dial-sec', 'data-sec': 'canned' }, h('div', { class: 'radio-sec-head' }, h('span', {}, 'Pre-written shows')),
+    kids.push(h('section', { class: 'dial-sec', 'data-sec': 'canned' }, h('div', { class: 'radio-sec-head' }, h('span', {}, 'Offline shows')),
       h('p', { class: 'dial-sub' }, 'The station list could not be loaded.')));
   }
   if (cat.styles.length) {
@@ -95,6 +56,7 @@ export async function renderDial(root, ctx) {
       h('div', { class: 'dial-cards' }, cat.styles.map((c) => styleCard(c, ctx)))));
   }
   root.replaceChildren(...kids);
+  if (ctx.paintCard) root.querySelectorAll('.dial-card[data-station]').forEach((el) => ctx.paintCard(el));
   return { canned: cat.canned.length, styles: cat.styles.length };
 }
 
@@ -104,16 +66,18 @@ function cannedCard(c, ctx) {
   const star = h('button', { class: 'radio-star dial-star' + (fav ? ' on' : ''), type: 'button', 'aria-pressed': String(fav), 'aria-label': (fav ? 'Remove ' : 'Add ') + c.name + (fav ? ' from favourites' : ' to favourites'),
     onclick: (e) => { e.stopPropagation(); ctx.toggleFav(st); } }, fav ? '★' : '☆');
   const tagId = `dial-tag-${c.id}`;
-  // A plain container: the ONE real <button> is the station name, stretched over the card (::after) so the whole card plays it;
-  // the star is a sibling above the overlay (44 px hit area, no taller card), so a missed star tap can only miss, never start.
+  // A plain container; the ONE real <button> is the visible Play / Stop button at the bottom, stretched over the card (::after) so the
+  // whole card plays it. The star is a sibling above the overlay (44 px hit area), so a missed star tap can only miss, never start.
+  // The label ("Play" / "Stop"), the now-playing line and the .on state are painted by the Radio tab (paintCard) as the station changes.
   return h('div', { class: 'dial-card' + (ctx.isCurrent(st) ? ' on' : ''), 'data-k': c.key, 'data-station': c.id },
-    h('div', { class: 'dial-top' },
-      h('button', { class: 'dial-play', type: 'button', 'aria-label': `Play ${c.name}, dial ${c.dial}`, 'aria-describedby': tagId, onclick: () => ctx.play(st) },
-        h('span', { class: 'dial-name' }, c.name), ' ', h('span', { class: 'dial-num' }, c.dial))),
+    h('div', { class: 'dial-top' }, h('span', { class: 'dial-name' }, c.name), ' ', h('span', { class: 'dial-num' }, c.dial)),
     h('div', { class: 'dial-tag', id: tagId }, c.tagline),
     h('div', { class: 'dial-vibe' }, c.vibe),
     h('div', { class: 'dial-chips' }, c.hostChips.map((x) => h('span', { class: 'dial-chip', title: x.role }, x.name)), c.castCount ? h('span', { class: 'dial-chip dim' }, `+${c.castCount} more voices`) : null),
-    h('div', { class: 'dial-meta' }, h('span', { class: 'dial-badge' }, PRE_WRITTEN_LABEL), h('span', {}, `about ${c.minutes} min of talk`), h('span', { 'data-daypart': c.inDaypart ? 'fit' : 'other' }, c.daypartBadge)),
+    h('div', { class: 'dial-meta' }, h('span', { class: 'dial-badge' }, OFFLINE_LABEL), h('span', {}, `about ${c.minutes} min of talk`), h('span', { 'data-daypart': c.inDaypart ? 'fit' : 'other' }, c.daypartBadge)),
+    h('div', { class: 'dial-actions' },
+      h('button', { class: 'dial-play', type: 'button', 'data-play': '', 'data-name': c.name, 'data-dial': c.dial, 'aria-describedby': tagId, 'aria-label': `Play ${c.name}, dial ${c.dial}`, onclick: () => ctx.play(st) }, '▶ Play'),
+      h('span', { class: 'rr-now', 'data-now': '', role: 'status' })),
     star);
 }
 

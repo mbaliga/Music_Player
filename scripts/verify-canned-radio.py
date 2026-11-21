@@ -237,6 +237,9 @@ def run():
         time.sleep(0.8)
         out['C_stopped_phase_hidden'] = page.evaluate('document.querySelector(".ai-panel").classList.contains("hidden")')
         n2 = len(reqs)
+        if page.locator('.dial-card.on').count():   # the card still reads "Stop" while the sign-off plays: tapping it stops at once, a second tap starts it again
+            out['C_card_label_during_signoff'] = page.inner_text('.dial-card.on .dial-play[data-play]')
+            page.click('.dial-card[data-station="meridian-91-5"]'); time.sleep(0.5)
         page.click('.dial-card[data-station="meridian-91-5"]')
         page.wait_for_function('document.querySelector(".ai-now-title") && document.querySelector(".ai-now-title").textContent !== "Tuning in…"', timeout=20000)
         time.sleep(3)

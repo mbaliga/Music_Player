@@ -15,7 +15,8 @@ import { AI_STYLES } from './ai-styles.js';
 
 export const CANNED_TYPE = 'canned';
 export const AI_STYLE_TYPE = 'ai-style';
-export const PRE_WRITTEN_LABEL = 'Pre-written show';
+export const OFFLINE_LABEL = 'Works offline';
+export const PRE_WRITTEN_LABEL = OFFLINE_LABEL; // kept for older imports
 export const NEEDS_INTERNET = 'Needs internet — coming soon';
 
 /** local hour (0-23) -> the pack daypart vocabulary: morning 5-10, day 10-17, evening 17-21, night 21-5 */
@@ -37,13 +38,13 @@ export function daypartFit(dayparts, hour) {
   return d.includes('any') ? 1 : 0;
 }
 
-const cap = (s) => (s ? s[0].toUpperCase() + s.slice(1) : s);
-/** badge text: "Any time", "Evening / night" */
+const DAYPART_WORDS = { morning: 'Morning', day: 'Daytime', evening: 'Evening', night: 'Late night' };
+/** plain badge text: "Any time", "Evening / Late night". A station that also plays "any" time is named by its own part of the day. */
 export function daypartBadge(dayparts) {
   const d = Array.isArray(dayparts) ? dayparts : [];
-  if (!d.length || d.includes('any') && d.length === 1) return 'Any time';
-  const real = d.filter((x) => x !== 'any');
-  return real.length >= 4 ? 'Any time' : real.map(cap).join(' / ') + (d.includes('any') ? ' (any time)' : '');
+  const real = d.filter((x) => x !== 'any' && DAYPART_WORDS[x]);
+  if (!real.length || real.length >= 4) return 'Any time';
+  return real.map((x) => DAYPART_WORDS[x]).join(' / ');
 }
 
 /** Stations index (parsed JSON) -> sanitised entries. Never throws; junk is dropped. */

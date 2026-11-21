@@ -1,0 +1,156 @@
+/* radio.css — the Radio section: search + genres, results, station rows, the dial's cards, the now-playing card, the AI switch.
+   Tokens only (every theme works). Loaded from index.html after the shell sheets. */
+
+#paneRadio { position: relative; }
+
+/* ── search + genres ───────────────────────────────────────────────────────────────────────────────────────────────── */
+#paneRadio .radio-bar { flex-direction: column; align-items: stretch; flex-wrap: nowrap; gap: 8px; padding: 0 0 8px; border-bottom: 0; background: var(--card-bg, var(--bg)); }
+.radio-bar > * { min-width: 0; max-width: 100%; }
+.radio-search { display: flex; gap: 8px; align-items: center; }
+.radio-field { flex: 1; min-width: 0; position: relative; }
+.radio-input { width: 100%; box-sizing: border-box; height: 48px; padding: 0 44px 0 14px; font-size: 16px; -webkit-appearance: none; appearance: none; }
+.radio-input::-webkit-search-cancel-button { display: none; }
+.radio-input:focus { outline: none; border-color: var(--violet); box-shadow: 0 0 0 3px var(--violet-glow, transparent); }
+.radio-clear { position: absolute; right: 2px; top: 2px; width: 44px; height: 44px; border: 0; border-radius: 50%; background: none; color: var(--ink2); font-size: 24px; line-height: 1; cursor: pointer; }
+.radio-clear.hidden { display: none; }
+.radio-go { min-height: 48px; min-width: 84px; padding: 0 20px; font-size: 15px; }
+#paneRadio .radio-chips { display: flex; flex-wrap: nowrap; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 0 28px 2px 0; margin-right: -14px;
+  -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 36px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 36px), transparent); }
+.radio-chips::-webkit-scrollbar { display: none; }
+.radio-chips .sort-chip { flex: 0 0 auto; min-height: 44px; padding: 0 16px; font-size: 14px; display: inline-flex; align-items: center; }
+.radio-chips .sort-chip.active { background: var(--violet); color: var(--on-accent, #fff); border-color: var(--violet); }
+.radio-chips .sort-chip.active::before { content: "✓"; margin-right: 6px; font-weight: 800; }
+.radio-search button:focus-visible, .radio-chips .sort-chip:focus-visible, .radio-clear:focus-visible, .radio-back:focus-visible, .rr-play:focus-visible, .radio-star:focus-visible, .radio-status .sort-chip:focus-visible { outline: 2px solid var(--violet); outline-offset: 2px; }
+
+/* the scroller holds everything, the search bar included: it stays on top while you scroll on a tall screen, and scrolls away on a short one */
+#paneRadio .lib-grid-wrap { flex: 1 1 0; min-height: 190px; padding-top: 0; position: relative; scroll-padding-bottom: 12px; }
+@media (min-height: 640px) { #paneRadio:not([data-playing]) .lib-grid-wrap { scroll-padding-top: 130px; } }
+@media (min-height: 640px) { #paneRadio:not([data-playing]) .radio-bar { position: sticky; top: 0; z-index: 4; padding-top: 10px; } }
+@media (max-height: 639px) { #paneRadio .radio-bar { padding-top: 10px; } }
+
+/* ── results first: while a search is on, the rest of the tab steps aside ──────────────────────────────────────────── */
+.radio-res-head { display: none; align-items: center; gap: 8px; flex-wrap: wrap; padding: 4px 0 6px; }
+.radio-pane[data-mode="results"] .radio-res-head { display: flex; }
+.radio-pane[data-mode="results"] .radio-ai-sec, .radio-pane[data-mode="results"] .radio-saved, .radio-pane[data-mode="results"] .radio-dial,
+.radio-pane[data-mode="results"] .radio-net-head, .radio-pane[data-mode="results"] .radio-settings { display: none; }
+.radio-back { min-height: 44px; padding: 0 14px 0 10px; border-radius: 22px; border: 1px solid var(--border); background: var(--surface2); color: var(--ink); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+.radio-res-title { flex: 1 1 140px; min-width: 0; font-size: 16px; font-weight: 700; color: var(--ink); overflow-wrap: anywhere; }
+
+.radio-status { font-size: 13px; color: var(--ink2); padding: 8px 2px 12px; text-align: center; line-height: 1.5; }
+.radio-status:empty { display: none; }
+.radio-status.busy { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 18px 2px; font-size: 14px; }
+.radio-status.err { color: #ff8a8a; }
+.radio-status.empty b { display: block; font-size: 16px; color: var(--ink); margin-bottom: 4px; }
+.radio-status.empty { padding: 28px 8px; font-size: 14px; }
+.radio-status-acts { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 10px; }
+.radio-status .sort-chip { min-height: 44px; padding: 0 16px; font-size: 14px; }
+.radio-spin { width: 20px; height: 20px; border-radius: 50%; border: 3px solid var(--border); border-top-color: var(--violet); animation: rSpin .8s linear infinite; flex: none; }
+@keyframes rSpin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .radio-spin { animation: none; border-top-color: var(--border); border-right-color: var(--violet); } }
+
+/* ── station rows (internet, favourites, recents, You Radio) ───────────────────────────────────────────────────────── */
+.radio-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 8px; }
+.radio-row { display: flex; align-items: center; gap: 4px; padding: 8px 8px 8px 14px; min-height: 72px; cursor: pointer; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
+.radio-row.on { border-color: var(--violet); box-shadow: 0 0 0 1px var(--violet) inset; }
+.radio-row-main { flex: 1; min-width: 0; padding: 2px 0; }
+.rr-name { font-size: 15px; font-weight: 700; color: var(--ink); line-height: 1.25; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.rr-meta { font-size: 12.5px; color: var(--ink2); margin-top: 2px; line-height: 1.35; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.rr-now { font-size: 12px; font-weight: 700; color: var(--violet); }
+.rr-now:empty { display: none; }
+.rr-now[data-phase="playing"] { color: #5ad18a; }
+.rr-now[data-phase="reconnecting"] { color: #f5c542; }
+.rr-now[data-phase="error"] { color: #ff8a8a; }
+.rr-play, .dial-card .dial-play[data-play] { flex: none; min-width: 80px; min-height: 44px; padding: 0 12px; border-radius: 22px; border: 1px solid var(--violet); background: var(--violet); color: var(--on-accent, #fff); font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+.rr-play.stop, .dial-card .dial-play[data-play].stop { background: none; color: var(--violet); }
+.radio-saved { display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px; }
+.radio-saved:empty { display: none; }
+.radio-sec-head { display: flex; align-items: center; justify-content: space-between; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink2); padding: 0 2px 6px; }
+.radio-resume { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 48px; padding: 11px 14px; border-radius: 10px; cursor: pointer; text-align: left;
+  background: var(--surface); color: var(--ink); border: 1px solid var(--secondary); font: inherit; font-size: 14px; }
+.radio-resume-go { color: var(--secondary); font-size: 12px; }
+.radio-resume-txt { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.radio-star { flex: 0 0 auto; width: 44px; height: 44px; margin: 0; border: none; background: none; color: var(--ink2); font-size: 22px; line-height: 1; cursor: pointer; border-radius: 50%; }
+.radio-star.on { color: #f5c542; }
+.radio-remove { min-height: 44px; padding: 0 14px; }
+.radio-row.missing { cursor: default; }
+.radio-ai-sec { margin-bottom: 12px; }
+.radio-ai-sec .radio-list { grid-template-columns: 1fr; }
+
+/* ── the dial: offline show cards ──────────────────────────────────────────────────────────────────────────────────── */
+.dial-sec { margin-bottom: 14px; }
+.dial-sub { font-size: 13px; color: var(--ink2); margin: 0 2px 10px; line-height: 1.45; }
+.dial-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px; align-items: start; }
+.dial-card { position: relative; padding: 12px; border-radius: 12px; background: var(--surface); border: 1px solid var(--border); color: var(--ink); cursor: pointer; text-align: left; }
+.dial-card.on { border-color: var(--violet); box-shadow: 0 0 0 1px var(--violet) inset; }
+.dial-card:has(.dial-play:focus-visible) { outline: 2px solid var(--violet); outline-offset: 2px; }
+.dial-card.grey { opacity: .62; }
+.dial-play { display: block; margin: 0; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.dial-play:focus { outline: none; }
+.dial-play::after { content: ""; position: absolute; inset: 0; border-radius: 12px; }
+/* a style card's whole top row is the expand button (>= 44 px) */
+.dial-card[data-style] .dial-play { width: 100%; min-height: 44px; }
+.dial-card .dial-info { position: relative; z-index: 1; cursor: auto; }
+.dial-top { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 8px; padding-right: 44px; }
+.dial-card[data-style] .dial-top { padding-right: 0; }
+.dial-name { font-size: 17px; font-weight: 700; min-width: 0; overflow-wrap: anywhere; }
+.dial-num { font-size: 12px; font-weight: 700; color: var(--ink2); border: 1px solid var(--border); border-radius: 8px; padding: 0 6px; white-space: nowrap; }
+.dial-tag { font-size: 14px; margin-top: 3px; }
+.dial-vibe { font-size: 12.5px; color: var(--ink2); margin-top: 4px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.dial-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.dial-chip { font-size: 12px; padding: 2px 8px; border-radius: 999px; background: var(--surface2); border: 1px solid var(--border); color: var(--ink); }
+.dial-chip.dim { color: var(--ink2); }
+.dial-meta { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 8px; font-size: 12px; color: var(--ink2); align-items: center; }
+.dial-badge { font-weight: 700; color: var(--ink); }
+.dial-badge.soon { color: var(--ink2); }
+.dial-actions { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
+.dial-star { position: absolute; top: 0; right: 0; z-index: 2; width: 44px; height: 44px; margin: 0; }
+.dial-bar { height: 6px; border-radius: 3px; background: var(--surface2); overflow: hidden; margin-top: 8px; display: flex; }
+.dial-bar i { display: block; height: 100%; background: var(--violet); }
+.dial-bar b { display: block; height: 100%; background: var(--border); }
+.dial-info { margin-top: 10px; font-size: 13px; line-height: 1.4; border-top: 1px solid var(--border); padding-top: 10px; }
+.dial-info dl { margin: 6px 0 0; display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; font-size: 12px; }
+.dial-info dt { color: var(--ink2); }
+.dial-info dd { margin: 0; }
+.dial-host { margin-top: 8px; padding: 8px; border-radius: 8px; background: var(--surface2); }
+.dial-host button { margin-top: 6px; min-height: 44px; padding: 6px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--ink); font: inherit; font-size: 13px; cursor: pointer; }
+.dial-aud { min-height: 1.2em; font-size: 12px; color: var(--ink2); margin-top: 4px; }
+
+/* ── AI stations switch (same switch as Settings) ──────────────────────────────────────────────────────────────────── */
+.radio-setting { padding: 10px 12px; border-radius: 12px; background: var(--surface); border: 1px solid var(--border); }
+.radio-setting .st-switch { align-items: center; }
+.radio-setting .st-hint { display: block; }
+
+/* ── the now-playing card: part of the column, under the list, so it pushes the list up instead of covering it ─────── */
+.ai-panel.hidden { display: none; }
+.radio-now.info .alb-artist { color: var(--ink2); white-space: normal; }
+.ai-panel:not(.hidden) + .radio-now { display: none; }
+.ai-panel:not(.hidden) { flex: 0 1 auto; display: flex; flex-direction: column; max-height: 46%; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; border-top: 1px solid var(--border); }
+.ai-panel .ai-card { margin: 6px 12px; padding: 10px 12px; gap: 6px; flex: 0 0 auto; min-width: 0; }
+.ai-panel .ai-captions { min-height: 2.7em; max-height: 6.5em; overflow-y: auto; }
+.ai-panel .ai-label small { display: none; }
+.ai-panel .ai-voices[open] > div { max-height: 30vh; overflow-y: auto; }
+.ai-panel .ai-controls button { min-height: 44px; }
+.ai-panel .ai-voices summary { min-height: 44px; display: flex; align-items: center; }
+.radio-now.reconnecting .alb-artist { color: #f5c542; white-space: normal; }
+.radio-now { display: flex; align-items: center; gap: 10px; padding: 12px 16px; flex-shrink: 0; background: var(--surface); border-top: 1px solid var(--border); }
+.radio-now-main { flex: 1; min-width: 0; }
+.radio-now.playing .alb-artist { color: #5ad18a; }
+.radio-now.error .alb-artist { color: #ff8a8a; white-space: normal; }
+.radio-now .theme-btn, .radio-now .sort-chip { min-height: 44px; padding: 0 16px; }
+.radio-pill { position: fixed; left: 12px; bottom: 12px; z-index: 90; display: flex; align-items: center; gap: 8px; max-width: calc(100vw - 24px); padding: 6px 6px 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;
+  background: var(--surface); color: var(--ink); border: 1px solid var(--border); box-shadow: 0 4px 16px rgba(0,0,0,.5); }
+.radio-pill.hidden { display: none; }
+.radio-pill-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--secondary); flex: 0 0 auto; }
+.radio-pill.playing .radio-pill-dot { background: #5ad18a; }
+.radio-pill.reconnecting .radio-pill-dot { background: #f5c542; }
+.radio-pill.error .radio-pill-dot { background: #ff6b6b; }
+.radio-pill-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.radio-pill-stop { width: 26px; height: 26px; border-radius: 50%; border: none; background: var(--surface2); color: var(--ink); cursor: pointer; }
+
+/* short, wide screens (a phone on its side): search and genres share a row, the list is two columns */
+@media (max-height: 520px) and (min-width: 600px) {
+  #paneRadio .radio-bar { flex-direction: row; align-items: center; gap: 10px; }
+  .radio-search { flex: 1 1 55%; }
+  .radio-chips { flex: 1 1 45%; }
+  .ai-panel:not(.hidden) { max-height: 60%; }
+}

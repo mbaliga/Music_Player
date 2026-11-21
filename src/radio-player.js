@@ -42,13 +42,6 @@ registerAi();
 // one of them starts (see src/radio/canned/).
 registerCannedStationType({ loadCanned: () => import('./radio/canned/index.js') });
 
-const AI_CSS = `.radio-setting{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:10px;background:var(--surface);border:1px solid var(--border);cursor:pointer;font-size:14px}
-.radio-setting small{display:block;color:var(--ink2);font-size:12px;margin-top:2px;line-height:1.35}
-.radio-setting input{margin-top:3px;width:18px;height:18px;flex:0 0 auto}
-.radio-ai-sec{margin-bottom:12px}
-.ai-panel.hidden{display:none}
-.radio-now.info .alb-artist{color:var(--ink2);white-space:normal}`;
-
 const h = (tag, props = {}, ...kids) => {
   const e = document.createElement(tag);
   for (const [k, v] of Object.entries(props)) {
@@ -84,49 +77,88 @@ export class RadioUI {
 
   mount(pane) {
     this.pane = pane;
-    this.input = h('input', { class: 'mt-name', type: 'search', placeholder: 'Search stations…', 'aria-label': 'Search radio stations' });
-    this.status = h('div', { class: 'radio-status' });
+    pane.classList.add('radio-pane');
+    pane.dataset.mode = 'browse';
+    this.tag = '';
+    this._seq = 0;
+    this.input = h('input', { class: 'mt-name radio-input', type: 'search', placeholder: 'Search stations', 'aria-label': 'Search internet radio stations', enterkeyhint: 'search', autocomplete: 'off' });
+    this.clearBtn = h('button', { class: 'radio-clear hidden', type: 'button', 'aria-label': 'Clear search text', onclick: () => { this.input.value = ''; this._syncClear(); this.input.focus(); } }, '×');
+    this.input.addEventListener('input', () => this._syncClear());
+    this.status = h('div', { class: 'radio-status', role: 'status', 'aria-live': 'polite' });
     this.listEl = h('div', { class: 'radio-list' });
     this.dialEl = h('div', { class: 'radio-dial' });
     this.netHead = h('div', { class: 'radio-sec-head radio-net-head' }, h('span', {}, 'Internet radio'));
     this.savedEl = h('div', { class: 'radio-saved' });
     this.now = h('div', { class: 'radio-now hidden' });
-    const form = h('form', { class: 'radio-search', onsubmit: (e) => { e.preventDefault(); this.search({ name: this.input.value }); } },
-      this.input, h('button', { class: 'lib-scan', type: 'submit' }, 'Search'));
-    const chips = h('div', { class: 'sort-chips radio-chips' },
-      h('button', { class: 'sort-chip', type: 'button', onclick: () => { this.input.value = ''; this.search({}); } }, 'Top'),
-      ...GENRES.map((g) => h('button', { class: 'sort-chip', type: 'button', onclick: () => { this.input.value = ''; this.search({ tag: g }); } }, g)));
-    // AI stations (experimental): a visible toggle for the radio.ai flag (default OFF), the You Radio row when on, and the
+    // Search results: the section that REPLACES the browse sections while a search is on (title, back control, then status + list).
+    this.resTitle = h('div', { class: 'radio-res-title' });
+    this.resHead = h('div', { class: 'radio-res-head' },
+      h('button', { class: 'radio-back', type: 'button', onclick: () => this.exitSearch() }, h('span', { 'aria-hidden': 'true' }, '←'), ' All stations'), this.resTitle);
+    const form = h('form', { class: 'radio-search', role: 'search', onsubmit: (e) => { e.preventDefault(); this.input.blur(); this.runSearch(); } },
+      h('div', { class: 'radio-field' }, this.input, this.clearBtn), h('button', { class: 'lib-scan radio-go', type: 'submit' }, 'Search'));
+    this.chipEls = new Map();
+    const mk = (label, tag) => { const b = h('button', { class: 'sort-chip', type: 'button', 'aria-pressed': 'false', onclick: () => this._pickTag(tag) }, label); this.chipEls.set(tag, b); return b; };
+    const chips = h('div', { class: 'sort-chips radio-chips', role: 'group', 'aria-label': 'Genres' }, mk('Top', ''), ...GENRES.map((g) => mk(g, g)));
+    this._paintChips();
+    // AI stations (experimental): a visible switch for the radio.ai flag (default OFF), the You Radio row when on, and the
     // card the offline host draws its captions and controls into.
     this.aiSec = h('div', { class: 'radio-ai-sec' });
     this._aiPanel = h('div', { class: 'ai-panel hidden' });
-    const aiToggle = h('input', { type: 'checkbox', id: 'aiStationsToggle', 'aria-describedby': 'aiStationsHelp' });
-    aiToggle.checked = this._aiOn();
-    aiToggle.addEventListener('change', () => this._setAi(aiToggle.checked));
-    this.settingsEl = h('div', { class: 'radio-sec' },
+    const aiToggle = h('button', { type: 'button', class: 'st-switch', id: 'aiStationsToggle', role: 'switch', 'aria-describedby': 'aiStationsHelp', 'aria-checked': String(this._aiOn()) },
+      h('span', { class: 'st-track' }),
+      h('span', { class: 'st-grow' }, h('b', { class: 'st-label' }, 'AI stations (experimental)'),
+        h('span', { class: 'st-hint', id: 'aiStationsHelp' }, 'Off by default. Turn it on to add You Radio, where made-up hosts chat between your own songs. It all runs on this phone, with no internet and no account.')));
+    aiToggle.addEventListener('click', () => { const on = aiToggle.getAttribute('aria-checked') !== 'true'; aiToggle.setAttribute('aria-checked', String(on)); this._setAi(on); });
+    this.settingsEl = h('div', { class: 'radio-sec radio-settings' },
       h('div', { class: 'radio-sec-head' }, h('span', {}, 'Settings')),
-      h('label', { class: 'radio-setting' }, aiToggle,
-        h('span', {}, h('b', {}, 'AI stations (experimental)'),
-          h('small', { id: 'aiStationsHelp' }, 'Adds You Radio: automated hosts who talk between your own songs, with lines written and spoken on this phone. Needs no network and no account. Off by default.'))));
-    const css = document.createElement('style'); css.textContent = AI_CSS; document.head.append(css);
-    pane.append(h('div', { class: 'lib-toolbar radio-bar' }, form, chips),
-      h('div', { class: 'lib-grid-wrap' }, this.aiSec, this.savedEl, this.dialEl, this.netHead, this.status, this.listEl, this.settingsEl),
-      this._aiPanel, this.now); // the card sits BEFORE the now-bar so CSS can hide the bar while the card is up (index.html)
+      h('div', { class: 'radio-setting' }, aiToggle));
+    this.bar = h('div', { class: 'lib-toolbar radio-bar' }, form, chips);
+    this.scroller = h('div', { class: 'lib-grid-wrap' }, this.bar, this.resHead, this.aiSec, this.savedEl, this.dialEl, this.netHead, this.status, this.listEl, this.settingsEl);
+    // the now-playing card appears (and grows) a moment after a station starts: keep the station's card in view above it for those first seconds
+    if (typeof ResizeObserver !== 'undefined') new ResizeObserver(() => { if (Date.now() < (this._revealUntil || 0)) this._revealCurrent(); }).observe(this.scroller);
+    pane.append(this.scroller, this._aiPanel, this.now); // the card sits BEFORE the now-bar so CSS can hide the bar while the card is up (radio.css)
     // Retry when connectivity returns.
-    window.addEventListener('online', () => { if (this._lastFailureOffline) this.search(this._lastParams || {}); });
+    window.addEventListener('online', () => { if (this._lastFailureOffline) this.search(this._lastParams || {}, this._lastOpts); });
     window.addEventListener('offline', () => { this.netHead.dataset.offline = '1'; });
   }
 
+  _syncClear() { this.clearBtn.classList.toggle('hidden', !this.input.value); }
+  _paintChips() { const typed = this.pane?.dataset.mode === 'results' && !!(this._lastParams && this._lastParams.name); for (const [tag, b] of this.chipEls) { const on = tag === this.tag && !(tag === '' && typed); b.classList.toggle('active', on); b.setAttribute('aria-pressed', String(on)); } }
+
+  /** A genre chip: keeps whatever is typed (the directory takes name + tag together); tapping the selected one again deselects it. */
+  _pickTag(tag) { this.tag = tag && this.tag === tag ? '' : tag; this._paintChips(); this.runSearch(); }
+
+  /** The user's own search (Search button, Enter or a chip): switches the tab to a results view that comes first. */
+  runSearch() {
+    const name = this.input.value.trim();
+    this._paintChips();
+    this.search({ name, tag: this.tag }, { results: true });
+  }
+
+  /** Leave the results view: back to the full tab (shows, saved, the top list); the search box and genre reset. */
+  exitSearch() {
+    this.input.value = ''; this._syncClear(); this.tag = ''; this._paintChips();
+    this._seq++;
+    this.pane.dataset.mode = 'browse';
+    this.search({}, { results: false });
+    this.scroller.scrollTop = 0;
+  }
+
+  _resultsTitle(p) {
+    const n = (p.name || '').trim(), t = p.tag || '';
+    return n && t ? `“${n}” in ${t}` : n ? `Results for “${n}”` : t ? `Top ${t} stations` : 'Top stations';
+  }
+
   /** Called when the Radio tab is shown: first visit loads the top stations. */
-  activate() { this._renderSaved(); this._renderAi(); this._renderDial(); if (!this.loadedOnce) this.search({}); }
+  activate() { this._renderSaved(); this._renderAi(); this._renderDial(); if (!this.loadedOnce) this.search({}, { results: false }); }
 
   /** The dial (pre-written shows, AI style cards): lazy-loaded the first time the Radio tab is shown. */
   _renderDial() {
     if (!this.dialEl) return;
     import('./radio/canned/dial.js').then((m) => m.renderDial(this.dialEl, {
       aiOn: () => this._aiOn(), isFav: (s) => isFavourite(this.store, s), toggleFav: (s) => this.toggleFav(s),
-      play: (s) => this.play(s), isCurrent: (s) => this._isCurrent(s), isPlaying: () => !!this.session, storage: this._storage(),
-      onIndex: (idx) => this._onIndex(idx),
+      play: (s) => this.toggle(s), isCurrent: (s) => this._isCurrent(s), isPlaying: () => !!this.session, storage: this._storage(),
+      onIndex: (idx) => this._onIndex(idx), paintCard: (el) => this._paintPlayButton(el, this.station && el.dataset.k === stationKey(this.station) ? (this.session?.state?.phase || 'connecting') : ''),
     })).catch(() => { this.dialEl.replaceChildren(h('p', { class: 'radio-status err' }, 'The station list could not be loaded.')); });
   }
 
@@ -158,17 +190,60 @@ export class RadioUI {
       h('div', { class: 'radio-list' }, this._row(aiYouStation()))));
   }
 
-  /** One list row: tap to play, star to favourite. Works for live results and stored snapshots alike. */
+  /** One station row: the whole row plays / stops it, and there is a visible, labelled Play / Stop button (>= 44 px) for it.
+   *  Works for live results and stored snapshots alike. Station text is untrusted: text nodes only. */
   _row(s) {
     const fav = isFavourite(this.store, s);
     const star = h('button', { class: 'radio-star' + (fav ? ' on' : ''), type: 'button', 'aria-pressed': String(fav),
       'aria-label': (fav ? 'Remove ' : 'Add ') + s.name + (fav ? ' from favourites' : ' to favourites'),
       onclick: (e) => { e.stopPropagation(); this.toggleFav(s); } }, fav ? '★' : '☆');
-    return h('div', { class: 'radio-row' + (this._isCurrent(s) ? ' on' : ''), 'data-k': stationKey(s) || '', onclick: () => this.play(s) },
+    const go = h('button', { class: 'rr-play', type: 'button', 'data-name': s.name, onclick: (e) => { e.stopPropagation(); this.toggle(s); } });
+    const meta = s.type === 'ai-you' ? 'Hosts chat between your own songs. Works offline.' : s.type === 'canned' ? 'Works offline' : describeStation({ country: '', codec: '', bitrate: 0, tags: [], ...s });
+    const row = h('div', { class: 'radio-row', 'data-k': stationKey(s) || '', onclick: () => this.toggle(s) },
       h('div', { class: 'radio-row-main' },
-        h('div', { class: 'alb-name' }, s.name),
-        h('div', { class: 'alb-artist' }, s.type === 'ai-you' ? 'Your own songs, with automated hosts · works offline' : s.type === 'canned' ? 'Pre-written show · works offline' : describeStation({ country: '', codec: '', bitrate: 0, tags: [], ...s }))),
-      star, h('span', { class: 'radio-row-go' }, '▶'));
+        h('div', { class: 'rr-name' }, s.name),
+        h('div', { class: 'rr-meta' }, meta),
+        h('div', { class: 'rr-now', 'data-now': '' })),
+      star, go);
+    this._paintPlayButton(row, this._isCurrent(s) ? (this.session?.state?.phase || 'connecting') : '');
+    return row;
+  }
+
+  /** Play / Stop wording + the "now playing" line on a row or dial card (phase '' = not the current station). */
+  _paintPlayButton(el, phase) {
+    const btn = el.querySelector('.rr-play, .dial-play[data-play]'); if (!btn) return;
+    const name = btn.dataset.name || '';
+    const on = !!phase && phase !== 'idle';
+    const retry = phase === 'error';
+    el.classList.toggle('on', on);
+    btn.classList.toggle('stop', on && !retry);
+    btn.textContent = retry ? '↻ Retry' : on ? '■ Stop' : '▶ Play';
+    btn.setAttribute('aria-label', (retry ? 'Try again: ' : on ? 'Stop ' : 'Play ') + name + (btn.dataset.dial ? ', dial ' + btn.dataset.dial : ''));
+    const now = el.querySelector('[data-now]');
+    if (now) now.textContent = !on ? '' : { connecting: 'Connecting…', buffering: 'Buffering…', reconnecting: 'Reconnecting…', playing: 'Now playing', error: 'Could not play' }[phase] || 'Now playing';
+    if (now) now.dataset.phase = phase || '';
+  }
+
+  /** Re-label every row / card for the current station + phase (called whenever either changes). */
+  _syncPlayState(station, phase) {
+    this.pane?.querySelectorAll('.radio-row[data-k], .dial-card[data-k][data-station]').forEach((r) => {
+      this._paintPlayButton(r, station && r.dataset.k === stationKey(station) ? phase : '');
+    });
+  }
+
+  /** The current station is under the now-playing card (it pushes the list up): keep it in view above the card. */
+  _revealCurrent(first) {
+    if (first) this._revealUntil = Date.now() + 3000;
+    const el = this.pane?.querySelector('.radio-row.on, .dial-card.on'); if (!el || !this.scroller) return;
+    setTimeout(() => { // the whole card if it fits above the now-playing card, else at least its Stop button
+      try { (el.offsetHeight <= this.scroller.clientHeight - 8 ? el : (el.querySelector('.rr-play, .dial-play[data-play]') || el)).scrollIntoView({ block: 'nearest', behavior: 'auto' }); } catch { /* old webview */ }
+    }, 80);
+  }
+
+  /** Play, or Stop when this is the station that is on. A session that is idle (a sign-off finished) or in error restarts instead. */
+  toggle(station) {
+    const ph = this.session && this.session.state ? this.session.state.phase : 'idle';
+    if (this._isCurrent(station) && this.session && ph !== 'idle' && ph !== 'error') this.stop(); else this.play(station);
   }
 
   _missing(s) { return isMissingCanned(s, this._cannedIndex); }
@@ -178,7 +253,7 @@ export class RadioUI {
   /** A saved canned station whose pack is gone: say so, and offer Remove (never a play button that can only fail). */
   _missingRow(s) {
     return h('div', { class: 'radio-row missing', 'data-k': stationKey(s) || '' },
-      h('div', { class: 'radio-row-main' }, h('div', { class: 'alb-name' }, s.name), h('div', { class: 'alb-artist' }, NO_LONGER)),
+      h('div', { class: 'radio-row-main' }, h('div', { class: 'rr-name' }, s.name), h('div', { class: 'rr-meta' }, NO_LONGER)),
       h('button', { class: 'sort-chip radio-remove', type: 'button', 'aria-label': `Remove ${s.name}`, onclick: () => this._removeSaved(s) }, 'Remove'));
   }
 
@@ -214,24 +289,42 @@ export class RadioUI {
     this.savedEl.replaceChildren(...kids.filter(Boolean));
   }
 
-  async search(params) {
-    this._lastParams = params;
+  /** opts.results = the user's own search: the results come first and the other sections step aside. */
+  async search(params, opts = {}) {
+    this._lastParams = params; this._lastOpts = opts;
     this.loadedOnce = true;
-    this.status.className = 'radio-status';
-    this.status.textContent = 'Searching…';
+    const seq = ++this._seq;
+    const results = !!opts.results;
+    this.pane.dataset.mode = results ? 'results' : 'browse';
+    this._paintChips();
+    if (results) { this.resTitle.textContent = this._resultsTitle(params); this.scroller.scrollTop = 0; }
+    const busy = (text) => { this.status.className = 'radio-status busy'; this.status.replaceChildren(h('span', { class: 'radio-spin', 'aria-hidden': 'true' }), h('span', {}, text)); };
+    busy(results ? `Searching for ${params.name ? '“' + params.name + '”' : 'stations'}…` : 'Loading top stations…');
     this.listEl.replaceChildren();
     // offline: do not even try the directory (no requests; the pre-written shows above still work)
     if (!this.servers && navigator.onLine !== false) this.servers = await discoverServers((u, o) => fetch(u, o));
+    if (seq !== this._seq) return;
     const r = await searchStations((u, o) => fetch(u, o), this.servers || [], params, { isOnline: () => navigator.onLine !== false });
+    if (seq !== this._seq) return; // a newer search (or Back) superseded this one
     this._lastFailureOffline = !r.ok && r.kind === 'offline';
     if (!r.ok) {
       this.status.className = 'radio-status err';
       this.status.replaceChildren(
-        r.kind === 'offline' ? 'You are offline. Internet radio needs a connection. The pre-written shows above still work.' : 'Could not reach the station directory.',
-        ' ', h('button', { class: 'sort-chip', type: 'button', onclick: () => this.search(params) }, 'Retry'));
+        h('div', { class: 'radio-status-msg' }, r.kind === 'offline' ? 'You are offline. Internet radio needs a connection. The offline shows still work.' : 'Could not reach the station directory. Check your connection and try again.'),
+        h('div', { class: 'radio-status-acts' }, h('button', { class: 'sort-chip', type: 'button', onclick: () => this.search(params, opts) }, 'Try again'),
+          results ? h('button', { class: 'sort-chip', type: 'button', onclick: () => this.exitSearch() }, 'Back to all stations') : null));
       return;
     }
-    this.status.textContent = r.stations.length ? '' : 'No stations found. Try another search.';
+    if (!r.stations.length) {
+      const what = params.name ? `“${params.name}”` : params.tag || 'that';
+      this.status.className = 'radio-status empty';
+      this.status.replaceChildren(h('b', {}, `No stations found for ${what}`), h('div', {}, 'Check the spelling, or try a genre or a shorter name.'),
+        results ? h('div', { class: 'radio-status-acts' }, h('button', { class: 'sort-chip', type: 'button', onclick: () => this.exitSearch() }, 'Clear search')) : null);
+      return;
+    }
+    this.status.className = 'radio-status';
+    this.status.replaceChildren();
+    if (results) this.resTitle.dataset.count = String(r.stations.length);
     for (const s of r.stations) this.listEl.append(this._row(s));
   }
 
@@ -280,15 +373,16 @@ export class RadioUI {
   _stop(abandon = false) {
     const engineBacked = !!(this.session && this.session.usesEngine);
     if (abandon && typeof this.session?.abandon === 'function') this.session.abandon(); else this.session?.stop();
-    this.session = null; this.station = null;
+    this.session = null; this.station = null; this._shownKey = null;
     this.now.classList.add('hidden'); this._pill.classList.add('hidden');
     this._aiPanel?.classList.add('hidden');
     if (!engineBacked) { this.d.onActive?.(false); this._muted = false; }
-    this.pane?.querySelectorAll('.radio-row.on, .dial-card.on').forEach((r) => r.classList.remove('on'));
+    this._syncPlayState(null, '');
+    this.pane?.removeAttribute('data-playing');
   }
 
   _showNow(station, st) {
-    const label = { connecting: 'Connecting…', buffering: 'Buffering…', reconnecting: `Connection lost. Reconnecting (${st.attempt || 1}/${MAX_RECONNECTS})…`, playing: (station.tags || []).includes('canned') ? 'On air · pre-written show' : (station.tags || []).includes('ai') ? 'On air' : 'Live', error: 'Error', idle: '' }[st.phase] || '';
+    const label = { connecting: 'Connecting…', buffering: 'Buffering…', reconnecting: `Connection lost. Reconnecting (${st.attempt || 1}/${MAX_RECONNECTS})…`, playing: (station.tags || []).includes('canned') ? 'On air' : (station.tags || []).includes('ai') ? 'On air' : 'Live', error: 'Error', idle: '' }[st.phase] || '';
     this.now.className = 'radio-now ' + st.phase + (st.error && st.error.kind === 'empty_library' ? ' info' : '');
     this.now.replaceChildren(...[
       h('div', { class: 'radio-now-main' },
@@ -302,7 +396,10 @@ export class RadioUI {
     ].filter(Boolean));
     this._pillName.textContent = station.name;
     this._pill.className = 'radio-pill ' + st.phase;
-    this.pane?.querySelectorAll('.radio-row, .dial-card').forEach((r) => r.classList.toggle('on', r.dataset.k === stationKey(station)));
+    const was = this._shownKey; this._shownKey = stationKey(station);
+    this._syncPlayState(station, st.phase);
+    this.pane.toggleAttribute('data-playing', true);
+    if (was !== this._shownKey) this._revealCurrent(true);
   }
 }
 

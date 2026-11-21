@@ -44,8 +44,10 @@ test('dayparts: hour mapping, fits, badges', () => {
   assert.deepEqual([6, 12, 18, 23, 2].map(daypartOfHour), ['morning', 'day', 'evening', 'night', 'night']);
   assert.equal(daypartFits(['morning'], 7), true); assert.equal(daypartFits(['morning'], 22), false);
   assert.equal(daypartFits(['night', 'any'], 12), true); assert.equal(daypartFits([], 3), true);
-  assert.equal(daypartBadge(['any']), 'Any time'); assert.equal(daypartBadge(['evening', 'night']), 'Evening / Night');
-  assert.equal(daypartBadge(['night', 'any']), 'Night (any time)');
+  assert.equal(daypartBadge(['any']), 'Any time'); assert.equal(daypartBadge(['evening', 'night']), 'Evening / Late night');
+  assert.equal(daypartBadge(['night', 'any']), 'Late night');
+  assert.equal(daypartBadge(['day']), 'Daytime');
+  for (const d of [['night'], ['night', 'any'], ['morning', 'evening']]) assert.doesNotMatch(daypartBadge(d), /\(|any time/i, 'plain wording, no parenthetical jargon');
 });
 
 test('catalog: six canned cards with every field the picker shows; in-daypart stations first at any hour; all playable at any time', () => {
@@ -57,7 +59,7 @@ test('catalog: six canned cards with every field the picker shows; in-daypart st
     const fits = cat.canned.map((c) => c.fit);
     assert.deepEqual(fits, [...fits].sort((a, b) => b - a), `hour ${hour}: best daypart fit first`);
     for (const c of cat.canned) {
-      assert.equal(c.startable, true); assert.equal(c.label, PRE_WRITTEN_LABEL);
+      assert.equal(c.startable, true); assert.equal(c.label, PRE_WRITTEN_LABEL); assert.equal(c.label, 'Works offline');
       for (const k of ['name', 'dial', 'tagline', 'vibe', 'daypartBadge']) assert.ok(c[k], k);
       assert.ok(c.hostChips.length >= 2 && c.hostChips.every((h) => h.name)); assert.ok(c.minutes > 0);
       assert.equal(c.station.type, CANNED_TYPE); assert.equal(c.station.id, c.id); assert.equal(c.key, `canned|${c.id}`);

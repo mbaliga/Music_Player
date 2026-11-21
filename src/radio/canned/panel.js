@@ -37,7 +37,7 @@ export function mountCannedPanel(container, session, { onStop, doc = document, s
   const voicesBody = el(doc, 'div', { 'data-voices': '' });
   const voices = el(doc, 'details', { class: 'ai-voices' }, el(doc, 'summary', {}, 'Cast and voices'), voicesBody);
   const label = el(doc, 'div', { class: 'ai-label pw-label', role: 'note', 'data-pw-label': '' },
-    el(doc, 'span', { class: 'ai-dot' }), 'Pre-written show', el(doc, 'small', {}, ' · fixed scripts, read by this phone’s voice; your own songs between'));
+    el(doc, 'span', { class: 'ai-dot' }), 'Works offline', el(doc, 'small', {}, ' · a show written in advance, read aloud by this phone’s voice, with your own songs between'));
   container.append(el(doc, 'div', { class: 'ai-card' }, label, el(doc, 'div', {}, stationLine, title, sub), caps, note, el(doc, 'div', { class: 'ai-controls' }, skip, stop), voices));
 
   let lines = [];

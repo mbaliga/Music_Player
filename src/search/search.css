@@ -18,9 +18,9 @@
 .so-clear[hidden], .so-more[hidden] { display: none; }
 .so-back:focus-visible, .so-clear:focus-visible, .so-chip:focus-visible, .so-more:focus-visible, .so-act:focus-visible, .so-dirbtn:focus-visible, .so-rec-go:focus-visible, .so-rec-x:focus-visible { outline: 2px solid var(--violet); outline-offset: 2px; }
 
-.so-chips { flex: none; display: flex; gap: 6px; padding: 4px 12px 8px; overflow-x: auto; scrollbar-width: none; }
+.so-chips { flex: none; display: flex; flex-wrap: wrap; gap: 6px; padding: 4px 12px 8px; }
 .so-chips[hidden] { display: none; }
-.so-chip { flex: none; min-height: 44px; padding: 0 14px; display: inline-flex; align-items: center; gap: 6px; font: inherit; font-size: 13px; font-weight: 600; color: var(--ink2); background: var(--surface2); border: 1px solid var(--border); border-radius: 22px; cursor: pointer; }
+.so-chip { flex: none; min-height: 44px; padding: 0 12px; display: inline-flex; align-items: center; gap: 6px; font: inherit; font-size: 13px; font-weight: 600; color: var(--ink2); background: var(--surface2); border: 1px solid var(--border); border-radius: 22px; cursor: pointer; }
 .so-chip.on { color: var(--on-accent, #fff); background: var(--violet); border-color: var(--violet); }
 .so-n { font-size: 11px; font-weight: 700; opacity: .8; font-variant-numeric: tabular-nums; }
 .so-n:empty { display: none; }
