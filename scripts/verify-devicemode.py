@@ -216,8 +216,7 @@ def run_size(p, w, h):
     check(dm(page)['aod'] and 'aod' in attr(page), f'{tag}: AOD after 1 min idle (body "{attr(page)}")')
     check(page.evaluate("window.requestAnimationFrame.toString().indexOf('native code') < 0"), f'{tag}: rAF is gated while AOD is on')
     shot('albums-aod')
-    page.evaluate("runoutDeviceMode.setNowPlaying({ title: 'Harbor Lights', playing: true })"); time.sleep(0.2)
-    aodf = page.evaluate('''(() => { const c = document.querySelector('.dm-clock'), n = document.querySelector('.dm-np'); const lum = (x) => { const m = x.match(/[\\d.]+/g).map(Number); return (m[0] + m[1] + m[2]) / 765; };
+    aodf = page.evaluate('''(() => { runoutDeviceMode.setNowPlaying({ title: 'Harbor Lights', playing: true }); const c = document.querySelector('.dm-clock'), n = document.querySelector('.dm-np'); const lum = (x) => { const m = x.match(/[\\d.]+/g).map(Number); return (m[0] + m[1] + m[2]) / 765; };
       const rc = c.getBoundingClientRect(), rn = n.getBoundingClientRect(); return { clock: c.textContent, title: n.textContent, cl: lum(getComputedStyle(c).webkitTextFillColor), nl: lum(getComputedStyle(n).webkitTextFillColor), cshown: getComputedStyle(c).display !== 'none' && rc.width > 40 && rc.height > 20, nshown: rn.width > 40, inView: rc.left >= 0 && rc.right <= innerWidth && rn.right <= innerWidth }; })()''')
     check(re.search(r'\d{1,2}:\d{2}', aodf['clock'] or '') and aodf['cshown'] and aodf['cl'] > 0.3 and aodf['cl'] < 0.7, f'{tag}: the always-on face shows a readable, dim clock ({aodf})')
     check(aodf['title'] == 'Harbor Lights' and aodf['nshown'] and aodf['nl'] > 0.3 and aodf['inView'], f'{tag}: ...and the current track title ({aodf["title"]!r})')
