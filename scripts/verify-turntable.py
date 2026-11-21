@@ -376,7 +376,8 @@ def run_library(b, w, h, tag):
 
     # ---- swipe sideways in the library -> that album loads (debounced) ; tap the centre cover -> back to the player
     page.evaluate('window.__rt.setZ(1)'); page.wait_for_timeout(800)
-    T.drag(T.line(w * 0.75, h * 0.28, w * 0.2, h * 0.28, 8), step_s=0.012); page.wait_for_timeout(2600)
+    sy = h * (0.5 if w > h else 0.28)     # landscape: the two toolbar rows own the top 144 px
+    T.drag(T.line(w * 0.75, sy, w * 0.2, sy, 8), step_s=0.012); page.wait_for_timeout(2600)
     S = st(page); alb2 = page.evaluate(f'{APP}.state.albumId')
     check(not S['playing'] and alb2 != page.evaluate(f'{APP}.albums[{vin}].id') and page.evaluate(f'{APP}.state.view') == 'vinyl', f'{tag}: swiping to another album stops the record and loads that album ({alb2})')
     shot(page, 'library-swiped')
