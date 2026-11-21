@@ -311,9 +311,13 @@ export class MixtapeUI {
 
   _dialog(title, build) {
     const ov = h('div', { class: 'theme-overlay mt-dialog' });
-    const card = h('div', { class: 'theme-card', role: 'dialog', 'aria-modal': 'true', 'aria-label': title }, h('div', { class: 'theme-title' }, title));
+    const done = () => { ov.remove(); document.removeEventListener('keydown', esc, true); };
+    const esc = (e) => { if (e.key === 'Escape') { e.stopPropagation(); done(); } };
+    const card = h('div', { class: 'theme-card', role: 'dialog', 'aria-modal': 'true', 'aria-label': title },
+      h('div', { class: 'theme-head' }, h('button', { class: 'theme-x', type: 'button', 'aria-label': 'Close', onclick: () => done() }, '\u2190 Back'), h('div', { class: 'theme-title' }, title)),
+      h('div', { class: 'theme-title theme-title-desk' }, title));
     ov.append(card);
-    const done = () => ov.remove();
+    document.addEventListener('keydown', esc, true);
     ov.addEventListener('click', (e) => { if (e.target === ov) done(); });
     build(card, done);
     document.body.append(ov);

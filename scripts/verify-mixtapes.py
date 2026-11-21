@@ -344,6 +344,83 @@ def run_viewport(b, w, h):
     check(errs == [], f'{tag}: no page errors {errs[:3]}')
     ctx.close()
 
+
+def run_layout(b, w, h):
+    """Every mixtape task (the editor's four tabs, import) is a FULL-SCREEN page on a phone: the editor box equals the viewport (the test
+    browser has no safe-area insets; the CSS pads by env(safe-area-inset-*)), the tab bar is sticky and visible, the body scrolls,
+    tap targets are >= 44 px, the cassette preview is large, and leaving with unsaved changes asks first."""
+    tag = f'layout {w}x{h}'
+    print(f'--- {tag}', flush=True)
+    land = w > h
+    shot = lambda page, name: page.screenshot(path=f'{SHOTS}/layout-{w}x{h}-{name}.png')
+    ctx, page, errs = boot(b, w, h, blob_v3_old())
+    scan(page)
+    to_section(page, 'mixtapes'); page.wait_for_timeout(500)
+    rect = lambda sel: page.evaluate('(s) => { const e = document.querySelector(s); if (!e) return null; const r = e.getBoundingClientRect(); return [r.x, r.y, r.width, r.height]; }', sel)
+    near = lambda a, b2: all(abs(x - y) <= 1 for x, y in zip(a, b2))
+    page.tap('#mtNew'); page.wait_for_selector('.ed'); page.wait_for_timeout(500)
+    check(near(rect('.ed'), [0, 0, w, h]), f'{tag}: the editor box is the whole viewport ({rect(".ed")})')
+    check(near(rect('.ed-ov'), [0, 0, w, h]), f'{tag}: the editor overlay is the whole viewport')
+    check(page.evaluate('document.documentElement.scrollWidth <= innerWidth + 1'), f'{tag}: no horizontal page scroll')
+    for tab in ['tape', 'add', 'tracks', 'style']:
+        page.tap('#edtab-' + tab); page.wait_for_timeout(350)
+        bar, tabs, panel, ed = rect('.ed-bar'), rect('.ed-tabs'), rect('.ed-panel'), rect('.ed')
+        check(bar is not None and bar[1] == 0 and bar[3] >= 44, f'{tag}/{tab}: header bar at the top ({bar})')
+        check(tabs[3] >= 44 and 0 <= tabs[1] and tabs[1] + tabs[3] <= h, f'{tag}/{tab}: the tab bar is on screen, >= 44 px tall ({tabs})')
+        check(panel[3] >= (150 if land else 220), f'{tag}/{tab}: the scrolling body has room ({panel[3]:.0f}px)')
+        check(abs(panel[1] + panel[3] - h) <= 1, f'{tag}/{tab}: the body runs to the bottom edge ({panel[1] + panel[3]:.0f} vs {h})')
+        if land: check(rect('.ed-top')[0] + rect('.ed-top')[2] <= tabs[0] + 1, f'{tag}/{tab}: landscape puts the preview beside the tabs, not above them')
+        small = page.evaluate("""() => [...document.querySelectorAll('.ed-bar button, .ed-tabs button, .ed-panel:not(.hidden) button, .ed-panel input:not([type=range]), .ed-gauge')]
+          .filter((e) => e.offsetParent !== null && !e.closest('.hidden')).map((e) => { const r = e.getBoundingClientRect(); return [e.className || e.tagName, Math.round(r.width), Math.round(r.height)]; })
+          .filter((x) => x[1] > 0 && (x[2] < 44 || x[1] < 44))""")
+        small = [x for x in small if not str(x[0]).startswith('pk-row') and 'tk-' not in str(x[0])]
+        check(not small, f'{tag}/{tab}: every visible button / field in the header, tabs and body is >= 44 px both ways ({small[:4]})')
+        pv = rect('.ed-tape')
+        if tab in ('tape', 'style') or land: check(pv[2] >= min(300, w * 0.45) and (not land or pv[2] >= 340), f'{tag}/{tab}: the live preview is large ({pv[2]:.0f}px wide)')
+        shot(page, tab)
+    page.tap('#edtab-add'); page.wait_for_timeout(300)
+    q = rect('.pk-q'); sc = rect('.pk-scroll')
+    tb = rect('.ed-tabs'); check(q[2] >= tb[2] * 0.7 and sc[2] >= tb[2] - 40, f'{tag}: search field and results use the width ({q[2]:.0f} / {sc[2]:.0f} of {w})')
+    page.fill('.pk-q', 'zzzz-nothing'); page.wait_for_timeout(400)
+    check('No songs match' in page.inner_text('.pk-scroll'), f'{tag}: an empty search says so')
+    shot(page, 'add-empty')
+    page.fill('.pk-q', '')
+    # unsaved changes: Back asks; Keep editing stays; Discard leaves
+    page.tap('#edtab-tape'); page.fill('.ed-tape-tab input[aria-label="Title"]', 'Draft'); page.tap('#ed-back'); page.wait_for_selector('.ed-warn')
+    wr = rect('.ed-warn-card')
+    check(wr is not None and wr[2] <= 400 and wr[3] < h * 0.8, f'{tag}: the discard confirmation is a small dialog ({wr})')
+    check(all(x[2] >= 44 for x in page.evaluate("() => [...document.querySelectorAll('.ed-warn button')].map((e) => { const r = e.getBoundingClientRect(); return [0, 0, r.height]; })")), f'{tag}: confirmation buttons are >= 44 px')
+    shot(page, 'discard-confirm')
+    page.tap('.ed-warn .kp'); page.wait_for_timeout(200)
+    check(page.locator('.ed-warn').count() == 0 and page.locator('.ed').count() == 1, f'{tag}: Keep editing stays in the editor')
+    page.tap('#ed-back'); page.wait_for_selector('.ed-warn'); page.tap('.ed-warn .dc'); page.wait_for_timeout(300)
+    check(page.locator('.ed').count() == 0, f'{tag}: Discard closes the editor')
+    # import: a full-screen page with Back
+    page.tap('#mtImport'); page.wait_for_selector('.mt-dialog .theme-card'); page.wait_for_timeout(300)
+    check(near(rect('.mt-dialog .theme-card'), [0, 0, w, h]), f'{tag}: the import page is the whole viewport ({rect(".mt-dialog .theme-card")})')
+    check(rect('.mt-dialog .mt-textarea')[2] >= w - 40, f'{tag}: the paste box uses the width')
+    shot(page, 'import')
+    page.tap('.mt-dialog .theme-x'); page.wait_for_timeout(200)
+    check(page.locator('.mt-dialog').count() == 0, f'{tag}: Back closes the import page')
+    # search + deck details + device-mode sheet are pages too
+    page.locator('.page:not([hidden]) .page-search').first.tap(); page.wait_for_selector('.so-card'); page.wait_for_timeout(300)
+    check(near(rect('.so-card'), [0, 0, w, h]), f'{tag}: Search fills the viewport ({rect(".so-card")})')
+    shot(page, 'search')
+    page.keyboard.press('Escape'); page.wait_for_timeout(300)
+    to_section(page, 'albums'); page.wait_for_timeout(400)
+    page.tap('#btnDeck'); page.wait_for_timeout(300)
+    dk = rect('#deckSheet')
+    check(dk[2] >= w - 2 and dk[3] >= h - 4, f'{tag}: Deck details is a full page ({dk})')
+    shot(page, 'deck')
+    page.tap('.tt-sheet-close'); page.wait_for_timeout(200)
+    page.evaluate("import('/src/devicemode/sheet.js').then((m) => m.openSheet({ settings: { get: () => ({}), set() {} } }))"); page.wait_for_selector('.dm-sheet-card'); page.wait_for_timeout(200)
+    dm = rect('.dm-sheet-card')
+    check(near(dm, [0, 0, w, h]), f'{tag}: the Device mode sheet is a full page ({dm})')
+    page.tap('.dm-done'); page.wait_for_timeout(200)
+    check(page.locator('.dm-sheet').count() == 0, f'{tag}: Done closes the Device mode page')
+    check(errs == [], f'{tag}: no page errors {errs[:3]}')
+    ctx.close()
+
 def run_reduced(b):
     print('--- reduced motion', flush=True)
     blob = {'version': 4, 'mixtapes': [{'id': 'b1', 'name': 'Blips', 'author': '', 'cfg': {'style': 'clear', 'pen': 'marker', 'wear': 0.1, 'gloss': 0.5, 'text': {'subtitle': '', 'note': '', 'side': 'A'}}, 'tape': {'length': 'C30'}, 'autoReverse': True,
@@ -400,6 +477,8 @@ def main():
         b = launch(p)
         for (w, h) in [(360, 780), (412, 915)]:
             run_viewport(b, w, h)
+        for (w, h) in [(360, 780), (412, 915), (915, 412)]:
+            run_layout(b, w, h)
         run_reduced(b)
         run_5k(b)
         b.close()

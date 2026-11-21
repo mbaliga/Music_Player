@@ -205,3 +205,16 @@ continues, the side indicator flips) and AUTO off (stops with "FLIP TAPE", FLIP 
 * 5,000-track picker scrolling on the device's WebView.
 * Haptic ticks (`navigator.vibrate`) and the optional key click through the phone's speaker.
 * Real device-library durations once the MediaStore scan lands (estimates `~` should disappear). Folder-scanned MP3s now get a length from their first frame (Xing / VBRI count, else a CBR estimate) when they have no TLEN frame, so the `~` estimates are mostly gone there too (a VBR file without a Xing header is still an estimate).
+
+## Full-screen task pages (phone)
+
+Everything that holds a task is a page, not a floating window. The mixtape editor (`.ed-ov > .ed`) fills the viewport (`position:absolute; inset:0`,
+`env(safe-area-inset-*)` padding; no 430 px card any more): header (Back, title, Play, Save), the live cassette preview, a sticky 48 px tab bar
+(Tape / Add / Tracks / Style) and a scrolling body. Tape and Style show a **hero** preview (cassette across the width, capped at 34 dvh, gauges
+in two columns under it); Add and Tracks use the **compact** preview beside the gauges so the search field and list get the height. Landscape
+phones (`max-height:560px`) put the preview and gauges in a left column and the tabs and body on the right. Leaving with unsaved changes opens a small
+confirmation (Save / Keep editing / Discard); that stays a dialog on purpose. The same `@media (max-width:700px), (max-height:520px)` rule makes the
+import / export / custom-theme paste flow (`.theme-overlay`, with a Back header), Search (`.search-ov`), Deck details (`.tt-sheet`) and the Device mode
+sheet (`.dm-sheet`, Done in the header) full-screen. Tablets and desktop keep the cards. The editor and importer are still refused while locked
+(`allowsGesture('editor')`), and untrusted text still goes through text nodes. `scripts/verify-mixtapes.py` `run_layout` asserts the geometry at
+360x780, 412x915 and 915x412.

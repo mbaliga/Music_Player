@@ -22,7 +22,8 @@ export function openSheet({ settings, doc = document }) {
   if (doc.querySelector('.dm-sheet')) return;
   const ov = doc.createElement('div'); ov.className = 'dm-sheet'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-label', 'Device mode settings'); ov.setAttribute('aria-modal', 'true');
   const card = doc.createElement('div'); card.className = 'dm-sheet-card';
-  const h = doc.createElement('h2'); h.textContent = 'Device mode'; card.append(h);
+  const head = doc.createElement('div'); head.className = 'dm-sheet-head';
+  const h = doc.createElement('h2'); h.textContent = 'Device mode'; head.append(h); card.append(head);
   const cur = settings.get();
   for (const key of Object.keys(SPEC)) {
     const s = SPEC[key], [label, help, names] = LABELS[key] || [key, null];
@@ -42,5 +43,5 @@ export function openSheet({ settings, doc = document }) {
   const close = () => { ov.remove(); doc.removeEventListener('keydown', esc, true); };
   const esc = (e) => { if (e.key === 'Escape') { e.stopPropagation(); close(); } };
   done.addEventListener('click', close); ov.addEventListener('click', (e) => { if (e.target === ov) close(); }); doc.addEventListener('keydown', esc, true);
-  card.append(done); ov.append(card); doc.body.append(ov); done.focus();
+  head.append(done); ov.append(card); doc.body.append(ov); done.focus();
 }

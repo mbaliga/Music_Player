@@ -473,6 +473,27 @@
   .theme-btn.primary {
     background: var(--violet); color: #fff; border-color: var(--violet);
   }
+  .theme-head { display: none; }
+  @media (max-width: 700px), (max-height: 520px) { .theme-title-desk { display: none; } }
+
+  /* On a phone these are tasks, not toasts: the paste/preview flows (custom theme, mixtape import / export) take the whole screen
+     with a header (Back), a body that fills the viewport and a foot with large buttons. Tablets and desktop keep the card. */
+  @media (max-width: 700px), (max-height: 520px) {
+    .theme-overlay { padding: 0; align-items: stretch; justify-content: stretch; background: var(--bg); backdrop-filter: none; }
+    .theme-card { max-width: none; width: 100%; height: 100%; max-height: none; border: 0; border-radius: 0; box-shadow: none; box-sizing: border-box; overflow: hidden;
+      padding: 0 max(16px, env(safe-area-inset-right, 0px)) max(12px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); gap: 10px; }
+    [data-theme="light"] .theme-card { box-shadow: none; }
+    .theme-head { display: flex; align-items: center; gap: 6px; flex: none; min-height: 56px; margin: 0 -8px; padding-top: env(safe-area-inset-top, 0px); }
+    .theme-x { min-width: 48px; min-height: 48px; padding: 0 12px; border: 0; border-radius: 12px; background: none; color: var(--ink); font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
+    .theme-head .theme-title { font-size: 17px; }
+    .theme-step:not(.hidden), .theme-card > .theme-step:not(.hidden) { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 10px; }
+    .theme-card > .theme-title { display: none; }
+    #themeInput, .mt-textarea { flex: 1; min-height: 160px; resize: none; font-size: 14px; }
+    .theme-preview { flex: 1; min-height: 120px; max-height: none; font-size: 13px; }
+    .theme-foot { flex: none; margin-top: auto; padding-top: 8px; border-top: 1px solid var(--border); }
+    .theme-foot-left, .theme-foot-right { flex-wrap: wrap; }
+    .theme-btn { min-height: 48px; padding: 0 18px; font-size: 15px; border-radius: 12px; }
+  }
   .theme-btn.primary:disabled {
     opacity: 0.4; cursor: default;
   }
@@ -609,7 +630,8 @@
 
     <!-- Step 1: paste/edit the theme JSON. -->
     <div class="theme-step" id="themeStepEdit">
-      <div class="theme-title">Custom theme</div>
+      <div class="theme-head"><button class="theme-x" id="themeX1" type="button" aria-label="Close">&larr; Back</button><div class="theme-title">Custom theme</div></div>
+      <div class="theme-title theme-title-desk">Custom theme</div>
       <p class="theme-hint">
         Paste a theme JSON document (<code>version</code>, <code>name</code>,
         <code>colors.light</code>/<code>colors.dark</code> — 8 hex colors each).
@@ -629,7 +651,8 @@
 
     <!-- Step 2: the mandatory verbatim plain-text preview. -->
     <div class="theme-step hidden" id="themeStepPreview">
-      <div class="theme-title">Confirm theme</div>
+      <div class="theme-head"><button class="theme-x" id="themeX2" type="button" aria-label="Back to edit">&larr; Edit</button><div class="theme-title">Confirm theme</div></div>
+      <div class="theme-title theme-title-desk">Confirm theme</div>
       <p class="theme-hint">This is exactly what you entered, unmodified. Nothing is applied yet.</p>
       <pre class="theme-preview" id="themePreviewText"></pre>
       <div class="theme-error hidden" id="themeError"></div>

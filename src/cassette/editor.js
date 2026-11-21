@@ -118,7 +118,7 @@ export function openEditor(ctx) {
   const title = h('h2', {}, isNew ? 'New mixtape' : 'Edit mixtape');
   const saveBtn = h('button', { type: 'button', class: 'sv', onclick: () => { commit(); closeEd(); } }, 'Save');
   const playBtn = h('button', { type: 'button', class: 'pl', 'aria-label': 'Save and play', onclick: () => { const saved = commit(); closeEd(); ctx.onPlay(saved, 0); } }, icon(ICONS.play, { size: 14, fill: 'currentColor', stroke: 0 }), ' Play');
-  const backBtn = h('button', { type: 'button', id: 'ed-back', 'aria-label': 'Back', onclick: () => askLeave() }, icon(ICONS.back, { size: 20, stroke: 2.6 }));
+  const backBtn = h('button', { type: 'button', id: 'ed-back', class: 'bk', 'aria-label': 'Back', onclick: () => askLeave() }, icon(ICONS.back, { size: 20, stroke: 2.6 }), h('span', {}, 'Back'));
   const bar = h('div', { class: 'ed-bar' }, backBtn, title, h('span', { class: 'sp' }), playBtn, saveBtn);
 
   const prev = h('button', { type: 'button', class: 'ed-tape', onclick: () => api.setSide(side === 'A' ? 'B' : 'A') });
@@ -206,7 +206,7 @@ export function openEditor(ctx) {
 
   // ── tabs
   function goTab(id) {
-    tab = id;
+    tab = id; ed.dataset.tab = id;
     for (const [k] of TABS) { tabBtns[k].setAttribute('aria-selected', String(k === id)); tabBtns[k].classList.toggle('on', k === id); }
     for (const k of Object.keys(panels)) panels[k].classList.toggle('hidden', k !== id);
     panel.classList.toggle('fill', id === 'add');
@@ -311,10 +311,12 @@ export function openEditor(ctx) {
   function askLeave() {
     if (!dirty()) { closeEd(); return; }
     if (ed.querySelector('.ed-warn')) return;
-    const w = h('div', { class: 'ed-warn', role: 'alertdialog', 'aria-label': 'Discard your changes?' }, h('span', {}, 'Discard your changes?'),
-      h('span', { style: { display: 'flex', gap: '8px' } },
-        h('button', { type: 'button', class: 'kp', onclick: () => w.remove() }, 'Keep editing'),
-        h('button', { type: 'button', class: 'dc', onclick: closeEd }, 'Discard')));
+    const w = h('div', { class: 'ed-warn', role: 'alertdialog', 'aria-modal': 'true', 'aria-label': 'Unsaved changes' },
+      h('div', { class: 'ed-warn-card' }, h('b', {}, 'Discard your changes?'), h('p', {}, 'This mixtape has changes that are not saved yet.'),
+        h('div', { class: 'ed-warn-acts' },
+          h('button', { type: 'button', class: 'sv2', onclick: () => { commit(); closeEd(); } }, 'Save'),
+          h('button', { type: 'button', class: 'kp', onclick: () => w.remove() }, 'Keep editing'),
+          h('button', { type: 'button', class: 'dc', onclick: closeEd }, 'Discard'))));
     ed.append(w);
     w.querySelector('.kp').focus();
   }

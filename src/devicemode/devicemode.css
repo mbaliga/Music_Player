@@ -51,7 +51,19 @@ body[data-devicemode~="locked"] .tp-hint { display: none; }
 .dm-row small { color: var(--ink2, #888); font-size: 12px; }
 .dm-row select, .dm-row input[type="range"] { max-width: 48%; background: var(--surface2, #222); color: inherit; border: 1px solid var(--border); border-radius: 8px; padding: 6px; }
 .dm-row input[type="checkbox"] { width: 22px; height: 22px; }
-.dm-done { margin-top: 12px; width: 100%; min-height: 44px; border: 0; border-radius: 12px; background: var(--violet, #8E7BFF); color: #fff; font-size: 15px; cursor: pointer; }
+.dm-sheet-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.dm-sheet-head h2 { margin: 0; }
+.dm-done { min-width: 88px; min-height: 48px; padding: 0 22px; border: 0; border-radius: 24px; background: var(--violet, #8E7BFF); color: #fff; font-size: 16px; font-weight: 700; cursor: pointer; }
+/* a phone gets the whole screen: header (title + Done), the settings scroll underneath */
+@media (max-width: 700px), (max-height: 520px) {
+  .dm-sheet { align-items: stretch; background: var(--surface, #111); }
+  .dm-sheet-card { width: 100%; max-width: none; height: 100%; max-height: none; border-radius: 0; box-sizing: border-box; padding: 0 max(18px, env(safe-area-inset-right, 0px)) max(18px, env(safe-area-inset-bottom, 0px)) max(18px, env(safe-area-inset-left, 0px)); }
+  .dm-sheet-head { position: sticky; top: 0; z-index: 2; min-height: 64px; padding-top: env(safe-area-inset-top, 0px); background: var(--surface, #111); }
+  .dm-row { min-height: 56px; }
+  .dm-row select { min-height: 44px; }
+  .dm-row input[type="range"] { min-height: 44px; }
+  .dm-row input[type="checkbox"] { width: 28px; height: 28px; }
+}
 
 /* ── ALWAYS-ON DISPLAY: one theme layer over the same layout ─────────────────────────────────────────────────────────── */
 :root:has(body[data-devicemode~="aod"]) { background: #000; }

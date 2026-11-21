@@ -1212,6 +1212,8 @@ function installCustomTheme() {
   el('themeBack').addEventListener('click', showEdit);
   el('themeCancel1').addEventListener('click', closeOverlay);   // Cancel/back discards — nothing was ever applied.
   el('themeCancel2').addEventListener('click', closeOverlay);
+  el('themeX1').addEventListener('click', closeOverlay);
+  el('themeX2').addEventListener('click', showEdit);
   overlay.addEventListener('click', (e) => { if (e.target === overlay) closeOverlay(); });
 
   el('themeResetDefault').addEventListener('click', () => {

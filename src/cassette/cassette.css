@@ -91,9 +91,9 @@
 .bk-actions .chip.ghost { background:rgba(255,255,255,.14); color:#fff; border-color:rgba(255,255,255,.3); }
 @media (prefers-reduced-motion:reduce) { .bk-card, .bk-ov { animation:none; } }
 /* mixtape editor */
-.ed-ov { position:fixed; inset:0; z-index:250; display:grid; place-items:center; background:rgba(8,9,11,.66); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); animation:bk-fade .25s both; }
-.ed { position:relative; width:min(100%,430px); height:min(100dvh,900px); display:flex; flex-direction:column; overflow:hidden; color:#fff; background:radial-gradient(120% 60% at 50% 0%,#69696d 0%,#3d3d40 46%,#272729 100%); font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; animation:ed-up .35s cubic-bezier(.25,.8,.25,1) both; }
-@media (min-width:560px) { .ed { border-radius:32px; box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.08); } }
+.ed-ov { position:fixed; inset:0; z-index:250; background:#272729; animation:bk-fade .25s both; }
+.ed { position:absolute; inset:0; width:100%; height:100%; padding:0 env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px); box-sizing:border-box; display:flex; flex-direction:column; overflow:hidden; color:#fff; background:radial-gradient(120% 60% at 50% 0%,#69696d 0%,#3d3d40 46%,#272729 100%); font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; animation:ed-up .35s cubic-bezier(.25,.8,.25,1) both; }
+
 @keyframes ed-up { from { transform:translateY(24px); opacity:0 } }
 .ed button { font:inherit; color:inherit; }
 .ed-bar { display:flex; align-items:center; justify-content:space-between; padding:max(14px,env(safe-area-inset-top)) 12px 4px; flex:none; }
@@ -153,8 +153,13 @@
 .ed-pens { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
 .ed-pens button { padding:9px 14px; border-radius:999px; border:1.5px solid #d4d6da; background:#fff; font-size:13.5px; font-weight:700; cursor:pointer; color:#17181b; }
 .ed-pens button[aria-pressed="true"] { background:#17181b; color:#fff; border-color:#17181b; }
-.ed-warn { position:absolute; left:12px; right:12px; top:max(60px,calc(env(safe-area-inset-top) + 50px)); z-index:12; display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 12px 10px 16px; border-radius:14px; background:#f4f4f1; color:#17181b; font-size:14px; font-weight:600; box-shadow:0 10px 30px rgba(0,0,0,.5); animation:ed-sheet .25s both; }
-.ed-warn button { border:0; border-radius:9px; padding:9px 12px; font-weight:700; cursor:pointer; background:#e5e6e9; color:#17181b; }
+.ed-warn { position:absolute; inset:0; z-index:12; display:grid; place-items:center; padding:20px; background:rgba(0,0,0,.6); animation:bk-fade .2s both; }
+.ed-warn-card { width:min(100%,380px); display:grid; gap:14px; padding:20px; border-radius:18px; background:#f4f4f1; color:#17181b; box-shadow:0 20px 50px rgba(0,0,0,.5); }
+.ed-warn-card b { font-size:17px; }
+.ed-warn-card p { margin:0; font-size:14px; line-height:1.45; color:#4a4d54; }
+.ed-warn-acts { display:grid; gap:8px; }
+.ed-warn button { border:0; border-radius:12px; padding:12px 14px; min-height:48px; font-weight:700; font-size:15px; cursor:pointer; background:#e5e6e9; color:#17181b; }
+.ed-warn .sv2 { background:#17181b; color:#fff; }
 .ed-warn .dc { background:#D92D26; color:#fff; }
 
 /* editor additions (Runout): song picker, status tags, sliders, ink dots */
@@ -262,7 +267,7 @@
 .ed-style-tab .ed-pens button[aria-pressed="true"]{background:#fff;color:#17181b}
 .ed-style-tab .rng{display:grid;gap:4px;font-size:12px;letter-spacing:.06em;font-weight:600;color:#b9b9be;margin-bottom:12px}
 .ed-style-tab .rng input{accent-color:#ffb347;min-height:32px}
-.ed-style-tab .ed-dots-row button{width:36px;height:36px}
+.ed-style-tab .ed-dots-row button{width:44px;height:44px}
 .ed-style-tab .ed-l.light{color:#b9b9be}.ed-style-tab .fld.light{color:#fff}
 .ed-sty{min-height:44px}
 
@@ -295,7 +300,7 @@
 .pk-alb{display:flex;align-items:center;background:rgba(255,255,255,.05)}
 .pk-albmain{display:flex;align-items:center;gap:6px;flex:1;min-width:0;height:100%;padding:0 6px 0 10px;background:none;border:0;color:#fff;text-align:left;cursor:pointer;font:inherit}
 .pk-chev{display:flex;color:#a5a5aa;transition:transform .15s}.pk-chev.open{transform:rotate(90deg)}
-.pk-addall{flex:none;margin:0 10px 0 4px;min-width:84px;min-height:40px;padding:0 12px;border-radius:10px;border:1.5px solid #ffb347;background:none;color:#ffb347;font-weight:700;font-size:12.5px;cursor:pointer}
+.pk-addall{flex:none;margin:0 10px 0 4px;min-width:84px;min-height:44px;padding:0 12px;border-radius:10px;border:1.5px solid #ffb347;background:none;color:#ffb347;font-weight:700;font-size:12.5px;cursor:pointer}
 .pk-addall:disabled{border-color:rgba(255,255,255,.18);color:#8a8a90;cursor:default}
 .pk-empty{padding:28px 18px;text-align:center;color:#a2a2a7;font-size:14px;line-height:1.5}
 .pk-bar{display:flex;align-items:center;gap:8px;flex:none;padding:8px 2px calc(8px + env(safe-area-inset-bottom));font-size:13px}
@@ -341,3 +346,42 @@
 @media (prefers-reduced-motion:reduce){.ed,.ed-ov,.ed-toast,.tk-row,.ed-gauge .g-bar i,.pk-chev{animation:none;transition:none}}
 
 .sk-deck .side-key.down .cap text{fill:#ffb347}
+
+
+/* ═══ editor: a full-screen page on a phone (header, hero preview, sticky tabs, scrolling body) ═══════ */
+.ed-bar{min-height:56px;padding-top:max(8px,env(safe-area-inset-top,0px));padding-bottom:6px;flex:none}
+.ed-bar .bk{color:#fff;padding:10px 12px 10px 8px}
+.ed-bar .sv{min-width:64px;font-size:16px;color:#241600;background:#ffb347;border-radius:999px;padding:10px 18px}
+.ed-bar h2{flex:none;max-width:34%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ed-tabs{position:sticky;top:0;z-index:3;background:#2f2f31}
+.ed-tabs button{min-height:48px;font-size:15px}
+/* hero (Tape, Style): the cassette across the width, capacity gauges under it */
+.ed-top{grid-template-columns:1fr;justify-items:center;gap:10px;padding:2px 14px 10px}
+.ed-top .ed-prevwrap{width:min(100%,calc(34dvh * 1.58),460px)}
+.ed-top .ed-gauges{grid-template-columns:1fr 1fr;width:100%;max-width:460px}
+.ed-top .ed-gauge{min-height:60px}
+/* compact (Add, Tracks): the search / list gets the height, the preview shrinks beside the gauges */
+.ed[data-tab="add"] .ed-top,.ed[data-tab="tracks"] .ed-top{grid-template-columns:minmax(0,1.12fr) minmax(0,1fr);justify-items:stretch;padding:2px 14px 8px}
+.ed[data-tab="add"] .ed-top .ed-prevwrap,.ed[data-tab="tracks"] .ed-top .ed-prevwrap{width:auto}
+.ed[data-tab="add"] .ed-top .ed-gauges,.ed[data-tab="tracks"] .ed-top .ed-gauges{grid-template-columns:1fr;max-width:none}
+.ed[data-tab="add"] .ed-top .ed-gauge,.ed[data-tab="tracks"] .ed-top .ed-gauge{min-height:48px}
+.ed-panel > *{width:100%;max-width:760px;margin-left:auto;margin-right:auto;box-sizing:border-box}
+.ed-panel .ed-tab{padding-bottom:max(40px,env(safe-area-inset-bottom,0px))}
+.ed-flipchip{min-height:28px}
+/* a soft keyboard (or a very short portrait window) takes the hero away so the field stays in view */
+@media (orientation:portrait) and (max-height:560px){
+  .ed .ed-top{grid-template-columns:minmax(0,1.12fr) minmax(0,1fr);justify-items:stretch}
+  .ed .ed-top .ed-prevwrap{width:auto}
+  .ed .ed-top .ed-gauges{grid-template-columns:1fr;max-width:none}
+}
+/* landscape phone: preview + gauges in a left column, tabs + body on the right */
+@media (orientation:landscape) and (max-height:560px){
+  .ed{display:grid;grid-template-columns:minmax(260px,44%) minmax(0,1fr);grid-template-rows:auto auto minmax(0,1fr);grid-template-areas:"bar bar" "top tabs" "top panel"}
+  .ed-bar{grid-area:bar;min-height:52px}
+  .ed .ed-top,.ed[data-tab] .ed-top{grid-area:top;grid-template-columns:1fr;justify-items:center;align-content:start;overflow-y:auto;padding:0 12px 10px 14px;min-height:0}
+  .ed .ed-top .ed-prevwrap,.ed[data-tab] .ed-top .ed-prevwrap{width:min(100%,calc(58dvh * 1.58))}
+  .ed .ed-top .ed-gauges,.ed[data-tab] .ed-top .ed-gauges{grid-template-columns:1fr 1fr;max-width:none;width:100%}
+  .ed .ed-top .ed-gauge,.ed[data-tab] .ed-top .ed-gauge{min-height:56px;padding:6px 8px}
+  .ed-tabs{grid-area:tabs}.ed-panel{grid-area:panel}
+}
+@media (min-width:900px) and (min-height:700px){ .ed-top .ed-prevwrap{width:min(100%,460px)} }

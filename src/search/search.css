@@ -76,3 +76,9 @@
 
 /* the search buttons: drawer header + every page header */
 .page-search svg { display: block; }
+
+/* a phone: the search is a page, not a sheet under a sliver of the previous screen */
+@media (max-width: 700px), (max-height: 520px) {
+  .search-ov { background: var(--card-bg, var(--surface)); }
+  .so-card { width: 100%; height: 100%; margin-top: 0; border-radius: 0; box-shadow: none; padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px); box-sizing: border-box; }
+}
