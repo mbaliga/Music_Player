@@ -661,6 +661,8 @@ def phase_journey(b, w=412, h=915):
         check(page.evaluate("!document.getElementById('btnLibrary') || document.getElementById('btnLibrary').offsetWidth > 0"), f'{tag}: the Library button is visible on first run')
         card = page.locator('.tt-empty:not([hidden])')
         check(card.count() == 1 and 'demo record' in card.inner_text().lower(), f'{tag}: with nothing scanned the stage offers the Demo record and a Scan card ({card.inner_text()[:80]!r})')
+        off = page.evaluate("[...document.querySelectorAll('#pageAlbums .page-head button')].filter(b => b.offsetWidth > 0).map(b => b.getBoundingClientRect()).filter(r => r.left < 0 || r.right > innerWidth).length")
+        check(off == 0, f'{tag}: every Albums header button (Library, search, settings, lock) is on screen ({off} off the edge)')
         shot(page, 'first-run')
     step('first run', s_first_run)
 
@@ -815,7 +817,7 @@ def main():
         for (w, h) in [(360, 780), (412, 915)]:
             if want(str(w)): tour(b, w, h, f'{w}x{h}')
         if want('landscape'): tour_landscape(b)
-        if want('journey'): phase_journey(b)
+        if want('journey'): phase_journey(b); phase_journey(b, 360, 780)
         if want('native'): phase_native(b)
         if want('5k'): phase_5k(b)
         b.close()

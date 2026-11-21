@@ -86,7 +86,7 @@ First run / empty library: the one album is the built-in synthesized **Demo reco
 artist, its track list: tap a row to play it), track nav (⏮ ⏭), the fine-speed dial, an **Add music file** button (the file input is visually hidden behind it) and the gestures
 note. Rate / position / wear, the feel knobs and the latency gate are behind the **Advanced** fold; the build id lives in Settings > Privacy & about.
 
-**What the stage says (UX pass).** The header carries an always-visible **Library** button (>= 44 px, labelled; it becomes **Player** while the library is up; the pinch stays). The
+**What the stage says (UX pass).** The header carries an always-visible **Library** button (>= 44 px, labelled; it becomes **Player** while the library is up; the pinch stays; on phones narrower than 400 px the "Albums" title steps aside, screen-reader only, so the lock key stays on screen). The
 stage has a readable layer (`.tt-hud`, DOM text, `stage.setNow / setNowTime / setEmpty`): a now-playing band (title, "Artist · Album", elapsed / total) placed in stage space *below*
 the controls (portrait: the strip left of the arm slot; landscape: under the display), so it never meets the disc, the arm or the keys; and, with nothing scanned, an empty-state card
 ("Demo record: scan your phone / a music folder to play your own music", with a Scan button). Controls are visible buttons (>= 3:1 edge, >= 4.5:1 label) inside a >= 44 px hit area
