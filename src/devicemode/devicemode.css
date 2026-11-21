@@ -79,7 +79,7 @@ body[data-devicemode~="aod"] *, body[data-devicemode~="aod"] *::before, body[dat
   border-color: var(--dm-line) !important; caret-color: transparent;
   color: transparent !important; -webkit-text-fill-color: transparent !important;
 }
-body[data-devicemode~="aod"] :is(.page, .stage, .nowline, .shelf, .minibar, .tp-host, .fx-pad, .fx-row, .fx-chip, .radio-now, .dial-card, .alb-card):not(.hidden) { outline: 1px solid var(--dm-line); outline-offset: -1px; }
+body[data-devicemode~="aod"] :is(.page, .stage, .nowline, .shelf, .minibar, .tp-host, .fx-pad, .fx-row, .fx-tog, .fx-knob, .fx-fader, .fx-perf, .radio-now, .dial-card, .alb-card):not(.hidden) { outline: 1px solid var(--dm-line); outline-offset: -1px; }
 body[data-devicemode~="aod"] :is(canvas, img, video, picture, svg image, svg foreignObject) { visibility: hidden !important; }
 /* the Albums stage subscribes to the outline hook: its canvas shows hairline circles only; the heavy SVG (phone body, mat image) and the library stay hidden */
 body[data-devicemode~="aod"] canvas.tt-disc[data-outline="1"] { visibility: visible !important; }

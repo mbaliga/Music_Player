@@ -27,7 +27,7 @@ const fx = mountFxSection(container, deps);   // -> { unmount, onShow, onHide, o
 `storage` (localStorage-like, for the saved mode), `blocked()` (or `host.blocked()`), returning `'radio'`, `'mixtape'`, another reason string or null,
 `host` with `getTrack, nominalRate, omegaNominal, sampleRate, blocked` (and optionally `envelope, durationSec, positionSec, view, geom`; missing
 ones are derived from the engine), `resume()`, `hasPlatter` (enables Blend scratch), `stage` (platter stage element: adds the ring and HUD over it),
-`close` (adds a "Back" row). The component makes no assumption about where it sits, lays out in any container (checked at 360 x 780), keeps all CSS
+`close` (the idle button's fallback), `goto(sectionId)` (the idle / blocked button), `haptic(ms)`; `host` may also give `hasRecord()` and `nowPlaying()`. The component makes no assumption about where it sits, lays out in any container (checked at 360 x 780), keeps all CSS
 under `.fx-` (`src/fx/fx.css`, loaded lazily) and runs its own animation loop between `onShow()` and `onHide()`. It notices a new track by itself
 (`host.getTrack()` identity). `onHide()` releases any held effect and stops the loop; `unmount()` removes everything and the bus chain.
 `platter` = `{ wantsPlatter, grabsPlatter, pointerDown(p, surface, t), pointerMove(p, t), pointerUp(), rateFor(rate) }` is for a shell that wants
@@ -44,15 +44,38 @@ to use FX." The controller polls this every frame, releases any held effect, zer
 new record or tape (every `loadTrack`, mixtape `adoptTrack` and radio `adopt`) also releases FX and re-analyses the tempo. FX never starts,
 stops or loads anything itself, so it cannot interfere with the engine gate (`src/engine-gate.js`).
 
-## The menu
+## The instrument screen
 
-A scrollable list, like a small device menu: `Back`, `Settings...`, then the six modes, each with a one-line description. The selected row has
-a violet glow and a lit ferrofluid-style dot. Choosing a mode flashes an "ACTIVE" card, then shows the **mode screen**: the track's waveform
-(from the existing RMS envelope, drawn in Runout violet) with a playhead, the readout, the mode's controls and a touch pad. Rows, chips and
-buttons are at least 44 px tall; arrow keys move through the list, Enter selects; the pad takes Space / Enter (hold) and arrow keys (nudge).
-It works at 360 x 780 with no horizontal scroll.
+Earlier versions opened on a text menu (a list of six rows, then a mode page), which on a phone read as "lines of text". The Booth is now one
+hardware-style screen with everything on it at once (`src/fx/ui.js`, `src/fx/fx.css`; theme tokens only, so it follows Dark soft / OLED black / Light
+and custom themes; the displays are always dark glass like a real unit, the faceplate is the theme surface; each effect keeps the hue of its light ring):
 
-`Settings...` has: light ring on/off, **latch** (tap to switch an effect on, tap again to switch it off, instead of hold).
+* **Deck strip:** what is on the deck (record or CD spinning, title, `VINYL 33.3`, `track n of m`), the tempo in an LCD (`BPM`, or `FIXED BPM` when
+  no tempo was found) and the waveform with the playhead and the held slice.
+* **FX rack:** six buttons (Scratch, Blend, Beat repeat, Stutter, Filter, Echo), each with an LED: lit = selected, pulsing = live.
+* **XY touch plate** (the surface; class `.fx-pad`, a rounded glass square): for Beat repeat and Stutter, concentric slice zones labelled `1/16 ... 1/1`
+  with the one in force lit and the light ring; for Filter an XY grid with the resonance curve; for Echo an XY grid with ripples. A glowing puck follows
+  the finger, a dashed ghost puck shows where it will land, axis labels name what X and Y do, the big readout shows `1/8 +120%` or `2.5 kHz Q 6.8`.
+* **Blend fader** and **level meter** beside the plate (the meter is a read-only analyser on the music bus; it feeds nothing).
+* **Switches:** Latch, Ring, half / double tempo, Restart (beat repeat returns to the start of the slice on release).
+* **Knobs** (drawn, drag up or down; arrow keys, Home and End too): BEAT (stepped 1/1 ... 1/16), GATE (stutter), DELAY / ROOM (echo).
+* **Eight performance pads:** Repeat 1/4, 1/8, 1/16, Stutter 1/8, 1/16, Filter sweep, Echo 1/4, 1/2. Hold to play (the pad sets the effect and the beat, then
+  engages it); with Latch on, tap to switch on and tap again to switch off. Pads light when selected and glow when live. `haptic(ms)` is called on press
+  (the shell passes it: it respects the Haptics setting).
+* **Empty states:** no record on the deck shows "Nothing on the deck. Play a record on Albums first." with a **Go to Albums** button; a radio station or
+  mixtape owning the engine shows what is playing and an **Open Radio / Open Mixtapes** button (`deps.goto(sectionId)`). The instrument stays visible,
+  dimmed, behind it. `deps.host.hasRecord()` / `nowPlaying()` feed this and the deck strip.
+* **Layout:** portrait is one column (deck, rack, plate with fader and meter, switches, knobs, pads) that fits 360 x 780 without scrolling (the plate takes
+  the height that is left, up to the column width); landscape phones put the plate on the left and the rest beside it (checked at 915 x 412; the shell
+  frame is capped at 560 px wide). Touch targets are 44 px or more in portrait.
+* **Lock seams (device mode):** rack, switches, knobs and fader carry `data-lock-ok` and stay live while locked; the plate and the pads are gestures
+  (`allowsGesture('fx-pad')`: frozen unless "Allow the FX pad while locked"); `registerLockFace('booth', ...)` in `src/devicemode/default-faces.js` names the
+  selectors; `setAod(on)` (the AOD subscriber) stops every canvas.
+* **Root cause of the old "just text" look:** the component opened on its menu view (a plain list) until a mode other than Scratch had been saved, and its
+  one touch surface was a small circular canvas below the fold. Nothing was missing from the build (`www/src/fx/` ships every module and `fx.css`;
+  `test/fx-ship.test.mjs` checks it).
+
+Arrow keys move along the rack; the plate takes Space / Enter (hold) and arrows (nudge); the pads take Space / Enter.
 
 The last mode and its parameters are saved in `localStorage` (`runout.fx.v1`, versioned, sanitised, never throws) and restored the next time
 the section is opened.
@@ -161,10 +184,10 @@ unity gain node in front of the destination.
 * **Teardown:** `onHide()` releases a held effect and removes the bus chain; `unmount()` removes the DOM and every node (destination has one input again).
 * **CD track:** repeat from the pad on a CD album track: 10352 samples (expected 10352.1); Blend scratch is disabled on a CD.
 * **Lazy loading:** zero requests under `src/fx/` before the section is opened.
-* **Layout at 360 x 780** (the Booth page of the drawer shell): no horizontal scroll; rows, chips and buttons measure 44 px or more.
+* **Layout** (the Booth page of the drawer shell, measured by section M of the script at 360 x 780, 412 x 915 and 915 x 412): no horizontal scroll; the instrument fits without scrolling; the plate is square (254 / 318 / 222 px); rack buttons, switches and pads are 44 px or more in portrait (30 to 38 px in the cramped landscape layout). Also measured: a held pad engages the right effect and beat and lights; Latch toggles; knob and fader drags change the stored parameters; the level meter lights while a record plays; every live control carries `data-lock-ok` and the plate and pads do not; `setAod(true)` stops the plate repainting.
 * Not run: the postMessage (no SharedArrayBuffer) path in the browser (unit test compares its output with the SAB path).
 
-Screenshots: `docs/screenshots/fx-menu.png`, `fx-repeat-1-1.png`, `fx-repeat-1-16.png` (with the `+n%` readout), `fx-bandpass.png`, `fx-cd-pad.png` (the light ring is the coloured rim of the pad; an earlier platter-ring capture was from the old panel layout and is not kept).
+Screenshots: `docs/screenshots/booth-360x780.png`, `booth-412x915.png`, `booth-915x412.png`, `booth-filter.png`, `booth-idle.png`, `booth-light.png` (the instrument screen). The older `fx-*.png` files show the previous menu layout.
 
 ## Limits and honesty
 

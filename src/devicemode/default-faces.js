@@ -27,10 +27,10 @@ export const DEFAULT_FACES = Object.freeze({
     notes: 'Radio: Stop and Skip are live. The dial is not usable while locked.',
   },
   booth: {
-    // The mode buttons / chips stay live; the FX pad (a gesture surface) is frozen unless the setting allows it.
-    buttons: ['#boothHost .fx-row', '#boothHost .fx-chip', '#boothHost .fx-btn', '#boothHost .fx-switch input'],
+    // The rack buttons, switches, knobs and the fader stay live (they carry data-lock-ok too); the touch plate and the performance pads (gesture surfaces) are frozen unless the setting allows it.
+    buttons: ['#boothHost .fx-row', '#boothHost .fx-tog', '#boothHost .fx-btn', '#boothHost .fx-knob', '#boothHost .fx-fader'],
     aodText: ['#boothHost .fx-title'],
-    notes: 'Booth: the mode buttons are live. The FX pad is locked (Settings can allow it).',
+    notes: 'Booth: the rack, switches and knobs are live. The touch plate and pads are locked (Settings can allow it).',
   },
   settings: {
     // Settings is not a playing surface: nothing on it stays live while locked (a control that should be live carries `data-lock-ok`).

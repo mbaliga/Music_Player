@@ -324,7 +324,9 @@ def run_size(p, w, h):
     unlock_hold(page, T, 1000)
     page.evaluate("document.querySelector('.radio-now .theme-btn') && document.querySelector('.radio-now .theme-btn').click()"); time.sleep(0.4)
 
-    # Booth: the FX pad frozen unless allowed
+    # Booth: the FX pad frozen unless allowed. The Booth needs a record on the deck (without one it shows its "Play a record on Albums first" state), so load one.
+    page.evaluate("(() => { const m = window.__rt.app().state.mixtapes; if (m && m.play) m.play.ended = true; })()")   # an earlier step left a tape playing: that would (correctly) put the Booth in its "a mixtape is playing" state
+    page.evaluate("document.getElementById('fileInput').value = ''"); page.set_input_files('#fileInput', os.path.join(LIB, sorted(f for f in os.listdir(LIB) if f.endswith('.mp3'))[0])); time.sleep(2.0)
     to_section(page, 'booth'); page.wait_for_selector('.fx-row', timeout=10000)
     shot('booth-normal')
     page.locator('.fx-row[data-id="bandpass"]').click(); time.sleep(0.8)

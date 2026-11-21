@@ -1257,8 +1257,20 @@ function boothDeps() {
       omegaNominal: () => omegaNominal(state.rpm),
       sampleRate: () => state.engine.sampleRate,
       blocked: () => engineOwner(),
+      envelope: () => (state.track ? state.envelope || null : null),
+      hasRecord: () => !!state.track,
+      // the deck strip: what is on the platter / CD player right now (null when nothing is loaded)
+      nowPlaying: () => {
+        if (!state.track) return null;
+        const q = state.queue, cd = state.view === 'cd';
+        const it = q && q.items && q.items[q.index];
+        return { title: (it && it.title) || state.track.name || 'Untitled', sub: q && q.items ? `track ${q.index + 1} of ${q.items.length}` : '', kind: cd ? 'cd' : 'vinyl', rpm: cd ? 0 : state.rpm,
+          playing: cd ? !!state.cdPlaying : !!(stage && stage.player.playing) };
+      },
     },
     blocked: () => engineOwner(),
+    goto: (id) => { if (shell) { shell.go(id, { close: true }); shell.ensure(id); } },
+    haptic: (ms) => { try { if (settings.store.get('haptics')) navigator.vibrate?.(ms); } catch { /* no haptics */ } },
   };
 }
 

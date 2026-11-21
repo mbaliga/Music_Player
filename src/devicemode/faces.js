@@ -40,7 +40,7 @@ export const GENERIC_FACE = Object.freeze({ buttons: ['button', '[role=button]',
 export function liveSelectors(sectionId, settings = {}) {
   const f = getLockFace(sectionId) || GENERIC_FACE;
   const out = [...GLOBAL_LIVE, ...f.buttons];
-  if (sectionId === 'booth' && settings.fxPadWhileLocked) out.push('.fx-pad');
+  if (sectionId === 'booth' && settings.fxPadWhileLocked) out.push('.fx-pad', '.fx-perf');
   return out;
 }
 export function aodSelectors(sectionId) { const f = getLockFace(sectionId) || GENERIC_FACE; return [...GLOBAL_AOD, ...f.aod]; }

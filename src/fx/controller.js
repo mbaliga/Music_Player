@@ -156,7 +156,7 @@ export class FxController {
     }
     h.angle = ang; h.lastT = nowMs;
     const m = this.state.mode;
-    if ((m === 'repeat' || m === 'stutter') && h.div0) {
+    if (!first && (m === 'repeat' || m === 'stutter') && h.div0) {   // the division in force when the finger lands is div0: only a DRAG changes it
       const nd = divisionFromDrag(h.div0, h.u0, h.u, h.div);
       if (nd !== h.div) { h.div = nd; this.state = setParam(this.state, m, 'div', nd); saveFx(this.state, this.storage); this._emit(); }
     }
