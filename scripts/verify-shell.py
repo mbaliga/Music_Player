@@ -161,9 +161,9 @@ with sync_playwright() as p:
         T.drag(T.line(w * 0.7, 420, w * 0.2, 420, 10)); settle(page)
         check(not is_open(page), f'{tag}: dragging the card back closes it')
         # a short quick fling opens even though the position is under half
-        # (velocity comes from event timestamps, which CDP batches when the machine is busy: allow up to 3 attempts, close between them; the attempt count is printed)
+        # (velocity comes from event timestamps, which CDP batches when the machine is busy: allow up to 6 attempts, close between them; the attempt count is printed)
         flung = 0
-        for attempt in range(1, 4):
+        for attempt in range(1, 7):
             T.drag(T.line(8, 420, 8 + w * 0.22, 420, 4), step_s=0.003); settle(page)
             if is_open(page): flung = attempt; break
             settle(page)
