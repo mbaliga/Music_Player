@@ -37,7 +37,7 @@ Scripts (each exits non-zero when an assertion fails; `verify-all.py` prints the
 | `verify-devicemode.py` | lock key, frozen / live faces on the real stage, coverflow and cassette, hint card, AOD on every section, keep-awake (mocked), audio across AOD |
 | `verify-device-library.py` | mocked native Android MediaStore plugin: permission card, scan, albums, playback through `DeviceFile` |
 | `verify-radio-layout.py`, `verify-you-radio.py`, `verify-canned-radio.py` | radio sections (fake speech injected; real speech is never heard) |
-| `verify-tour.py` | **the acceptance tour**: the whole app at 360x780 and 412x915 (+ landscape), mocked native, 5,000 tracks, measurements; `TOUR_PUBLISH=1` refreshes `docs/screenshots/tour/` |
+| `verify-tour.py` | **the acceptance tour** (`TOUR_ONLY=journey` runs just the real-library journey: scan, pick an album, play, measure the dominant frequency of the output against the chosen track's tone, Library / Player, Turntable settings, a tape built in the full-screen editor and played, Radio search, Booth pad hold, Settings, lock + AOD): the whole app at 360x780 and 412x915 (+ landscape), mocked native, 5,000 tracks, measurements; `TOUR_PUBLISH=1` refreshes `docs/screenshots/tour/` |
 | `fidelity-turntable.py` | dev only: pixel diff of the stage against the owner's prototype (`ORIG=...`) |
 
 `scripts/verify-devicemode.py`, `verify-shell.py` and `verify-canned-radio.py` share helpers by `exec`-ing a prefix of `verify-canned-radio.py`; keep that file's
@@ -117,6 +117,8 @@ Measured in the tour (desktop Chromium on a CPU renderer, **not** phone numbers;
 9. Booth: touch feel and `GESTURE_KNOBS`, CPU and battery with an effect held, WebView latency with FX on, ring drawing cost, ConvolverNode cost, 2 ms loop cross-fade audibility, the postMessage path.
 10. Shell / settings: edge-gesture feel vs Android back, safe-area insets on a notched phone, text size and reduced motion on device, custom theme import by paste on a phone keyboard.
 11. Library on device: memory with hundreds of real embedded covers; the coverflow swipe momentum (`flingGainS`, `easeRate`, `dragSlopPx`); the toolbar position against the hamburger / drawer strip.
+
+12. **UX round (real-track playback, full-screen sheets, Booth).** On the RedMagic with a library of **mp3, m4a (AAC) and flac** files: pick an album in the library, tap a track, and confirm the audio is that track (not the Demo record), the now-playing line names it, Play / Stop resume the same track, next / previous and the end-of-track advance work, and a mixtape built from the same files plays upright in the cassette player. Check the toasts read plainly ("Found N songs", the mixtape refusals, "Could not play ..."), Booth feel (pad hold, beat repeat / stutter / filter / echo pads, the 44 px targets; in landscape the six mode chips are 38 px wide, 44 px tall, and the Booth page scrolls a little under the mini bar), the full-screen sheets (mixtape editor, Turntable settings, Search, Device mode, Settings overlays) with a **notch / camera cut-out and the gesture bar** in both orientations (header and last row clear of the insets), and **Android back** inside the mixtape editor (it should close the editor / sheet and never leave the app or unlock a locked phone). Also: starting an album track while a tape is playing ends the tape (mini bar, Booth and lock face then name the album track).
 
 ---
 

@@ -42,7 +42,7 @@ Other keys keep their owners: `runout.customTheme` (theme.js), `runout.tt.speed`
 * **Library** - driven by `libraryPrefs` (`src/library-prefs.js`): sources (phone library when available, folder picker), hide songs shorter than N seconds, folders to leave out / only include, rescan on resume, read tags from files,
   **Scan now**, **Clear library cache**, **Reset library options** (the destructive ones ask for a second tap). The device scan card (`deviceLibrary.mountScanCard`) is shown when the native plugin is available.
 * **Playback** - default speed 33 1/3 / 45 / 78 (applied now; at boot only when the turntable has no remembered speed of its own), **Audiophile mode** (the old diamond button, now persisted), and an **Advanced** line with *Open Deck details*
-  (fine speed, rate / position / wear, feel knobs, latency, load a file and the build id stay in the Deck details sheet on Albums: nothing moved, nothing lost). Gapless / crossfade have no user setting today, so none is shown.
+  (fine speed, rate / position / wear, feel knobs, latency, load a file and the build id stay in the Turntable settings sheet on Albums: nothing moved, nothing lost). Gapless / crossfade have no user setting today, so none is shown.
 * **Radio** - **AI stations (experimental)** (the existing `radio.ai` flag, same key), a note on pre-written shows, host voices (chosen per show in "Cast and voices"; *Reset host voices* clears the saved choices),
   *Clear favourites* / *Clear recents* (two taps).
 * **Booth** - the light ring and latch live in the Booth's own menu; this group says so and shows the ring's current state (read-only through `loadFx`). TODO (FX owner): expose a public settings API so the switch can live here.

@@ -59,6 +59,11 @@ body[data-devicemode~="locked"] .tp-hint { display: none; }
   .dm-sheet-card { max-height: 88vh; border-radius: 22px; background: var(--bg, #000); border: 1px solid var(--border); padding-top: 0; }
 }
 
+/* a landscape phone (short screen) is still a task page: the card spans the whole width, clear of a notch on either side */
+@media (max-height: 500px), (max-width: 640px) {
+  .dm-sheet-card { max-width: none; padding-left: max(18px, env(safe-area-inset-left, 0px)); padding-right: max(18px, env(safe-area-inset-right, 0px)); }
+}
+
 /* ── ALWAYS-ON DISPLAY: one theme layer over the same layout ─────────────────────────────────────────────────────────── */
 :root:has(body[data-devicemode~="aod"]) { background: #000; }
 body[data-devicemode~="aod"] {

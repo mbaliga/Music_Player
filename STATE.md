@@ -25,6 +25,10 @@ are in the table below (run B of `verify-all.py`; the screenshots of the tour ar
 | search over 5,000 songs | about 96 ms to first results, 87 ms for a later query (including the debounce); the mixtape picker answers in 15 ms |
 | `www/` shipped | 2,830 KB in 190 files (JS 1,493 KB); largest `assets/mat.jpg` 216 KB, then the station packs at 120-146 KB each |
 
+## UX round (final integration)
+
+Seven parallel UX fixes were merged and proven together: `verify-tour.py` has a real-library journey that asserts the audio actually playing is the chosen real track (dominant frequency of the engine output, never the Demo record). Found and fixed while integrating: the stage measured its card while the shell scaled it (the now-playing line sat on the keys after visiting another section); a tape kept "owning" the engine after the user started an album track (Booth said a mixtape was playing); `verify-you-radio.py` crashed on an empty list (now fixed and a real gate); the Device mode sheet is full width on landscape phones; Booth landscape rows / switches / pads are 44 px tall. On-device checklist item 12 in `HANDOFF.md` §6 lists what only a phone can settle.
+
 ## Not verified
 
 Anything on a device: gesture feel, the §3 latency gate, WebView audio / speech / SVG behaviour, native plugin runtime, keep-awake / refresh / brightness, TalkBack,

@@ -26,7 +26,7 @@ Menu order: **Albums, Mixtapes, Radio, Booth, Settings** (Settings last, with a 
 
 * **Albums** - the compact turntable on top (the Utilitarian composition, stage height `42%` of the card, `clamp(236px, 42% .. 420px)`; the whole
   record and the tonearm are visible; CD albums swap in the CD view and the stage grows to 50%), then the title line with track nav and speed
-  33/45/78 + palm brake in one row, then the shelf (Scan, All/Vinyl/CD, sort chips, grid; tap a card for its track list). "Deck details" at the
+  33/45/78 + palm brake in one row, then the shelf (Scan, All/Vinyl/CD, sort chips, grid; tap a card for its track list). "Turntable settings" at the
   bottom keeps what the old side panel had (fine-speed slider, rate/position/wear, feel knobs, latency, load track, build id). Layout choice
   (Settings): Compact (default), Utilitarian (tall), Cinematic. Preference key `runout.layout.v2`.
 * **Mixtapes** - the stack of cassettes (`mountStack`, `bringToTop`): tap the top tape to play, tap another to bring it up. Spines is the secondary
@@ -40,7 +40,7 @@ The **mini bar** (bottom of the card, every section except the source's own) sho
 
 ## Chrome (`chrome.css`)
 
-* **Albums has a header band** like every other page (menu button, title, search, Deck details, lock key); the stage sits under it. The header used to float over the disc.
+* **Albums has a header band** like every other page (menu button, title, search, Turntable settings, lock key); the stage sits under it. The header used to float over the disc.
 * **Player surfaces stay dark in every theme** (turntable, library on its stage, CD view, cassette player). In the light theme their tokens are re-scoped dark (`--ink`, `--surface`, ... on `#pageAlbums`, `.tp`, the mini bar over Albums), and the lock key keeps its dark housing there. Settings > Appearance > Theme says so.
 * **Drawer footer**: labelled 44 px pills (Help, Audiophile, Theme), stacked.
 * **Edge**: the 24 px gesture strip is unchanged and invisible; the old grey line is now a small grab tab (`.card-handle`, 6 x 48 px) on the card's edge.

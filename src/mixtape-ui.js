@@ -686,6 +686,23 @@ export class MixtapeUI {
     for (let k = lo; k < hi; k++) if (p.files[k]) { this._goto(k); break; }
   }
 
+  /** Public: another source (the user's own album track) took the engine. End the tape session without touching the engine, so the mini bar,
+   *  the Booth and the shell stop calling it "playing". */
+  releaseEngine() {
+    const p = this.play; if (!p || p.ended || p.released) return;
+    this._windCancel(); clearTimeout(this._msgTimer);
+    p.ended = true; p.released = true; p.tok++; p.nextTrack = null; p.paused = false;   // `released`: tick() leaves the engine alone from now on
+    this.d.dropNext?.();
+    if (this.pl) { this.pl.destroy(); this.pl = null; }
+    this.root.classList.add('hidden');
+  }
+
+  /** Public: the mini bar's Play / Pause for the tape on the player. */
+  togglePlayback() { return this._toggle(); }
+
+  /** Public: the mini bar's Next. Skips to the following song (flipping to side B when needed); no-op past the last. */
+  nextSong() { const p = this.play; if (p) this._jumpTo(p.idx + 1); }
+
   /** Jump to a song by flat index, flipping to its side first when it is on the other one. */
   _jumpTo(flat) {
     const p = this.play; if (!p || p.loading || !p.files[flat]) return;
@@ -891,7 +908,7 @@ export class MixtapeUI {
   /** Called every frame by main.js with the live playback state. */
   tick(t, T, rate, dt) {
     const p = this.play;
-    if (!p) return;
+    if (!p || p.released) return;
     p.lastT = t; p.T = T;
     if (p.idx !== p.lastIdx) {
       p.lastIdx = p.idx; if (p.wind) p.wind.track = p.idx;

@@ -16,7 +16,7 @@ export const STEPS = [
   },
   {
     title: 'Albums',
-    body: 'Your records and CDs on a turntable. Tap play, then drag the record to scratch it. Pinch two fingers together to see your whole library; spread them to come back.',
+    body: 'Your records and CDs on a turntable. Tap Library to see all your albums and pick one, then tap play. Drag the record to scratch it. Pinching two fingers together also opens the library.',
   },
   {
     title: `Mixtapes, Radio and ${BOOTH_LABEL}`,

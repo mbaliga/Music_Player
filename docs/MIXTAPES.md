@@ -214,7 +214,7 @@ Everything that holds a task is a page, not a floating window. The mixtape edito
 in two columns under it); Add and Tracks use the **compact** preview beside the gauges so the search field and list get the height. Landscape
 phones (`max-height:560px`) put the preview and gauges in a left column and the tabs and body on the right. Leaving with unsaved changes opens a small
 confirmation (Save / Keep editing / Discard); that stays a dialog on purpose. The same `@media (max-width:700px), (max-height:520px)` rule makes the
-import / export / custom-theme paste flow (`.theme-overlay`, with a Back header), Search (`.search-ov`), Deck details (`.tt-sheet`) and the Device mode
+import / export / custom-theme paste flow (`.theme-overlay`, with a Back header), Search (`.search-ov`), Turntable settings (`.tt-sheet`) and the Device mode
 sheet (`.dm-sheet`, Done in the header) full-screen. Tablets and desktop keep the cards. The editor and importer are still refused while locked
 (`allowsGesture('editor')`), and untrusted text still goes through text nodes. `scripts/verify-mixtapes.py` `run_layout` asserts the geometry at
 360x780, 412x915 and 915x412.

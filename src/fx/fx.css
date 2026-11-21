@@ -178,13 +178,13 @@
   .fx-disc { width: 28px; height: 28px; } .fx-disc i { inset: 9px; }
   .fx-deck-t { font-size: 12px; } .fx-deck-s { font-size: 10px; } .fx-bpm { min-width: 48px; font-size: 16px; padding: 4px 6px 12px; }
   .fx-rack { padding: 3px; gap: 2px; grid-template-columns: repeat(6, 1fr); }
-  .fx-row { min-height: 36px; padding: 4px 0; gap: 3px; } .fx-row .fx-row-t { font-size: 7px; letter-spacing: .02em; }
-  .fx-tog { min-height: 30px; font-size: 7.5px; gap: 3px; letter-spacing: .02em; } .fx-tog .l { display: none; } .fx-tog .s { display: inline; } .fx-switches { padding: 3px; gap: 3px; }
+  .fx-row { min-height: 44px; padding: 4px 0; gap: 3px; } .fx-row .fx-row-t { font-size: 7px; letter-spacing: .02em; }
+  .fx-tog { min-height: 44px; font-size: 7.5px; gap: 3px; letter-spacing: .02em; } .fx-tog .l { display: none; } .fx-tog .s { display: inline; } .fx-switches { padding: 3px; gap: 3px; }
   .fx-knobs { padding: 3px 2px 3px; } .fx-k-svg { width: 38px; height: 38px; } .fx-k-owner { display: none; } .fx-k-name { font-size: 7.5px; } .fx-k-out { font-size: 9px; min-width: 40px; padding: 1px 3px; }
   .fx-perf .fx-led { display: none; }
   .fx-switches { align-self: start; }
-  .fx-pads { max-height: none; padding: 5px; gap: 5px; grid-auto-rows: minmax(38px, 1fr); }
-  .fx-perf { min-height: 38px; border-radius: 9px; } .fx-perf-v { font-size: 14px; } .fx-perf-l { font-size: 7px; letter-spacing: .06em; }
+  .fx-pads { max-height: none; padding: 5px; gap: 5px; grid-auto-rows: minmax(44px, 1fr); }
+  .fx-perf { min-height: 44px; border-radius: 9px; } .fx-perf-v { font-size: 14px; } .fx-perf-l { font-size: 7px; letter-spacing: .06em; }
   .fx-div { font-size: 24px; } .fx-psub { top: 38px; }
   .fx-idle { gap: 5px; padding: 10px; } .fx-idle-ic { display: none; } .fx-idle-t { font-size: 14px; } .fx-idle-s { font-size: 11px; }
 }

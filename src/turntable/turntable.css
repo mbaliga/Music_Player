@@ -44,7 +44,7 @@
 #pageAlbums .cd-view { position: absolute; inset: 0; z-index: 3; padding-top: calc(100px + var(--safe-top)); background: var(--card-bg); }
 #pageAlbums[data-view="cd"]:not([data-lib]) .tt-wrap { visibility: hidden; }
 #pageAlbums[data-lib] .cd-view { display: none; }   /* browsing the library from the CD view: the CD keeps playing underneath */
-/* Deck details (the old side panel) opens as a sheet over the page */
+/* Turntable settings (was Deck details; the old side panel) opens as a sheet over the page */
 .tt-sheet { position: absolute; left: 0; right: 0; bottom: 0; max-height: 82%; z-index: 5; overflow-y: auto; background: var(--surface); color: var(--ink);
   border-radius: 22px 22px 0 0; border-top: 1px solid var(--border); box-shadow: 0 -18px 50px rgba(0,0,0,.55); padding: 6px 16px calc(24px + var(--safe-bottom)); }
 .tt-sheet[hidden] { display: none; }

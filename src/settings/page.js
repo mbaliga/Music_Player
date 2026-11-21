@@ -133,10 +133,10 @@ export function mountSettings(host, deps) {
 
   // ── Playback ──
   const rpm = reg(seg('Default speed', [{ value: 33.333, label: '33⅓' }, { value: 45, label: '45' }, { value: 78, label: '78' }], S('playback.defaultRpm'), T('playback.defaultRpm')));
-  const audiophile = reg(sw('Audiophile mode', 'Adds fine-tuning dials for the record to Deck details.', S('playback.audiophile'), T('playback.audiophile')));
+  const audiophile = reg(sw('Audiophile mode', 'Adds fine-tuning dials for the record to Turntable settings.', S('playback.audiophile'), T('playback.audiophile')));
   const playback = group('Playback', null, row('Default speed', 'The speed the turntable starts at.', rpm), audiophile,
     h('div', { class: 'st-row' }, h('div', { class: 'st-label' }, 'More controls'), h('div', { class: 'st-hint' }, 'Fine speed, position and extra record details.'),
-      h('div', { class: 'st-btns' }, h('button', { type: 'button', class: 'st-btn', onclick: () => deps.playback && deps.playback.openDeckDetails && deps.playback.openDeckDetails() }, 'Open Deck details'))));
+      h('div', { class: 'st-btns' }, h('button', { type: 'button', class: 'st-btn', onclick: () => deps.playback && deps.playback.openDeckDetails && deps.playback.openDeckDetails() }, 'Open Turntable settings'))));
 
   // ── Radio ──
   const rd = deps.radio || {};

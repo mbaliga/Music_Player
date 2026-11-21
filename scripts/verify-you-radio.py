@@ -20,6 +20,7 @@ MODE = sys.argv[1] if len(sys.argv) > 1 else 'fake'
 SP = sys.argv[2] if len(sys.argv) > 2 else tempfile.mkdtemp(prefix='you-radio-')
 SHOTS = os.path.join(SP, 'shots'); os.makedirs(SHOTS, exist_ok=True)
 URL = os.environ.get('URL', 'http://localhost:8123/index.html')
+ORIGIN = URL.split('/index.html')[0]
 LIB = os.path.join(SP, 'lib')
 SPECS = [('Harbor Lights', 'Mara Quill', 'Night Shift', 220, 'Jazz'), ('Paper Moon', 'The Velvet Lanterns', 'Night Shift', 262, 'Jazz'),
          ('Slow Window', 'Low Tide Orchestra', 'Tidal', 294, 'Ambient'), ('Copper Rain', 'June Parlor', 'Tidal', 330, 'Folk'),
@@ -155,7 +156,7 @@ def run():
         out['C_label'] = page.inner_text('.ai-label')
         page.wait_for_function('document.querySelector(".ai-now-title") && document.querySelector(".ai-now-title").textContent !== "Tuning in…"', timeout=15000)
         out['C_first_title_after_s'] = round(time.time() - t0, 2)
-        out['C_external_requests_after_station_click'] = [u for u in reqs[out['C_requests_before_station_click']:] if not u.startswith('http://localhost:8123')]
+        out['C_external_requests_after_station_click'] = [u for u in reqs[out['C_requests_before_station_click']:] if not u.startswith(ORIGIN)]
         out['C_now_title'] = page.inner_text('.ai-now-title')
         out['C_now_sub'] = page.inner_text('.ai-now-sub')
 
@@ -210,7 +211,9 @@ def run():
             elif ch and cur is not None: cur[2], cur[3] = fb[0], fb[1]
             elif not ch and cur is not None: runs.append(cur); cur = None
         out['C_gain_transitions'] = [{'t0': round(r[0],3), 'dur_ms': round((r[2]-r[0])*1000), 'from': round(r[1],3), 'to': round(r[3],3)} for r in runs]
-        norm = lambda cs: round(max(c[1]/c[2] for c in cs if c[2] > 0.003), 4) if cs else None
+        def norm(cs):
+            r = [c[1]/c[2] for c in cs if c[2] > 0.003]   # chunks that are near-silent (peak <= 0.003) carry no click information
+            return round(max(r), 4) if r else None
         out['C_norm_step_steady'] = norm(steady); out['C_norm_step_ducked'] = norm(ducked); out['C_norm_step_ramping'] = norm(ramp)
         out['C_top5_sample_steps_overall'] = sorted([(round(c[1],3), round(c[0],2), round(c[3],3)) for c in chunks], reverse=True)[:5]
         out['C_spoken'] = page.evaluate('window.__speech ? window.__speech.spoken.map(s => ({text: s.text, voice: s.voice, rate: +s.rate.toFixed(2), pitch: +s.pitch.toFixed(2)})) : null')
@@ -281,11 +284,21 @@ def run():
         out['H_row_after_toggle_off'] = page.locator('.radio-ai-sec .radio-row').count()
         out['H_flag_after_off'] = page.evaluate('localStorage.getItem("runout.flag.radio.ai")')
 
-        ext = [u for u in reqs if not u.startswith('http://localhost:8123') and not u.startswith('data:') and not u.startswith('blob:')]
+        ext = [u for u in reqs if not u.startswith(ORIGIN) and not u.startswith('data:') and not u.startswith('blob:')]
         out['external_requests'] = ext
         out['page_errors'] = errs[:10]
         out['http_errors'] = bad
         b.close()
     print(json.dumps(out, indent=1, default=str))
+    # the measurements above were report-only; these are the assertions that make the script a gate
+    fails = []
+    real_errs = [e for e in out.get('page_errors', []) if 'Failed to load resource' not in e]   # the dev server has no stations/ folder: a known 404
+    if real_errs: fails.append(f"page errors: {real_errs}")
+    if out.get('C_external_requests_after_station_click'): fails.append('You Radio made external requests')
+    g_sp, g_idle = out.get('C_gain_while_speaking_min'), out.get('C_gain_idle_median')
+    if g_sp is not None and g_idle is not None and not (g_sp < 0.4 and g_idle > 0.9): fails.append(f'ducking: speaking min gain {g_sp}, idle median {g_idle}')
+    if out.get('C_max_gain_slope_per_s_20ms_windows') and out['C_max_gain_slope_per_s_20ms_windows'] > 2 * out['C_expected_attack_slope_per_s']: fails.append('duck ramp steeper than twice the expected attack slope (click risk)')
+    if fails: print('FAIL: ' + '; '.join(fails)); sys.exit(1)
+    print('PASS: You Radio verification')
 
 run()

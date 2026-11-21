@@ -62,14 +62,14 @@ spiral has 12 turns (`TURNS`); the disc rotation that keeps groove point *s* und
 * At the end of a track the needle crosses the gap into the next one (`onVinylTrackEnd`: a cold load, a short gap, no pre-fetch; see open items); the
   end of the album freezes at the runout.
 * Speed: **33 / 45 / 78** buttons (78 is new, in the free cell left of Play) and **− / +** (×.98 / ×1.02 of the chosen speed, 0.7–1.3). The continuous
-  fine-speed slider lives in **Deck details**. Persisted: `runout.tt.speed`, `runout.tt.last` (last album id + track, used to refocus the carousel;
+  fine-speed slider lives in **Turntable settings**. Persisted: `runout.tt.speed`, `runout.tt.last` (last album id + track, used to refocus the carousel;
   files need re-linking before it can play). There is no volume control in the app, so none is persisted.
 * Palm brake: hold the platter **label** (r < 217), or the space bar (unless a control has focus). The old BRAKE pad is gone.
 * FX: `src/fx/**` untouched; the platter pointer angle / rate are exposed (`stage.scratchAngle()`, `state.fingerOmega`, `engine._rate`) so Booth's Blend scratch can be wired later.
 
 ## Albums page
 
-The stage fills the card (`.tt-wrap`, black always — a physical object). The drawer hamburger, search, deck-details, lock keys float over the top as dark chips
+The stage fills the card (`.tt-wrap`, black always — a physical object). The drawer hamburger, Library, search, Turntable settings and lock keys sit over the top as dark chips
 (`page-head` is absolutely positioned). The disc overhangs *inside* the stage as in the prototype, but at the card edge it is clipped (the card is a
 rounded, scaled element; overhang beyond it is impossible). **Landscape:** the shell caps its frame at 560 px; the stage is 2.21:1, so on landscape
 screens the Albums page takes the full width (`.shell[data-section="albums"]`, `turntable.css`); other sections keep the cap. The side effect is that the drawer's grab strip is at the

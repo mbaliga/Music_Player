@@ -57,7 +57,7 @@ function loadCss() {
 
 const BLOCK = {
   radio: { text: 'A radio station is playing.', hint: 'Stop it in Radio to use the Booth.', go: 'radio', label: 'Open Radio' },
-  mixtape: { text: 'A mixtape is playing.', hint: 'Close the tape to use the Booth.', go: 'mixtapes', label: 'Open Mixtapes' },
+  mixtape: { text: 'A mixtape is playing.', hint: 'Stop the tape to use the Booth.', go: 'mixtapes', label: 'Open Mixtapes' },
 };
 const envCache = new WeakMap();
 

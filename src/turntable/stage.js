@@ -127,7 +127,9 @@ export function createStage(host, hooks = {}) {
     nowEl.dataset.tight = h < 44 ? '1' : '';
   }
   function resize() {
-    const r = host.getBoundingClientRect();
+    // layout size, not the transformed box: the shell card is scaled while the drawer opens / closes, and a measurement taken then left the
+    // stage (and the now-playing band) laid out for the shrunken card after it settled back
+    const r = { width: host.clientWidth, height: host.clientHeight };
     visible = r.width >= 2 && r.height >= 2;
     if (!visible) return;                                   // hidden section: keep the last geometry (the player keeps ticking, nothing is drawn)
     DPR = Math.min(2.5, window.devicePixelRatio || 1);

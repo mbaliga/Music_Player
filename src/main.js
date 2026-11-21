@@ -322,6 +322,7 @@ const engineGate = createEngineGate();
 let foreignPlaybackHook = null; // set once the Radio tab exists: ends an engine-backed station when the user starts their own track
 async function loadTrack(track, q = null, fromRadio = false, foreign = false) {
   if (!fromRadio) { engineGate.bump(); try { foreignPlaybackHook && foreignPlaybackHook(); } catch { /* */ } }
+  if (!fromRadio && !foreign) { try { state.mixtapes && state.mixtapes.releaseEngine(); } catch { /* */ } }   // the user's own album track replaces a tape that was still playing
   state.vinylOwned = !(fromRadio || foreign);
   state.track = track;
   state.frames = track.frames;
@@ -841,7 +842,7 @@ function installAlbumNav() {
 
 // ── controls / HUD ───────────────────────────────────────────────────────────────────────────────────────────────────────
 function installControls() {
-  // Fine speed (the continuous dial, spec §5): the 33 / 45 / 78 buttons and −/+ live on the stage; this slider is in Deck details.
+  // Fine speed (the continuous dial, spec §5): the 33 / 45 / 78 buttons and −/+ live on the stage; this slider is in Turntable settings.
   const rpmSlider = el('rpmSlider');
   rpmSlider.addEventListener('input', () => setRpm(Number(rpmSlider.value)));
 
@@ -913,7 +914,7 @@ function updateHud(rate, t) {
   if (nowTimeOn && stage) stage.setNowTime(`${formatTime(t)} / ${formatTime(state.T)}`);
 }
 
-// ── Deck details: the old side panel, now a sheet opened from the small control on the Albums page ──────────────────────
+// ── Turntable settings (was Deck details): the old side panel, now a sheet opened from the small control on the Albums page ──────────────────────
 function installDetails() {
   const page = el('pageAlbums'), sheet = el('deckSheet');
   const actions = page.querySelector('.page-actions');
@@ -1475,7 +1476,7 @@ const miniActions = {
       } else if (source === 'mixtape' && state.mixtapes) {
         const p = state.mixtapes.play;
         miniHold = p && !p.paused ? 'mixtape' : null;
-        state.mixtapes._toggle();
+        state.mixtapes.togglePlayback();
       }
     } catch (err) { console.warn('mini bar toggle failed', err); }
     refreshNowPlaying();
@@ -1483,7 +1484,7 @@ const miniActions = {
   async next(source) {
     try {
       if (source === 'album') { await state.engine.resume(); stepTrack(1); }
-      else if (source === 'mixtape' && state.mixtapes && state.mixtapes.play) state.mixtapes._jumpTo(state.mixtapes.play.idx + 1);
+      else if (source === 'mixtape' && state.mixtapes && state.mixtapes.play) state.mixtapes.nextSong();
     } catch (err) { console.warn('mini bar next failed', err); }
     refreshNowPlaying();
   },
@@ -1496,7 +1497,7 @@ function refreshNowPlaying() {
     src.radio = { title: radio.station.name, sub: ph === 'playing' ? 'Radio · on air' : ph === 'error' ? 'Radio · error' : 'Radio · connecting' };
   }
   const p = state.mixtapes && state.mixtapes.play;
-  if (p && !p.ended && !p.paused) src.mixtape = { title: p.mix.name || 'Mixtape', sub: `Mixtape · track ${Math.max(1, p.idx + 1)} of ${p.files.length}`, playing: true, canNext: p.idx + 1 < p.files.length && typeof state.mixtapes._jumpTo === 'function' };
+  if (p && !p.ended && !p.paused) src.mixtape = { title: p.mix.name || 'Mixtape', sub: `Mixtape · track ${Math.max(1, p.idx + 1)} of ${p.files.length}`, playing: true, canNext: p.idx + 1 < p.files.length };
   const q = state.queue;
   if (q && !state.radioOn && (state.view === 'cd' ? state.cdPlaying : (stage.player.playing && state.vinylOwned))) {
     src.album = { title: q.items[q.index].title || (state.track && state.track.name) || 'Album', sub: `${q.kind === 'cd' ? 'CD' : 'Vinyl'} · track ${q.index + 1} of ${q.items.length}`, playing: true, canNext: q.index + 1 < q.items.length };

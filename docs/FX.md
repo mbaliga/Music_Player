@@ -39,7 +39,7 @@ Nothing else in the shell was touched.
 ## Ownership: radio, canned shows and mixtapes
 
 FX is **off, with a plain message**, whenever something else owns the engine: a streamed or canned station (`state.radioOn`), You Radio (any
-radio session), or a playing mixtape (`state.mixtapes.play`). The message reads, for example, "FX is off: a mixtape is playing. Close the tape
+radio session), or a playing mixtape (`state.mixtapes.play`). The message reads, for example, "FX is off: a mixtape is playing. Stop the tape
 to use FX." The controller polls this every frame, releases any held effect, zeroes the worklet block and removes the bus chain. Loading a
 new record or tape (every `loadTrack`, mixtape `adoptTrack` and radio `adopt`) also releases FX and re-analyses the tempo. FX never starts,
 stops or loads anything itself, so it cannot interfere with the engine gate (`src/engine-gate.js`).

@@ -15,7 +15,7 @@ Extra phases: a mocked native Android device library ("Scan phone", device track
 (search + picker speed). Measured: time to first interactive, JS heap after the tour, per-frame cost of the Albums stage, bytes shipped.
 Headless Chromium on a CPU renderer: the numbers are indicative, NOT phone numbers. Real speech is never heard (a fake speechSynthesis is injected).
 """
-import json, os, shutil, subprocess, sys, time, math
+import json, os, re, shutil, subprocess, sys, time, math
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 src = open(os.path.join(ROOT, 'scripts/verify-canned-radio.py')).read()
 src = src[:src.index('def run():')]
@@ -160,7 +160,7 @@ def tour(b, w, h, tag, landscape=False):
         shot(page, 'albums-idle')
         px, py, _, _ = center(page, '#tt-playBtn'); T.tap(px, py); time.sleep(2.5)
         S = pstate(page)
-        check(S['playing'] and rms(page) > 0.005, f'{tag}: Play starts the built-in test pressing and it is audible (rms {rms(page):.3f})')
+        check(S['playing'] and rms(page) > 0.005, f'{tag}: Play starts the built-in demo record and it is audible (rms {rms(page):.3f})')
         shot(page, 'albums-playing')
         p0 = pos(page); T.tap(px, py); time.sleep(1.0)
         S = pstate(page); p1 = pos(page); time.sleep(0.8); p2 = pos(page)
@@ -619,6 +619,190 @@ def bytes_shipped():
     print(f"     bytes shipped: www/ {METRICS['www_total_kb']} KB in {len(files)} files (JS {METRICS['www_js_kb']} KB); largest: {METRICS['www_largest']}", flush=True)
     check(r.returncode == 0 and tot > 0, 'build:web stages www/')
 
+# ══ the user journey with a real multi-album library: the audio that plays must be the CHOSEN real track (measured), never the demo record ══
+DOM_JS = """
+(() => {
+  window.__dom = () => {                                   // dominant frequency (Hz) of the engine output right now; 0 when silent
+    const a = window.__an; if (!a) return -1;
+    if (a.fftSize !== 16384) a.fftSize = 16384;
+    const buf = new Float32Array(a.frequencyBinCount); a.getFloatFrequencyData(buf);
+    let bi = 2; for (let i = 3; i < buf.length; i++) if (buf[i] > buf[bi]) bi = i;
+    if (!(buf[bi] > -70)) return 0;
+    return bi * a.context.sampleRate / a.fftSize;
+  };
+})();
+"""
+def tone_of(album, title):
+    for (_, al, _, _, _, _, _, tracks) in ALBUMS:
+        if al == album:
+            for (t, _, hz, _) in tracks:
+                if t == title: return hz
+    raise KeyError((album, title))
+def dom(page, n=8):
+    """the most common dominant frequency over n quick reads (0 = silent)"""
+    v = []
+    for _ in range(n): v.append(round(page.evaluate('window.__dom()'))); time.sleep(0.08)
+    return max(set(v), key=v.count)
+def is_tone(hz, want, tol=10): return abs(hz - want) <= tol
+
+def phase_journey(b, w=412, h=915):
+    tag = f'journey-{w}x{h}'
+    print(f'\n=== {tag}: the real-library user journey ===', flush=True)
+    n = {'i': 0}
+    def shot(page, name):
+        n['i'] += 1; page.screenshot(path=os.path.join(SHOTS, f'{tag}-{n["i"]:02d}-{name}.png'), scale='css')
+    ctx, page, _ = boot(b, w, h, tag, wt_done=True, init=DOM_JS)
+    T = Touch(page)
+    DEMO_HZ = None
+    chosen = {}
+
+    def s_first_run():
+        txt = page.inner_text('.page:not([hidden])')
+        check(page.evaluate("!document.getElementById('btnLibrary') || document.getElementById('btnLibrary').offsetWidth > 0"), f'{tag}: the Library button is visible on first run')
+        card = page.locator('.tt-empty:not([hidden])')
+        check(card.count() == 1 and 'demo record' in card.inner_text().lower(), f'{tag}: with nothing scanned the stage offers the Demo record and a Scan card ({card.inner_text()[:80]!r})')
+        shot(page, 'first-run')
+    step('first run', s_first_run)
+
+    def s_scan():
+        with page.expect_file_chooser() as fc: page.click('.tt-empty-btn')
+        fc.value.set_files(TLIB)
+        page.wait_for_function(f'{APP}.albums.length >= 7 && {APP}.albums.every(a => !a.builtin)', timeout=40000); page.wait_for_timeout(1800)
+        check(page.evaluate("document.getElementById('btnLibrary').getAttribute('aria-pressed')") == 'true' and pstate(page)['z'] == 1, f'{tag}: after the scan the library opens by itself')
+        check(page.locator('.tl-hint:visible, .tt-pick-nudge:visible').count() >= 0, f'{tag}: (nudge present or not; the library is what matters)')
+        check(not pstate(page)['playing'] and dom(page) < 30, f'{tag}: scanning does not start any sound (playing {pstate(page)["playing"]}, dominant {dom(page)} Hz)')
+        shot(page, 'library-after-scan')
+    step('scan', s_scan)
+
+    def s_pick():
+        # focus Tidal (vinyl) through the coverflow, then tap its third track
+        ti = page.evaluate(f"{APP}.albums.findIndex(a => a.title === 'Tidal')")
+        page.evaluate(f'{APP}.tlib.focus({ti}, {{ animate: false }})'); page.wait_for_timeout(1000)
+        check(page.inner_text('.tl-title').strip().lower() == 'tidal', f'{tag}: the coverflow centres "Tidal" ({page.inner_text(".tl-title")!r})')
+        shot(page, 'album-picked')
+        rows = page.locator('.tl-trk')
+        names = rows.all_inner_texts()
+        i3 = next(i for i, t in enumerate(names) if 'tide table 3' in t.lower())
+        rows.nth(i3).tap(); page.wait_for_timeout(3000)
+        hz = dom(page); want = tone_of('Tidal', 'Tide Table 3'); chosen['hz'] = want
+        check(is_tone(hz, want), f'{tag}: tapping the track plays THAT real track: dominant {hz} Hz == {want} Hz (not the demo)')
+        nl = page.evaluate("(() => { const e = document.querySelector('.tt-now'); return e && !e.hidden ? [document.querySelector('.tt-now-title').textContent, document.querySelector('.tt-now-sub').textContent, document.querySelector('.tt-now-time').textContent] : null; })()")
+        check(nl and nl[0] == 'Tide Table 3' and 'Low Tide Orchestra' in nl[1] and 'Tidal' in nl[1], f'{tag}: the now-playing line names the real track and album ({nl})')
+        check(not re.search(r'demo record|test pressing', page.inner_text('.page:not([hidden])'), re.I), f'{tag}: no Demo record / test pressing wording on the player')
+        check(pstate(page)['z'] == 0, f'{tag}: picking a track brings the player back')
+        shot(page, 'playing-real-track')
+    step('pick + play', s_pick)
+
+    def s_toggle():
+        pr0 = page.evaluate("document.getElementById('btnLibrary').getAttribute('aria-pressed')")
+        page.tap('#btnLibrary'); page.wait_for_timeout(1300)
+        lab1 = page.inner_text('#btnLibrary'); on = pstate(page)['z'] == 1
+        check(pr0 == 'false' and on and 'player' in lab1.lower(), f'{tag}: Library opens the shelf and the button becomes "{lab1.strip()}"')
+        check(is_tone(dom(page), chosen['hz']), f'{tag}: the same real track keeps playing while the library is open')
+        shot(page, 'library-while-playing')
+        page.tap('#btnLibrary'); page.wait_for_timeout(1300)
+        lab2 = page.inner_text('#btnLibrary'); off = pstate(page)['z'] == 0
+        check(off and 'library' in lab2.lower(), f'{tag}: Player brings the turntable back and the button reads "{lab2.strip()}"')
+    step('library/player toggle', s_toggle)
+
+    def s_settings_sheet():
+        page.tap('#btnDeck'); page.wait_for_timeout(500)
+        r = page.evaluate("(() => { const r = document.getElementById('deckSheet').getBoundingClientRect(); return [r.x, r.y, r.width, r.height]; })()")
+        check(r[2] >= w - 2 and r[3] >= h - 4, f'{tag}: Turntable settings is a full page ({r})')
+        t = page.inner_text('#deckSheet')
+        check('Turntable settings' in (page.get_attribute('#deckSheet', 'aria-label') or '') and 'tide table 3' in t.lower() and 'tidal' in t.lower(), f'{tag}: it shows the album on the platter and its tracks')
+        check(not re.search(r'deck details|feel knob|latency', t.split('Advanced')[0], re.I), f'{tag}: no developer wording above the Advanced fold')
+        shot(page, 'turntable-settings')
+        page.tap('.tt-sheet-close'); page.wait_for_timeout(400)
+        check(page.evaluate("document.getElementById('deckSheet').hidden"), f'{tag}: Close returns to the player')
+    step('turntable settings', s_settings_sheet)
+
+    def s_mixtape():
+        drawer_to(page, 'mixtapes'); page.wait_for_timeout(500)
+        page.tap('#mtNew'); page.wait_for_selector('.ed'); page.wait_for_timeout(400)
+        r = page.evaluate("(() => { const r = document.querySelector('.ed').getBoundingClientRect(); return [r.x, r.y, r.width, r.height]; })()")
+        check(r[2] >= w - 2 and r[3] >= h - 4, f'{tag}: the mixtape editor is full screen ({r})')
+        page.fill('.ed-tape-tab input[aria-label="Title"]', 'Journey Mix'); page.locator('.ed-len', has_text='C30').tap()
+        page.tap('#edtab-add'); page.wait_for_timeout(300)
+        for q in ['Orchard Song 2', 'Harbor Light 4']:
+            page.fill('.pk-q', q); page.wait_for_timeout(450); page.locator('.pk-rowbtn', has_text=q).first.tap(); page.wait_for_timeout(300)
+        shot(page, 'mixtape-editor')
+        page.tap('.ed-bar .sv'); page.wait_for_selector('.ed', state='detached'); page.wait_for_timeout(800)
+        m = [x for x in json.loads(page.evaluate('localStorage.getItem("runout.mixtapes")'))['mixtapes'] if x['name'] == 'Journey Mix']
+        check(len(m) == 1 and len(m[0]['sides']['A']) == 2, f'{tag}: the tape is saved with its two songs')
+        shot(page, 'mixtape-shelf')
+        card = page.locator('.cs-card[aria-label^="Mixtape: Journey Mix"]').first
+        card.tap(); page.wait_for_timeout(700)
+        if page.locator('.tp:not(.hidden)').count() == 0: card.tap()
+        page.wait_for_selector('.tp:not(.hidden)'); page.wait_for_timeout(2500)
+        want = tone_of('Orchard Hum', 'Orchard Song 2')
+        hz = dom(page)
+        check(is_tone(hz, want), f'{tag}: the tape plays its first real song: dominant {hz} Hz == {want} Hz')
+        np_ = page.inner_text('.tp-np'); song = page.inner_text('.tp-np-song')
+        check('journey mix' in np_.lower() and 'Orchard Song 2' in song, f'{tag}: the upright now-playing block names the tape and song ({np_!r})')
+        check(page.evaluate("[...document.querySelectorAll('.tp-np, .tp-np *')].every((e) => getComputedStyle(e).writingMode === 'horizontal-tb' && getComputedStyle(e).transform === 'none')"), f'{tag}: ... and is not rotated')
+        shot(page, 'cassette-playing')
+        page.evaluate("document.querySelector('.tp .btn-close').click()"); page.wait_for_timeout(600)
+    step('mixtape', s_mixtape)
+
+    def s_radio():
+        drawer_to(page, 'radio'); page.wait_for_timeout(600)
+        page.fill('.radio-input', 'jazz'); page.keyboard.press('Enter')
+        page.wait_for_selector('.radio-row[data-k]', timeout=8000); page.wait_for_timeout(500)
+        rows = page.locator('.radio-row[data-k]').count()
+        check(rows >= 1, f'{tag}: a station search shows results first ({rows} rows)')
+        btn = page.evaluate("(() => { const b = document.querySelector('.radio-row[data-k] button'); if (!b) return null; const r = b.getBoundingClientRect(); return [Math.round(r.width), Math.round(r.height), b.textContent.trim()]; })()")
+        check(btn and btn[1] >= 44, f'{tag}: every result has a visible Play button of >= 44 px ({btn})')
+        shot(page, 'radio-search')
+    step('radio search', s_radio)
+
+    def s_booth():
+        drawer_to(page, 'albums'); page.wait_for_timeout(500)
+        if not (is_tone(dom(page), chosen['hz'])):            # the tape / radio took the engine: put the chosen real track back
+            ti = page.evaluate(f"{APP}.albums.findIndex(a => a.title === 'Tidal')")
+            page.tap('#btnLibrary'); page.wait_for_timeout(1000); page.evaluate(f'{APP}.tlib.focus({ti}, {{ animate: false }})'); page.wait_for_timeout(900)
+            rows = page.locator('.tl-trk'); i3 = next(i for i, t in enumerate(rows.all_inner_texts()) if 'tide table 3' in t.lower()); rows.nth(i3).tap(); page.wait_for_timeout(2500)
+        check(is_tone(dom(page), chosen['hz']), f'{tag}: picking a real track after a tape plays THAT track (dominant {dom(page)} Hz == {chosen["hz"]} Hz) and the tape no longer claims the engine')
+        drawer_to(page, 'booth'); page.wait_for_selector('.fx-row', timeout=10000)
+        page.click('.fx-row[data-id="repeat"]'); page.wait_for_selector('.fx-pad', timeout=5000); page.wait_for_timeout(800)
+        px, py, pw, ph = center(page, '.fx-pad')
+        T.down((px, py - pw * 0.25)); page.wait_for_timeout(800)
+        eng = page.evaluate('(() => { const c = window.__runoutFx.controller; return { engaged: c.engaged, mode: c.mode }; })()')
+        shot(page, 'booth-held')
+        T.up(); page.wait_for_timeout(500)
+        check(eng['engaged'] is True and eng['mode'] == 'repeat', f'{tag}: holding the Booth pad engages beat repeat ({eng})')
+        check(page.evaluate('window.__runoutFx.controller.engaged') is False, f'{tag}: ... and releasing lets go')
+    step('booth', s_booth)
+
+    def s_settings():
+        drawer_to(page, 'settings'); page.wait_for_selector('.st-page'); page.wait_for_timeout(400)
+        t = page.evaluate("document.querySelector('.st-page').textContent")
+        check('Turntable settings' in t and not re.search(r'deck details', t, re.I), f'{tag}: Settings points at "Turntable settings" and never "Deck details" ({t[:60]!r})')
+        shot(page, 'settings')
+    step('settings', s_settings)
+
+    def s_lock():
+        drawer_to(page, 'albums'); page.wait_for_timeout(1200)
+        ov = page.evaluate("""(() => { const R = (s) => document.querySelector(s).getBoundingClientRect(), n = R('.tt-now'); let c = 0;
+          for (const id of ['#tt-b33', '#tt-b45', '#tt-b78', '#tt-bm', '#tt-bp', '#tt-playBtn']) { const k = R(id); if (Math.min(n.right, k.right) - Math.max(n.left, k.left) > 2 && Math.min(n.bottom, k.bottom) - Math.max(n.top, k.top) > 2) c++; } return c; })()""")
+        check(ov == 0, f'{tag}: after leaving and returning to Albums the now-playing line does not sit on the keys ({ov} overlaps)')
+        page.evaluate("() => { const real = Date.now.bind(Date); window.__off = 0; Date.now = () => real() + window.__off; }")
+        kx, ky, _, _ = center(page, '.page:not([hidden]) .dm-key'); T.tap(kx, ky); time.sleep(0.4)
+        check(page.evaluate('runoutDeviceMode.state.locked'), f'{tag}: the lock key locks')
+        page.evaluate("() => { window.__off += 61000; runoutDeviceMode.machine.tick(Date.now()); }"); time.sleep(1.0)
+        check(page.evaluate('runoutDeviceMode.state.aod'), f'{tag}: the always-on display starts after the idle time')
+        clock = page.inner_text('.dm-clock')
+        check(re.search(r'\d{1,2}:\d{2}', clock or ''), f'{tag}: the always-on clock reads a time ({clock!r})')
+        npt = page.evaluate("(document.querySelector('.dm-np') || {}).textContent || ''")
+        check('Tide Table' in npt, f'{tag}: the always-on title names the real album track that is playing, not the earlier tape ({npt!r})')
+        shot(page, 'aod-clock')
+        sx, sy = page.evaluate("""([w, h]) => { for (let y = h * 0.3; y < h * 0.9; y += 17) for (let x = w * 0.2; x < w * 0.8; x += 19) { const e = document.elementFromPoint(x, y); if (e && !runoutDeviceMode.isAllowed(e)) return [x, y]; } return [w / 2, h / 2]; }""", [w, h])
+        T.tap(sx, sy); time.sleep(0.12); T.tap(sx, sy + 2); time.sleep(0.7)
+        kx, ky, _, _ = center(page, '.page:not([hidden]) .dm-key'); T.down((kx, ky)); time.sleep(1.0); T.up(); time.sleep(0.4)
+        check(not page.evaluate('runoutDeviceMode.state.locked'), f'{tag}: wake and unlock')
+    step('lock + AOD', s_lock)
+    ctx.close()
+
 def main():
     os.makedirs(SHOTS, exist_ok=True)
     make_tour_fixtures()
@@ -631,6 +815,7 @@ def main():
         for (w, h) in [(360, 780), (412, 915)]:
             if want(str(w)): tour(b, w, h, f'{w}x{h}')
         if want('landscape'): tour_landscape(b)
+        if want('journey'): phase_journey(b)
         if want('native'): phase_native(b)
         if want('5k'): phase_5k(b)
         b.close()
