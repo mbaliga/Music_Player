@@ -594,15 +594,17 @@ def main():
     make_fixtures()
     with sync_playwright() as p:
         b = launch(p)
-        only = os.environ.get('ONLY', '')      # ONLY=ux runs just the shelf / player UX checks (a few minutes faster)
-        if only != 'ux':
-            for (w, h) in [(360, 780), (412, 915)]:
-                run_viewport(b, w, h)
+        only = os.environ.get('ONLY', '')      # ONLY=ux runs just the shelf / player UX checks, ONLY=layout just the full-screen geometry (both much faster than the real-audio run)
+        if only in ('', 'layout'):
+            if not only:
+                for (w, h) in [(360, 780), (412, 915)]:
+                    run_viewport(b, w, h)
             for (w, h) in [(360, 780), (412, 915), (915, 412)]:
                 run_layout(b, w, h)
-        for (w, h) in [(360, 780), (412, 915), (915, 412)]:
-            run_ux(b, w, h)
-        if only != 'ux':
+        if only in ('', 'ux'):
+            for (w, h) in [(360, 780), (412, 915), (915, 412)]:
+                run_ux(b, w, h)
+        if not only:
             run_reduced(b)
             run_5k(b)
         b.close()
