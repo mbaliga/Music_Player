@@ -12,7 +12,7 @@ omega (both orientations, forward and reverse), the palm brake on the label, the
 gap drop = next track 0:00, flick = next / previous, an album plays on across the track end, the library (scan, select track, tap cover,
 swipe), CD routing, pinch zoom, display modes, reduced motion, the drawer arbitration with the stage.
 """
-import json, math, os, subprocess, sys, time
+import json, math, os, re, subprocess, sys, time
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 src = open(os.path.join(ROOT, 'scripts/verify-canned-radio.py')).read()
 src = src[:src.index('def run():')]
@@ -30,7 +30,7 @@ def fixture(folder, i, title, artist, album, freq, sec=20):
 for i, (ti, f) in enumerate([('Opener', 220), ('Middle', 262), ('Closer', 330)], 1): fixture('Side One', i, ti, 'Test Band', 'Side One', f)
 for i, (ti, f) in enumerate([('Flip', 294), ('Flop', 349)], 1): fixture('Side Two', i, ti, 'Test Band', 'Side Two', f)
 fixture('Odd', 1, 'Lonely', 'Solo', 'Odd One', 392)
-for i, f in enumerate([196, 233], 1): fixture('Glass Hours CD1', i, f'Glass {i}', 'Glass Hours', 'Glass Hours [CD1]', f, 30)
+for i, f in enumerate([196, 233], 1): fixture('Glass Hours CD1', i, f'Glass {i} [CD1]', 'Glass Hours', 'Glass Hours [CD1]', f, 30)
 
 fails = []
 def check(ok, msg):
@@ -73,6 +73,74 @@ def stage_dir(page):
     a = stage_pt(page, 0, 80); b = stage_pt(page, 100, 80)
     d = math.hypot(b[0] - a[0], b[1] - a[1]); return ((b[0] - a[0]) / d, (b[1] - a[1]) / d, d / 100)
 
+
+# ---- UX helpers (readable stage, visible controls, tap targets)
+def rect(page, sel):
+    return page.evaluate(f'(() => {{ const r = document.querySelector("{sel}").getBoundingClientRect(); return [r.left, r.top, r.width, r.height]; }})()')
+def rgb_of(page, sel, prop):
+    v = page.evaluate(f'getComputedStyle(document.querySelector("{sel}")).{prop}')
+    m = re.findall(r'[\d.]+', v or '')
+    return tuple(float(x) for x in m[:3]) if len(m) >= 3 else (0.0, 0.0, 0.0)
+def _lin(c):
+    c = c / 255
+    return c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4
+def lum(c): return 0.2126 * _lin(c[0]) + 0.7152 * _lin(c[1]) + 0.0722 * _lin(c[2])
+def contrast(a, b):
+    la, lb = lum(a), lum(b)
+    return (max(la, lb) + 0.05) / (min(la, lb) + 0.05)
+def rects_meet(a, b, pad=0):
+    return not (a[0] + a[2] <= b[0] + pad or b[0] + b[2] <= a[0] + pad or a[1] + a[3] <= b[1] + pad or b[1] + b[3] <= a[1] + pad)
+
+def ux_idle(page, tag, w, h):
+    """first run, nothing scanned: the demo record + a visible way to get your music; always-visible Library button; readable, >= 44 px controls"""
+    lb = rect(page, '#btnLibrary')
+    check(lb[2] >= 44 and lb[3] >= 44 and page.text_content('#btnLibrary').strip() == 'Library' and 0 <= lb[0] and lb[0] + lb[2] <= w, f'{tag}: a visible, labelled Library button on the stage header, >= 44 px ({lb[2]:.0f}x{lb[3]:.0f})')
+    check(page.evaluate('getComputedStyle(document.querySelector("#btnLibrary")).visibility') == 'visible' and page.evaluate('getComputedStyle(document.querySelector("#btnLibrary")).opacity') == '1', f'{tag}: the Library button is not hidden (visibility / opacity)')
+    check(page.evaluate('window.__rt.app().stage.zoom') == 0, f'{tag}: idle at the player')
+    for sel in ['#tt-playBtn', '#tt-b78', '#tt-b33', '#tt-b45', '#tt-bm', '#tt-bp']:
+        r = rect(page, sel + ' .hit-area')
+        check(r[2] >= 44 and r[3] >= 44, f'{tag}: {sel} hit area >= 44 css px ({r[2]:.0f}x{r[3]:.0f})')
+    small = rect(page, '#tt-b78 .bg'); big = rect(page, '#tt-playBtn .bg')
+    check(big[2] * big[3] > small[2] * small[3] * 1.2, f'{tag}: Play is the biggest key ({big[2]:.0f}x{big[3]:.0f} vs {small[2]:.0f}x{small[3]:.0f})')
+    for sel in ['#tt-b78', '#tt-b33', '#tt-b45', '#tt-bm', '#tt-bp']:
+        edge = contrast(rgb_of(page, sel + ' .bg', 'stroke'), (0, 0, 0))
+        ink = contrast(rgb_of(page, sel + ' text', 'fill'), rgb_of(page, sel + ' .bg', 'fill'))
+        check(edge >= 3 and ink >= 4.5, f'{tag}: {sel} has a visible button shape ({edge:.1f}:1 edge) and legible label ({ink:.1f}:1)')
+    pk = contrast(rgb_of(page, '#tt-playBtn .lbl', 'fill'), rgb_of(page, '#tt-playBtn .bg', 'fill'))
+    check(pk >= 4.5 and page.text_content('#tt-playLbl').strip() == 'Play', f'{tag}: Play carries its label ("{page.text_content("#tt-playLbl").strip()}", {pk:.1f}:1)')
+    gh = rect(page, '#tt-grabHit')
+    check(gh[2] >= 44 and gh[3] >= 44, f'{tag}: the tonearm dimple hit area >= 44 px ({gh[2]:.0f}x{gh[3]:.0f})')
+    txt = page.evaluate('document.body.innerText')
+    check(not re.search(r'test pressing', txt, re.I), f'{tag}: no "test pressing" wording with the demo on the platter')
+    ec = page.evaluate('(() => { const e = document.querySelector(".tt-empty"); return e && !e.hidden ? e.innerText : null; })()')
+    check(ec is not None and 'Demo record' in ec and 'play your own music' in ec, f'{tag}: the empty state says "Demo record" and how to get your own music ({ec!r})')
+    eb = rect(page, '.tt-empty-btn')
+    check(eb[2] >= 44 and eb[3] >= 44 and page.text_content('.tt-empty-btn').strip() != '', f'{tag}: a visible Scan button in the empty state ({eb[2]:.0f}x{eb[3]:.0f}, "{page.text_content(".tt-empty-btn").strip()}")')
+    nw = page.evaluate('(() => { const n = document.querySelector(".tt-now"); return n && !n.hidden ? n.innerText : null; })()')
+    check(nw is not None and 'Demo record' in nw, f'{tag}: the readable now-playing line names the demo record ({nw!r})')
+    with page.expect_file_chooser(): tap(page, '.tt-empty-btn')        # the button opens the folder picker (left unanswered)
+    page.wait_for_timeout(300)
+
+def ux_library_button(page, tag):
+    tap(page, '#btnLibrary'); page.wait_for_timeout(1300)
+    check(st(page)['z'] == 1 and page.text_content('#btnLibrary').strip() == 'Player' and page.get_attribute('#btnLibrary', 'aria-pressed') == 'true', f'{tag}: the Library button opens the library and turns into "Player"')
+    tap(page, '#btnLibrary'); page.wait_for_timeout(1300)
+    check(st(page)['z'] == 0 and page.text_content('#btnLibrary').strip() == 'Library', f'{tag}: and brings the player back')
+
+def ux_now_playing(page, tag, w, h, title, artist, album):
+    now = page.evaluate("""(() => { const g = (s) => document.querySelector(s); const n = g('.tt-now'); return { hidden: n.hidden, title: g('.tt-now-title').textContent, sub: g('.tt-now-sub').textContent, time: g('.tt-now-time').textContent }; })()""")
+    check(not now['hidden'] and now['title'] == title and artist in now['sub'] and album in now['sub'] and re.match(r'^\d+:\d\d / \d+:\d\d$', now['time']),
+          f'{tag}: a readable now-playing line: "{now["title"]}" / "{now["sub"]}" / {now["time"]}')
+    nb = rect(page, '.tt-now')
+    check(nb[0] >= 0 and nb[1] >= 0 and nb[0] + nb[2] <= w + 1 and nb[1] + nb[3] <= h + 1 and nb[2] > 120 and nb[3] >= 30, f'{tag}: the line is on screen and roomy ({nb[2]:.0f}x{nb[3]:.0f})')
+    c = stage_pt(page, 278, 457); R = 644 * stage_dir(page)[2]
+    px = min(max(c[0], nb[0]), nb[0] + nb[2]); py = min(max(c[1], nb[1]), nb[1] + nb[3])
+    check(math.hypot(px - c[0], py - c[1]) > R, f'{tag}: the line does not touch the disc ({math.hypot(px - c[0], py - c[1]):.0f} px from the centre, disc radius {R:.0f})')
+    meet = [sel for sel in ['#tt-playBtn .bg', '#tt-b78 .bg', '#tt-b33 .bg', '#tt-b45 .bg', '#tt-bm .bg', '#tt-bp .bg', '#tt-dispHit', '#tt-housing'] if rects_meet(nb, rect(page, sel))]
+    check(not meet, f'{tag}: the line does not meet the controls, the display or the arm slot {meet}')
+    ink = contrast(rgb_of(page, '.tt-now-title', 'color'), (0, 0, 0)); sub = contrast(rgb_of(page, '.tt-now-sub', 'color'), (0, 0, 0))
+    check(ink >= 4.5 and sub >= 4.5, f'{tag}: now-playing text contrast {ink:.1f}:1 / {sub:.1f}:1')
+
 def boot(b, w, h, tag, dsf=1, reduced=False):
     ctx = b.new_context(viewport={'width': w, 'height': h}, device_scale_factor=dsf, has_touch=True, is_mobile=True, reduced_motion='reduce' if reduced else 'no-preference')
     ctx.add_init_script('window.showDirectoryPicker = undefined; try { localStorage.setItem("runout.wtDone", "1"); } catch (e) {}')
@@ -105,6 +173,8 @@ def run_orientation(b, w, h, tag):
     check(page.evaluate('document.querySelector("#tt-arm") !== null && document.querySelector(".tt-top").textContent.includes("BALIGA")'), f'{tag}: the tonearm carries the engraved BALIGA')
     check(page.evaluate('!document.querySelector(".tt-top").innerHTML.includes("pin") || true'), f'{tag}: stage markup present')
     shot(page, 'idle')
+    ux_idle(page, tag, w, h)
+    ux_library_button(page, tag)
 
     # ---- Play / Stop / resume
     tap(page, '#tt-playBtn'); page.wait_for_timeout(1700)
@@ -176,7 +246,8 @@ def run_orientation(b, w, h, tag):
     dx, dy, sc = stage_dir(page)
     gx, gy, _, _ = center(page, '#tt-grab')
     S = st(page); T.down((gx, gy)); page.wait_for_timeout(200)
-    S1 = st(page); check(S1['dragging'] and S1['seeking'], f'{tag}: grabbing the dimple lifts the arm (silent seek)')
+    S1 = st(page); hit_ = page.evaluate(f'(() => {{ const e = document.elementFromPoint({gx}, {gy}); return e ? (e.id || e.getAttribute("class") || e.tagName) : null; }})()')
+    check(S1['dragging'] and S1['seeking'], f'{tag}: grabbing the dimple lifts the arm (silent seek) [touch hit: {hit_}]')
     s0 = S1['armS']; shift = (0.3 - s0) * 392.04                      # stage units along -x = toward the inner groove
     for i in range(1, 11): T.move((gx - dx * shift * i / 10 * sc, gy - dy * shift * i / 10 * sc)); time.sleep(0.016)
     page.wait_for_timeout(150)
@@ -231,6 +302,8 @@ def run_library(b, w, h, tag):
     A = page.evaluate(f'{APP}.albums.map(a => [a.title, a.kind, a.tracks.length])')
     check(len(A) == 4 and any(k == 'cd' for _, k, _ in A) and sum(1 for _, k, _ in A if k == 'vinyl') == 3 and sorted(n for _, k, n in A if k == 'vinyl') == [1, 2, 3], f'{tag}: the scan fills the library with vinyl albums and a CD case: {A}')
     shot(page, 'library-scanned')
+    cdt = page.evaluate(f'{APP}.albums.find(a => a.kind === "cd").tracks.map(t => t.title)')
+    check(all('[' not in t for t in cdt), f'{tag}: [CD1] is stripped from CD track titles in the library ({cdt})')
     check(page.evaluate(f'{APP}.state.view') == 'vinyl', f'{tag}: scanning does not disturb the platter')
     # tap a track of the focused vinyl album -> zoom back in and play that track
     vin = page.evaluate(f'{APP}.albums.findIndex(a => a.title === "Side One")')
@@ -242,6 +315,25 @@ def run_library(b, w, h, tag):
     check(S['z'] == 0 and S['playing'] and S['idx'] == 1 and S['n'] >= 2 and S['view'] == 'vinyl', f'{tag}: tapping track 2 zooms in and plays it (z {S["z"]}, playing {S["playing"]}, track {S["idx"] + 1}/{S["n"]})')
     check(S['pos'] < 6 and rms(page) > 0.01, f'{tag}: it plays from 0:00 with real audio (pos {S["pos"]:.1f}, rms {rms(page):.3f})')
     shot(page, 'album-playing')
+    ux_now_playing(page, tag, w, h, 'Middle', 'Test Band', 'Side One')
+    check(page.evaluate(f'{APP}.stage.hasLabelArt'), f'{tag}: the record wears the album\'s own (generated) label, not the stock swirl')
+    check(page.text_content('#tt-playLbl').strip() == 'Stop', f'{tag}: the big key says Stop while playing')
+    # Turntable settings (was Deck details): a user-facing sheet, the numbers behind Advanced
+    tap(page, '#btnDeck'); page.wait_for_timeout(500)
+    sheet = page.inner_text('#deckSheet')
+    check(page.text_content('#deckSheet h2').strip() == 'Turntable settings' and page.get_attribute('#deckSheet', 'aria-label') == 'Turntable settings', f'{tag}: the sheet is "Turntable settings"')
+    check(not re.search(r'load track|build:|target rpm|\bwear\b|position|rate\b', sheet, re.I), f'{tag}: no debug numbers, build id or raw file input on the sheet face')
+    check(not page.evaluate('document.getElementById("ttAdvanced").open'), f'{tag}: Advanced is folded')
+    fb = rect(page, '.tt-filebtn')
+    check(page.text_content('.tt-filebtn').strip() == 'Add music file' and fb[3] >= 44 and fb[2] >= 120, f'{tag}: a styled "Add music file" button ({fb[2]:.0f}x{fb[3]:.0f})')
+    check(page.inner_text('#ttAlbumTitle').strip() == 'Side One' and 'Test Band' in page.inner_text('#ttAlbumSub') and page.locator('#ttAlbumTracks li').count() == 3, f'{tag}: the sheet shows the album on the platter and its track list')
+    page.click('#ttAdvanced summary'); page.wait_for_timeout(250)
+    check(re.search(r'Playback rate', page.inner_text('#deckSheet')) and re.search(r'Position', page.inner_text('#deckSheet')), f'{tag}: Advanced opens to rate / position / wear')
+    page.click('#ttAdvanced summary')
+    shot(page, 'turntable-settings')
+    page.locator('#ttAlbumTracks li').nth(2).click(); page.wait_for_timeout(3500)
+    check(st(page)['idx'] == 2, f'{tag}: tapping a row in the sheet plays that track (track {st(page)["idx"] + 1})')
+    page.click('.tt-sheet-close'); page.wait_for_timeout(300)
     # the dot display: name + pips (read back from the model)
     d = page.evaluate(f'{APP}.state.queue.items.map(i => i.title)')
     check(len(d) >= 2, f'{tag}: album as one record: {d}')
@@ -299,6 +391,12 @@ def run_library(b, w, h, tag):
     page.locator('.tl-trk').first.click(); page.wait_for_timeout(3500)
     check(not page.evaluate('document.getElementById("cdView").classList.contains("hidden")') and st(page)['view'] == 'cd', f'{tag}: a CD track opens the CD view')
     shot(page, 'cd-view')
+    ct = page.inner_text('#cdTitle').strip(); cs_ = page.inner_text('#cdSub').strip()
+    check(ct and '[' not in ct and 'CD1' not in ct, f'{tag}: the CD view title is the track without the [CD1] noise ("{ct}")')
+    check('Glass Hours' in cs_, f'{tag}: the CD view says whose album it is ("{cs_}")')
+    cl = rect(page, '#cdLibBtn')
+    check(cl[3] >= 44 and cl[2] >= 60 and page.text_content('#cdLibBtn').strip() == 'Library', f'{tag}: the CD view Library button sits with the transport, >= 44 px ({cl[2]:.0f}x{cl[3]:.0f})')
+    check(page.evaluate('document.querySelector("#cdView").contains(document.querySelector("#cdLibBtn"))') and rect(page, '#btnLibrary')[3] >= 44, f'{tag}: the header Library button is there in the CD view too')
     page.click('#cdLibBtn'); page.wait_for_timeout(800)
     check(st(page)['z'] == 1 and page.evaluate('document.getElementById("pageAlbums").dataset.lib') == '1', f'{tag}: from the CD view the library is one tap away')
     vin2 = page.evaluate(f'{APP}.albums.findIndex(a => a.title === "Side Two")')
@@ -308,12 +406,27 @@ def run_library(b, w, h, tag):
     check(not errs, f'{tag}: no page errors {errs}')
     ctx.close()
 
+def run_chips(b, w, h, tag):
+    """library chips (ALL / VINYL / CD, sort, Scan) are >= 44 px tap targets on a narrow phone (the 'tight' toolbar)"""
+    ctx, page, errs = boot(b, w, h, tag)
+    scan_library(page)
+    for sel in ['.tl-scan', '.tl-f', '.tl-s']:
+        bad = page.evaluate(f'[...document.querySelectorAll("{sel}")].map(e => {{ const r = e.getBoundingClientRect(); return [Math.round(r.width), Math.round(r.height)]; }}).filter(r => r[0] < 44 || r[1] < 44)')
+        n = page.locator(sel).count()
+        check(n > 0 and not bad, f'{tag}: every {sel} chip is >= 44 x 44 ({n} chips, too small: {bad})')
+    check(page.text_content('.tl-scan .tl-short').strip() in ('Scan', 'Rescan') and 'song' in page.text_content('.tl-foot'), f'{tag}: the library says what it holds ("{page.text_content(".tl-foot").strip()}")')
+    page.screenshot(path=f'{SHOTS}/tt-{tag}-chips.png')
+    check(not errs, f'{tag}: no page errors {errs}')
+    ctx.close()
+
+ONLY = os.environ.get('TT_ONLY', '')          # e.g. TT_ONLY=portrait to run one part
 with sync_playwright() as p:
     b = launch(p)
-    run_orientation(b, 412, 915, 'portrait')
-    run_orientation(b, 915, 412, 'landscape')
-    run_library(b, 412, 915, 'portrait-lib')
-    run_library(b, 915, 412, 'landscape-lib')
+    if not ONLY or ONLY == 'chips': run_chips(b, 360, 780, 'p360')
+    if not ONLY or ONLY == 'portrait': run_orientation(b, 412, 915, 'portrait')
+    if not ONLY or ONLY == 'landscape': run_orientation(b, 915, 412, 'landscape')
+    if not ONLY or ONLY == 'portrait-lib': run_library(b, 412, 915, 'portrait-lib')
+    if not ONLY or ONLY == 'landscape-lib': run_library(b, 915, 412, 'landscape-lib')
     b.close()
 print('\n%d check(s) failed' % len(fails))
 for f in fails: print('  FAIL', f)

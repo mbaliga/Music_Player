@@ -19,6 +19,7 @@ export class DiscPainter {
     this.eqHold = new Float32Array(D.EQ_BARS);
     this.eqVals = new Float32Array(D.EQ_BARS);
     this.label = null;       // Image, set by the stage once rasterised
+    this.labelArt = null;    // canvas: the current album's own label (label-art.js); the default art above when null
     this._g = null;          // cached gradients, per context
     this._ctx = null;
   }
@@ -77,7 +78,8 @@ export class DiscPainter {
     // label + spindle
     ctx.beginPath(); ctx.arc(C.x, C.y, 226, 0, TAU7); ctx.fillStyle = '#0b0b0c'; ctx.fill();
     ctx.save(); ctx.translate(C.x, C.y); ctx.rotate(phi);
-    if (this.label) ctx.drawImage(this.label, -217, -217, 434, 434);
+    const lab = this.labelArt || this.label;
+    if (lab) ctx.drawImage(lab, -217, -217, 434, 434);
     ctx.restore();
     ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.arc(C.x, C.y, 216, 0, TAU7); ctx.stroke();
     ctx.beginPath(); ctx.arc(C.x, C.y, 17, 0, TAU7); ctx.fillStyle = g.spindle; ctx.fill();

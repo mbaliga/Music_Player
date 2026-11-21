@@ -39,8 +39,7 @@ npm test                    # node:test, no dependencies: ~1,030 tests
 npm run build:web           # stages index.html + src + assets + content/stations into www/ (what the APK ships)
 ```
 
-The app boots with a **synthesized test pressing** (no copyrighted audio is bundled). Scan your music with the **Scan** button in the library (pinch in on
-Albums): a browser asks for a folder, the Android app scans the phone (after a permission card). Drop a file onto the page, or use Deck details > Load, for a single file.
+The app boots with a synthesized **Demo record** (no copyrighted audio is bundled). Scan your music with the **Scan** button, or the **Library** button on the Albums page (pinch in works too): a browser asks for a folder, the Android app scans the phone (after a permission card). Drop a file onto the page, or use Turntable settings > Add music file, for a single file.
 Opening `index.html` over `file://` works but degrades to a `postMessage` audio path; measure the latency gate on the SharedArrayBuffer path.
 
 ### Verify (desktop Chromium with real touch events and real audio)
@@ -80,7 +79,7 @@ src/main.js           Wires input -> platter physics -> engine -> stage; owns th
 
 Vinyl is constant-angular-velocity, so **platter angular velocity, normalised to the nominal RPM, is the playback rate**; audio time is owned by the worklet
 and the needle position is a *display* of it. Scrubbing is hand-driving the platter's angular velocity; coupled pitch and tempo only (no time-stretch).
-The four feel knobs (J inertia, k motor, c friction, brake damp; `model.js: DEFAULT_PARAMS`, live in Deck details > audiophile mode) are most of v0's tuning job.
+The four feel knobs (J inertia, k motor, c friction, brake damp; `model.js: DEFAULT_PARAMS`, live in Turntable settings > Advanced > audiophile mode) are most of v0's tuning job.
 
 ## Do not touch
 

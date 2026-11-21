@@ -93,8 +93,11 @@
 /* the first row clears the hamburger (top left, ~48 px) */
 .tl-row1 { padding-left: 44px; }
 /* portrait, with albums: the filter chips would run under the header chips on the right (search, Deck details, lock key; found by the integration tour at 360 and 412 px wide), so the whole toolbar sits one header row lower; the cover top leaves the room */
-.tl-portrait:not(.tl-empty) .tl-bar { top: calc(env(safe-area-inset-top, 0px) + 50px); }
+.tl-portrait .tl-bar { top: calc(env(safe-area-inset-top, 0px) + 50px); }   /* empty state too: the header's Library / Player button must stay tappable */
 .tl-row > :first-child { margin-left: auto; }
+/* landscape: the header's actions (Library / Player, search, Settings, lock key) sit over the right of the toolbar: two rows, the first one clear of them */
+.tl-lib.tl-landscape:not(.tl-empty) .tl-bar { flex-direction: column; }
+.tl-landscape .tl-row1 { padding-right: 304px; }
 .tl-row > :last-child { margin-right: auto; }
 .tl-row::-webkit-scrollbar { display: none; }
 .tl-grp { display: flex; align-items: center; gap: 2px; flex: none; }
@@ -116,7 +119,7 @@
 .tl-short { display: none; }
 .tl-tight .tl-long, .tl-tight .tl-lbl { display: none; }
 .tl-tight .tl-pill { padding: 0 8px; letter-spacing: .06em; }
-.tl-tight .tl-chip { min-width: 40px; }
+.tl-tight .tl-chip { min-width: 44px; }
 .tl-tight .tl-short { display: inline; }
 
 /* empty state: only the built-in test pressing. Chips that need albums step aside; a friendly hint appears. */
@@ -128,8 +131,16 @@
 }
 .tl-empty .tl-hint { display: block; }
 .tl-empty .tl-grp, .tl-empty .tl-row2 { display: none; }
+.tl-portrait.tl-empty .tl-hint { top: calc(env(safe-area-inset-top, 0px) + 98px); }
 .tl-empty .tl-bar { flex-direction: row; }
 .tl-empty .tl-scan .tl-pill { background: rgba(255, 255, 255, .13); border-color: rgba(255, 255, 255, .4); color: #fff; }
+
+/* under the track list: what the library holds and when it was last scanned */
+.tl-foot { padding: 4px var(--pad) 36px; font-size: var(--f2); color: #8b8b95; letter-spacing: .04em; text-align: center; }
+.tl-foot[hidden], .tl-pick[hidden] { display: none; }
+/* first-run nudge: pinned to the bottom of the view, never in the way of a swipe */
+.tl-pick { position: absolute; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 18px); transform: translateX(-50%); z-index: 310; max-width: calc(100% - 32px); padding: 10px 18px; border-radius: 22px;
+  background: #e6e6ec; color: #0b0b0e; font: 700 14px system-ui, sans-serif; letter-spacing: .01em; pointer-events: none; box-shadow: 0 6px 24px rgba(0, 0, 0, .55); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 @media (prefers-reduced-motion: reduce) {
   .tl-pill { transition: none; }

@@ -89,6 +89,11 @@ try:
         check('Allow access to your audio files' in card.inner_text(), 'card carries the explanation copy')
         check(pg.evaluate('__fake.requested') == 0, 'nothing asked the OS before the user tapped Allow')
         pg.screenshot(path=os.path.join(OUT, '01-permission-card.png'))
+        check(not re.search(r'test pressing', pg.evaluate('document.body.innerText'), re.I), 'first run: no "test pressing" wording anywhere on screen')
+        check(pg.evaluate('document.querySelector(".tt-now-title").textContent') == 'Demo record', 'first run: the readable line names the demo record')
+        lbr = pg.evaluate('(() => { const r = document.querySelector("#btnLibrary").getBoundingClientRect(); return [r.width, r.height, document.querySelector("#btnLibrary").innerText.trim()]; })()')
+        check(lbr[0] >= 44 and lbr[1] >= 44 and lbr[2] == 'Library', f'first run: the Library button is visible and labelled ({lbr})')
+        check(pg.evaluate('(() => { const e = document.querySelector(".tt-empty"); return !e || e.hidden || getComputedStyle(e).display === "none"; })()'), 'first run: the permission card speaks (no second empty-state card on top of it)')
 
         # ── 2. Allow -> scanning progress -> library ──────────────────────────────
         card.locator('button').click()
@@ -110,6 +115,20 @@ try:
         check(not any(t == 'cover' for t in info['titles']), 'the .jpg row is not a track')
         check(any(t.startswith('Found In Tags') for t in info['titles']), 'untagged files were read through DeviceFile and tagged (tags.js)')
         check(info['status']['phase'] == 'idle', f"scan finished: phase {info['status']['phase']}")
+        # what the user sees after the scan: a toast with the count, the shelf opened for them, a nudge to pick, and a Rescan chip
+        toast = pg.evaluate('(() => { const t = document.getElementById("rtToast"); return t ? [t.textContent, getComputedStyle(t).display] : null; })()')
+        check(toast and re.match(r'^Found \d+ songs$', toast[0]), f'a "Found N songs" toast after the scan ({toast})')
+        check(pg.evaluate('window.__rt.app().stage.zoom') == 1, 'the library (coverflow) opens by itself after the first scan')
+        nudge = pg.evaluate('(() => { const e = document.querySelector(".tl-pick"); return e && !e.hidden ? e.textContent : null; })()')
+        check(nudge == 'Pick an album', f'the "Pick an album" nudge is up ({nudge!r})')
+        pg.screenshot(path=os.path.join(OUT, '03b-library-after-scan.png'))
+        chip = pg.evaluate('document.querySelector(".tl-scan").innerText.trim().toLowerCase()')
+        foot = pg.evaluate('document.querySelector(".tl-foot").textContent')
+        check('rescan' in chip and 'scan phone' != chip, f'the Scan chip is a Rescan chip once the phone has been read ("{chip}")')
+        check(re.match(r'^\d+ songs · last scan', foot or ''), f'with last-scan info ("{foot}")')
+        check(pg.evaluate('document.querySelector(".tl-scan").getBoundingClientRect().height') >= 44, 'the Rescan chip is >= 44 px tall')
+        pg.wait_for_timeout(4000)
+        pg.screenshot(path=os.path.join(OUT, '03c-library-after-toast.png'))
 
         lib = pg.evaluate("""async () => {
           const m = await import('/src/device/index.js'); const t = m.deviceLibrary.tracks();
@@ -176,6 +195,10 @@ try:
         }""")
         check(picked.get('name') and 'Night Shift' in picked['name'] and picked['T'] > 1.5, f'tapping a device track in the library plays it: {picked}')
         pg.screenshot(path=os.path.join(OUT, '06-playing-device-track.png'))
+        nowl = pg.evaluate('(() => { const g = (q) => document.querySelector(q); return [g(".tt-now-title").textContent, g(".tt-now-sub").textContent, g(".tt-now").hidden]; })()')
+        check(not nowl[2] and 'Night Shift' in nowl[0] and 'Mara Quill' in nowl[1], f'the stage names what plays: {nowl}')
+        check(pg.evaluate('localStorage.getItem("runout.tt.picked")') == '1' and pg.evaluate('document.querySelector(".tl-pick").hidden'), 'picking clears the nudge (and it never comes back)')
+        check(pg.evaluate('window.__rt.app().stage.hasLabelArt'), 'the record wears the album label')
         check(not [e for e in errs if 'favicon' not in e], f'no console/page errors: {errs[:3]}')
         ctx.close()
 

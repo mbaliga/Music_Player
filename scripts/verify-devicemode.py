@@ -460,6 +460,9 @@ def new_ui_albums(p, w, h):
         if page.evaluate(f"!!document.querySelector('{sel}')"):
             sx, sy = center(page, sel); T.tap(sx, sy); time.sleep(0.5)
             check(not page.evaluate("!!document.querySelector('.srch-overlay:not([hidden]), .srch:not([hidden])')") and page.evaluate("document.getElementById('deckSheet') ? document.getElementById('deckSheet').hidden : true"), f'{tag}: LOCKED: the {what} is frozen')
+    if page.evaluate("!!document.querySelector('#btnLibrary')"):
+        lx, ly = center(page, '#btnLibrary'); T.tap(lx, ly); time.sleep(0.9)
+        check(page.evaluate('window.__rt.app().stage.zoom') == 0, f'{tag}: LOCKED: the header Library button is frozen (the library stays shut)')
     check(not errs, f'{tag}: no page errors {errs[:3]}')
     b.close()
 

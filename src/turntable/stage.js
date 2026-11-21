@@ -14,6 +14,7 @@ import { botSvgInner, topSvgInner, LABEL_SVG } from './stage-svg.js';
 import { fillSilence, fillPlaceholder, computePeaks, binRange } from './spiral.js';
 import { eqFromBytes, eqFake, EQ_BARS } from './display.js';
 import { classifyArmFlick } from '../tonearm.js';
+import { paintLabel } from './label-art.js';
 import { allowsGesture } from '../devicemode/guard.js';   // device mode: frozen gestures while locked (docs/DEVICE_MODE.md)
 
 const NS = 'http://www.w3.org/2000/svg';
@@ -32,12 +33,22 @@ export function createStage(host, hooks = {}) {
   top.setAttribute('data-lock-surface', ''); top.setAttribute('role', 'group'); top.setAttribute('aria-label', 'Turntable'); top.innerHTML = topSvgInner();
   const libEl = mk('div', 'tt-lib');
   const sr = mk('button', 'tt-sr'); sr.type = 'button'; sr.textContent = 'Open album library';
-  host.append(bot, libBg, cv, top, libEl, sr);
+  // the readable layer: what is playing, and the empty-state card (DOM text, never the SVG: it truncates with CSS and reads with a screen reader)
+  const hud = mk('div', 'tt-hud');
+  const nowEl = mk('div', 'tt-now', false); nowEl.setAttribute('role', 'group'); nowEl.setAttribute('aria-label', 'Now playing'); nowEl.hidden = true;
+  const nowRow = mk('div', 'tt-now-row', false), nowTitle = mk('span', 'tt-now-title', false), nowTime = mk('span', 'tt-now-time', false), nowSub = mk('div', 'tt-now-sub', false);
+  nowRow.append(nowTitle, nowTime); nowEl.append(nowRow, nowSub);
+  const emptyEl = mk('div', 'tt-empty', false); emptyEl.hidden = true;
+  const emptyT = mk('div', 'tt-empty-title', false), emptyB = mk('div', 'tt-empty-body', false), emptyBtn = mk('button', 'tt-empty-btn', false); emptyBtn.type = 'button';
+  emptyEl.append(emptyT, emptyB, emptyBtn);
+  hud.append(nowEl, emptyEl);
+  host.append(bot, libBg, cv, top, hud, libEl, sr);
 
   const $ = (id) => host.querySelector('#tt-' + id);
   const botRot = $('botRot'), topRot = $('topRot'), matG = $('matG'), phoneFrame = $('phoneFrame');
   const armG = $('arm'), grabG = $('grab'), playBtn = $('playBtn'), playIcon = $('playIcon'), dispHit = $('dispHit');
   const ctl = { b78: $('b78'), b33: $('b33'), b45: $('b45'), bm: $('bm'), bp: $('bp') };
+  const playFace = $('playFace'), playLbl = $('playLbl');
   const ctx = cv.getContext('2d');
   const painter = new DiscPainter();
 
@@ -45,8 +56,9 @@ export function createStage(host, hooks = {}) {
   let P = createPlayer();
   const view = { posS: 0, dust: 0, name: '', trackCount: 1, trackIndex: 0, loading: false, lit: false, dispMode: 0, ana: null, level: 0 };
   let visible = false, W = 0, H = 0, DPR = 1, portrait = false, MX = [1, 0, 0, 1, 0, 0], dirty = true, preview = null, scrollT = 0;
-  let ghost = null, drop = null, lib = null, lastLive = null, lastZ = -1, outline = false;
+  let ghost = null, drop = null, lib = null, lastLive = null, lastZ = -1, outline = false, libOpen = false;
   const anaBuf = new Uint8Array(32);
+  let labelCv = null, labelTok = 0;
 
   const dispatch = (a) => {
     const r = reduce(P, a); P = r.state;
@@ -67,13 +79,52 @@ export function createStage(host, hooks = {}) {
     matG.style.opacity = L.matOpacity.toFixed(3);
     topRot.style.opacity = L.controlsOpacity.toFixed(3);
     top.style.pointerEvents = L.topPointerEvents;
+    hud.style.opacity = L.controlsOpacity.toFixed(3); hud.dataset.live = L.topPointerEvents ? '' : '1';
+    const open = P.z > 0.5; if (open !== libOpen) { libOpen = open; if (hooks.libraryOpen) hooks.libraryOpen(open); }
     phoneFrame.setAttribute('opacity', L.frameOpacity.toFixed(3));
     libBg.style.opacity = L.libBgOpacity.toFixed(3);
     if (lib && lib.setOpacity) lib.setOpacity(L.libOpacity); else libEl.style.opacity = L.libOpacity.toFixed(3);
     libEl.style.pointerEvents = L.libInteractive ? 'auto' : 'none';
     libEl.setAttribute('aria-hidden', String(L.libOpacity < 0.5));
     sr.hidden = false;
+    placeHud();
     lastZ = P.z; dirty = true;
+  }
+  // Controls: every button is a visible shape (bg) inside a larger transparent hit area (>= 44 css px on a phone). The cells are 76-80 units apart
+  // across the screen's columns in portrait (stage y) and 107 apart down its rows (stage x), so the upright rect is 74 x 104 there and 104 x 76 in
+  // landscape. Play is the big one and says Play / Stop.
+  const CTL_DIM = { land: { s: [104, 76, 92, 62], p: [124, 74, 116, 68] }, port: { s: [74, 104, 64, 92], p: [78, 116, 72, 108] } };
+  const PLAY_X = 1329;
+  function layoutControls() {
+    const D = portrait ? CTL_DIM.port : CTL_DIM.land;
+    for (const [id, b] of Object.entries(BTN)) {
+      const el = id === 'play' ? playBtn : ctl[id];
+      if (!el) continue;
+      const cx = id === 'play' ? PLAY_X : b.x, cy = b.y, d = id === 'play' ? D.p : D.s;
+      const hit = el.querySelector('.hit-area'), bg = el.querySelector('.bg');
+      const set = (r, w, h, rx) => { r.setAttribute('x', cx - w / 2); r.setAttribute('y', cy - h / 2); r.setAttribute('width', w); r.setAttribute('height', h); if (rx != null) r.setAttribute('rx', rx); };
+      set(hit, d[0], d[1]); set(bg, d[2], d[3], Math.round(Math.min(d[2], d[3]) * (id === 'play' ? 0.3 : 0.26)));
+      const tx = el.querySelector('text:not(.lbl)'); if (tx) { tx.setAttribute('x', cx); tx.setAttribute('y', cy + 11); }
+      if (portrait) el.setAttribute('transform', `rotate(-90 ${cx} ${cy})`); else el.removeAttribute('transform');
+    }
+    playFace.setAttribute('transform', `translate(${PLAY_X} ${BTN.play.y})`);
+    playIcon.setAttribute('transform', `translate(0 ${portrait ? -22 : -13})`);
+    playLbl.setAttribute('y', portrait ? 30 : 22);
+  }
+  // the now-playing band: a stage-space rectangle mapped through the camera, so it follows the rotation / letterboxing and never meets the disc or arm
+  const HUD_BAND = { port: [1386, 127, 1463, 536], land: [950, 490, 1452, 542] };
+  function mapRect(M, x0, y0, x1, y1) {
+    const px = [[x0, y0], [x1, y0], [x0, y1], [x1, y1]].map(([x, y]) => [M[0] * x + M[2] * y + M[4], M[1] * x + M[3] * y + M[5]]);
+    const xs = px.map((q) => q[0]), ys = px.map((q) => q[1]);
+    return { left: Math.min(...xs), top: Math.min(...ys), right: Math.max(...xs), bottom: Math.max(...ys) };
+  }
+  function placeHud() {
+    if (!W) return;
+    const r = mapRect(MX, ...(portrait ? HUD_BAND.port : HUD_BAND.land));
+    const w = Math.max(0, r.right - r.left), h = Math.max(0, r.bottom - r.top);
+    const st = nowEl.style;
+    st.left = r.left.toFixed(1) + 'px'; st.top = r.top.toFixed(1) + 'px'; st.width = w.toFixed(1) + 'px'; st.height = h.toFixed(1) + 'px';
+    nowEl.dataset.tight = h < 44 ? '1' : '';
   }
   function resize() {
     const r = host.getBoundingClientRect();
@@ -85,11 +136,7 @@ export function createStage(host, hooks = {}) {
     portrait = H > W;
     const tr = portrait ? PORTRAIT_TRANSFORM : '';
     if (tr) { botRot.setAttribute('transform', tr); topRot.setAttribute('transform', tr); } else { botRot.removeAttribute('transform'); topRot.removeAttribute('transform'); }
-    for (const [id, b] of Object.entries(BTN)) {
-      const el = id === 'play' ? playBtn : ctl[id];
-      if (!el) continue;
-      if (portrait) el.setAttribute('transform', `rotate(-90 ${b.x} ${b.y})`); else el.removeAttribute('transform');
-    }
+    layoutControls();
     if (lib && lib.layout) lib.layout({ width: W, height: H, portrait });
     applyCam();
   }
@@ -121,6 +168,7 @@ export function createStage(host, hooks = {}) {
   press(ctl.bp, () => hooks.nudge && hooks.nudge(1));
   press(dispHit, () => { view.dispMode = 1 - view.dispMode; painter.eqHold.fill(0); if (view.dispMode && hooks.analyser && !view.ana) view.ana = hooks.analyser(); dirty = true; });
   press(sr, () => { dispatch({ type: 'zoomTo', z: 1 }); kick(); });
+  emptyBtn.addEventListener('click', (e) => { e.stopPropagation(); if (allowsGesture('library-chip') && hooks.emptyAction) hooks.emptyAction(); });
   // a press that starts on a control never starts a scratch
   const isCtl = (t) => !!(t.closest && t.closest('.ctl, #tt-playBtn, #tt-dispHit, #tt-grab'));
 
@@ -239,8 +287,9 @@ export function createStage(host, hooks = {}) {
   function setLiveUI(on) {
     if (on === lastLive) return; lastLive = on;
     playBtn.classList.toggle('live', on);
+    if (hooks.liveChange) hooks.liveChange(on);
     playIcon.setAttribute('d', on ? 'M-8 -8 H8 V8 H-8 Z' : 'M-7 -9 L10 0 L-7 9 Z');
-    playBtn.setAttribute('aria-label', on ? 'Stop' : 'Play');
+    playBtn.setAttribute('aria-label', on ? 'Stop' : 'Play'); playLbl.textContent = on ? 'Stop' : 'Play';
   }
   function slotRect() {
     const r = host.getBoundingClientRect(), s = lib && lib.getSlotRect && lib.getSlotRect();
@@ -323,6 +372,38 @@ export function createStage(host, hooks = {}) {
       if (l && W && l.layout) l.layout({ width: W, height: H, portrait });
       applyCam();
     },
+    /** The readable now-playing line: { title, sub, show }. All strings are untrusted and go through textContent. */
+    setNow(o = {}) {
+      const show = o.show !== false && !!(o.title || o.sub);
+      if (nowEl.hidden === show) nowEl.hidden = !show;
+      if (nowTitle.textContent !== (o.title || '')) nowTitle.textContent = o.title || '';
+      if (nowSub.textContent !== (o.sub || '')) nowSub.textContent = o.sub || '';
+      nowEl.dataset.mode = o.mode || '';
+      placeHud();
+    },
+    /** elapsed / total of what is playing, "0:42 / 3:21"; '' hides it */
+    setNowTime(text) { if (nowTime.textContent !== text) nowTime.textContent = text; },
+    /** the empty-state card: { show, title, body, button } (button = label of the one action, '' for none) */
+    setEmpty(o = {}) {
+      const show = !!o.show;
+      emptyEl.hidden = !show;
+      emptyT.textContent = o.title || ''; emptyB.textContent = o.body || '';
+      emptyBtn.textContent = o.button || ''; emptyBtn.hidden = !o.button;
+    },
+    /** the record label: the album's own art / a generated label, or the default swirl for null / the demo record */
+    setLabelArt(album) {
+      const tok = ++labelTok;
+      if (!album || album.builtin) { painter.labelArt = null; dirty = true; kick(); return; }
+      if (!labelCv) { labelCv = document.createElement('canvas'); labelCv.width = labelCv.height = 868; }
+      painter.labelArt = paintLabel(labelCv, { album });
+      dirty = true; kick();
+      if (album.coverUrl) {
+        const im = new Image();
+        im.onload = () => { if (tok !== labelTok) return; painter.labelArt = paintLabel(labelCv, { album, image: im }); dirty = true; kick(); };
+        im.onerror = () => { /* unreadable art: the generated label stays */ };
+        im.src = album.coverUrl;
+      }
+    },
     /** what the dot display shows */
     setDisplay(o) { Object.assign(view, o); dirty = true; },
     setSpeedUI(id) {
@@ -362,6 +443,8 @@ export function createStage(host, hooks = {}) {
     /** device mode AOD: outline-only draw (see drawOutline); the CSS shows the canvas + hairline SVG while body[data-aod-outline] */
     setOutline(on) { on = !!on; if (on === outline) return; outline = on; cv.dataset.outline = on ? '1' : ''; dirty = true; ghost = null; drop = null; if (visible) { placeArm(); draw(); } kick(); },
     get outline() { return outline; },
+    /** true while the disc wears the album's own label (test hook) */
+    get hasLabelArt() { return !!painter.labelArt; },
     layers: () => layers(P.z),
     slotRect,
     startScroll() { scrollT = 0; },

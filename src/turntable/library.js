@@ -70,11 +70,13 @@ export function mountTurntableLibrary(container, deps = {}) {
   flow.setAttribute('role', 'listbox'); flow.setAttribute('aria-label', 'Albums'); flow.setAttribute('tabindex', '0');
   const slot = el('div', 'tl-slot', flow); slot.setAttribute('aria-hidden', 'true');
   const hint = el('button', 'tl-hint', scroll); hint.setAttribute('type', 'button');
-  hint.textContent = (deps.scanLabel && deps.scanLabel.hint) || 'Scan your music folder to fill the shelf'; hint.__tl = { kind: 'scan' };
+  hint.textContent = (deps.scanLabel && deps.scanLabel.hint) || 'Scan your music folder to play your own music'; hint.__tl = { kind: 'scan' };
   const meta = el('div', 'tl-meta', scroll);
   const titleEl = el('div', 'tl-title', meta), subEl = el('div', 'tl-sub', meta);
   const list = el('ol', 'tl-tracks', scroll);
   list.setAttribute('role', 'listbox'); list.setAttribute('aria-label', 'Tracks'); list.setAttribute('data-lock-surface', '');
+  const foot = el('div', 'tl-foot', scroll);                         // "50 songs · last scan 3 min ago" (setScanInfo)
+  const pick = el('div', 'tl-pick', root); pick.setAttribute('role', 'status'); pick.hidden = true;   // first-run nudge (setPickHint)
 
   // covers: a fixed pool of nodes, node for album k = pool[k % POOL_SIZE]
   const pool = [];
@@ -460,6 +462,10 @@ export function mountTurntableLibrary(container, deps = {}) {
     // additive (not in the T1 contract): keep the toolbar chips in step with the app's own filter / sort state; the root element
     /** platform wording of the Scan chip (native Android: 'Scan phone'); the web keeps the folder picker wording */
     setScanLabel(o = {}) { if (o.long) scanLong.textContent = o.long; if (o.short) scanShort.textContent = o.short; if (o.hint) hint.textContent = o.hint; if (o.aria) scanBtn.btn.setAttribute('aria-label', o.aria); },
+    /** one line under the track list ('50 songs · last scan 3 min ago'); also the Scan chip's tooltip. '' clears it. */
+    setScanInfo(text) { foot.textContent = text || ''; foot.hidden = !text; if (text) scanBtn.btn.title = text; else scanBtn.btn.removeAttribute('title'); },
+    /** a short nudge pinned to the bottom of the library ('Pick an album'); null / '' hides it */
+    setPickHint(text) { pick.textContent = text || ''; pick.hidden = !text; },
     setFilter(f) { if (FILTERS.includes(f)) { filterState = f; paintChips(); } },
     setSort(s) { if (SORTS.includes(s)) { sortState = s; paintChips(); } },
     get el() { return root; },

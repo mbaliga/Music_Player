@@ -79,11 +79,22 @@ own gestures (scratch, arm drag, pinch, a second finger) report through `isPageG
 visually-hidden "Open album library" button for keyboard / screen reader users. Reduced motion: zoom works, easing ×3.4 faster.
 
 CD albums show as CD cases; a CD track opens the existing CD view (`cd.js`) over the stage; its **Library** button shows the library again.
-First run / empty library: the one album is the built-in synthesized test pressing (`builtinTestPressing`). Focusing another vinyl album loads it
+First run / empty library: the one album is the built-in synthesized **Demo record** (`builtinTestPressing`, title 'Demo record'; the word "test pressing" is never shown). Focusing another vinyl album loads it
 (debounced 420 ms; stops the current record); CD cases wait for a track pick.
 
-**Deck details** (the old side panel, nothing removed): the sliders icon in the header opens a sheet: track nav (⏮ ⏭), fine speed, rate / position / wear,
-feel knobs, latency, load track, build id.
+**Turntable settings** (was Deck details; element ids `#deckSheet` / `#btnDeck` unchanged): the sliders icon in the header opens a sheet: the album on the platter (title,
+artist, its track list: tap a row to play it), track nav (⏮ ⏭), the fine-speed dial, an **Add music file** button (the file input is visually hidden behind it) and the gestures
+note. Rate / position / wear, the feel knobs and the latency gate are behind the **Advanced** fold; the build id lives in Settings > Privacy & about.
+
+**What the stage says (UX pass).** The header carries an always-visible **Library** button (>= 44 px, labelled; it becomes **Player** while the library is up; the pinch stays). The
+stage has a readable layer (`.tt-hud`, DOM text, `stage.setNow / setNowTime / setEmpty`): a now-playing band (title, "Artist · Album", elapsed / total) placed in stage space *below*
+the controls (portrait: the strip left of the arm slot; landscape: under the display), so it never meets the disc, the arm or the keys; and, with nothing scanned, an empty-state card
+("Demo record: scan your phone / a music folder to play your own music", with a Scan button). Controls are visible buttons (>= 3:1 edge, >= 4.5:1 label) inside a >= 44 px hit area
+(`stage.js: CTL_DIM`, sized per orientation); Play is the big key and reads Play / Stop. The record label is the album's own art, or a generated label from its seed / title / artist
+(`label-art.js`, `stage.setLabelArt`); the demo and loose files keep the stock swirl. After a scan the app toasts "Found N songs" and, until the user has picked something
+(`runout.tt.picked`), opens the library with a "Pick an album" nudge. The scan chip reads Rescan once the phone has been read, with "N songs · last scan ..." under the track list.
+CD view: the title is the track, the line under it is "Artist · Album", and the Library button sits with the transport; a disc label in a track title (`[CD1]`, `(Disc 2)`) is
+dropped for display only (`cleanTrackTitle`; the CD grouping still reads the originals).
 
 ## Device mode
 

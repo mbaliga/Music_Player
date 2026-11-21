@@ -72,6 +72,24 @@ try:
         ctx, pg = open_page(b, 360, 780, 'set=empty'); pg.screenshot(path=os.path.join(OUT, 'lib-empty-360x780.png')); 
         check(J(pg, '__lib.el.classList.contains("tl-empty")') and J(pg, 'getComputedStyle(document.querySelector(".tl-hint")).display') == 'block', 'empty library: only the test pressing, with the scan hint')
         pg.click('.tl-hint'); check(log_since(pg) == [['scan']], 'the hint emits scan')
+        check(J(pg, 'document.querySelector(".tl-title").textContent') == 'Demo record' and 'play your own music' in J(pg, 'document.querySelector(".tl-hint").textContent'),
+              'empty state: "Demo record" and "...play your own music" (no "test pressing" wording)')
+        ctx.close()
+
+        # ── narrow phone (tight toolbar): every chip is a 44 px target; Rescan label + last-scan caption; the first-run nudge ──────────────────
+        ctx, pg = open_page(b, 360, 780, 'set=40')
+        bad = J(pg, '[...document.querySelectorAll(".tl-chip")].filter(e => e.getBoundingClientRect().width > 0).map(e => { const r = e.getBoundingClientRect(); return [e.className, Math.round(r.width), Math.round(r.height)]; }).filter(r => r[1] < 44 || r[2] < 44)')
+        check(not bad, f'360 px: every visible library chip (ALL / VINYL / CD, sort, scan) is >= 44 x 44 ({bad})')
+        J(pg, '__lib.setScanLabel({long: "Rescan phone", short: "Rescan"}); __lib.setScanInfo("50 songs · last scan 3 min ago")')
+        check(J(pg, 'document.querySelector(".tl-scan .tl-short").textContent') == 'Rescan' and J(pg, 'document.querySelector(".tl-scan").title') == '50 songs · last scan 3 min ago', 'the scan chip relabels to Rescan and carries the last-scan info')
+        J(pg, 'document.querySelector(".tl-scroll").scrollTop = 99999'); pg.wait_for_timeout(150)
+        foot = J(pg, '(() => { const e = document.querySelector(".tl-foot"); const r = e.getBoundingClientRect(); return { hidden: e.hidden, text: e.textContent, ok: r.width > 0 && r.height > 0 }; })()')
+        check(not foot['hidden'] and foot['ok'] and foot['text'].startswith('50 songs'), f'the track list ends with the library caption ({foot})')
+        J(pg, 'document.querySelector(".tl-scroll").scrollTop = 0')
+        J(pg, '__lib.setPickHint("Pick an album")'); pg.wait_for_timeout(100)
+        ph = J(pg, '(() => { const e = document.querySelector(".tl-pick"); const r = e.getBoundingClientRect(); return { hidden: e.hidden, text: e.textContent, w: r.width, h: r.height, bottom: r.bottom, vh: innerHeight, pe: getComputedStyle(e).pointerEvents }; })()')
+        check(not ph['hidden'] and ph['text'] == 'Pick an album' and ph['w'] > 80 and ph['bottom'] <= ph['vh'] and ph['pe'] == 'none', f'the "Pick an album" nudge is pinned in view and never eats a swipe ({ph})')
+        J(pg, '__lib.setPickHint(null)'); check(J(pg, 'document.querySelector(".tl-pick").hidden'), 'and it can be cleared')
         ctx.close()
 
         # ── behaviour at 360x780, 40 albums (mouse) ────────────────────────────────────────────────────────────────

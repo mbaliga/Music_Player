@@ -11,7 +11,7 @@ next / previous. Asserts: dominant frequency == that track's tone, the display /
 
 Usage: python3 scripts/verify-real-playback.py [outdir]     CHROME=/path/to/chrome overrides the browser.
 """
-import json, os, socket, subprocess, sys, time
+import json, os, re, socket, subprocess, sys, time
 from playwright.sync_api import sync_playwright
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -108,7 +108,10 @@ def wait_library(pg, n_albums):
 
 def state(pg):
     return pg.evaluate("""() => { const a = window.__rt.app(), s = a.state; return { name: s.track && s.track.name, albumId: s.albumId, T: s.T, qi: s.queue ? s.queue.index : null,
-      title: s.queue ? s.queue.items[s.queue.index].title : null, builtin: !!(s.track && /test pressing/i.test(s.track.name || '')), playing: a.stage.player.playing }; }""")
+      title: s.queue ? s.queue.items[s.queue.index].title : null, builtin: !!(s.track && /demo record|test pressing/i.test(s.track.name || '')), playing: a.stage.player.playing }; }""")
+
+def now_line(pg):
+    return pg.evaluate("(() => { const g = (q) => document.querySelector(q); return [g('.tt-now-title').textContent, g('.tt-now-sub').textContent, g('.tt-now').hidden]; })()")
 
 def settle_dom(pg, want, timeout=9000):
     """poll the measured dominant frequency until it is within 3 %% of `want` (or timeout); returns the last reading"""
@@ -151,6 +154,8 @@ def run_source(b, source, sab=True):
     dom0 = settle_dom(pg, TONES_B[0], 6000)
     check(abs(dom0 - TONES_B[0]) < TONES_B[0] * 0.03, f'[{tag}] Play (nothing picked) is the focused album track 1: {TONES_B[0]} Hz (measured {dom0:.0f} Hz)')
     check(not st['builtin'], f"[{tag}] Play with a real library and nothing picked does not play the test pressing ({st['name']})")
+    nl = now_line(pg)
+    check(not nl[2] and nl[0] not in ('Demo record', 'Pick an album', '') and not re.search(r'test pressing', pg.evaluate('document.body.innerText'), re.I), f'[{tag}] the stage names the real track, never the demo ({nl})')
     check(st['albumId'] != 'builtin:test-pressing', f"[{tag}] platter album is a library album ({st['albumId']})")
     # 1. tap a track row in the zoomed-out coverflow (track 3 of Tone Album)
     r = zoom_out_and_tap(pg, 'Tone Album', 2)
@@ -158,6 +163,9 @@ def run_source(b, source, sab=True):
     dom = settle_dom(pg, TONES[2]); st = state(pg)
     check(abs(dom - TONES[2]) < TONES[2] * 0.03, f'[{tag}] row tap: output is track 3 tone {TONES[2]} Hz (measured {dom:.0f} Hz)')
     check(not st['builtin'] and st['title'] and 'T3' in st['title'], f"[{tag}] row tap: display/state title is the real track ({st['title']})")
+    nl = now_line(pg)
+    check('T3' in nl[0] and 'Tone Album' in nl[1], f'[{tag}] row tap: the readable now-playing line shows title and album ({nl})')
+    check(pg.evaluate('window.__rt.app().stage.hasLabelArt'), f'[{tag}] row tap: the label is the album\'s own')
     # 2. another album, track 1
     zoom_out_and_tap(pg, 'Second Album', 0)
     dom = settle_dom(pg, TONES_B[0]); st = state(pg)

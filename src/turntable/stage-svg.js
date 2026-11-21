@@ -76,17 +76,21 @@ export function topSvgInner() {
   <path id="tt-trackLo" d="M920 80H1340" stroke="#040405" stroke-width="2.6" stroke-linecap="round"/>
 </g>
 
-<!-- controls -->
+<!-- controls: a visible button (bg), a larger transparent hit area (hit) and the label; stage.js sizes the rects per orientation (>= 44 px hit areas) -->
 <g id="tt-controls">
-  <g id="tt-playBtn" class="hit" role="button" tabindex="0" aria-label="Play">
-    <rect x="1280" y="262" width="80" height="72" fill="transparent"/>
-    <path id="tt-playIcon" d="M-7 -9 L10 0 L-7 9 Z" transform="translate(1321 298)"/>
+  <g id="tt-playBtn" class="hit pbtn" role="button" tabindex="0" aria-label="Play">
+    <rect class="hit-area" x="1266" y="262" width="124" height="72" fill="transparent"/>
+    <rect class="bg" x="1272" y="264" width="116" height="68" rx="22"/>
+    <g id="tt-playFace" transform="translate(1330 298)">
+      <path id="tt-playIcon" d="M-7 -9 L10 0 L-7 9 Z" transform="translate(0 -13)"/>
+      <text id="tt-playLbl" class="lbl" x="0" y="23" text-anchor="middle">Play</text>
+    </g>
   </g>
-  <g class="ctl" id="tt-b78" role="button" tabindex="0" aria-label="78 rpm" aria-pressed="false"><rect x="1180" y="262" width="70" height="52" fill="transparent"/><text x="1215" y="308" text-anchor="middle">78</text></g>
-  <g class="ctl on" id="tt-b33" role="button" tabindex="0" aria-label="33 rpm" aria-pressed="true"><rect x="1180" y="352" width="70" height="52" fill="transparent"/><text x="1215" y="388" text-anchor="middle">33</text></g>
-  <g class="ctl" id="tt-b45" role="button" tabindex="0" aria-label="45 rpm" aria-pressed="false"><rect x="1287" y="352" width="70" height="52" fill="transparent"/><text x="1322" y="388" text-anchor="middle">45</text></g>
-  <g class="ctl" id="tt-bm" role="button" tabindex="0" aria-label="Slower"><rect x="1180" y="428" width="70" height="52" fill="transparent"/><text x="1215" y="465" text-anchor="middle">−</text></g>
-  <g class="ctl" id="tt-bp" role="button" tabindex="0" aria-label="Faster"><rect x="1287" y="428" width="70" height="52" fill="transparent"/><text x="1322" y="465" text-anchor="middle">+</text></g>
+  <g class="ctl" id="tt-b78" role="button" tabindex="0" aria-label="78 rpm" aria-pressed="false"><rect class="hit-area" x="1180" y="262" width="70" height="52" fill="transparent"/><rect class="bg" x="1180" y="262" width="70" height="52" rx="16"/><text x="1215" y="308" text-anchor="middle">78</text></g>
+  <g class="ctl on" id="tt-b33" role="button" tabindex="0" aria-label="33 rpm" aria-pressed="true"><rect class="hit-area" x="1180" y="352" width="70" height="52" fill="transparent"/><rect class="bg" x="1180" y="352" width="70" height="52" rx="16"/><text x="1215" y="388" text-anchor="middle">33</text></g>
+  <g class="ctl" id="tt-b45" role="button" tabindex="0" aria-label="45 rpm" aria-pressed="false"><rect class="hit-area" x="1287" y="352" width="70" height="52" fill="transparent"/><rect class="bg" x="1287" y="352" width="70" height="52" rx="16"/><text x="1322" y="388" text-anchor="middle">45</text></g>
+  <g class="ctl" id="tt-bm" role="button" tabindex="0" aria-label="Slower"><rect class="hit-area" x="1180" y="428" width="70" height="52" fill="transparent"/><rect class="bg" x="1180" y="428" width="70" height="52" rx="16"/><text x="1215" y="465" text-anchor="middle">−</text></g>
+  <g class="ctl" id="tt-bp" role="button" tabindex="0" aria-label="Faster"><rect class="hit-area" x="1287" y="428" width="70" height="52" fill="transparent"/><rect class="bg" x="1287" y="428" width="70" height="52" rx="16"/><text x="1322" y="465" text-anchor="middle">+</text></g>
 </g>
 
 <!-- dot-matrix display tap target (mode toggle) -->
@@ -116,7 +120,7 @@ export function topSvgInner() {
   <circle r="21.5" fill="none" stroke="#5d5d60" stroke-opacity=".55" stroke-width="1.6"/>
   <path d="M-17 8 A21.5 21.5 0 0 0 16 10" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="1.6" stroke-linecap="round" transform="rotate(8)"/>
   <ellipse cx="-6" cy="-8" rx="10" ry="6" fill="#000" opacity=".12" filter="url(#tt-soft5)"/>
-  <circle r="44" fill="transparent"/>
+  <circle id="tt-grabHit" r="58" fill="transparent"/>
 </g>
 
 </g></g>`;

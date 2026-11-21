@@ -22,7 +22,7 @@ test('a rebuilt shelf replaces the demo on the platter', () => {
 });
 
 test('load failures are loud (toast), never silent', () => {
-  assert.match(src, /function toast\(text\)/);
+  assert.match(src, /function toast\(text(, ms = \d+)?\)/);
   assert.match(body('async function loadAlbum('), /toast\(`Cannot play/);
   assert.match(body('async function jumpTo('), /toast\(`Cannot play/);
 });

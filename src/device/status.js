@@ -67,6 +67,7 @@ export function describeStatus(s) {
 
 const CSS = `
 .dv-host{position:absolute;left:0;right:0;top:34%;padding:0 16px;z-index:30;pointer-events:none}
+@media (orientation:landscape){.dv-host{right:auto;left:3.5%;top:22%;width:46%;max-width:380px;padding:0}}
 .dv-host .dv-card{pointer-events:auto;background:color-mix(in srgb,var(--surface,#0d0d12) 94%,transparent)}
 .dv-card{margin:12px auto;max-width:420px;padding:16px 18px;border-radius:var(--rx,12px);background:var(--surface,#0d0d12);border:1px solid var(--border,rgba(255,255,255,.07));color:var(--ink,#e8e8f0);text-align:center;font-size:13px;line-height:1.5}
 .dv-card[hidden]{display:none}

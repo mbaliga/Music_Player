@@ -10,7 +10,7 @@
 //   builtinTestPressing()  the single album shown when the library is empty
 //   formatDuration / totalDuration / clipText   display helpers
 // ─────────────────────────────────────────────────────────────────────────────
-import { classifyAlbum, KIND_CD, KIND_VINYL } from '../albums.js';
+import { classifyAlbum, stripDiscLabel, KIND_CD, KIND_VINYL } from '../albums.js';
 import { hashSeed } from './covers.js';
 
 // ── tunables ─────────────────────────────────────────────────────────────────
@@ -163,7 +163,7 @@ export const TEST_PRESSING_ID = 'builtin:test-pressing';
  * test pressing. `tracks` may be passed (the app's own sub-tracks); the default
  * is one track.  -> { id, title, artist, kind:'vinyl', coverSeed, tracks, builtin:true }
  */
-export function builtinTestPressing({ tracks, durationSec = null, artist = 'Runout', title = 'Test pressing' } = {}) {
+export function builtinTestPressing({ tracks, durationSec = null, artist = 'Runout', title = 'Demo record' } = {}) {
   const list = Array.isArray(tracks) && tracks.length
     ? tracks.map((t) => ({ title: String(t?.title ?? title), durationSec: Number.isFinite(t?.durationSec) ? t.durationSec : null }))
     : [{ title, durationSec: Number.isFinite(durationSec) ? durationSec : null }];
@@ -171,9 +171,16 @@ export function builtinTestPressing({ tracks, durationSec = null, artist = 'Runo
 }
 export const isBuiltinAlbum = (a) => !!a && (a.builtin === true || a.id === TEST_PRESSING_ID);
 
+/** A track title for display: the disc label some taggers append ("Song [CD1]", "Song (Disc 2)") is noise (the CD grouping reads the original). */
+export function cleanTrackTitle(title) {
+  const t = String(title ?? '');
+  const c = stripDiscLabel(t);
+  return c || t.trim();
+}
+
 const trackTitleOf = (t, i) => {
   const s = typeof t?.title === 'string' && t.title.trim();
-  if (s) return t.title;
+  if (s) return cleanTrackTitle(t.title);
   const base = typeof t?.path === 'string' ? t.path.split(/[\\/]+/).pop().replace(/\.[^.]+$/, '') : '';
   return base || `Track ${i + 1}`;
 };

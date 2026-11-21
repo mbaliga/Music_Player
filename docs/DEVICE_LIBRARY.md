@@ -172,7 +172,7 @@ deviceLibrary.mountScanCard(container)   // the permission / progress / blocked 
 
 ## 5b. Integration (Workstream I)
 
-* The Albums library toolbar button reads **Scan phone** on native Android (`mountTurntableLibrary(..., { scanLabel })` / `lib.setScanLabel()`); the web keeps **Scan music folder**.
+* The Albums library toolbar button reads **Scan phone** on native Android (`mountTurntableLibrary(..., { scanLabel })` / `lib.setScanLabel()`) until the phone has been read, then **Rescan phone** with "N songs · last scan ..." under the track list; the web keeps **Scan music folder** (then Rescan folder). When a scan that started on an empty shelf (or that the user asked for) finishes, the app toasts "Found N songs" and, if the user has not picked anything yet, opens the coverflow with a "Pick an album" nudge (`main.js: announceLibrary`). Nothing scanned yet: the stage shows the Demo record and an empty-state card with a Scan button (the permission card speaks for itself while it is up).
 * Both sources produce the same extra track fields for the mixtape suggestions and search: `year`, `added` (epoch ms: device `date_modified` seconds x 1000, folder `file.lastModified`), `genre`, exact `durationSec` (device: MediaStore `duration`; folder: tags / MP3 frame header). Device rows stored before `added` existed get it from `modified` on load. Tests: `test/library-fields.test.mjs`.
 * The device source reads tags with `readTags(file, { duration: false })` (MediaStore already has the duration; one native read less per file).
 

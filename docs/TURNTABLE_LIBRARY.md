@@ -14,7 +14,7 @@ const lib = mountTurntableLibrary(container, deps);   // container: a positioned
 
 | method | |
 |---|---|
-| `setAlbums(albums)` | Album objects (below). `[]` / junk -> the built-in test pressing (empty state). Keeps the focused album if its id is still present, else clamps. Never fires `focus`. Revokes object URLs minted by `coverBlobUrl` that are no longer listed. |
+| `setAlbums(albums)` | Album objects (below). `[]` / junk -> the built-in demo record (empty state). Keeps the focused album if its id is still present, else clamps. Never fires `focus`. Revokes object URLs minted by `coverBlobUrl` that are no longer listed. |
 | `setNowPlaying({albumId, trackIndex})` / `null` | Marks the row with the glowing dot (only while that album is the displayed one). |
 | `focus(index, {animate})` | Programmatic focus; animates by default. Never fires `focus` (no echo loops). |
 | `getFocus()` | Index of the album in the centre (rounded while moving). |
@@ -39,7 +39,7 @@ const lib = mountTurntableLibrary(container, deps);   // container: a positioned
 
 ### Pure helpers (library-layout.js)
 - `albumsToCoverflow(items)` takes `shelfItems(groupTracks(...))` (src/albums.js) **or** `LibraryManager.albums()` rows. One entry per shelf item, in the order given: a multi-disc CD is one entry per disc (`"Title · CD 2"`), tracks in the order albums.js decided, `durationSec` or `null`, `kind` from the existing label rule (CDx/Disc x = CD, everything else vinyl), `coverSeed = hashSeed(artist + '\0' + baseTitle)` (discs of one set share art), `coverUrl` from the item or its first track. Unique ids; placeholders for missing titles/artists; never throws.
-- `builtinTestPressing({tracks?, durationSec?})` -> `{id:'builtin:test-pressing', title:'Test pressing', artist:'Runout', kind:'vinyl', builtin:true, tracks}`; one track unless the app passes its own sub-tracks. `isBuiltinAlbum(a)`.
+- `builtinTestPressing({tracks?, durationSec?})` -> `{id:'builtin:test-pressing', title:'Demo record', artist:'Runout', kind:'vinyl', builtin:true, tracks}`; one track unless the app passes its own sub-tracks. `isBuiltinAlbum(a)`.
 - `libraryLayout`, `coverPose`, `visibleRange`, `dragFocus`, `flingTarget`, `easeStep`, `keyStep`, `formatDuration` (null -> em dash), `clipText`.
 
 ### Cover art (covers.js)
@@ -61,7 +61,7 @@ Landscape shows the cover, the title and about one row (scroll for more); portra
 
 Coverflow (`coverPose`, ported): neighbour distance `cs*.62` (also the drag scale), further covers `+cs*.30` each; `rotateY(∓56deg)`, `scale(.8)` and 50% darkening at |offset| >= 1 (an overlay at `shade` opacity instead of `filter:brightness`), `perspective(800px)`, invisible beyond |offset| 3.2.
 
-Toolbar: one row (landscape) or two (portrait under 700 px), `tbH` = rows x 44; the first row starts 44 px in from the left (the hamburger); chips are 44 px tall hit targets around a 26 px pill; width < 400 uses a short "Scan" label and drops the "Sort" caption. Empty state hides the filter and sort chips and shows "Scan your music folder to fill the shelf" (also a scan button) under the toolbar.
+Toolbar: one row (landscape) or two (portrait under 700 px), `tbH` = rows x 44; the first row starts 44 px in from the left (the hamburger); chips are 44 px tall hit targets around a 26 px pill; width < 400 uses a short "Scan" label and drops the "Sort" caption (chips stay 44 px wide). Landscape uses two rows with the first clear of the header's Library / search / Settings / lock buttons. `setScanLabel({long, short, aria, hint})` relabels the chip (the app says Rescan once the phone has been read); `setScanInfo(text)` writes the caption under the track list (also the chip's tooltip); `setPickHint(text|null)` pins a first-run nudge at the bottom of the view. Empty state hides the filter and sort chips and shows "Scan your music folder to fill the shelf" (also a scan button) under the toolbar.
 
 ## Behaviour / tunables (`LIB_KNOBS`)
 Drag follows the finger (`dx / (cs*.62)` albums), release flings to `round(focus + v*0.1 s)` (at most 5 albums), then eases (`min(1, dt*11)`), settling within .003. Horizontal wheel / shift+wheel moves the target and snaps after 120 ms; ctrl+wheel is left to the zoom. Keys on the flow: arrows, Home/End, PageUp/PageDown, Enter. Rows: arrows, Home/End, Enter/Space. Roles: flow = `listbox` of `option`s (`aria-activedescendant`, `aria-posinset/setsize`), rows = `listbox`/`option`, toolbar = `toolbar` with `aria-pressed` chips. `prefers-reduced-motion`: no easing (jump to the target). The loop (rAF) runs only while something moves. A second pointer down on the flow cancels a drag (T1's pinch).

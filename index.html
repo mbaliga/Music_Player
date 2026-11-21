@@ -94,9 +94,12 @@
   .cd-view canvas { flex: 1 1 auto; min-height: 0; width: 100%; touch-action: manipulation; cursor: pointer; }
   .cd-title { text-align: center; font-weight: 600; font-size: 14px; color: var(--ink-bg, var(--ink)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .cd-meta { display: flex; justify-content: center; gap: 12px; font-size: 12px; color: var(--ink2); font-variant-numeric: tabular-nums; }
-  .cd-ctl { display: flex; justify-content: center; gap: 12px; }
-  .cd-ctl button { background: var(--surface2); color: var(--ink); border: 1px solid var(--border); border-radius: 50%; width: 44px; height: 44px; font-size: 16px; cursor: pointer; }
-  .cd-ctl button.cd-play { background: var(--violet); color: #fff; border-color: transparent; }
+  .cd-sub { text-align: center; font-size: 13px; color: var(--ink2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: -2px; }
+  .cd-sub:empty { display: none; }
+  .cd-ctl { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; }
+  .cd-ctl-main { display: flex; justify-content: center; gap: 12px; }
+  .cd-ctl-main button { background: var(--surface2); color: var(--ink); border: 1px solid var(--border); border-radius: 50%; width: 48px; height: 48px; font-size: 16px; cursor: pointer; }
+  .cd-ctl-main button.cd-play { background: var(--violet); color: #fff; border-color: transparent; }
   .cd-list { list-style: none; margin: 0; padding: 0; max-height: 18svh; overflow-y: auto; font-size: 13px; }
   .cd-list li { padding: 7px 10px; border-radius: 6px; color: var(--ink2); cursor: pointer; counter-increment: cdt; }
   .cd-list li::before { content: counter(cdt, decimal-leading-zero) "  "; font-variant-numeric: tabular-nums; opacity: .6; }
@@ -543,60 +546,72 @@
           <div class="tt-wrap" id="ttStage"></div>
           <!-- CD playing view (shown instead of the platter for CD albums) -->
               <div class="cd-view hidden" id="cdView">
-                <button class="cd-libbtn" id="cdLibBtn" type="button">Library</button>
                 <div class="cd-title" id="cdTitle"></div>
+                <div class="cd-sub" id="cdSub"></div>
                 <canvas id="cdCanvas"></canvas>
                 <div class="cd-meta"><span id="cdNum">Track 1 of 1</span><span id="cdTime">0:00 / 0:00</span></div>
                 <div class="cd-ctl">
-                  <button id="cdPrev" type="button" aria-label="Previous track">⏮</button>
-                  <button id="cdPlay" class="cd-play" type="button" aria-label="Play / pause">❚❚</button>
-                  <button id="cdNext" type="button" aria-label="Next track">⏭</button>
+                  <button class="cd-libbtn" id="cdLibBtn" type="button">Library</button>
+                  <div class="cd-ctl-main">
+                    <button id="cdPrev" type="button" aria-label="Previous track">⏮</button>
+                    <button id="cdPlay" class="cd-play" type="button" aria-label="Play / pause">❚❚</button>
+                    <button id="cdNext" type="button" aria-label="Next track">⏭</button>
+                  </div>
+                  <span class="cd-ctl-gap" aria-hidden="true"></span>
                 </div>
                 <ol class="cd-list" id="cdList"></ol>
               </div>
-          <!-- Deck details: everything the old side panel had, one control away -->
-          <div class="tt-sheet" id="deckSheet" role="dialog" aria-label="Deck details" hidden>
-            <div class="tt-sheet-head"><h2>Deck details</h2><button class="sort-chip tt-sheet-close" type="button">Close</button></div>
+          <!-- Turntable settings (was "Deck details"): the album on the platter, track and speed, adding a file; the numbers live behind Advanced -->
+          <div class="tt-sheet" id="deckSheet" role="dialog" aria-label="Turntable settings" hidden>
+            <div class="tt-sheet-head"><h2>Turntable settings</h2><button class="sort-chip tt-sheet-close" type="button">Close</button></div>
             <aside class="panel">
-              <div class="section">
-                <div class="section-title">Track</div>
+              <div class="section tt-album" id="ttAlbumInfo">
+                <div class="section-title">On the platter</div>
+                <div class="tt-album-title" id="ttAlbumTitle">Nothing loaded</div>
+                <div class="tt-album-sub" id="ttAlbumSub"></div>
                 <div class="trk-nav hidden" id="trkNav">
                   <button id="btnPrevTrk" type="button" aria-label="Previous track">⏮</button>
                   <span class="trk-idx" id="trkIdx"></span>
                   <button id="btnNextTrk" type="button" aria-label="Next track">⏭</button>
                 </div>
-                <p class="hint">Pinch in on the player (or Ctrl + scroll) for the album library; spread to come back. Drag the disc to scratch, hold the label (or the space bar) to brake. Drag the tonearm's dimple along the rail for a silent seek: drop it in the gap between tracks to start the next one, or flick it for next / previous.</p>
+                <ol class="tt-album-tracks" id="ttAlbumTracks" aria-label="Tracks"></ol>
               </div>
-                <div class="section vinyl-only">
-                  <div class="section-title">Fine speed</div>
-                  <input id="rpmSlider" type="range" min="8" max="100" step="0.5" value="33.3" />
-                  <div class="stat"><span class="lbl">target rpm</span><span class="val" id="rpmReadout">33</span></div>
-                  <p class="hint">The 33 / 45 / 78 buttons and − / + are on the player; this is the continuous dial.</p>
+              <div class="section vinyl-only">
+                <div class="section-title">Speed</div>
+                <input id="rpmSlider" type="range" min="8" max="100" step="0.5" value="33.3" aria-label="Fine speed" />
+                <div class="stat"><span class="lbl">Fine speed (rpm)</span><span class="val" id="rpmReadout">33</span></div>
+                <p class="hint">The 33 / 45 / 78 and − / + keys are on the player; this is the continuous dial.</p>
+              </div>
+              <div class="section">
+                <div class="section-title">Add music</div>
+                <input id="fileInput" class="tt-fileinput" type="file" accept="audio/*" />
+                <label class="tt-filebtn" for="fileInput">Add music file</label>
+                <p class="hint">Plays one file from this device, or drop a file anywhere. Local only, no streaming.</p>
+              </div>
+              <div class="section">
+                <div class="section-title">Gestures</div>
+                <p class="hint">Pinch in on the player for your library. Drag the disc to scratch, hold the label to brake, drag the tonearm's dimple to skip around the record.</p>
+              </div>
+              <details class="section tt-adv" id="ttAdvanced">
+                <summary>Advanced</summary>
+                <div class="tt-adv-body">
+                  <div class="stat"><span class="lbl">Playback rate</span><span class="val" id="rate">0.00×</span></div>
+                  <div class="stat"><span class="lbl">Position</span><span class="val" id="pos">0 / 0 s</span></div>
+                  <div class="stat"><span class="lbl">Record wear</span><span class="val" id="wear">0 plays</span></div>
+                  <div class="section audiophile-only" id="feelSection">
+                    <div class="section-title">Feel knobs</div>
+                    <div class="knob"><span class="lbl">J · inertia</span><span class="val" id="knobJVal"></span><input id="knobJ" type="range" min="0.05" max="2" step="0.01"></div>
+                    <div class="knob"><span class="lbl">k · motor pull</span><span class="val" id="knobKVal"></span><input id="knobK" type="range" min="1" max="30" step="0.1"></div>
+                    <div class="knob"><span class="lbl">c · friction</span><span class="val" id="knobCVal"></span><input id="knobC" type="range" min="0" max="4" step="0.01"></div>
+                    <div class="knob"><span class="lbl">brake damp</span><span class="val" id="knobBrakeVal"></span><input id="knobBrake" type="range" min="2" max="40" step="0.1"></div>
+                  </div>
+                  <div class="section audiophile-only" id="latencySection">
+                    <div class="section-title">Latency gate</div>
+                    <div id="latency">measuring…</div>
+                  </div>
                 </div>
-                <div class="section">
-                  <div class="stat"><span class="lbl">rate</span><span class="val" id="rate">0.00×</span></div>
-                  <div class="stat"><span class="lbl">position</span><span class="val" id="pos">0 / 0 s</span></div>
-                  <div class="stat"><span class="lbl">wear</span><span class="val" id="wear">0 plays</span></div>
-                </div>
-                <div class="section-sep"></div>
-                <div class="section audiophile-only" id="feelSection">
-                  <div class="section-title">Feel knobs</div>
-                  <div class="knob"><span class="lbl">J · inertia</span><span class="val" id="knobJVal"></span><input id="knobJ" type="range" min="0.05" max="2" step="0.01"></div>
-                  <div class="knob"><span class="lbl">k · motor pull</span><span class="val" id="knobKVal"></span><input id="knobK" type="range" min="1" max="30" step="0.1"></div>
-                  <div class="knob"><span class="lbl">c · friction</span><span class="val" id="knobCVal"></span><input id="knobC" type="range" min="0" max="4" step="0.01"></div>
-                  <div class="knob"><span class="lbl">brake damp</span><span class="val" id="knobBrakeVal"></span><input id="knobBrake" type="range" min="2" max="40" step="0.1"></div>
-                </div>
-                <div class="section audiophile-only" id="latencySection">
-                  <div class="section-title">Latency gate</div>
-                  <div id="latency">measuring…</div>
-                </div>
-                <div class="section">
-                  <div class="section-title">Load track</div>
-                  <input id="fileInput" type="file" accept="audio/*" />
-                  <p class="hint">Or drop a file anywhere. Local only — no streaming.</p>
-                </div>
-                <p class="hint" id="buildId" style="opacity:.5">build: dev</p>
-              </aside>
+              </details>
+            </aside>
           </div>
         </section>
 
@@ -680,6 +695,7 @@
   </div>
 </div>
 
+<span id="buildId" hidden>build: dev</span>   <!-- shown by Settings > Privacy & about (main.js settingsDeps) -->
 <script type="module" src="./src/main.js"></script>
 </body>
 </html>

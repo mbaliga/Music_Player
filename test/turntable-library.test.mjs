@@ -23,7 +23,7 @@ const rowsOf = (root) => find(root, 'tl-trk');
 test('empty library shows the built-in test pressing and the scan hint', () => {
   const d = makeDom(); const lib = mountTurntableLibrary(d.container, d.deps); lib.layout({ width: 360, height: 780, portrait: true });
   const t = find(lib.el, 'tl-title')[0];
-  assert.equal(t.textContent, 'Test pressing');
+  assert.equal(t.textContent, 'Demo record');
   assert.match(lib.el.className, /tl-empty/);
   assert.equal(rowsOf(lib.el).length, 1);
   lib.setAlbums([mk(1)]); assert.doesNotMatch(lib.el.className, /tl-empty/);
@@ -157,7 +157,7 @@ test('scan chip wording: web default, scanLabel dep and setScanLabel (native And
   const d = makeDom();
   const web = mountTurntableLibrary(d.container, d.deps);
   assert.equal(find(web.el, 'tl-long')[0].textContent, 'Scan music folder');
-  assert.equal(find(web.el, 'tl-hint')[0].textContent, 'Scan your music folder to fill the shelf');
+  assert.equal(find(web.el, 'tl-hint')[0].textContent, 'Scan your music folder to play your own music');
   web.setScanLabel({ long: 'Scan phone', hint: 'Scan your phone to fill the shelf' });
   assert.equal(find(web.el, 'tl-long')[0].textContent, 'Scan phone');
   assert.equal(find(web.el, 'tl-short')[0].textContent, 'Scan');

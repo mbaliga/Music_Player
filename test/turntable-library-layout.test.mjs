@@ -5,7 +5,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   libraryLayout, coverPose, visibleRange, POOL_SIZE, dragFocus, flingTarget, easeStep, wheelStep, keyStep,
-  formatDuration, totalDuration, clipText, albumsToCoverflow, builtinTestPressing, isBuiltinAlbum, TEST_PRESSING_ID, LIB_KNOBS,
+  formatDuration, totalDuration, clipText, albumsToCoverflow, builtinTestPressing, isBuiltinAlbum, TEST_PRESSING_ID, LIB_KNOBS, cleanTrackTitle,
 } from '../src/turntable/library-layout.js';
 import { groupTracks, shelfItems } from '../src/albums.js';
 import { hashSeed } from '../src/turntable/covers.js';
@@ -245,11 +245,23 @@ test('albumsToCoverflow: 500 albums, unique ids, fast', () => {
 
 test('builtinTestPressing: one track by default; the app may supply its own', () => {
   const b = builtinTestPressing();
-  assert.equal(b.id, TEST_PRESSING_ID); assert.equal(b.title, 'Test pressing'); assert.equal(b.kind, 'vinyl'); assert.equal(b.builtin, true);
-  assert.deepEqual(b.tracks, [{ title: 'Test pressing', durationSec: null }]);
+  assert.equal(b.id, TEST_PRESSING_ID); assert.equal(b.title, 'Demo record'); assert.equal(b.kind, 'vinyl'); assert.equal(b.builtin, true);
+  assert.deepEqual(b.tracks, [{ title: 'Demo record', durationSec: null }]);
   assert.ok(isBuiltinAlbum(b)); assert.ok(!isBuiltinAlbum({ id: 'x' })); assert.ok(!isBuiltinAlbum(null));
   assert.equal(builtinTestPressing().coverSeed, b.coverSeed);
   const c = builtinTestPressing({ durationSec: 52.8 }); assert.equal(c.tracks[0].durationSec, 52.8);
   const d = builtinTestPressing({ tracks: [{ title: 'I', durationSec: 10 }, { title: 'II' }] });
   assert.deepEqual(d.tracks, [{ title: 'I', durationSec: 10 }, { title: 'II', durationSec: null }]);
+});
+
+test('cleanTrackTitle: the disc label some taggers append is noise in a title; the CD grouping still reads the original', () => {
+  assert.equal(cleanTrackTitle('Opener [CD1]'), 'Opener');
+  assert.equal(cleanTrackTitle('Opener (Disc 2)'), 'Opener');
+  assert.equal(cleanTrackTitle('Opener - CD 2'), 'Opener');
+  assert.equal(cleanTrackTitle('Discovery'), 'Discovery');            // "Disc" inside a word is not a label
+  assert.equal(cleanTrackTitle('[CD1]'), '[CD1]');                     // nothing left: keep the original
+  assert.equal(cleanTrackTitle(null), '');
+  const out = albumsToCoverflow([{ id: 'a', kind: 'cd', album: 'Set [CD1]', artist: 'X', tracks: [{ title: 'One [CD1]', durationSec: 5 }, { title: 'Two [CD1]', durationSec: 6 }] }]);
+  assert.deepEqual(out[0].tracks.map((t) => t.title), ['One', 'Two']);
+  assert.equal(out[0].kind, 'cd');
 });

@@ -101,7 +101,7 @@ export function bakeSpinLayer(size) {
 
 export class CdView {
   /**
-   * els = { root, canvas, list, prev, next, play, num, time, title }
+   * els = { root, canvas, list, prev, next, play, num, time, title, sub? }   (sub: the "Artist · Album" line under the title)
    * cb  = { onTrack(i), onSeekFrac(f), onPrev(), onNext(), onToggle() }
    */
   constructor(els, cb) {
@@ -126,6 +126,9 @@ export class CdView {
   }
 
   show(on) { this.e.root.classList.toggle('hidden', !on); if (on) this.resize(); }
+
+  /** the line under the track title: "Artist · Album" (untrusted text: textContent only) */
+  setInfo(text) { if (this.e.sub) this.e.sub.textContent = text || ''; }
 
   /** titles: string[], weights: seconds (null for unknown) per track. */
   setTracks(titles, weights, index) {

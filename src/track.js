@@ -85,7 +85,7 @@ export function synthesizeTrack(sampleRate, seconds = 24) {
 
   // Soft-clip / normalize pass to keep peaks sane.
   normalizeInPlace(L, R, 0.9);
-  return { channels: [L, R], frames, name: 'Runout — test pressing' };
+  return { channels: [L, R], frames, name: 'Demo record' };
 }
 
 /** Decode a user-picked File into channel Float32Arrays at the ctx rate. */

@@ -35,11 +35,11 @@ let deviceMode = null;
 import { mountBooth } from './shell/booth.js';
 import { createEngineGate } from './engine-gate.js';
 import { LibraryManager } from './library.js';
-import { deviceLibrary, installDeviceLibrary } from './device/index.js';   // the phone's own audio library (Android app only; docs/DEVICE_LIBRARY.md)
+import { deviceLibrary, installDeviceLibrary, describeStatus } from './device/index.js';   // the phone's own audio library (Android app only; docs/DEVICE_LIBRARY.md)
 import { createStage } from './turntable/stage.js';
 import { FINISHED } from './turntable/state.js';
 import { mountTurntableLibrary } from './turntable/library.js';
-import { albumsToCoverflow, builtinTestPressing, TEST_PRESSING_ID } from './turntable/library-layout.js';
+import { albumsToCoverflow, builtinTestPressing, cleanTrackTitle, TEST_PRESSING_ID } from './turntable/library-layout.js';
 import {
   parseTheme, clearThemeVars,
   storeTheme, loadStoredTheme, clearStoredTheme, builtinThemeTemplate, exportThemeText,
@@ -55,7 +55,7 @@ import { libraryPrefs, clearLibraryCache } from './library-prefs.js';
 const REFERENCE_RPM = 33 + 1 / 3;
 const SPEEDS = { '33': REFERENCE_RPM, '45': 45, '78': 78 };
 const TRIM = { min: 0.7, max: 1.3, step: 0.02 };   // the stage's −/+ buttons: ×.98 / ×1.02 of the chosen speed
-const LS = { speed: 'runout.tt.speed', last: 'runout.tt.last' };
+const LS = { speed: 'runout.tt.speed', last: 'runout.tt.last', picked: 'runout.tt.picked' };
 const lsGet = (k) => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } };
 const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* private mode */ } };
 
@@ -89,6 +89,7 @@ const state = {
   queue: null,
   layout: null,
   albumId: null,             // id of the album shown on the platter (library id, or TEST_PRESSING_ID)
+  albumMeta: null,           // the coverflow album object ({id, title, artist, coverUrl...}) for albumId; null for a loose track
   view: 'vinyl',             // 'vinyl' platter | 'cd' player
   vinylOwned: true,          // false while a mixtape / radio track is what the engine holds: the loop then keeps it at nominal speed as before
   cdPlaying: true,
@@ -124,7 +125,7 @@ async function boot() {
   state.fx = new NeedleFX(state.engine.ctx);
   installTurntable();
   await loadTrack(synthesizeTrack(state.engine.sampleRate, 24), null, false, false);
-  state.albumId = TEST_PRESSING_ID;
+  state.albumId = TEST_PRESSING_ID; state.albumMeta = null;
   installControls();
   installAlbumNav();
   installLibrary();     // albums (the zoom-out library), mixtapes, the lazy radio / booth hooks and the shell itself
@@ -239,6 +240,7 @@ function searchActionsImpl() {
     const at = locate(id);
     if (!at) return false;
     const a = albums[at.index];
+    markPicked();
     await gotoSection('albums');
     await state.engine.resume();
     stage.dispatch({ type: 'zoomTo', z: 0 });
@@ -265,13 +267,14 @@ function searchActionsImpl() {
       const list = ids.map(trackObj).filter(Boolean);
       const first = list.findIndex((t) => t.file);
       if (first < 0) { flash('RE-LINK FILES'); return false; }
+      markPicked();
       await gotoSection('albums');
       await state.engine.resume();
       stage.dispatch({ type: 'zoomTo', z: 0 }); stage.dispatch({ type: 'stop', s: 0 });
       let track;
       try { track = await loadFile(list[first].file, state.engine.ctx, { copy: false }); }
       catch (err) { console.error('play all failed', err); toast(`Cannot play "${list[first].title || 'this track'}": ${errMsg(err)}`); return false; }
-      state.albumId = null;
+      state.albumId = null; state.albumMeta = null;
       await loadTrack(track, queueFor({ kind: 'vinyl', id: null, tracks: list }, first));
       stage.setDisplay({ lit: true });
       playTarget({ index: first, time: 0 }, { needle: false });
@@ -374,7 +377,7 @@ function flash(text) {   // a short message on the dot display ("RADIO ON", "RE-
 // silently leave the built-in test pressing on the platter). `flash` above only writes to the dot display, which is hidden while the
 // coverflow is up and gone after 2.4 s.
 let toastEl = null, toastT = 0;
-function toast(text) {
+function toast(text, ms = 6000) {
   try {
     if (!toastEl) {
       toastEl = document.createElement('div');
@@ -386,7 +389,7 @@ function toast(text) {
     }
     toastEl.textContent = String(text);
     toastEl.style.display = 'block';
-    clearTimeout(toastT); toastT = setTimeout(() => { if (toastEl) toastEl.style.display = 'none'; }, 6000);
+    clearTimeout(toastT); toastT = setTimeout(() => { if (toastEl) toastEl.style.display = 'none'; }, ms);
   } catch { /* no DOM */ }
 }
 const errMsg = (e) => String((e && e.message) || e || 'unknown error').slice(0, 120);
@@ -525,9 +528,12 @@ function installTurntable() {
     effect: onStageEffect,
     beginAudio: onBeginAudio,
     analyser: () => getAnalyser(),
+    libraryOpen: (open) => onLibraryOpen(open),
+    liveChange: () => syncEmpty(),
+    emptyAction: () => { userScan = true; scanLibrary(); },
   });
   onAodOutlineMode((on) => stage.setOutline(on));   // always-on display: hairline circles only, static (docs/DEVICE_MODE.md)
-  stage.setLibrary(tlib = mountTurntableLibrary(stage.libHost, { ...libraryDeps(), scanLabel: deviceLibrary.isAvailable() ? { long: 'Scan phone', short: 'Scan', hint: 'Scan your phone to fill the shelf' } : undefined }));
+  stage.setLibrary(tlib = mountTurntableLibrary(stage.libHost, { ...libraryDeps(), scanLabel: deviceLibrary.isAvailable() ? { long: 'Scan phone', short: 'Scan', hint: 'Scan your phone to play your own music' } : undefined }));
   wireLibrary();
   stage.setSpeedUI(state.speedBase);
   // rt test hooks (the prototype's window.__rt, plus the app handle for scripts/verify-turntable.py)
@@ -562,6 +568,7 @@ function getAnalyser() {
 // ── Play / Stop ───────────────────────────────────────────────────────────────────────────────────────────────────────────
 async function onToggle() {
   await state.engine.resume();
+  if (state.albumId !== TEST_PRESSING_ID) markPicked();
   const pl = stage.player;
   if (pl.playing || pl.starting) {
     stage.dispatch({ type: 'toggle', s: currentS(state.engine.position / state.engine.sampleRate) });   // Stop: freeze + the arm slides back and folds away
@@ -712,7 +719,7 @@ function queueFor(item, index) {
     kind: item.kind,
     index,
     albumId: item.id,
-    items: item.tracks.map((t) => ({ file: t.file, title: t.title, dur: Number.isFinite(t.durationSec) && t.durationSec > 0 ? t.durationSec : null })),
+    items: item.tracks.map((t) => ({ file: t.file, title: cleanTrackTitle(t.title), artist: t.artist || '', dur: Number.isFinite(t.durationSec) && t.durationSec > 0 ? t.durationSec : null })),
   };
 }
 
@@ -734,8 +741,71 @@ function syncAlbumUI() {
   if (q) el('trkIdx').textContent = `${q.index + 1} / ${n}`;
   if (q && state.view === 'cd') {
     state.cd.setTracks(q.items.map((it) => it.title), estimateDurations(q.items.map((it) => it.dur)), q.index);
+    state.cd.setInfo(albumLine());
   }
   tlib && tlib.setNowPlaying && tlib.setNowPlaying({ albumId: state.albumId, trackIndex: q ? q.index : 0 });
+  syncLabel(); syncNow(); syncSheetAlbum();
+}
+
+// ── what is playing, in words: the stage's now-playing line, the record label, the CD header and the settings sheet ───────────────────────
+const stripExt = (n) => String(n || '').replace(/\.[a-z0-9]{2,5}$/i, '');
+function albumLine() {   // "Artist · Album" for the album on the platter / in the CD player
+  const q = state.queue, it = q ? q.items[q.index] : null, m = state.albumMeta;
+  const parts = [(it && it.artist) || (m && m.artist) || '', m ? m.title : ''].filter(Boolean);
+  return parts.filter((v, i) => parts.indexOf(v) === i).join(' · ');
+}
+function nowInfo() {
+  if (platterIsDemo()) return { mode: 'pick', title: 'Pick an album', sub: 'Tap Library to choose your music', time: false };
+  if (!state.vinylOwned) return null;                                   // a tape / station owns the engine: the Albums page says nothing
+  if (state.albumId === TEST_PRESSING_ID) return { mode: 'demo', title: 'Demo record', sub: 'Built-in demo sound', time: true };
+  const q = state.queue, it = q ? q.items[q.index] : null;
+  const title = (it && it.title) || stripExt(state.track && state.track.name);
+  if (!title) return null;
+  return { mode: 'track', title, sub: albumLine() || (state.albumMeta ? '' : 'Single file'), time: true };
+}
+let nowTimeOn = false;
+function syncNow() {
+  if (!stage) return;
+  const n = nowInfo();
+  stage.setNow(n ? { mode: n.mode, title: n.title, sub: n.sub } : { show: false });
+  nowTimeOn = !!(n && n.time);
+  if (!nowTimeOn) stage.setNowTime('');
+}
+let labelKey = null;
+function syncLabel() {   // the record's label is the album's own art (or a generated label); the built-in swirl stays for the demo and loose files
+  if (!stage) return;
+  const m = state.albumMeta && !state.albumMeta.builtin ? state.albumMeta : null;
+  const key = m ? m.id + '|' + (m.coverUrl || '') : '';
+  if (key === labelKey) return;
+  labelKey = key; stage.setLabelArt(m);
+}
+// the settings sheet's album card: title, artist and the track list (tap a row = play it)
+let sheetKey = '';
+function syncSheetAlbum() {
+  const ti = el('ttAlbumTitle'), ts = el('ttAlbumSub'), tl = el('ttAlbumTracks');
+  if (!ti) return;
+  const q = state.queue, m = state.albumMeta;
+  const n = nowInfo();
+  ti.textContent = m && !m.builtin ? m.title : (n && n.mode === 'pick' ? 'Nothing picked yet' : (n ? n.title : 'Nothing loaded'));
+  ts.textContent = m && !m.builtin ? [m.artist, q ? `${q.items.length} track${q.items.length === 1 ? '' : 's'}` : ''].filter(Boolean).join(' · ') : (n && n.mode === 'pick' ? 'Tap Library to choose your music' : '');
+  const key = q ? state.albumId + '|' + q.items.map((it) => it.title).join('\u0001') : '';
+  if (key !== sheetKey) {
+    sheetKey = key; tl.textContent = '';
+    if (q && q.items.length > 1) q.items.forEach((it, i) => {
+      const li = document.createElement('li'); li.tabIndex = 0; li.setAttribute('role', 'button');
+      const nn = document.createElement('span'); nn.className = 'n'; nn.textContent = String(i + 1).padStart(2, '0');
+      const t = document.createElement('span'); t.className = 't'; t.textContent = it.title || `Track ${i + 1}`;
+      const d = document.createElement('span'); d.className = 'd'; d.textContent = it.dur > 0 ? formatTime(it.dur) : '';
+      li.append(nn, t, d); li.dataset.i = String(i); tl.appendChild(li);
+    });
+  }
+  [...tl.children].forEach((li, i) => { const on = !!q && i === q.index; li.classList.toggle('cur', on); if (on) li.setAttribute('aria-current', 'true'); else li.removeAttribute('aria-current'); });
+}
+function pickSheetTrack(i) {
+  const q = state.queue;
+  if (!q || state.jumping || i === q.index && state.view === 'vinyl' && stage.player.playing) return;
+  markPicked();
+  state.engine.resume().then(() => { if (state.view === 'vinyl') { state.fx?.lift(); playTarget({ index: i, time: 0 }, { needle: true }); } else goTo({ index: i, time: 0 }, false); });
 }
 
 function stepTrack(dir) {
@@ -756,7 +826,7 @@ function installAlbumNav() {
   state.cd = new CdView({
     root: el('cdView'), canvas: el('cdCanvas'), list: el('cdList'),
     prev: el('cdPrev'), next: el('cdNext'), play: el('cdPlay'),
-    num: el('cdNum'), time: el('cdTime'), title: el('cdTitle'),
+    num: el('cdNum'), time: el('cdTime'), title: el('cdTitle'), sub: el('cdSub'),
   }, {
     onTrack: (i) => { if (state.queue && !state.jumping) goTo({ index: i, time: 0 }, false); },
     onSeekFrac: (f) => { if (!state.jumping) goTo({ index: state.queue?.index ?? 0, time: f * state.T }, false); },
@@ -765,7 +835,7 @@ function installAlbumNav() {
     onToggle: async () => { await state.engine.resume(); state.cdPlaying = !state.cdPlaying; },
   });
   // from the CD view the library is one tap away (the stage is hidden behind the CD player; zoom is a vinyl-side gesture)
-  el('cdLibBtn').addEventListener('click', () => { el('pageAlbums').dataset.lib = '1'; stage.dispatch({ type: 'setZ', z: 1 }); });
+  el('cdLibBtn').addEventListener('click', () => { el('pageAlbums').dataset.lib = '1'; stage.dispatch({ type: 'setZ', z: 1 }); onLibraryOpen(true); });
   setView(state.view);
 }
 
@@ -784,7 +854,7 @@ function installControls() {
   // Load a local file (drag-drop or picker).
   const loadLoose = async (f) => {
     await state.engine.resume();
-    state.albumId = null;
+    state.albumId = null; state.albumMeta = null;
     await loadTrack(await loadFile(f, state.engine.ctx));
     stage.setDisplay({ lit: true });
     stage.dispatch({ type: 'play', s: 0 });
@@ -840,20 +910,122 @@ function updateHud(rate, t) {
   el('rate').textContent = rate.toFixed(2) + '×';
   el('pos').textContent = `${t.toFixed(1)} / ${state.T.toFixed(1)} s`;
   el('wear').textContent = `${state.playCount} plays`;
+  if (nowTimeOn && stage) stage.setNowTime(`${formatTime(t)} / ${formatTime(state.T)}`);
 }
 
 // ── Deck details: the old side panel, now a sheet opened from the small control on the Albums page ──────────────────────
 function installDetails() {
   const page = el('pageAlbums'), sheet = el('deckSheet');
   const actions = page.querySelector('.page-actions');
+  const ICON = (d) => `<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">${d}</svg>`;
+  // the Library button: always visible on the Albums header (the pinch stays as the gesture); labelled, >= 44 px
+  const lb = document.createElement('button');
+  lb.type = 'button'; lb.className = 'tt-lib-btn'; lb.id = 'btnLibrary'; lb.style.order = '-1'; lb.setAttribute('aria-pressed', 'false'); lb.setAttribute('aria-label', 'Open album library');
+  lb.innerHTML = ICON('<rect x="3.5" y="4" width="7" height="7" rx="1.4" fill="none" stroke="currentColor" stroke-width="1.7"/><rect x="13.5" y="4" width="7" height="7" rx="1.4" fill="none" stroke="currentColor" stroke-width="1.7"/><rect x="3.5" y="14" width="7" height="7" rx="1.4" fill="none" stroke="currentColor" stroke-width="1.7"/><rect x="13.5" y="14" width="7" height="7" rx="1.4" fill="none" stroke="currentColor" stroke-width="1.7"/>');
+  const lbl = document.createElement('span'); lbl.className = 'tt-lib-lbl'; lbl.textContent = 'Library'; lb.appendChild(lbl);
+  actions.prepend(lb);
+  lb.addEventListener('click', () => { if (!allowsGesture('library-chip')) return; toggleLibrary(); });
+  libBtnSync = (open) => { lb.setAttribute('aria-pressed', String(open)); lb.setAttribute('aria-label', open ? 'Back to the player' : 'Open album library'); lbl.textContent = open ? 'Player' : 'Library'; };
+  // Turntable settings (was Deck details): the sheet behind the sliders icon
   const btn = document.createElement('button');
-  btn.type = 'button'; btn.className = 'tt-details-btn'; btn.id = 'btnDeck'; btn.setAttribute('aria-label', 'Deck details'); btn.setAttribute('aria-expanded', 'false');
-  btn.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path d="M4 8h9M17 8h3M4 16h3M11 16h9" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="15" cy="8" r="2" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="9" cy="16" r="2" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>';
+  btn.type = 'button'; btn.className = 'tt-details-btn'; btn.id = 'btnDeck'; btn.setAttribute('aria-label', 'Turntable settings'); btn.setAttribute('aria-expanded', 'false');
+  btn.innerHTML = ICON('<path d="M4 8h9M17 8h3M4 16h3M11 16h9" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="15" cy="8" r="2" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="9" cy="16" r="2" fill="none" stroke="currentColor" stroke-width="1.7"/>');
   actions.append(btn);
-  const set = (open) => { sheet.hidden = !open; btn.setAttribute('aria-expanded', String(open)); if (open) sheet.querySelector('.tt-sheet-close').focus({ preventScroll: true }); else btn.focus({ preventScroll: true }); };
+  const set = (open) => { sheet.hidden = !open; btn.setAttribute('aria-expanded', String(open)); if (open) { syncSheetAlbum(); sheet.querySelector('.tt-sheet-close').focus({ preventScroll: true }); } else btn.focus({ preventScroll: true }); };
   btn.addEventListener('click', () => set(sheet.hidden));
   sheet.querySelector('.tt-sheet-close').addEventListener('click', () => set(false));
   sheet.addEventListener('keydown', (e) => { if (e.key === 'Escape') { e.stopPropagation(); set(false); } });
+  const rows = el('ttAlbumTracks');
+  rows.addEventListener('click', (e) => { const li = e.target.closest && e.target.closest('li'); if (li) pickSheetTrack(Number(li.dataset.i)); });
+  rows.addEventListener('keydown', (e) => { if (e.key !== 'Enter' && e.key !== ' ') return; const li = e.target.closest && e.target.closest('li'); if (li) { e.preventDefault(); pickSheetTrack(Number(li.dataset.i)); } });
+  syncSheetAlbum();
+}
+
+// ── the Library button, the first-run nudge and what a finished scan tells the user ───────────────────────────────────────────────────────
+let libBtnSync = () => {};
+let libShown = false;       // the library was opened for the user by a scan this session
+let userScan = false;       // a scan the user asked for (Scan chip, empty-state button, Allow)
+const markPicked = () => { try { lsSet(LS.picked, 1); } catch { /* */ } tlib && tlib.setPickHint && tlib.setPickHint(null); };
+function openLibrary() {
+  if (state.view === 'cd') el('pageAlbums').dataset.lib = '1';
+  stage.dispatch({ type: 'zoomTo', z: 1 });
+}
+function closeLibrary() {
+  if (state.view === 'cd') delete el('pageAlbums').dataset.lib;
+  stage.dispatch({ type: 'zoomTo', z: 0 });
+}
+function toggleLibrary() { if (stage.zoom > 0.5) closeLibrary(); else openLibrary(); }
+function onLibraryOpen(open) {
+  libBtnSync(open);
+  if (open) syncScanChip();     // 'last scan 3 min ago' is as old as now
+  if (!open) tlib && tlib.setPickHint && tlib.setPickHint(null);
+}
+const plural = (n, one, many) => `${Number(n).toLocaleString('en-US')} ${n === 1 ? one : many}`;
+function agoText(ms) {
+  if (!ms) return '';
+  const m = Math.max(0, Math.round((Date.now() - ms) / 60000));
+  if (m < 1) return 'just now';
+  if (m < 60) return `${m} min ago`;
+  if (m < 48 * 60) return `${Math.round(m / 60)} h ago`;
+  return new Date(ms).toLocaleDateString();
+}
+// After a scan: say what was found, and (until the user has picked something) open the shelf so the music is the first thing they see.
+function announceLibrary(explicit) {
+  const n = library.tracks.length;
+  if (!n) return;
+  if (explicit) toast(`Found ${plural(n, "song", "songs")}`, 3500);
+  const open = !libShown && !lsGet(LS.picked) && shell && shell.current === 'albums' && stage.zoom < 0.5 && !engineOwner()
+    && !stage.player.playing && !document.querySelector('.wt-overlay:not(.hidden)');
+  if (open) {
+    libShown = true;
+    tlib.focus(0, { animate: false });
+    stage.dispatch({ type: 'zoomTo', z: 1 });
+    tlib.setPickHint('Pick an album');
+  }
+}
+// the Scan chip: "Scan phone" until the phone has been read, then "Rescan" with when it was last read
+function syncScanChip() {
+  if (!tlib || !library) return;
+  const n = library.tracks.length;
+  if (deviceLibrary.isAvailable()) {
+    const st = deviceLibrary.status.get();
+    const needsAccess = st.phase === 'needs-permission' || st.phase === 'denied' || st.phase === 'blocked';
+    const busy = st.phase === 'scanning' || st.phase === 'tagging';
+    const ago = agoText(st.lastScanAt);
+    const info = n ? `${plural(n, 'song', 'songs')}${ago ? ` · last scan ${ago}` : ''}` : '';
+    if (needsAccess || (!n && !busy)) tlib.setScanLabel({ long: 'Scan phone', short: 'Scan', aria: 'Scan phone for music' });
+    else if (busy) tlib.setScanLabel({ long: 'Scanning…', short: 'Scanning', aria: 'Scanning your phone for music' });
+    else tlib.setScanLabel({ long: 'Rescan phone', short: 'Rescan', aria: `Rescan phone for music${info ? '. ' + info : ''}` });
+    tlib.setScanInfo(info);
+  } else {
+    const relink = library.linkSummary && library.linkSummary.needsRelink;
+    if (n && relink) tlib.setScanLabel({ long: 'Re-link music', short: 'Re-link', aria: 'Re-link your music files' });
+    else if (n) tlib.setScanLabel({ long: 'Rescan folder', short: 'Rescan', aria: 'Rescan your music folder' });
+    tlib.setScanInfo(n ? plural(n, 'song', 'songs') : '');
+  }
+}
+// first run / nothing scanned yet: the demo record, and a card that says how to get your own music (the native permission card speaks for itself)
+function syncEmpty() {
+  if (!stage || !library) return;
+  const native = deviceLibrary.isAvailable();
+  let show = !shelf.length && state.albumId === TEST_PRESSING_ID && !(stage.player.playing || stage.player.starting);   // out of the way while the demo plays
+  if (show && native && describeStatus(deviceLibrary.status.get()).show) show = false;
+  stage.setEmpty({
+    show, title: 'Demo record',
+    body: native ? 'Scan your phone to play your own music.' : 'Scan a music folder to play your own music.',
+    button: native ? 'Scan phone' : 'Choose music folder',
+  });
+}
+let scanBusy = false, scanWasEmpty = false;
+function onDeviceStatus(st) {
+  const busy = st.phase === 'scanning' || st.phase === 'tagging';
+  if (busy && !scanBusy) { scanBusy = true; scanWasEmpty = !shelf.length; }
+  else if (!busy && scanBusy) {
+    scanBusy = false;
+    if (st.phase === 'idle' && st.trackCount > 0) { rebuildAlbums(); announceLibrary(scanWasEmpty || userScan); }
+    userScan = false;
+  }
+  syncScanChip(); syncEmpty();
 }
 
 const appEl = () => el('pageAlbums');
@@ -876,12 +1048,13 @@ function rebuildAlbums() {
   shelf = library ? library.albums(SORTS[view.sort] || 'artist').filter((a) => view.kind === 'all' || a.kind === view.kind) : [];
   albums = albumsToCoverflow(shelf);
   if (!shelf.length && view.kind === 'all') {
-    albums = [builtinTestPressing({ durationSec: 24, title: 'Test pressing', artist: 'Runout' })];
+    albums = [builtinTestPressing({ durationSec: 24, title: 'Demo record', artist: 'Runout' })];
   }
   tlib.setAlbums(albums);
   const at = albums.findIndex((a) => a.id === state.albumId);
   if (at >= 0) tlib.focus(at, { animate: false });
   syncAlbumUI();
+  syncEmpty(); syncScanChip();
   if (platterIsDemo()) scheduleAdopt();
 }
 const indexOfAlbum = (id) => albums.findIndex((a) => a.id === id);
@@ -897,7 +1070,7 @@ async function loadAlbum(index, trackIndex = 0) {
     await state.engine.resume();
     await loadTrack(synthesizeTrack(state.engine.sampleRate, 24));
     if (tok !== loadToken) return false;
-    state.albumId = a.id; state.cdAlbum = false;
+    state.albumId = a.id; state.albumMeta = a; state.cdAlbum = false;
     stage.setDisplay({ loading: false, lit: true }); syncDisplay();
     syncAlbumUI();
     return true;
@@ -912,7 +1085,7 @@ async function loadAlbum(index, trackIndex = 0) {
     await state.engine.resume();
     const track = await loadFile(trackObj.file, state.engine.ctx, { copy: false });   // no second copy of a 100 MB decode: the engine packs its own
     if (tok !== loadToken) return false;      // a newer pick superseded this decode
-    state.albumId = item.id;
+    state.albumId = item.id; state.albumMeta = a;
     await loadTrack(track, queueFor(item, trackIndex));
   } catch (err) {
     console.error('album load failed', err);
@@ -930,6 +1103,7 @@ async function loadAlbum(index, trackIndex = 0) {
 function wireLibrary() {
   // tap a track in the library: zoom back in and play that track
   tlib.on('selectTrack', async (albumId, trackIndex) => {
+    markPicked();
     const idx = indexOfAlbum(albumId);
     if (idx < 0) return;
     const a = albums[idx];
@@ -953,6 +1127,7 @@ function wireLibrary() {
   });
   // tap the centre cover: back to the player (a CD goes back to its CD view)
   tlib.on('tapCover', async (albumId) => {
+    markPicked();
     const ai = indexOfAlbum(albumId);
     const a = albums[ai];
     stage.dispatch({ type: 'zoomTo', z: 0 });
@@ -979,6 +1154,7 @@ let scanning = false;
 async function scanLibrary() {
   if (scanning) return;
   scanning = true;
+  userScan = true;
   try {
     if (deviceLibrary.isAvailable()) {   // Android app: the toolbar's Scan means "scan the phone" (permission first, never a folder picker)
       const ph = deviceLibrary.status.get().phase;
@@ -986,20 +1162,21 @@ async function scanLibrary() {
       else if (ph === 'needs-permission' || ph === 'denied') await deviceLibrary.allowAndScan();
       else await deviceLibrary.scan({ force: true });
       rebuildAlbums();
-      return;
+      return;      // the status subscription (onDeviceStatus) announces a finished scan
     }
     const pending = library.linkSummary?.needsRelink || 0;
     const onProgress = (done, total) => { flash(`SCANNING ${done}/${total}`); if (done % 25 === 0 || done === total) rebuildAlbums(); };
     if (pending) await library.relink(onProgress); else await library.scan(onProgress);
     rebuildAlbums();
-  } finally { scanning = false; syncDisplay(); }
+    announceLibrary(true);
+  } finally { scanning = false; userScan = false; syncDisplay(); }
 }
 
 function installLibrary() {
   library = new LibraryManager();
   // Persisted library metadata (tags only, no audio) -> albums + mixtape refs resolve before any re-scan;
   // those tracks show "needs re-link" until then.
-  library.restore().then((n) => { if (n) { rebuildAlbums(); state.mixtapes?.refresh?.(); restoreLast(); } }).catch(() => {});
+  library.restore().then((n) => { if (n) { rebuildAlbums(); state.mixtapes?.refresh?.(); restoreLast(); announceLibrary(false); } }).catch(() => {});
   rebuildAlbums();
   if (deviceLibrary.isAvailable()) {   // Android app only: device tracks stream into the same library; the card explains / asks / shows progress
     let t = 0;
@@ -1007,6 +1184,7 @@ function installLibrary() {
     installDeviceLibrary(library).then(() => { rebuildAlbums(); restoreLast(); }).catch(() => {});
     const host = document.createElement('div'); host.className = 'dv-host'; el('pageAlbums').appendChild(host);
     deviceLibrary.mountScanCard(host);
+    deviceLibrary.status.subscribe(onDeviceStatus);
   }
 
   // Mixtapes: custom playlists (pure model in mixtape.js; this is wiring only).
@@ -1017,7 +1195,7 @@ function installLibrary() {
       await state.engine.resume();
       const track = await loadFile(file, state.engine.ctx);
       await loadTrack(track, null, false, true);
-      state.albumId = null;
+      state.albumId = null; state.albumMeta = null;
       return track;
     },
     relink: () => library.relink(),
