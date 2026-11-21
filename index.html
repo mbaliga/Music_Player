@@ -15,6 +15,7 @@
 <link rel="stylesheet" href="./src/settings/settings.css">
 <link rel="stylesheet" href="./src/search/search.css">
 <link rel="stylesheet" href="./src/turntable/turntable.css">
+<link rel="stylesheet" href="./src/shell/chrome.css">
 <style>
   /* ── Design tokens ─────────────────────────────────────────────────────────── */
   :root {
@@ -168,7 +169,7 @@
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 22px;
-    padding: 28px 24px 20px;
+    padding: 28px 24px 18px;
     max-width: 400px; width: 100%;
     max-height: calc(100dvh - 120px); overflow-y: auto;
     position: relative;
@@ -181,42 +182,48 @@
     box-shadow: 0 24px 60px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.06);
   }
 
+  .wt-card { display: flex; flex-direction: column; overflow: hidden; }
+  .wt-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+  .wt-foot { flex: none; }
+  @media (max-height: 520px) {
+    .wt-overlay { padding-top: 12px; padding-bottom: 12px; }
+    .wt-card { max-height: calc(100dvh - 24px); padding-top: 18px; }
+    .wt-logo { width: 44px; height: 44px; margin-bottom: 6px; }
+    .wt-card .wt-foot { margin-top: 14px; gap: 10px; }
+  }
   .wt-x {
-    position: absolute; top: 12px; right: 12px;
-    background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 50%; width: 28px; height: 28px;
-    color: var(--ink2); cursor: pointer; font-size: 12px;
+    position: absolute; top: 6px; right: 6px;
+    background: none; border: 0;
+    width: 44px; height: 44px;
+    color: var(--ink2); cursor: pointer; font-size: 15px;
     display: flex; align-items: center; justify-content: center;
-    transition: background .15s;
   }
-  .wt-x:hover { background: #333; }
+  .wt-x:hover { color: var(--ink); }
 
-  .wt-icon { font-size: 32px; margin-bottom: 12px; }
-  .wt-title { font-size: 19px; font-weight: 700; color: var(--ink); margin-bottom: 10px; }
-  .wt-body { font-size: 14px; line-height: 1.75; color: var(--ink2); white-space: pre-line; }
+  .wt-icon { margin: 0; }
+  .wt-icon:empty { display: none; }
+  .wt-title { font-size: 22px; font-weight: 700; color: var(--ink); margin: 0 44px 12px 0; line-height: 1.25; }
+  .wt-body { font-size: 16px; line-height: 1.6; color: var(--ink2); }
+  [data-theme="light"] .wt-body { color: rgba(14,14,26,.68); }
 
-  .wt-foot {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-top: 24px; gap: 12px;
-  }
-  .wt-dots { display: flex; flex-wrap: wrap; gap: 5px; flex: 1; min-width: 0; }
-  .wt-dot {
-    width: 6px; height: 6px; border-radius: 50%;
-    background: var(--border); transition: background .2s;
-  }
-  .wt-dot.on { background: var(--violet); }
+  .wt-foot { display: flex; flex-direction: column; align-items: stretch; margin-top: 26px; gap: 16px; }
+  .wt-dots { display: flex; flex-wrap: nowrap; justify-content: center; gap: 8px; }
+  .wt-dot { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--border); transition: background .2s, width .2s; }
+  [data-theme="light"] .wt-dot { background: rgba(0,0,0,.16); }
+  .wt-dot.on { background: var(--violet); width: 22px; border-radius: 4px; }
 
-  .wt-nav { display: flex; gap: 8px; flex: none; }
-  .wt-nav button { white-space: nowrap; }
+  .wt-nav { display: flex; align-items: center; gap: 8px; }
+  .wt-sp { flex: 1; }
   .wt-nav button {
-    padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600;
+    min-height: 44px; min-width: 44px; padding: 0 18px; border-radius: 12px; font-size: 15px; font-weight: 600; white-space: nowrap;
     cursor: pointer; border: 1px solid var(--border);
     background: var(--surface2); color: var(--ink);
-    transition: all .15s;
+    transition: background .15s;
   }
+  .wt-nav .wt-skip { border-color: transparent; background: none; color: var(--ink2); padding: 0 12px; }
   .wt-next {
     background: var(--violet) !important;
-    color: #fff !important;
+    color: var(--on-accent, #fff) !important;
     border-color: var(--violet) !important;
     box-shadow: 0 2px 8px rgba(142,123,255,0.4);
   }
@@ -518,9 +525,9 @@
     </div>
     <ul class="drawer-menu" id="drawerMenu"></ul>
     <div class="drawer-foot">
-      <button class="tb-btn" id="btnWalkthrough" type="button" title="How to use" aria-label="How to use">?</button>
-      <button class="tb-btn" id="btnMode"        type="button" title="Audiophile / Casual" aria-label="Audiophile or casual mode">◦</button>
-      <button class="tb-btn" id="btnTheme"       type="button" title="Switch theme" aria-label="Switch theme">☾</button>
+      <button class="drawer-pill" id="btnWalkthrough" type="button" title="How to use Runout" aria-label="Help: how to use Runout"><span class="ic" aria-hidden="true">?</span><span class="lb">Help</span></button>
+      <button class="drawer-pill" id="btnMode"        type="button" title="Audiophile mode: shows the extra dials" aria-label="Audiophile mode"><span class="ic" aria-hidden="true">◦</span><span class="lb">Audiophile</span></button>
+      <button class="drawer-pill" id="btnTheme"       type="button" title="Switch between light and dark" aria-label="Switch theme"><span class="ic" aria-hidden="true">☾</span><span class="lb">Theme</span></button>
     </div>
   </nav>
 
@@ -613,8 +620,10 @@
       </div>
 
       <div class="minibar" hidden>
-        <button class="minibar-main" type="button"><span class="minibar-title"></span><span class="minibar-sub"></span></button>
-        <button class="minibar-stop" type="button" aria-label="Stop radio" hidden>■</button>
+        <button class="minibar-main" type="button"><span class="minibar-text"><span class="minibar-title"></span><span class="minibar-sub"></span></span><svg class="minibar-chev" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M7 14l5-5 5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button class="minibar-btn minibar-toggle" type="button" aria-label="Pause" hidden></button>
+        <button class="minibar-btn minibar-next" type="button" aria-label="Next track" hidden><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M6 6l9 6-9 6zM18 6v12" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></button>
+        <button class="minibar-btn minibar-stop" type="button" aria-label="Stop radio" hidden>■</button>
       </div>
     </div>
     <div class="card-handle" aria-hidden="true"></div>

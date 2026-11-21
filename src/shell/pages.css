@@ -7,8 +7,8 @@
 /* ── Mixtapes ───────────────────────────────────────────────────────────────────────────────────────────────────────── */
 .mt-bar { flex: none; display: flex; align-items: center; gap: 6px; padding: 0 14px 6px; overflow-x: auto; scrollbar-width: none; }
 .mt-bar > * { flex: 0 0 auto; }
-.mt-bar .lib-scan { padding: 7px 14px; font-size: 12px; }
-.mt-bar .sort-chip { min-height: 32px; }
+.mt-bar .lib-scan { padding: 0 16px; min-height: 44px; font-size: 12px; }
+.mt-bar .sort-chip { min-height: 44px; min-width: 44px; }
 .mt-bar .mt-bar-sp { flex: 1 1 auto; }
 .mt-body { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; padding: 4px 12px 24px; }
 .mt-body .mt-shelf { max-width: 460px; margin: 0 auto; flex: none; overflow: visible; }

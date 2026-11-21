@@ -155,7 +155,7 @@ function installSettingsAndSearch() {
   const applyMode = () => {
     const on = !!S.get('playback.audiophile');
     document.documentElement.dataset.mode = on ? 'audiophile' : 'casual';
-    btnMode.textContent = on ? '♦' : '◦'; btnMode.classList.toggle('active', on);
+    btnMode.querySelector('.ic').textContent = on ? '♦' : '◦'; btnMode.classList.toggle('active', on); btnMode.setAttribute('aria-pressed', String(on));
   };
   applyMode();
   btnMode.addEventListener('click', () => S.set('playback.audiophile', !S.get('playback.audiophile')));
@@ -1282,7 +1282,34 @@ function engineOwner() {
   return null;
 }
 
-// The now-playing mini bar: whatever plays from any source, on every section but its own.
+// The now-playing mini bar: whatever plays from any source, on every section but its own. Radio gets Stop; albums and mixtapes get
+// play / pause and next. A source paused FROM the bar stays on it (miniHold) so it can be resumed from there.
+let miniHold = null;
+const miniActions = {
+  stop: () => radio && radio.stop(),
+  async toggle(source) {
+    try {
+      if (source === 'album') {
+        await state.engine.resume();
+        const playing = state.view === 'cd' ? state.cdPlaying : (stage.player.playing || stage.player.starting);
+        miniHold = playing ? 'album' : null;
+        if (state.view === 'cd') state.cdPlaying = !state.cdPlaying; else stage.dispatch({ type: 'toggle' });
+      } else if (source === 'mixtape' && state.mixtapes) {
+        const p = state.mixtapes.play;
+        miniHold = p && !p.paused ? 'mixtape' : null;
+        state.mixtapes._toggle();
+      }
+    } catch (err) { console.warn('mini bar toggle failed', err); }
+    refreshNowPlaying();
+  },
+  async next(source) {
+    try {
+      if (source === 'album') { await state.engine.resume(); stepTrack(1); }
+      else if (source === 'mixtape' && state.mixtapes && state.mixtapes.play) state.mixtapes._jumpTo(state.mixtapes.play.idx + 1);
+    } catch (err) { console.warn('mini bar next failed', err); }
+    refreshNowPlaying();
+  },
+};
 function refreshNowPlaying() {
   if (!shell) return;
   const src = {};
@@ -1291,13 +1318,17 @@ function refreshNowPlaying() {
     src.radio = { title: radio.station.name, sub: ph === 'playing' ? 'Radio · on air' : ph === 'error' ? 'Radio · error' : 'Radio · connecting' };
   }
   const p = state.mixtapes && state.mixtapes.play;
-  if (p && !p.ended && !p.paused) src.mixtape = { title: p.mix.name || 'Mixtape', sub: `Mixtape · track ${Math.max(1, p.idx + 1)} of ${p.files.length}` };
+  if (p && !p.ended && !p.paused) src.mixtape = { title: p.mix.name || 'Mixtape', sub: `Mixtape · track ${Math.max(1, p.idx + 1)} of ${p.files.length}`, playing: true, canNext: p.idx + 1 < p.files.length && typeof state.mixtapes._jumpTo === 'function' };
   const q = state.queue;
   if (q && !state.radioOn && (state.view === 'cd' ? state.cdPlaying : (stage.player.playing && state.vinylOwned))) {
-    src.album = { title: q.items[q.index].title || (state.track && state.track.name) || 'Album', sub: `${q.kind === 'cd' ? 'CD' : 'Vinyl'} · track ${q.index + 1} of ${q.items.length}` };
+    src.album = { title: q.items[q.index].title || (state.track && state.track.name) || 'Album', sub: `${q.kind === 'cd' ? 'CD' : 'Vinyl'} · track ${q.index + 1} of ${q.items.length}`, playing: true, canNext: q.index + 1 < q.items.length };
   }
-  shell.setNowPlaying(src, { stop: () => radio && radio.stop() });
-  if (deviceMode) { const n = src.radio || src.mixtape || src.album; deviceMode.setNowPlaying({ title: n ? n.title : '', playing: !!n }); }
+  if (miniHold && (src.radio || src[miniHold])) miniHold = null;          // something is playing again: no hold needed
+  if (miniHold === 'mixtape' && p && !p.ended && !src.mixtape) src.mixtape = { title: p.mix.name || 'Mixtape', sub: `Mixtape · paused · track ${Math.max(1, p.idx + 1)} of ${p.files.length}`, playing: false, canNext: false };
+  else if (miniHold === 'album' && q && !src.album) src.album = { title: q.items[q.index].title || (state.track && state.track.name) || 'Album', sub: `${q.kind === 'cd' ? 'CD' : 'Vinyl'} · paused · track ${q.index + 1} of ${q.items.length}`, playing: false, canNext: false };
+  else if (miniHold && !src[miniHold]) miniHold = null;
+  shell.setNowPlaying(src, miniActions);
+  if (deviceMode) { const n = src.radio || (src.mixtape && src.mixtape.playing ? src.mixtape : null) || (src.album && src.album.playing ? src.album : null); deviceMode.setNowPlaying({ title: n ? n.title : '', playing: !!n }); }
 }
 
 // ── You Radio host port (src/radio/offline/station-session.js) ────────────────

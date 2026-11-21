@@ -8,7 +8,7 @@ Time is controlled by offsetting Date.now() (the state machine's clock) and call
 Every frozen gesture is run twice: UNLOCKED (control: it must take effect) and LOCKED (it must do nothing).
 NOT a substitute for the on-device checks in docs/DEVICE_MODE.md (real screen timeout, panel refresh rate, AMOLED brightness, TalkBack, back gesture).
 """
-import json, os, subprocess, sys, time
+import json, os, re, subprocess, sys, time
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 src = open(os.path.join(ROOT, 'scripts/verify-canned-radio.py')).read()
 src = src[:src.index('def run():')]
@@ -216,6 +216,13 @@ def run_size(p, w, h):
     check(dm(page)['aod'] and 'aod' in attr(page), f'{tag}: AOD after 1 min idle (body "{attr(page)}")')
     check(page.evaluate("window.requestAnimationFrame.toString().indexOf('native code') < 0"), f'{tag}: rAF is gated while AOD is on')
     shot('albums-aod')
+    page.evaluate("runoutDeviceMode.setNowPlaying({ title: 'Harbor Lights', playing: true })"); time.sleep(0.2)
+    aodf = page.evaluate('''(() => { const c = document.querySelector('.dm-clock'), n = document.querySelector('.dm-np'); const lum = (x) => { const m = x.match(/[\\d.]+/g).map(Number); return (m[0] + m[1] + m[2]) / 765; };
+      const rc = c.getBoundingClientRect(), rn = n.getBoundingClientRect(); return { clock: c.textContent, title: n.textContent, cl: lum(getComputedStyle(c).webkitTextFillColor), nl: lum(getComputedStyle(n).webkitTextFillColor), cshown: getComputedStyle(c).display !== 'none' && rc.width > 40 && rc.height > 20, nshown: rn.width > 40, inView: rc.left >= 0 && rc.right <= innerWidth && rn.right <= innerWidth }; })()''')
+    check(re.search(r'\d{1,2}:\d{2}', aodf['clock'] or '') and aodf['cshown'] and aodf['cl'] > 0.3 and aodf['cl'] < 0.7, f'{tag}: the always-on face shows a readable, dim clock ({aodf})')
+    check(aodf['title'] == 'Harbor Lights' and aodf['nshown'] and aodf['nl'] > 0.3 and aodf['inView'], f'{tag}: ...and the current track title ({aodf["title"]!r})')
+    shot('albums-aod-clock')
+    page.evaluate("runoutDeviceMode.setNowPlaying({ title: '', playing: false })")
     bg = page.evaluate("getComputedStyle(document.body).backgroundColor")
     check(bg == 'rgb(0, 0, 0)', f'{tag}: AOD background is true black ({bg})')
     # rAF rate in AOD
@@ -350,6 +357,9 @@ def run_size(p, w, h):
     page.evaluate("document.querySelector('.st-group[data-group=\"device-mode\"]') && (document.querySelector('.st-group[data-group=\"device-mode\"]').open = true)")
     page.locator('.st-group[data-group="device-mode"] .st-btn').first.click(); time.sleep(0.4)
     check(page.evaluate("!!document.querySelector('.dm-sheet')"), f'{tag}: the Device mode sheet opens from Settings > Device mode')
+    sh = page.evaluate('''(() => { const o = document.querySelector('.dm-sheet').getBoundingClientRect(), c = document.querySelector('.dm-sheet-card').getBoundingClientRect(); const sm = [...document.querySelectorAll('.dm-sheet button, .dm-sheet [role=switch], .dm-sheet input')].filter(b => b.getBoundingClientRect().height < 44 || b.getBoundingClientRect().width < 44).map(b => b.className + ':' + b.getBoundingClientRect().width + 'x' + b.getBoundingClientRect().height);
+      return { full: Math.abs(o.width - innerWidth) < 1 && Math.abs(o.height - innerHeight) < 1 && c.width >= innerWidth - 1, native: document.querySelectorAll('.dm-sheet select, .dm-sheet input[type=checkbox]').length, switches: document.querySelectorAll('.dm-sheet [role=switch]').length, segs: document.querySelectorAll('.dm-sheet [role=radiogroup]').length, small: sm, scrollW: document.querySelector('.dm-sheet-card').scrollWidth <= innerWidth }; })()''')
+    check(sh['full'] and sh['native'] == 0 and sh['switches'] >= 6 and sh['segs'] >= 3 and not sh['small'] and sh['scrollW'], f'{tag}: the Device mode sheet is full-screen on the phone, uses switches / segmented choices (no native checkbox or select) with >= 44 px controls ({sh})')
     shot('settings-sheet'); page.evaluate("document.querySelector('.dm-done').click()")
 
     check(not errs, f'{tag}: no page errors {errs[:3]}')

@@ -242,6 +242,18 @@ def run_viewport(b, w, h):
     for g in ('library', 'playback', 'radio', 'booth', 'device-mode', 'privacy-about'):
         sdet('appearance', False); sdet(g); page.wait_for_timeout(250)
         page.evaluate(f'document.querySelector(\'.st-group[data-group="{g}"]\').scrollIntoView()'); page.wait_for_timeout(150); shot('settings-' + g)
+    # plain user-facing copy: no file names, no docs-style sentences; Theme explains that the player surfaces stay dark; native controls are gone
+    for g in ('appearance', 'library', 'playback', 'radio', 'booth', 'device-mode', 'privacy-about'): sdet(g)
+    alltxt = page.evaluate('document.querySelector(".st-page").innerText')
+    bad = [w_ for w_ in ['.md', 'docs/', 'AI stations backend', 'folder picker scan', 'stay in Deck details', 'Advanced:', 'JSON;'] if w_.lower() in alltxt.lower()]
+    check(not bad, f'{tag}: Settings copy has no file names or docs-style phrases ({bad})')
+    check('Player surfaces stay dark' in alltxt, f'{tag}: Settings says that player surfaces stay dark')
+    pa = page.evaluate('document.querySelector(".st-group[data-group=\\"privacy-about\\"]").innerText')
+    check('Version' in pa and 'Stays on this phone' in pa and 'internet is used only when you ask' in pa, f'{tag}: Privacy & about says what stays on the phone, what the network is for, and the version')
+    check(page.evaluate('document.querySelectorAll(".st-page input[type=checkbox], .st-page select").length') == 0, f'{tag}: no native checkboxes or selects on the Settings page')
+    smallc = page.evaluate('[...document.querySelectorAll(".st-page summary, .st-page button, .st-page .st-sw")].filter(b => b.getBoundingClientRect().width > 0 && (b.getBoundingClientRect().height < 44 || b.getBoundingClientRect().width < 44)).map(b => b.className + ":" + Math.round(b.getBoundingClientRect().width) + "x" + Math.round(b.getBoundingClientRect().height))')
+    check(not smallc, f'{tag}: every Settings control is at least 44x44 ({smallc})')
+    for g in ('library', 'playback', 'radio', 'booth', 'device-mode', 'privacy-about'): sdet(g, False)
     sdet('radio'); page.click('.st-group[data-group="radio"] .st-switch'); page.wait_for_timeout(300)
     check(page.evaluate('localStorage.getItem("runout.flag.radio.ai")') == '1', f'{tag}: AI stations toggle writes the existing radio.ai flag')
     page.click('.st-group[data-group="radio"] .st-switch')

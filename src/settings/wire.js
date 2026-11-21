@@ -16,7 +16,7 @@ export function initSettings({ win = window, doc = document, storage = safeStora
     const c = custom();
     applyPlan(planAppearance(store.get(), { customTheme: c }), { root: doc.documentElement, customTheme: c, setThemeVars, clearThemeVars });
     const b = doc.getElementById('btnTheme');
-    if (b) { const light = store.get('appearance.theme') === 'light'; b.textContent = light ? '☀' : '☾'; }
+    if (b) { const light = store.get('appearance.theme') === 'light'; const ic = b.querySelector('.ic') || b; ic.textContent = light ? '☀' : '☾'; }
   }
   installMotionOverride(win);
   apply();

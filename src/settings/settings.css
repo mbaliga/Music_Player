@@ -45,12 +45,13 @@
 .st-grow { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
 
 .st-seg { display: flex; gap: 6px; flex-wrap: wrap; }
-.st-seg button { flex: 1 1 0; min-width: 84px; min-height: 44px; padding: 8px 10px; font: inherit; font-size: 13px; font-weight: 600; color: var(--ink2); background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; cursor: pointer; text-align: center; }
+.st-seg button { flex: 1 1 64px; min-width: 0; white-space: nowrap; min-height: 44px; padding: 8px 10px; font: inherit; font-size: 13px; font-weight: 600; color: var(--ink2); background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; cursor: pointer; text-align: center; }
+.st-seg.dense button { flex-basis: 0; padding: 8px 2px; font-size: 12.5px; }
 .st-seg button small { display: block; font-size: 10.5px; font-weight: 400; opacity: .8; margin-top: 1px; }
 .st-seg button[aria-checked="true"] { color: var(--on-accent, #fff); background: var(--violet); border-color: var(--violet); box-shadow: 0 2px 12px var(--violet-glow); }
 .st-seg button:focus-visible, .st-btn:focus-visible, .st-switch:focus-visible, .st-sw:focus-visible, .st-hex:focus-visible { outline: 2px solid var(--violet); outline-offset: 2px; }
 
-.st-switch { display: flex; align-items: center; gap: 12px; min-height: 48px; width: 100%; background: none; border: 0; padding: 0; font: inherit; color: var(--ink); text-align: left; cursor: pointer; border-radius: 12px; }
+.st-switch { display: flex; flex-direction: row-reverse; justify-content: space-between; align-items: center; gap: 16px; min-height: 48px; width: 100%; background: none; border: 0; padding: 0; font: inherit; color: var(--ink); text-align: left; cursor: pointer; border-radius: 12px; }
 .st-switch .st-track { flex: none; width: 48px; height: 28px; border-radius: 14px; background: var(--surface2); border: 1px solid var(--border); position: relative; transition: background .2s var(--ease); }
 .st-switch .st-track::after { content: ''; position: absolute; top: 2px; left: 2px; width: 22px; height: 22px; border-radius: 50%; background: var(--ink2); transition: transform .2s var(--ease), background .2s; }
 .st-switch[aria-checked="true"] .st-track { background: var(--violet); border-color: var(--violet); }
@@ -88,3 +89,9 @@
 .st-area { width: 100%; min-height: 76px; padding: 10px 12px; font: inherit; font-size: 13px; color: var(--ink); background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; resize: vertical; user-select: text; -webkit-user-select: text; }
 .st-area:focus-visible { outline: 2px solid var(--violet); outline-offset: 2px; }
 .st-scancard { display: block; }
+
+/* sliders (the Device mode sheet): same family as the switches */
+.st-rangehead { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.st-val { font-size: 13px; font-weight: 600; color: var(--ink2); font-variant-numeric: tabular-nums; }
+.st-range { width: 100%; min-height: 44px; accent-color: var(--violet); background: none; cursor: pointer; }
+.st-range:focus-visible { outline: 2px solid var(--violet); outline-offset: 2px; border-radius: 8px; }

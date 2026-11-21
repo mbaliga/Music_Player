@@ -4,6 +4,7 @@
   --dm-accent: color-mix(in srgb, var(--violet, #8E7BFF) var(--dm-glow-pct, 30%), #000);
   --dm-glow: color-mix(in srgb, var(--violet, #8E7BFF) calc(var(--dm-glow-pct, 30%) * .6), transparent);
   --dm-ink: #3b3b3b;
+  --dm-text: #8c8c94;
   --dm-line: #1b1b1b;
   --dm-sx: 0px; --dm-sy: 0px;
 }
@@ -34,7 +35,7 @@ body[data-devicemode~="locked"] @media (prefers-reduced-motion: reduce) { .dm-th
 .dm-hint, .dm-notice { position: fixed; z-index: 500; left: 50%; transform: translateX(-50%); top: calc(env(safe-area-inset-top) + 64px); max-width: min(88vw, 420px); padding: 10px 14px; border-radius: 12px; background: rgba(20,20,26,.94); color: #e8e8f0; font-size: 13px; text-align: center; box-shadow: 0 6px 20px rgba(0,0,0,.5); pointer-events: none; }
 .dm-notice { top: calc(env(safe-area-inset-top) + 120px); }
 .dm-hint[hidden], .dm-notice[hidden] { display: none; }
-.dm-np { display: none; }
+.dm-np, .dm-clock { display: none; }
 
 /* ── the frozen face (generated allowlist rules widen this per section) ──────────────────────────────────────────────── */
 body[data-devicemode~="locked"] { overscroll-behavior: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
@@ -43,26 +44,19 @@ body[data-devicemode~="locked"] :is(.dm-key, .dm-ui, .dm-sheet, .dm-sheet *) { p
 body[data-devicemode~="locked"] .dm-hint, body[data-devicemode~="locked"] .dm-notice { pointer-events: auto; cursor: pointer; }
 body[data-devicemode~="locked"] .tp-hint { display: none; }
 
-/* ── the settings sheet ──────────────────────────────────────────────────────────────────────────────────────────────── */
-.dm-sheet { position: fixed; inset: 0; z-index: 600; display: flex; align-items: flex-end; justify-content: center; background: rgba(0,0,0,.55); }
-.dm-sheet-card { width: min(100%, 560px); max-height: 86vh; overflow: auto; background: var(--surface, #111); color: var(--ink, #eee); border-radius: 22px 22px 0 0; padding: 18px 18px calc(18px + env(safe-area-inset-bottom)); }
-.dm-sheet-card h2 { font-size: 18px; margin-bottom: 10px; }
-.dm-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; min-height: 48px; border-top: 1px solid var(--border, rgba(255,255,255,.07)); font-size: 14px; }
-.dm-row small { color: var(--ink2, #888); font-size: 12px; }
-.dm-row select, .dm-row input[type="range"] { max-width: 48%; background: var(--surface2, #222); color: inherit; border: 1px solid var(--border); border-radius: 8px; padding: 6px; }
-.dm-row input[type="checkbox"] { width: 22px; height: 22px; }
-.dm-sheet-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.dm-sheet-head h2 { margin: 0; }
-.dm-done { min-width: 88px; min-height: 48px; padding: 0 22px; border: 0; border-radius: 24px; background: var(--violet, #8E7BFF); color: #fff; font-size: 16px; font-weight: 700; cursor: pointer; }
-/* a phone gets the whole screen: header (title + Done), the settings scroll underneath */
-@media (max-width: 700px), (max-height: 520px) {
-  .dm-sheet { align-items: stretch; background: var(--surface, #111); }
-  .dm-sheet-card { width: 100%; max-width: none; height: 100%; max-height: none; border-radius: 0; box-sizing: border-box; padding: 0 max(18px, env(safe-area-inset-right, 0px)) max(18px, env(safe-area-inset-bottom, 0px)) max(18px, env(safe-area-inset-left, 0px)); }
-  .dm-sheet-head { position: sticky; top: 0; z-index: 2; min-height: 64px; padding-top: env(safe-area-inset-top, 0px); background: var(--surface, #111); }
-  .dm-row { min-height: 56px; }
-  .dm-row select { min-height: 44px; }
-  .dm-row input[type="range"] { min-height: 44px; }
-  .dm-row input[type="checkbox"] { width: 28px; height: 28px; }
+/* ── the options sheet: full-screen on phones (it carries a task), a centred card on wide screens ───────────────────────── */
+.dm-sheet { position: fixed; inset: 0; z-index: 600; display: flex; align-items: stretch; justify-content: center; background: var(--bg, #000); }
+.dm-sheet-card { width: 100%; max-width: 560px; overflow-y: auto; overscroll-behavior: contain; background: var(--bg, #000); color: var(--ink, #eee); padding: 0 18px calc(24px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 14px; user-select: text; -webkit-user-select: text; }
+.dm-sheet-head { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: calc(10px + env(safe-area-inset-top)) 0 10px; background: var(--bg, #000); }
+.dm-sheet-head h2 { font-size: 22px; font-weight: 700; letter-spacing: -.01em; }
+.dm-sheet-lead { margin: 0; }
+.dm-group { background: var(--surface, #111); border: 1px solid var(--border); border-radius: 18px; padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 16px; }
+.dm-group h3 { font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--ink2); }
+.dm-done { min-height: 44px; min-width: 88px; padding: 0 20px; border: 0; border-radius: 12px; background: var(--violet, #8E7BFF); color: var(--on-accent, #fff); font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }
+.dm-done:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+@media (min-width: 641px) and (min-height: 501px) {
+  .dm-sheet { align-items: center; background: rgba(0,0,0,.55); }
+  .dm-sheet-card { max-height: 88vh; border-radius: 22px; background: var(--bg, #000); border: 1px solid var(--border); padding-top: 0; }
 }
 
 /* ── ALWAYS-ON DISPLAY: one theme layer over the same layout ─────────────────────────────────────────────────────────── */
@@ -97,5 +91,9 @@ body[data-devicemode~="aod"] .dm-led { background: var(--dm-accent) !important; 
 body[data-devicemode~="aod"] .dm-ring-fg { transition: stroke-dashoffset .8s linear !important; stroke: var(--dm-accent) !important; }
 body[data-devicemode~="aod"] .dm-ring circle { stroke-width: 2.4px !important; }
 body[data-devicemode~="aod"] .dm-ui { background: none !important; }
-body[data-devicemode~="aod"] .dm-np { display: block; position: fixed; left: 50%; bottom: calc(max(14px, env(safe-area-inset-bottom)) + 70px); transform: translateX(-50%); max-width: 78vw; text-align: center; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--dm-ink) !important; -webkit-text-fill-color: var(--dm-ink) !important; pointer-events: none; translate: var(--dm-sx) var(--dm-sy); }
+body[data-devicemode~="aod"] :is(.dm-clock, .dm-np) { display: block; position: fixed; left: 50%; transform: translateX(-50%); max-width: 84vw; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none !important; translate: var(--dm-sx) var(--dm-sy); color: var(--dm-text) !important; -webkit-text-fill-color: var(--dm-text) !important; }
+/* readable but dim: a thin face, mid-grey, nothing bright; the whole face drifts with the pixel shift */
+body[data-devicemode~="aod"] .dm-clock { top: 24%; font-size: 64px; font-weight: 300; letter-spacing: .02em; line-height: 1.1; font-variant-numeric: tabular-nums; }
+body[data-devicemode~="aod"] .dm-np { top: calc(24% + 84px); font-size: 17px; font-weight: 500; }
+body[data-devicemode~="aod"] .dm-np:empty { display: none; }
 body[data-devicemode~="aod"] .dm-hint, body[data-devicemode~="aod"] .dm-notice { background: #000 !important; border: 1px solid var(--dm-line) !important; color: var(--dm-ink) !important; -webkit-text-fill-color: var(--dm-ink) !important; }

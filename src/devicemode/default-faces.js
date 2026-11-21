@@ -11,32 +11,32 @@ export const DEFAULT_FACES = Object.freeze({
     // chips (search, Deck details), the dot-display toggle, the drawer / hamburger, Space (brake) and Esc (zoom in).
     buttons: ['#tt-playBtn', '#tt-b78', '#tt-b33', '#tt-b45', '#tt-bm', '#tt-bp', '#btnPrevTrk', '#btnNextTrk', '#cdPrev', '#cdPlay', '#cdNext', '#rpmSlider'],
     aodText: ['#cdTitle'],
-    notes: 'Albums: Play / Stop and the speed keys are live. The record, arm and library are locked.',
+    notes: 'Play, Stop and speed keys work. The rest is locked.',
   },
   mixtapes: {
     // Cassette player: transport keys (SVG role=button), wind keys (hold), AUTO, FLIP, eject stay live. Frozen: the shelf / stack, the editor and
     // importer, the skin / haptics chips and the close button, and the tap-the-tape song-list reveal (a reveal, not a key: decided frozen).
     buttons: ['.tp [role=button]', '.tp [data-key]'],
     aodText: ['.tp-title', '.tp .cass-title'],
-    notes: 'Mixtapes: open the cassette player before locking to use its keys. The shelf and editor are locked.',
+    notes: 'Open a tape before locking to use its keys.',
   },
   radio: {
     // Stop / skip / mini-bar controls. The dial and the lists are not usable while locked.
     buttons: ['.radio-pill-stop', '.radio-now .theme-btn', '.radio-skip', '[data-radio-key]'],
     aodText: ['.radio-now .alb-name', '.radio-pill-name'],
-    notes: 'Radio: Stop and Skip are live. The dial is not usable while locked.',
+    notes: 'Stop and Skip work. The dial is locked.',
   },
   booth: {
     // The rack buttons, switches, knobs and the fader stay live (they carry data-lock-ok too); the touch plate and the performance pads (gesture surfaces) are frozen unless the setting allows it.
     buttons: ['#boothHost .fx-row', '#boothHost .fx-tog', '#boothHost .fx-btn', '#boothHost .fx-knob', '#boothHost .fx-fader'],
     aodText: ['#boothHost .fx-title'],
-    notes: 'Booth: the rack, switches and knobs are live. The touch plate and pads are locked (Settings can allow it).',
+    notes: 'Rack, switches and knobs work. Plate and pads are locked.',
   },
   settings: {
     // Settings is not a playing surface: nothing on it stays live while locked (a control that should be live carries `data-lock-ok`).
     buttons: ['#settingsHost [data-lock-ok]'],
     aodText: [],
-    notes: 'Settings: locked. Unlock to change an option.',
+    notes: 'Settings are locked.',
   },
 });
 

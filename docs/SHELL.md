@@ -16,6 +16,7 @@ one large and dark, the others small and grey, the old header buttons in the foo
 | `src/shell/nav.js` | DOM: builds headers + hamburgers, menu, pointer gestures, spring loop, keyboard, focus trap, lazy section mounting, mini bar. |
 | `src/shell/booth.js` | the one-line mount point of Workstream X's FX component (placeholder until then). |
 | `src/shell/shell.css`, `pages.css` | shell look (tokens at the top) and page layouts. |
+| `src/shell/chrome.css` | loaded last: the Albums header band, dark tokens on player surfaces, drawer footer pills, the edge grab tab, the mini bar's buttons. |
 | `index.html` | `#shell > #drawer + .shell-peek + #card (#cardInner > #shellPages > section[data-section]) + #edgeStrip`. |
 | `test/shell-*.test.mjs`, `scripts/verify-shell.py` | unit tests; Playwright (touch via CDP) verification. |
 
@@ -35,8 +36,15 @@ Menu order: **Albums, Mixtapes, Radio, Booth, Settings** (Settings last, with a 
 * **Booth** - Workstream X's FX component, lazy, mounted into `#boothHost`.
 
 Sections stay mounted (hidden) after the first visit, so a radio session, a mixtape or a half-typed search survives section changes.
-The **mini bar** (bottom of the card, every section except the source's own) shows what plays from any source; tap = go to its home section, the
-square stops a radio station.
+The **mini bar** (bottom of the card, every section except the source's own) shows what plays from any source; tap the title (a chevron says so) = go to its home section. Radio gets a Stop button; albums and mixtapes get play / pause and next (44 px each; `createShell().setNowPlaying(sources, { stop, toggle(source), next(source) })`, wired in `main.js` `miniActions`). A source paused from the bar stays on it (offering Play) until something else plays. While the bar shows, pages end above it (`.card[data-mini] .page` padding; the Albums stage and CD view get a bottom inset).
+
+## Chrome (`chrome.css`)
+
+* **Albums has a header band** like every other page (menu button, title, search, Deck details, lock key); the stage sits under it. The header used to float over the disc.
+* **Player surfaces stay dark in every theme** (turntable, library on its stage, CD view, cassette player). In the light theme their tokens are re-scoped dark (`--ink`, `--surface`, ... on `#pageAlbums`, `.tp`, the mini bar over Albums), and the lock key keeps its dark housing there. Settings > Appearance > Theme says so.
+* **Drawer footer**: labelled 44 px pills (Help, Audiophile, Theme), stacked.
+* **Edge**: the 24 px gesture strip is unchanged and invisible; the old grey line is now a small grab tab (`.card-handle`, 6 x 48 px) on the card's edge.
+* All header controls are at least 44 x 44 px (`verify-shell.py` asserts it on every section).
 
 ## Gestures and arbitration
 

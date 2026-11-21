@@ -10,6 +10,7 @@ Search is described in `docs/SEARCH.md`.
 | `src/settings/settings.js` | PURE: the schema (`FIELDS`), defaults, validators, `migrate`, the store (`createSettingsStore`): `get / set / reset / refresh / subscribe`. Storage injected. |
 | `src/settings/apply.js` | PURE decisions (`planAppearance`) + two small DOM writers (`applyPlan`, `installMotionOverride`). |
 | `src/settings/wire.js` | `initSettings()`: called once by `main.js` before first paint; applies theme, accent, text size, motion. |
+| `src/settings/controls.js` | the shared controls (`h`, `seg` segmented choice, `sw` switch, `range` slider), also used by the Device mode sheet. |
 | `src/settings/page.js`, `settings.css` | the Settings section (DOM, lazy) and the tone / text-size / motion / accent-follow-up CSS. |
 | `src/theme.js` | unchanged parser + custom-theme vars, plus accent helpers (`ACCENT_PRESETS`, `resolveAccent`, `accentVars`, `onAccent`, `contrastRatio`) and `builtinThemeTemplate` / `exportThemeText`. |
 | `test/settings-*.test.mjs` | schema, migration, mirroring, apply plan, accent / contrast maths. |
@@ -63,7 +64,8 @@ The drawer's moon / sun button is a shortcut for Light <-> the dark tone you las
 
 ## Changes the owner should know about
 
-* The gear popover and its footer button are gone; the footer keeps `?` (tour), the audiophile diamond and the moon / sun.
+* The gear popover and its footer button are gone; the drawer footer keeps three labelled buttons: Help (tour), Audiophile and Theme.
+* Copy is user-facing: no file names, no docs sentences. Privacy & about says what stays on the phone, what the network is for, the version and the licence. Theme explains that the player surfaces stay dark in every theme.
 * Walkthrough text now says five sections and points at Settings.
 * Default theme for a fresh install is **OLED black** (what the app looked like), so "Dark" is the new softer option. Say so if you would rather default to Dark.
 * Haptics default **on** (the platter's gap buzz was always on; the cassette buzz was off and now follows the same switch).

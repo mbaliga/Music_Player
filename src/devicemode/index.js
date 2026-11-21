@@ -38,7 +38,7 @@ export function initDeviceMode(opts = {}) {
   const keys = [];                 // every lock key instance (one per header + the floating one)
   const reduced = () => { try { return win.matchMedia('(prefers-reduced-motion: reduce)').matches || readBlob(storage, 'appearance')?.reduceMotion === 'reduce'; } catch { return false; } };
   let section = 'albums', timer = 0, hintT = 0, shiftT = 0, fadeT = 0, aodApplied = false, np = { title: '', playing: false };
-  let ui = null, hintEl = null, noticeEl = null, npEl = null, faceStyle = null, popTrapped = false, ignorePop = 0;
+  let ui = null, hintEl = null, noticeEl = null, npEl = null, clockEl = null, clockT = 0, faceStyle = null, popTrapped = false, ignorePop = 0;
 
   // ── allowlist ────────────────────────────────────────────────────────────────────────────────────────────────────────
   const liveSel = () => liveSelectors(section, S()).join(', ');
@@ -108,7 +108,7 @@ export function initDeviceMode(opts = {}) {
       _setGuard({ locked: machine.state.locked, aod: on, fxPadWhileLocked: S().fxPadWhileLocked });
       frameGate.setMode(on ? 'aod' : 'normal');
       setAodOutlineMode(on);
-      applyNative(on); applyShift(on);
+      applyNative(on); applyShift(on); startClock(on);
       if (shell && !reduced()) { shell.style.transition = `opacity ${FADE_MS}ms ease`; shell.style.opacity = '1'; fadeT = setTimeout(() => { shell.style.transition = ''; shell.style.opacity = ''; }, FADE_MS + 20); }
     };
     if (shell && !reduced()) { shell.style.transition = `opacity ${FADE_MS}ms ease`; shell.style.opacity = '0'; fadeT = setTimeout(apply, FADE_MS); }
@@ -124,6 +124,10 @@ export function initDeviceMode(opts = {}) {
     const set = () => { const s = S(); const o = on && s.pixelShift ? pixelShift(minuteOf(Date.now())) : { x: 0, y: 0 }; body.style.setProperty('--dm-sx', o.x + 'px'); body.style.setProperty('--dm-sy', o.y + 'px'); };
     set(); if (on) shiftT = setInterval(set, 60000);
   }
+  // The always-on face shows the time and the playing title: small, dim, and moved with the rest of the face by the pixel shift (burn-in).
+  const fmtClock = (d) => { try { return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); } catch { return `${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`; } };
+  function paintClock() { if (clockEl) clockEl.textContent = fmtClock(new Date()); }
+  function startClock(on) { clearInterval(clockT); clockT = 0; if (on) { paintClock(); clockT = setInterval(paintClock, 15000); } }
   function showNpTitle() { if (npEl) npEl.textContent = np.title || ''; }
 
   // ── scheduling ───────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -139,8 +143,9 @@ export function initDeviceMode(opts = {}) {
     hintEl = doc.createElement('div'); hintEl.className = 'dm-hint'; hintEl.setAttribute('role', 'status'); hintEl.setAttribute('aria-live', 'polite'); hintEl.hidden = true;
     noticeEl = doc.createElement('div'); noticeEl.className = 'dm-notice'; noticeEl.setAttribute('role', 'status'); noticeEl.hidden = true;
     npEl = doc.createElement('div'); npEl.className = 'dm-np'; npEl.setAttribute('aria-hidden', 'true');
+    clockEl = doc.createElement('div'); clockEl.className = 'dm-clock'; clockEl.setAttribute('aria-hidden', 'true');
     hintEl.addEventListener('click', () => clearHint()); noticeEl.addEventListener('click', () => { machine.dismissNotice(); noticeEl.hidden = true; });
-    ui.append(hintEl, noticeEl, npEl); body.append(ui);
+    ui.append(hintEl, noticeEl, clockEl, npEl); body.append(ui);
   }
   // The hint card: auto-dismisses in at most HINT_MAX_MS, dismisses on tap, and never shows in the always-on display (burn-in).
   function showHint(msg, ms = 2200) { if (!hintEl || aodApplied || machine.state.aod) return; hintEl.textContent = msg; hintEl.hidden = false; clearTimeout(hintT); hintT = setTimeout(clearHint, Math.min(ms, HINT_MAX_MS)); }
@@ -148,7 +153,7 @@ export function initDeviceMode(opts = {}) {
   function showNotice() {
     if (!noticeEl) return;
     const m = S().keepAwakeMin;
-    noticeEl.textContent = `Screen hold released after ${m} min without use. It is on again now.`;
+    noticeEl.textContent = `Screen was allowed to sleep after ${m} min.`;
     noticeEl.hidden = false; setTimeout(() => { machine.dismissNotice(); noticeEl.hidden = true; }, 6000);
   }
   const unlockHint = () => { const m = S().unlockMethod; return m === 'hold' ? 'Hold the lock key to unlock' : m === 'double' ? 'Double-tap the lock key to unlock' : 'Slide the lock key to unlock'; };

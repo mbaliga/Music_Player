@@ -1,0 +1,76 @@
+/* chrome.css — the shell's chrome on top of the page surfaces (loaded after turntable.css; library.css is injected later, so its rules are
+   overridden with an #pageAlbums prefix). One rule for the whole app: PLAYER SURFACES STAY DARK in every theme (the turntable, the
+   library on its stage, the CD view, the cassette player). Anything that sits on those surfaces uses the dark tokens below, never the
+   light ones, so chips and keys keep their contrast. Docs: docs/SHELL.md "Chrome". */
+
+/* ── dark tokens on the player surfaces, whatever the theme ── */
+:root[data-theme="light"] #pageAlbums,
+:root[data-theme="light"] .tp,
+:root[data-theme="light"] .card:has(#pageAlbums:not([hidden])) .minibar {
+  --bg: #000; --surface: #0d0d12; --surface2: #1a1a22; --border: rgba(255,255,255,.14);
+  --ink: #e8e8f0; --ink2: rgba(232,232,240,.62); --ink-bg: #e8e8f0; --card-bg: #000; --violet-glow: rgba(142,123,255,.28);
+  color: var(--ink);
+}
+
+/* ── one header on every page: menu button (48 px), title, actions; 44 px hit areas throughout ── */
+:root { --albums-head-h: 56px; }
+.hamburger, .page-actions > button, .tt-details-btn { min-width: 44px; min-height: 44px; }
+.hamburger { width: 48px; height: 48px; }
+
+/* Albums: a real header band above the stage (it used to float over the disc). The stage sits under it. */
+#pageAlbums .page-head {
+  position: relative; left: auto; right: auto; top: auto; flex: none; z-index: 4; pointer-events: auto;
+  min-height: calc(var(--albums-head-h) + var(--safe-top)); padding: var(--safe-top) 12px 0 6px; background: #000;
+}
+#pageAlbums .page-title { display: block; color: #e8e8f0; }
+#pageAlbums .page-head button { background: none; border-radius: 12px; color: #e8e8f0; filter: none; }
+#pageAlbums .hamburger { filter: none; }
+#pageAlbums .tt-wrap { top: calc(var(--albums-head-h) + var(--safe-top)); }
+#pageAlbums .cd-view { top: calc(var(--albums-head-h) + var(--safe-top)); padding-top: 48px; }
+#pageAlbums .cd-libbtn { top: 4px; min-height: 44px; }
+/* the library toolbar used to dodge the floating header chips; the header is its own band now */
+#pageAlbums .tl-portrait:not(.tl-empty) .tl-bar { top: 0; }
+#pageAlbums .tl-bar { top: 0; }
+#pageAlbums .tl-row1 { padding-left: 0; }
+/* the mini bar must not cover the stage's bottom edge (the library's last track row) */
+.card[data-mini="true"] #pageAlbums .tt-wrap, .card[data-mini="true"] #pageAlbums .cd-view { bottom: calc(76px + var(--safe-bottom)); }
+
+/* ── the drawer's footer: labelled buttons, 44 px tall ── */
+.drawer-foot { flex-direction: column; align-items: flex-start; flex-wrap: nowrap; gap: 8px; }
+.drawer-pill {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px 0 12px; border-radius: 22px;
+  background: var(--surface2); color: var(--ink); border: 1px solid var(--border); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer;
+}
+.drawer-pill .ic { width: 22px; text-align: center; font-size: 17px; color: var(--ink2); }
+.drawer-pill:active { transform: scale(.96); }
+.drawer-pill[aria-pressed="true"] { background: var(--violet); border-color: var(--violet); color: var(--on-accent, #fff); }
+.drawer-pill[aria-pressed="true"] .ic { color: inherit; }
+.drawer-pill:focus-visible { outline: 2px solid var(--shell-accent); outline-offset: 3px; }
+
+/* ── the edge: a small grab tab, deliberately drawn (the gesture strip itself stays 24 px and invisible) ── */
+.card-handle {
+  left: 0; top: 50%; width: 6px; height: 48px; margin-top: -24px; border-radius: 0 4px 4px 0;
+  background: rgba(150,150,165,.5); box-shadow: 0 0 0 1px rgba(0,0,0,.18);
+}
+
+/* ── the mini now-playing bar: tap the title to open; play / pause and next ── */
+.minibar { gap: 2px; padding: 4px 6px 4px 4px; }
+.minibar-main { display: flex; flex-direction: row; align-items: center; gap: 8px; justify-content: flex-start; }
+.minibar-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.minibar-chev { flex: none; color: var(--ink2); }
+.minibar-btn {
+  flex: none; width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface); color: var(--ink); cursor: pointer;
+  display: flex; align-items: center; justify-content: center; font-size: 14px;
+}
+.minibar-btn[hidden] { display: none; }
+.minibar-btn:active { transform: scale(.92); }
+.minibar-toggle { border-color: var(--violet); background: var(--violet); color: var(--on-accent, #fff); }
+.minibar[data-playing="false"] .minibar-sub::before { background: var(--ink2); }
+.minibar-btn:focus-visible { outline: 2px solid var(--shell-accent); outline-offset: 2px; }
+
+/* ── the lock key on a player surface: the dark housing in every theme ── */
+:root[data-theme="light"] :is(#pageAlbums, .dm-key-float) .dm-housing { background: #050507; border-color: rgba(255,255,255,.1); box-shadow: inset 0 2px 4px rgba(0,0,0,.9), inset 0 -1px 0 rgba(255,255,255,.06), 0 1px 0 rgba(255,255,255,.06); }
+:root[data-theme="light"] :is(#pageAlbums, .dm-key-float) .dm-thumb { background: linear-gradient(180deg, #3a3a44, #1c1c22); color: #b9b9c3; }
+:root[data-theme="light"] :is(#pageAlbums, .dm-key-float) .dm-key[aria-pressed="true"] .dm-thumb,
+:root[data-theme="light"] .dm-key-float[aria-pressed="true"] .dm-thumb { color: var(--violet, #8E7BFF); }
+:root[data-theme="light"] .dm-key-float { background: rgba(20,20,26,.88); }

@@ -14,7 +14,7 @@ State `{ locked, wake, aod, notice }`.
 
 ## Settings (`settings.js`, key `runout.devicemode.v1`, versioned, validated)
 
-persistLock(off), unlockMethod(hold|double|slide), fxPadWhileLocked(off), dimFrozen(on), keepAwakeMin(30), neverTimeoutPlaying(on), aodEnabled(on), aodIdleSec(60), aodWake(double), aodBrightnessPct(8, 1-40), aodLowRefresh(on), pixelShift(on), glowPct(30, 10-60). All tunables live in `SPEC`. B's Settings page hosts a Device mode group (Settings > Device mode > "Device mode options..." opens `sheet.js`); the temporary gear that used to sit next to the lock key is gone. Migration into `runout.settings.v1` is a later one-liner.
+persistLock(off), unlockMethod(hold|double|slide), fxPadWhileLocked(off), dimFrozen(on), keepAwakeMin(30), neverTimeoutPlaying(on), aodEnabled(on), aodIdleSec(60), aodWake(double), aodBrightnessPct(8, 1-40), aodLowRefresh(on), pixelShift(on), glowPct(30, 10-60). All tunables live in `SPEC`. B's Settings page hosts a Device mode group (Settings > Device mode > "Open device mode options" opens `sheet.js`: a full-screen sheet on phones, built from `SPEC` with the Settings page's own switches / segmented choices / sliders, `src/settings/controls.js`); the temporary gear that used to sit next to the lock key is gone. Migration into `runout.settings.v1` is a later one-liner.
 
 ## The lock key (`lockkey.js`)
 
@@ -31,6 +31,8 @@ Recessed housing, sliding thumb with a padlock, LED lit when locked, 44 px targe
 ## AOD (`devicemode.css`, `index.js`, `framegate.js`, `aodhooks.js`)
 
 Theme layer, not a second UI: `body[data-devicemode~="aod"]` sets true #000, drops backgrounds/shadows/filters/animations, hides canvases/img/svg `<image>`, draws SVG as hairlines, text transparent except the now-playing title (`.dm-np`) and `aodText`; AOD buttons get an accent outline + soft glow at `glowPct`% luminance. Fade 160 ms (instant with reduced motion). Pixel shift (`pixelshift.js`: 13 positions, stride 5, per minute) via `translate` on the shell. **Low refresh**: `frameGate` swaps `window.requestAnimationFrame` for a 1 Hz version while AOD is on (every loop is throttled with no edits; restored on exit; parked loops go back to the real rAF); audio runs on the audio thread and is untouched. Native: brightness `aodBrightnessPct`/100 and preferred refresh 1 Hz (closest supported mode) via DeviceDisplay; restored on exit, unlock, hide. Renderer hook: `onAodOutlineMode(cb)` / `setAodOutlineMode(bool)` in `aodhooks.js`. Subscribers: the Albums stage (`stage.setOutline`: canvas shows hairline circles for platter / disc / label / spindle and the dot display dimmed, drawn only when something changes; the SVG layer's arm, slot and keys are CSS hairlines; the phone body, mat image and library are hidden), the cassette player (`MixtapeUI`: reels frozen via a zero rate, the cassette is CSS hairlines), Booth (`handle.setAod`: no ring / wave / pad drawing; nothing is released). Radio and the mini bar have no canvas or rAF loop. Any other canvas stays hidden by CSS.
+
+**Always-on face**: a dim thin clock (`.dm-clock`, repainted every 15 s) and the playing title (`.dm-np`), both moved by the pixel shift; they take no touches, so the wake gestures still work over them.
 
 **Hint card** (`.dm-hint`, "Hold the lock key to unlock", the section's lock note): auto-dismisses after at most `HINT_MAX_MS` = 4 s, dismisses on a tap, and is never shown (and is cleared) while in AOD. The timeout notice is also tap-dismissible and cleared on entering AOD.
 

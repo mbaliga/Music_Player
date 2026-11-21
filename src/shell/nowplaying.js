@@ -2,14 +2,14 @@
 import { HOME_OF } from './sections.js';
 
 /**
- * sources = { radio, mixtape, album } each null or { title, sub }. Only one source can own the engine at a time; if several report
+ * sources = { radio, mixtape, album } each null or { title, sub, playing?, canNext? }. Only one source can own the engine at a time; if several report
  * playing (a radio session and a stale album record), radio wins, then mixtape, then album.
- * -> { source, home, title, sub } | null
+ * -> { source, home, title, sub, playing, canNext } | null
  */
 export function pickNowPlaying(sources) {
   for (const source of ['radio', 'mixtape', 'album']) {
     const s = sources && sources[source];
-    if (s && s.title) return { source, home: HOME_OF[source], title: String(s.title), sub: s.sub ? String(s.sub) : '' };
+    if (s && s.title) return { source, home: HOME_OF[source], title: String(s.title), sub: s.sub ? String(s.sub) : '', playing: s.playing !== false, canNext: !!s.canNext };
   }
   return null;
 }

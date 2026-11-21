@@ -260,9 +260,14 @@ export function createShell(opts = {}) {
   // ── now-playing mini bar (every section but the source's own) ──────────────────────────────────────────────────────
   let np = null, npActions = {};
   const miniMain = mini.querySelector('.minibar-main'), miniTitle = mini.querySelector('.minibar-title'), miniSub = mini.querySelector('.minibar-sub'), miniStop = mini.querySelector('.minibar-stop');
+  const miniToggle = mini.querySelector('.minibar-toggle'), miniNext = mini.querySelector('.minibar-next');
+  const ICON_PAUSE = '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M8 6v12M16 6v12" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>';
+  const ICON_PLAY = '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M8 5.5v13l11-6.5z" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>';
   miniMain.addEventListener('click', () => { if (np) go(np.home); });
   miniStop.addEventListener('click', () => npActions.stop && npActions.stop());
-  /** sources = { radio, mixtape, album } each null | {title, sub}; actions = { stop?() } for the radio session. */
+  miniToggle.addEventListener('click', () => { if (np && npActions.toggle) npActions.toggle(np.source); });
+  miniNext.addEventListener('click', () => { if (np && npActions.next) npActions.next(np.source); });
+  /** sources = { radio, mixtape, album } each null | {title, sub, playing?, canNext?}; actions = { stop?(), toggle?(source), next?(source) }. */
   function setNowPlaying(sources, actions = {}) { np = pickNowPlaying(sources); npActions = actions; updateMini(); }
   function updateMini() {
     const vis = miniBarVisible(np, cur);
@@ -270,8 +275,13 @@ export function createShell(opts = {}) {
     card.dataset.mini = String(vis);
     if (vis) {
       miniTitle.textContent = np.title; miniSub.textContent = np.sub;
-      miniMain.setAttribute('aria-label', `Now playing ${np.title}. Go to ${np.home}`);
+      mini.dataset.source = np.source; mini.dataset.playing = String(np.playing);
+      miniMain.setAttribute('aria-label', `Now playing ${np.title}. Open ${np.home}`);
       miniStop.hidden = !(np.source === 'radio' && npActions.stop);
+      const canToggle = np.source !== 'radio' && !!npActions.toggle;
+      miniToggle.hidden = !canToggle;
+      if (canToggle) { miniToggle.innerHTML = np.playing ? ICON_PAUSE : ICON_PLAY; miniToggle.setAttribute('aria-label', np.playing ? 'Pause' : 'Play'); }
+      miniNext.hidden = !(np.canNext && npActions.next);
     }
   }
 
