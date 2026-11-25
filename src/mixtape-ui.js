@@ -26,6 +26,7 @@ import { mountStack, mountLibrary } from './cassette/shelf.js';
 import { Cassette } from './cassette/index.js';
 import { openEditor, openBack, closeBack } from './cassette/editor.js';
 import { allowsGesture } from './devicemode/guard.js';
+import { trapFocus } from './ui/focus-trap.js';
 import { onAodOutlineMode } from './devicemode/aodhooks.js';
 
 const h = (tag, props = {}, ...kids) => {
@@ -206,8 +207,8 @@ export class MixtapeUI {
   _tapeMenu(m) {
     if (document.querySelector('.mt-menu-ov')) return;
     const ov = h('div', { class: 'mt-dialog mt-menu-ov', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Tape menu' });
-    const done = () => { ov.remove(); document.removeEventListener('keydown', esc, true); };
-    const esc = (e) => { if (e.key === 'Escape') { e.stopPropagation(); done(); } };
+    let release = () => {};
+    const done = () => { ov.remove(); release(); };
     const item = (label, sub, fn, cls = '') => h('button', { class: 'mt-menu-item ' + cls, type: 'button', onclick: () => { done(); fn(); } }, h('b', {}, label), sub ? h('small', {}, sub) : null);
     const sheet = h('div', { class: 'mt-menu' },
       h('div', { class: 'mt-menu-title' }, m.name || 'Untitled tape', h('small', {}, tapeCaption(m))),
@@ -218,9 +219,8 @@ export class MixtapeUI {
       item('Cancel', '', () => {}, 'mt-menu-cancel'));
     ov.append(sheet);
     ov.addEventListener('click', (e) => { if (e.target === ov) done(); });
-    document.addEventListener('keydown', esc, true);
     document.body.append(ov);
-    sheet.querySelector('button')?.focus();
+    release = trapFocus(sheet, { initial: sheet.querySelector('button'), onEscape: done });
   }
 
   // ── Suggested tapes: a small dismissible row of auto-generated drafts (docs/MIXTAPES.md) ──
@@ -362,16 +362,16 @@ export class MixtapeUI {
 
   _dialog(title, build) {
     const ov = h('div', { class: 'theme-overlay mt-dialog' });
-    const done = () => { ov.remove(); document.removeEventListener('keydown', esc, true); };
-    const esc = (e) => { if (e.key === 'Escape') { e.stopPropagation(); done(); } };
+    let release = () => {};
+    const done = () => { ov.remove(); release(); };
     const card = h('div', { class: 'theme-card', role: 'dialog', 'aria-modal': 'true', 'aria-label': title },
-      h('div', { class: 'theme-head' }, h('button', { class: 'theme-x', type: 'button', 'aria-label': 'Close', onclick: () => done() }, '\u2190 Back'), h('div', { class: 'theme-title' }, title)),
+      h('div', { class: 'theme-head' }, h('button', { class: 'theme-x', type: 'button', onclick: () => done() }, h('span', { 'aria-hidden': 'true' }, '\u2190'), ' Back'), h('div', { class: 'theme-title' }, title)),
       h('div', { class: 'theme-title theme-title-desk' }, title));
     ov.append(card);
-    document.addEventListener('keydown', esc, true);
     ov.addEventListener('click', (e) => { if (e.target === ov) done(); });
     build(card, done);
     document.body.append(ov);
+    release = trapFocus(card, { onEscape: done });
   }
 
   // ── Player ────────────────────────────────────────────────────────────────
@@ -400,7 +400,7 @@ export class MixtapeUI {
     this.npArtist = h('div', { class: 'tp-np-artist' });
     this.npTime = h('div', { class: 'tp-np-time' });
     this.npNext = h('div', { class: 'tp-np-next' });
-    this.songsBtn = h('button', { class: 'tp-songs-btn', type: 'button', 'aria-expanded': 'false', 'aria-label': 'Show the songs on this tape', onclick: () => this._toggleList() }, ico(IC.list), h('span', {}, 'Songs'));
+    this.songsBtn = h('button', { class: 'tp-songs-btn', type: 'button', 'aria-expanded': 'false', title: 'Show the songs on this tape', onclick: () => this._toggleList() }, ico(IC.list), h('span', {}, 'Songs'));
     this.np = h('div', { class: 'tp-np', 'aria-live': 'off' },
       h('div', { class: 'tp-np-main' }, h('div', { class: 'tp-np-text' }, this.npTape, this.npSong, this.npArtist), this.songsBtn),
       this.npTime, this.npNext, this.msg);
@@ -614,7 +614,7 @@ export class MixtapeUI {
         p.viewSide = side;
         p.paused = false; this.d.setPaused?.(false);
         this._applyRunMode(runMode(p.tp));
-        this._goto(i, i === lo + a.index ? a.frac : 0);
+        Promise.resolve(this._goto(i, i === lo + a.index ? a.frac : 0)).catch((err) => { try { console.warn('tape start failed', err); } catch { /* */ } });
         break;
       }
       case 'resume': p.paused = false; this.d.setPaused?.(false); break;

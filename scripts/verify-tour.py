@@ -670,7 +670,7 @@ def phase_journey(b, w=412, h=915):
         with page.expect_file_chooser() as fc: page.click('.tt-empty-btn')
         fc.value.set_files(TLIB)
         page.wait_for_function(f'{APP}.albums.length >= 7 && {APP}.albums.every(a => !a.builtin)', timeout=40000); page.wait_for_timeout(1800)
-        check(page.evaluate("document.getElementById('btnLibrary').getAttribute('aria-pressed')") == 'true' and pstate(page)['z'] == 1, f'{tag}: after the scan the library opens by itself')
+        check(page.evaluate("document.getElementById('btnLibrary').dataset.open") == 'true' and pstate(page)['z'] == 1, f'{tag}: after the scan the library opens by itself')
         check(page.locator('.tl-hint:visible, .tt-pick-nudge:visible').count() >= 0, f'{tag}: (nudge present or not; the library is what matters)')
         check(not pstate(page)['playing'] and dom(page) < 30, f'{tag}: scanning does not start any sound (playing {pstate(page)["playing"]}, dominant {dom(page)} Hz)')
         shot(page, 'library-after-scan')
@@ -696,7 +696,7 @@ def phase_journey(b, w=412, h=915):
     step('pick + play', s_pick)
 
     def s_toggle():
-        pr0 = page.evaluate("document.getElementById('btnLibrary').getAttribute('aria-pressed')")
+        pr0 = page.evaluate("document.getElementById('btnLibrary').dataset.open")
         page.tap('#btnLibrary'); page.wait_for_timeout(1300)
         lab1 = page.inner_text('#btnLibrary'); on = pstate(page)['z'] == 1
         check(pr0 == 'false' and on and 'player' in lab1.lower(), f'{tag}: Library opens the shelf and the button becomes "{lab1.strip()}"')

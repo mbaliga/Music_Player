@@ -15,6 +15,7 @@ import { adaptLibrary, adaptStations, adaptMixtapes } from './adapters.js';
 import { loadRecents, saveRecents, addRecent, removeRecent, clearRecents } from './recents.js';
 import { stepActive, debounceMs, librarySignature, segments, CHIPS, limitsFor } from './view.js';
 import { OFFLINE_NOTE, clean } from './directory.js';
+import { trapFocus } from '../ui/focus-trap.js';
 
 const ICONS = {   // static markup only
   song: '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M9 18V6l10-2v12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="7" cy="18" r="2.4" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="17" cy="16" r="2.4" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>',
@@ -50,7 +51,7 @@ const idle = (fn) => { try { if (typeof requestIdleCallback === 'function') retu
 export function createSearchOverlay(deps) {
   const doc = document;
   let root = null, input, clearBtn, chipsEl, bodyEl, statusEl, liveEl, backBtn, headTitle;
-  let isOpen = false, opener = null, historyPushed = false;
+  let isOpen = false, releaseTrap = null, historyPushed = false;
   let index = null, builder = null, sig = null, lookup = null, cannedIndex = null;
   let q = '', chip = 'all', stack = [], result = null, rows = [], active = -1, dirState = null, timer = 0, composing = false, noteText = '';
   let recents = [];
@@ -318,12 +319,6 @@ export function createSearchOverlay(deps) {
   function onKey(e) {
     if (e.isComposing || composing) return;
     if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); back(); return; }
-    if (e.key === 'Tab') { // keep focus inside the overlay
-      const f = [...root.querySelectorAll('button:not([disabled]):not([hidden]):not([tabindex="-1"]), input')].filter((x) => x.offsetParent !== null || x === input);
-      if (!f.length) return; const i = f.indexOf(doc.activeElement);
-      if (e.shiftKey && i <= 0) { e.preventDefault(); f[f.length - 1].focus(); } else if (!e.shiftKey && (i === -1 || i === f.length - 1)) { e.preventDefault(); f[0].focus(); }
-      return;
-    }
     if (['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(e.key) && (doc.activeElement === input || e.key.startsWith('Arrow'))) {
       if ((e.key === 'Home' || e.key === 'End') && doc.activeElement === input) return;   // caret movement inside the field
       const n = bodyEl.querySelectorAll('.so-row').length;
@@ -348,13 +343,13 @@ export function createSearchOverlay(deps) {
     if (!root) build();
     if (isOpen) { if (typeof o.query === 'string') { input.value = o.query; onInput(); } input.focus(); return; }
     try { deps.onOpen && deps.onOpen(); } catch { /* */ }
-    opener = doc.activeElement;
     recents = loadRecents(storage());
     refreshSources(); loadCanned();
     isOpen = true; stack = [{ kind: 'results' }]; dirState = null; leaveDrill();
     chip = CHIPS.some((c) => c.id === o.chip) ? o.chip : 'all';
     input.value = typeof o.query === 'string' ? o.query.slice(0, 200) : '';
     root.classList.remove('hidden');
+    releaseTrap = trapFocus(root, { initial: input, restore: true });   // Tab stays inside; Escape is the overlay's own back() (drill-down aware)
     try { history.pushState({ runoutSearch: 1 }, ''); historyPushed = true; } catch { historyPushed = false; }
     run();
     requestAnimationFrame(() => { try { input.focus({ preventScroll: true }); input.select(); } catch { /* */ } });
@@ -368,8 +363,7 @@ export function createSearchOverlay(deps) {
     if (historyPushed && !fromPop) { historyPushed = false; try { history.back(); } catch { /* */ } }
     historyPushed = false;
     try { deps.onClose && deps.onClose(); } catch { /* */ }
-    try { if (opener && opener.isConnected && opener.focus) opener.focus({ preventScroll: true }); } catch { /* */ }
-    opener = null;
+    if (releaseTrap) { const r = releaseTrap; releaseTrap = null; r(); }
   }
   const onPop = () => { if (isOpen) close(true); };
   window.addEventListener('popstate', onPop);

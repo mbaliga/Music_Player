@@ -151,7 +151,7 @@ export function initDeviceMode(opts = {}) {
   function showHint(msg, ms = 2200) { if (!hintEl || aodApplied || machine.state.aod) return; hintEl.textContent = msg; hintEl.hidden = false; clearTimeout(hintT); hintT = setTimeout(clearHint, Math.min(ms, HINT_MAX_MS)); }
   function clearHint() { clearTimeout(hintT); if (hintEl) hintEl.hidden = true; }
   function showNotice() {
-    if (!noticeEl) return;
+    if (!noticeEl || aodApplied || machine.state.aod) return;   // never in the always-on display (burn-in); cleared on entering AOD
     const m = S().keepAwakeMin;
     noticeEl.textContent = `Screen was allowed to sleep after ${m} min.`;
     noticeEl.hidden = false; setTimeout(() => { machine.dismissNotice(); noticeEl.hidden = true; }, 6000);

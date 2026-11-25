@@ -27,6 +27,10 @@ URL = os.environ.get('URL', 'http://localhost:8123/index.html')
 CH = os.environ.get('CHROME', '/opt/pw-browsers/chromium-1243/chrome-linux64/chrome')
 SR = 44100
 REPORT = {}
+FAILS = []
+def check(ok, msg):
+    if not ok: FAILS.append(msg)
+    print(('ok   ' if ok else 'FAIL ') + msg, flush=True)
 
 # ── fixtures ──────────────────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -439,6 +443,18 @@ def _run():
         pg.mouse.move(x, y); pg.mouse.down(); time.sleep(0.15); pg.mouse.up(); time.sleep(0.4); on1 = ctl(pg, '({eng: c.engaged, mode: c.mode, div: c.hold.div})')
         pg.mouse.down(); time.sleep(0.15); pg.mouse.up(); time.sleep(0.4); off1 = ctl(pg, 'c.engaged')
         pg.click('.fx-tog[data-id="latch"]'); R['M_latch'] = {'after_first_tap': on1, 'engaged_after_second_tap': off1}
+        # per-press tokens: a quick tap on pad A must never release pad B's effect when B is pressed within A's ~90-120 ms delayed release
+        trials = []
+        # the race needs the engine's resume() to be slow (a suspended AudioContext): A's pointerup lands while A's padDown is still awaiting it
+        pg.evaluate("(() => { const e = window.__rt.app().state.engine; if (!e.__r0) { e.__r0 = e.resume.bind(e); } e.resume = () => new Promise((res) => setTimeout(() => res(e.__r0()), 60)); })()")
+        for gap in (0.0, 0.02, 0.04):
+            xa, ya = box('.fx-perf', 2); xb, yb = box('.fx-perf', 4); want = pg.get_attribute('.fx-perf >> nth=4', 'data-mode')
+            pg.mouse.move(xa, ya); pg.mouse.down(); pg.mouse.up(); time.sleep(gap)
+            pg.mouse.move(xb, yb); pg.mouse.down(); time.sleep(0.45)
+            trials.append(ctl(pg, '({eng: c.engaged, mode: c.mode})') | {'want': want, 'gap': gap}); pg.mouse.up(); time.sleep(0.5)
+        R['M_pad_tokens'] = trials
+        pg.evaluate('(() => { const e = window.__rt.app().state.engine; if (e.__r0) e.resume = e.__r0; })()')
+        check(all(t['eng'] and t['mode'] == t['want'] for t in trials), f'Booth: a quick tap on pad A never releases / replaces the effect of pad B pressed right after ({trials})')
         # knob drag (GATE): drag up 60 px
         x, y = box('#fxKGate .fx-k-svg'); g0 = ctl(pg, 'c.state.stutter.gate')
         pg.mouse.move(x, y); pg.mouse.down(); pg.mouse.move(x, y - 60, steps=6); pg.mouse.up(); time.sleep(0.2)
@@ -521,3 +537,4 @@ def _run():
 
 if __name__ == '__main__':
     run()
+    if FAILS: print('FAILED:', *FAILS, sep='\n  '); sys.exit(1)

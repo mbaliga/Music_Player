@@ -123,7 +123,7 @@ def ux_idle(page, tag, w, h):
 
 def ux_library_button(page, tag):
     tap(page, '#btnLibrary'); page.wait_for_timeout(1300)
-    check(st(page)['z'] == 1 and page.text_content('#btnLibrary').strip() == 'Player' and page.get_attribute('#btnLibrary', 'aria-pressed') == 'true', f'{tag}: the Library button opens the library and turns into "Player"')
+    check(st(page)['z'] == 1 and page.text_content('#btnLibrary').strip() == 'Player' and page.get_attribute('#btnLibrary', 'data-open') == 'true', f'{tag}: the Library button opens the library and turns into "Player"')
     tap(page, '#btnLibrary'); page.wait_for_timeout(1300)
     check(st(page)['z'] == 0 and page.text_content('#btnLibrary').strip() == 'Library', f'{tag}: and brings the player back')
 

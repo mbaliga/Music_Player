@@ -30,6 +30,7 @@ import { MixtapeUI } from './mixtape-ui.js';
 import { createShell } from './shell/nav.js';
 import { initDeviceMode } from './devicemode/index.js';
 import { allowsGesture } from './devicemode/guard.js';
+import { trapFocus } from './ui/focus-trap.js';
 import { onAodOutlineMode } from './devicemode/aodhooks.js';   // Device mode: lock key, frozen face, keep-awake, always-on display (docs/DEVICE_MODE.md)
 let deviceMode = null;
 import { mountBooth } from './shell/booth.js';
@@ -921,21 +922,26 @@ function installDetails() {
   const ICON = (d) => `<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">${d}</svg>`;
   // the Library button: always visible on the Albums header (the pinch stays as the gesture); labelled, >= 44 px
   const lb = document.createElement('button');
-  lb.type = 'button'; lb.className = 'tt-lib-btn'; lb.id = 'btnLibrary'; lb.style.order = '-1'; lb.setAttribute('aria-pressed', 'false'); lb.setAttribute('aria-label', 'Open album library');
+  lb.type = 'button'; lb.className = 'tt-lib-btn'; lb.id = 'btnLibrary'; lb.style.order = '-1'; lb.dataset.open = 'false';   // one pattern: the accessible name IS the visible label (Library / Player), no aria-pressed
   lb.innerHTML = ICON('<rect x="3.5" y="4" width="7" height="7" rx="1.4" fill="none" stroke="currentColor" stroke-width="1.7"/><rect x="13.5" y="4" width="7" height="7" rx="1.4" fill="none" stroke="currentColor" stroke-width="1.7"/><rect x="3.5" y="14" width="7" height="7" rx="1.4" fill="none" stroke="currentColor" stroke-width="1.7"/><rect x="13.5" y="14" width="7" height="7" rx="1.4" fill="none" stroke="currentColor" stroke-width="1.7"/>');
   const lbl = document.createElement('span'); lbl.className = 'tt-lib-lbl'; lbl.textContent = 'Library'; lb.appendChild(lbl);
   actions.prepend(lb);
   lb.addEventListener('click', () => { if (!allowsGesture('library-chip')) return; toggleLibrary(); });
-  libBtnSync = (open) => { lb.setAttribute('aria-pressed', String(open)); lb.setAttribute('aria-label', open ? 'Back to the player' : 'Open album library'); lbl.textContent = open ? 'Player' : 'Library'; };
+  libBtnSync = (open) => { lb.dataset.open = String(open); lbl.textContent = open ? 'Player' : 'Library'; };
   // Turntable settings (was Deck details): the sheet behind the sliders icon
   const btn = document.createElement('button');
   btn.type = 'button'; btn.className = 'tt-details-btn'; btn.id = 'btnDeck'; btn.setAttribute('aria-label', 'Turntable settings'); btn.setAttribute('aria-expanded', 'false');
   btn.innerHTML = ICON('<path d="M4 8h9M17 8h3M4 16h3M11 16h9" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="15" cy="8" r="2" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="9" cy="16" r="2" fill="none" stroke="currentColor" stroke-width="1.7"/>');
   actions.append(btn);
-  const set = (open) => { sheet.hidden = !open; btn.setAttribute('aria-expanded', String(open)); if (open) { syncSheetAlbum(); sheet.querySelector('.tt-sheet-close').focus({ preventScroll: true }); } else btn.focus({ preventScroll: true }); };
+  let releaseSheet = null;
+  const set = (open) => {
+    sheet.hidden = !open; btn.setAttribute('aria-expanded', String(open));
+    if (open) { syncSheetAlbum(); if (!releaseSheet) releaseSheet = trapFocus(sheet, { initial: sheet.querySelector('.tt-sheet-close'), onEscape: () => set(false) }); }
+    else if (releaseSheet) { const r = releaseSheet; releaseSheet = null; r(); }
+    else btn.focus({ preventScroll: true });
+  };
   btn.addEventListener('click', () => set(sheet.hidden));
   sheet.querySelector('.tt-sheet-close').addEventListener('click', () => set(false));
-  sheet.addEventListener('keydown', (e) => { if (e.key === 'Escape') { e.stopPropagation(); set(false); } });
   const rows = el('ttAlbumTracks');
   rows.addEventListener('click', (e) => { const li = e.target.closest && e.target.closest('li'); if (li) pickSheetTrack(Number(li.dataset.i)); });
   rows.addEventListener('keydown', (e) => { if (e.key !== 'Enter' && e.key !== ' ') return; const li = e.target.closest && e.target.closest('li'); if (li) { e.preventDefault(); pickSheetTrack(Number(li.dataset.i)); } });
@@ -1472,11 +1478,12 @@ const miniActions = {
         await state.engine.resume();
         const playing = state.view === 'cd' ? state.cdPlaying : (stage.player.playing || stage.player.starting);
         miniHold = playing ? 'album' : null;
-        if (state.view === 'cd') state.cdPlaying = !state.cdPlaying; else stage.dispatch({ type: 'toggle' });
+        if (state.view === 'cd') state.cdPlaying = !state.cdPlaying;
+        else stage.dispatch(playing ? { type: 'toggle', s: currentS(state.engine.position / state.engine.sampleRate) } : { type: 'toggle' });   // Pause freezes at the playhead (s), like the Stop key
       } else if (source === 'mixtape' && state.mixtapes) {
         const p = state.mixtapes.play;
         miniHold = p && !p.paused ? 'mixtape' : null;
-        state.mixtapes.togglePlayback();
+        await Promise.resolve(state.mixtapes.togglePlayback()).catch((err) => console.warn('mini bar tape toggle failed', err));
       }
     } catch (err) { console.warn('mini bar toggle failed', err); }
     refreshNowPlaying();

@@ -300,24 +300,27 @@ export function mountFxSection(root, deps) {
   // ── pad grid ─────────────────────────────────────────────────────────────────────────────────────────────────────────
   const padBtns = [];
   let held = null;          // { i, pointerId, released }
+  let owner = null;         // the press that engaged the effect that is sounding now: a delayed keyUp may only end ITS OWN engagement (per-press token)
   const padSel = (p) => ctl.mode === p.mode && (!p.div || curDivFor(p.mode) === p.div);
   const curDivFor = (m) => (m === 'stutter' ? ctl.state.stutter.div : m === 'echo' ? ctl.state.echo.delayDiv : ctl.state.repeat.div);
+  const endOwn = (me) => { if (owner === me && ctl.engaged) { owner = null; ctl.keyUp(); } };
   async function padDown(i, pid) {
     if (held || idleKind || !allowsGesture('fx-pad')) return;
     const p = PADS[i]; held = { i, pointerId: pid, released: false }; const me = held;
     padBtns[i].classList.add('down'); haptic(12);
     try { await api.resume(); } catch { /* */ }
-    if (ctl.state.latch && ctl.engaged && padSel(p)) { ctl.release(); finishPad(me); return; }
+    if (me.released && held && held !== me) return;   // a quick tap that another pad has already replaced: do nothing (never touch its effect)
+    if (ctl.state.latch && ctl.engaged && padSel(p)) { ctl.release(); owner = null; finishPad(me); return; }
     ctl.release(); ctl.setMode(p.mode); if (p.div) ctl.setDivision(p.div);
-    ctl.keyDown(padSurface(), performance.now());
-    if (me.released && !ctl.state.latch) setTimeout(() => { if (held !== me) ctl.keyUp(); }, 90);
+    ctl.keyDown(padSurface(), performance.now()); owner = me;
+    if (me.released && !ctl.state.latch) setTimeout(() => endOwn(me), 90);
   }
   function finishPad(me) { if (held === me) held = null; padBtns.forEach((b) => b.classList.remove('down')); }
   function padUpFn(pid) {
     if (!held || (pid != null && held.pointerId !== pid)) return;
     const me = held; me.released = true;
     padBtns.forEach((b) => b.classList.remove('down'));
-    if (!ctl.state.latch) { held = null; if (ctl.engaged) ctl.keyUp(); else setTimeout(() => { if (ctl.engaged && !held) ctl.keyUp(); }, 120); } else held = null;
+    if (!ctl.state.latch) { held = null; if (ctl.engaged && owner === me) endOwn(me); else setTimeout(() => endOwn(me), 120); } else held = null;
   }
   const padGrid = h('div', { class: 'fx-pads fx-panel', role: 'group', 'aria-label': 'Performance pads' },
     ...PADS.map((p, i) => {
@@ -579,7 +582,7 @@ export function mountFxSection(root, deps) {
   const handle = {
     controller: ctl, bus,
     onShow() { if (shown) return; shown = true; lastT = 0; ringKey = ''; padKey = ''; waveKey = ''; ensureAnalyser(); if (api.host.getTrack() !== lastTrack) { lastTrack = api.host.getTrack(); handle.onTrack(); } setOverlays(true); refresh(); refreshDeck(); raf = requestAnimationFrame(loop); },
-    onHide() { if (!shown) return; shown = false; cancelAnimationFrame(raf); ctl.release(); held = null; padBtns.forEach((b) => b.classList.remove('down')); setOverlays(false); dropAnalyser(); },
+    onHide() { if (!shown) return; shown = false; cancelAnimationFrame(raf); ctl.release(); held = null; owner = null; padBtns.forEach((b) => b.classList.remove("down")); setOverlays(false); dropAnalyser(); },
     /** device mode AOD: no ring / wave / plate / meter drawing while on (the controller keeps ticking; nothing is released) */
     setAod(on) { aod = !!on; ringKey = ''; waveKey = ''; padKey = ''; screen.classList.toggle('is-aod', aod); },   // `on` here is the argument, not the listener helper
     onTrack() { ctl.onTrack(); waveKey = ''; lastDeck = ''; refreshDeck(); refresh(); },

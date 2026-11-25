@@ -266,6 +266,17 @@ def run_size(p, w, h):
     check(page.evaluate('window.__wl.active') == 1, f'{tag}: the wake lock is re-acquired after a visibility cycle')
     unlock_hold(page, T, 1000)
     check(page.evaluate('window.__wl.active') == 0, f'{tag}: released on unlock')
+    # the timeout notice never shows in the always-on display (burn-in). The state machine only raises it outside AOD (the timeout itself
+    # ends AOD), so: time out, touch (notice shows), idle into AOD again within the notice's 6 s: it must be gone; and stay gone in AOD
+    set_cfg(page, keepAwakeMin=5, neverTimeoutPlaying=False, aodEnabled=True); lock(page, T); jump(page, 61000); jump(page, 5 * 60000)
+    T.tap(w - 30, h - 30); time.sleep(0.4)
+    nv = lambda: page.evaluate("(() => { const n = document.querySelector('.dm-notice'); return !!n && !n.hidden && getComputedStyle(n).display !== 'none'; })()")
+    check(dm(page)['notice'] == 'timeout' and nv(), f'{tag}: [control] after a timeout the first touch shows the notice outside AOD')
+    jump(page, 61000)
+    check(dm(page)['aod'] and not nv(), f'{tag}: AOD: the timeout notice is cleared on entering the always-on display')
+    bx_, by_ = center(page, '#tt-b78'); T.tap(bx_, by_); time.sleep(0.4)
+    check(dm(page)['aod'] and not nv(), f'{tag}: AOD: and it does not come back while in AOD')
+    T.tap(200, 300); time.sleep(0.12); T.tap(200, 302); time.sleep(0.5); unlock_hold(page, T, 1000)
     set_cfg(page, keepAwakeMin=30, neverTimeoutPlaying=True, aodEnabled=True)
 
     # restart: a fresh launch is unlocked
@@ -531,8 +542,58 @@ def new_ui_cassette(p, w, h):
     before = page.evaluate("[...document.querySelectorAll('.tp-chip')].map(c => c.getAttribute('aria-pressed') + c.textContent).join()")
     cx, cy = center(page, '.tp-chip'); T.tap(cx, cy); time.sleep(0.3)
     check(before == page.evaluate("[...document.querySelectorAll('.tp-chip')].map(c => c.getAttribute('aria-pressed') + c.textContent).join()"), f'{tag}: LOCKED: the skin chips are frozen')
+    # the labelled Flip / Auto-flip buttons stay live (docs: FLIP and AUTO); Look / Click sounds / Vibration stay frozen
+    chip = lambda c: page.evaluate("c => { const e = document.querySelector(c); return e.getAttribute('aria-pressed') + '|' + e.textContent; }", c)
+    ca = chip('.tp-auto'); ax2, ay2 = center(page, '.tp-auto'); T.tap(ax2, ay2); time.sleep(0.4)
+    check(chip('.tp-auto') != ca, f'{tag}: LOCKED: the labelled Auto-flip button is live ({ca} -> {chip(".tp-auto")})')
+    T.tap(ax2, ay2); time.sleep(0.3)
+    s_before = page.evaluate("document.querySelector('.tp-np-time').textContent"); fx2, fy2 = center(page, '.tp-flip'); T.tap(fx2, fy2); time.sleep(1.6)
+    s_after = page.evaluate("document.querySelector('.tp-np-time').textContent")
+    check(s_after != s_before, f'{tag}: LOCKED: the labelled Flip button is live ({s_before!r} -> {s_after!r})')
+    T.tap(fx2, fy2); time.sleep(1.6)
+    for c_ in ('.tp-look', '.tp-click', '.tp-vib'):
+        v0 = chip(c_); cx_, cy_ = center(page, c_); T.tap(cx_, cy_); time.sleep(0.3)
+        check(chip(c_) == v0, f'{tag}: LOCKED: {c_} stays frozen')
     ejx, ejy = center(page, '.sk-deck .key[data-key=eject]'); T.tap(ejx, ejy); time.sleep(1.4)
     check(dm(page)['locked'], f'{tag}: LOCKED: eject works and the device stays locked')
+    check(not errs, f'{tag}: no page errors {errs[:3]}')
+    b.close()
+
+
+def minibar_locked(p, w, h):
+    """The mini bar's Pause / Next are physical keys: live while locked and in the AOD, its title button (navigation) stays frozen."""
+    tag = f'{w}x{h} minibar'
+    b = launch(p); ctx, page, errs = boot(b, w, h, seed=False); T = Touch(page)
+    scan_via_settings(page)
+    px, py = center(page, '#tt-playBtn'); T.tap(px, py); time.sleep(2.2)
+    check(page.evaluate(f'{APP}.stage.player.playing'), f'{tag}: [setup] the record plays')
+    to_section(page, 'settings'); page.wait_for_selector('.minibar:not([hidden])', timeout=8000); time.sleep(0.5)
+    pe = lambda sel: page.evaluate("s => { const e = document.querySelector(s); return e ? getComputedStyle(e).pointerEvents : 'missing'; }", sel)
+    playing = lambda: page.evaluate(f'(() => {{ const p = {APP}.stage.player; return !!(p.playing || p.starting); }})()')
+    check(not page.evaluate("document.querySelector('.minibar-toggle').hidden"), f'{tag}: [setup] the mini bar offers Pause for the album')
+    next_visible = not page.evaluate("document.querySelector('.minibar-next').hidden")
+    sub0 = page.evaluate("document.querySelector('.minibar-sub').textContent")
+    lock(page, T); time.sleep(0.3)
+    check(dm(page)['locked'], f'{tag}: locked on Settings with the mini bar showing')
+    check(pe('.minibar-toggle') == 'auto', f'{tag}: LOCKED: the mini bar Pause key is live (pointer-events {pe(".minibar-toggle")})')
+    check(pe('.minibar-main') == 'none', f'{tag}: LOCKED: the mini bar title button (navigation) stays frozen (pointer-events {pe(".minibar-main")})')
+    if next_visible: check(pe('.minibar-next') == 'auto', f'{tag}: LOCKED: the mini bar Next key is live (pointer-events {pe(".minibar-next")})')
+    tx, ty = center(page, '.minibar-toggle'); T.tap(tx, ty); time.sleep(0.8)
+    check(not playing(), f'{tag}: LOCKED: tapping the mini bar Pause pauses the record')
+    T.tap(tx, ty); time.sleep(1.2)
+    check(playing(), f'{tag}: LOCKED: tapping it again resumes')
+    if next_visible:
+        nx_, ny_ = center(page, '.minibar-next'); T.tap(nx_, ny_); time.sleep(1.2)
+        sub1 = page.evaluate("document.querySelector('.minibar-sub').textContent")
+        check(sub1 != sub0, f'{tag}: LOCKED: the mini bar Next skips the track ({sub0!r} -> {sub1!r})')
+    mx_, my_ = center(page, '.minibar-main'); T.tap(mx_, my_); time.sleep(0.6)
+    check(page.evaluate('document.querySelector(".page:not([hidden])").dataset.section') == 'settings', f'{tag}: LOCKED: the mini bar title does not navigate')
+    jump(page, 61000); time.sleep(0.5)
+    check(dm(page)['aod'], f'{tag}: AOD on with the mini bar')
+    ol = page.evaluate("getComputedStyle(document.querySelector('.minibar-toggle')).outlineStyle")
+    check(ol == 'solid', f'{tag}: AOD: the mini bar Pause key is drawn lit ({ol})')
+    tx, ty = center(page, '.minibar-toggle'); T.tap(tx, ty); time.sleep(0.8)
+    check(dm(page)['aod'] and not playing(), f'{tag}: AOD: the mini bar Pause works directly and the AOD stays')
     check(not errs, f'{tag}: no page errors {errs[:3]}')
     b.close()
 
@@ -570,9 +631,23 @@ def aod_new_ui(p, w, h):
         check(cnt <= 7, f'{tag}: {sec}: rAF callbacks in 5.2 s of AOD: {cnt} (<= 1 per second)')
         vis = page.evaluate("[...document.querySelectorAll('canvas')].filter(c => { const r = c.getBoundingClientRect(); return r.width > 4 && getComputedStyle(c).visibility !== 'hidden' && getComputedStyle(c).display !== 'none'; }).map(c => c.className || c.id)")
         check(vis == ([ 'tt-layer tt-disc' ] if sec == 'albums' else []), f'{tag}: {sec}: visible canvases in AOD: {vis}')
-        if sec == 'albums': page.screenshot(path=f'{SHOTS}/{tag}-albums-aod-outline.png')
+        if sec == 'albums':
+            page.screenshot(path=f'{SHOTS}/{tag}-albums-aod-outline.png')
+            # the stage is static in AOD: count canvas repaints (clearRect on the disc canvas) and arm placements over 5.2 s while the record plays
+            page.evaluate("""() => { const cv = document.querySelector('canvas.tt-disc'), g = cv.getContext('2d'); window.__draws = 0; if (!g.__o) { g.__o = g.clearRect.bind(g); g.clearRect = (...a) => { window.__draws++; return g.__o(...a); }; }
+              window.__imgs = 0; if (!window.__Img) { window.__Img = window.Image; window.Image = function (...a) { window.__imgs++; return new window.__Img(...a); }; }
+              window.__armMut = 0; const arm = document.querySelector('.tt-top'); window.__mo = new MutationObserver((l) => { window.__armMut += l.length; }); window.__mo.observe(arm, { attributes: true, attributeFilter: ['transform'], subtree: true }); }""")
+            time.sleep(5.2)
+            nd, nm = page.evaluate('[window.__draws, window.__armMut]')
+            check(nd <= 1, f'{tag}: albums: the stage repaints at most once in 5.2 s of AOD while playing ({nd} draws)')
+            check(nm <= 2, f'{tag}: albums: the arm / dimple are not re-placed every frame in AOD ({nm} transform writes; one placement writes 2)')
+            # no label-art work in AOD: no cover decode while the outline is on, applied after the wake
+            page.evaluate("""() => { window.__imgs = 0; window.__rt.app().stage.setLabelArt({ id: 'aod-probe', title: 'Probe', artist: 'X', coverUrl: 'data:image/gif;base64,R0lGODlhAQABAAAAACw=' }); }""")
+            time.sleep(0.4)
+            check(page.evaluate('window.__imgs') == 0, f'{tag}: albums: setLabelArt does not decode cover art while in AOD')
         sx, sy = stray_point(page, w, h); T.tap(sx, sy); time.sleep(0.12); T.tap(sx, sy + 2); time.sleep(0.6)
         check(not dm(page)['aod'] and dm(page)['locked'], f'{tag}: {sec}: wake')
+        if sec == 'albums': time.sleep(0.4); check(page.evaluate('window.__imgs') >= 1, f'{tag}: albums: the label art is applied after the wake ({page.evaluate("window.__imgs")} Image() created)'); page.evaluate('window.__mo && window.__mo.disconnect()')
         g_ = page.evaluate('window.__gaps')
         if was_playing: audio_gaps.append(g_)
         check(not was_playing or g_ <= 2, f'{tag}: {sec}: audio ran through lock + AOD + wake without a dropout (near-silent samples {g_}; audio was {"playing" if was_playing else "not playing here"})')
@@ -612,7 +687,7 @@ if __name__ == '__main__' or True:
             run_size(p, w, h)
         audio_across_aod(p)
         for (w, h) in [(412, 915), (360, 780)]:
-            new_ui_albums(p, w, h); new_ui_cassette(p, w, h); aod_new_ui(p, w, h)
+            new_ui_albums(p, w, h); new_ui_cassette(p, w, h); aod_new_ui(p, w, h); minibar_locked(p, w, h)
         locked_hint_card(p)
     print('\nFAILED: %d' % len(fails)); [print(' -', f) for f in fails]
     sys.exit(1 if fails else 0)

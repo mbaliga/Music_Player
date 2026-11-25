@@ -1,5 +1,6 @@
 // walkthrough.js — first-run tour. Plain DOM, no deps. A short card overlay: five steps, plain words, Skip always on screen.
 
+import { trapFocus } from './ui/focus-trap.js';
 import { BOOTH_LABEL } from './shell/sections.js';
 
 // highlight: 'hamburger' draws a ring around the menu button (above the dim backdrop; the card never covers it, see .wt-overlay padding).
@@ -45,6 +46,7 @@ export class Walkthrough {
     if (!this._el) this._build();
     this._el.classList.remove('hidden');
     this._render();
+    if (!this._release) this._release = trapFocus(this._el.querySelector('.wt-card'), { initial: this._el.querySelector('.wt-next'), onEscape: () => this.hide() });
     // Scroll panel into view
     this._el.querySelector('.wt-card').scrollTop = 0;
   }
@@ -60,6 +62,7 @@ export class Walkthrough {
   }
 
   hide() {
+    if (this._release) { const r = this._release; this._release = null; r(); }
     this._ringEl?.classList.add('hidden');
     this._el?.classList.add('hidden');
     localStorage.setItem('runout.wtDone', '1');

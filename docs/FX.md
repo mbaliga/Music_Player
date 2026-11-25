@@ -62,6 +62,8 @@ and custom themes; the displays are always dark glass like a real unit, the face
 * **Eight performance pads:** Repeat 1/4, 1/8, 1/16, Stutter 1/8, 1/16, Filter sweep, Echo 1/4, 1/2. Hold to play (the pad sets the effect and the beat, then
   engages it); with Latch on, tap to switch on and tap again to switch off. Pads light when selected and glow when live. `haptic(ms)` is called on press
   (the shell passes it: it respects the Haptics setting).
+  Each press carries its own token (`owner`): the delayed release of a quick tap (it waits for the audio context to resume) may only end the engagement THAT press started, so tapping pad A and then pad B within ~90 ms never releases B's effect (verify-fx.py `M_pad_tokens`, with a slowed `resume()`).
+  In landscape phones the six mode chips are >= 44 px wide (the plate gives up width: `--plate` reserves 280 px for the rack) and the page keeps its bottom padding above the mini bar.
 * **Empty states:** no record on the deck shows "Nothing on the deck. Play a record on Albums first." with a **Go to Albums** button; a radio station or
   mixtape owning the engine shows what is playing and an **Open Radio / Open Mixtapes** button (`deps.goto(sectionId)`). The instrument stays visible,
   dimmed, behind it. `deps.host.hasRecord()` / `nowPlaying()` feed this and the deck strip.

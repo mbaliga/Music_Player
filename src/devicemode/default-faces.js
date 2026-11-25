@@ -14,9 +14,9 @@ export const DEFAULT_FACES = Object.freeze({
     notes: 'Play, Stop and speed keys work. The rest is locked.',
   },
   mixtapes: {
-    // Cassette player: transport keys (SVG role=button), wind keys (hold), AUTO, FLIP, eject stay live. Frozen: the shelf / stack, the editor and
-    // importer, the skin / haptics chips and the close button, and the tap-the-tape song-list reveal (a reveal, not a key: decided frozen).
-    buttons: ['.tp [role=button]', '.tp [data-key]'],
+    // Cassette player: transport keys (SVG role=button), wind keys (hold), the labelled Flip and Auto-flip buttons (.tp-flip, .tp-auto), eject stay live. Frozen: the shelf / stack, the editor and
+    // importer, the Look / Click sounds / Vibration chips, Back and Songs, and the tap-the-tape song-list reveal (a reveal, not a key: decided frozen).
+    buttons: ['.tp [role=button]', '.tp [data-key]', '.tp .tp-flip', '.tp .tp-auto'],
     aodText: ['.tp-title', '.tp .cass-title'],
     notes: 'Open a tape before locking to use its keys.',
   },

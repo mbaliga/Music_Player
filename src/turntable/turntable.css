@@ -96,7 +96,7 @@
   background: rgba(0, 0, 0, .55); color: #f2f2f6; font: 700 14px system-ui, sans-serif; letter-spacing: .01em; cursor: pointer; filter: none; }
 #pageAlbums .page-head .tt-lib-btn:active { transform: scale(.95); }
 #pageAlbums .page-head .tt-lib-btn:focus-visible { outline: 2px solid var(--shell-accent, #8E7BFF); outline-offset: 2px; }
-#pageAlbums .page-head .tt-lib-btn[aria-pressed="true"] { background: #e6e6ec; color: #0b0b0e; border-color: #fff; }
+#pageAlbums .page-head .tt-lib-btn[data-open="true"] { background: #e6e6ec; color: #0b0b0e; border-color: #fff; }
 .tt-lib-btn svg { flex: none; }
 
 /* ── Turntable settings sheet ─────────────────────────────────────────────────────────────────────────────────────────────────────────────── */

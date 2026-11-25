@@ -339,8 +339,18 @@ with sync_playwright() as p:
     check(not errs, f'no page errors {errs}')
     ctx.close()
 
+    # ---- accessible names: label-in-name for the Back buttons, one pattern for the Library button
+    ctx, page, errs = boot(b, 412, 915, '412x915-a11y')
+    nm = page.evaluate("""() => { const own = (n) => n.nodeType === 3 ? n.textContent : (n.nodeType === 1 && n.getAttribute('aria-hidden') !== 'true' ? [...n.childNodes].map(own).join('') : '');
+      const ok = (s) => { const e = document.querySelector(s); if (!e) return 'missing ' + s; const vis = (e.textContent || '').replace(/[\u2190-\u21ff]/g, '').trim().toLowerCase(); const name = (e.getAttribute('aria-label') || own(e)).trim().toLowerCase(); return name.startsWith(vis) && vis ? 'ok' : `${s}: name "${name}" vs visible "${vis}"`; };
+      const lb = document.getElementById('btnLibrary');
+      return { x1: ok('#themeX1'), x2: ok('#themeX2'), lib: lb ? { pressed: lb.hasAttribute('aria-pressed'), label: lb.getAttribute('aria-label'), text: lb.textContent.trim() } : null }; }""")
+    check(nm['x1'] == 'ok' and nm['x2'] == 'ok', f'the theme overlay Back buttons: accessible name starts with the visible text ({nm["x1"]}; {nm["x2"]})')
+    check(nm['lib'] and not nm['lib']['pressed'] and nm['lib']['label'] is None and nm['lib']['text'] == 'Library', f'the Library button uses ONE naming pattern: its visible label is its name, no aria-pressed / aria-label ({nm["lib"]})')
+    ctx.close()
+
     # ---- landscape + small phone: usable, no horizontal scroll
-    for (w, h, name) in [(780, 360, 'landscape'), (320, 640, '320x640')]:
+    for (w, h, name) in [(780, 360, 'landscape'), (320, 640, '320x640'), (915, 412, 'landscape915')]:
         ctx, page, errs = boot(b, w, h, name)
         page.wait_for_timeout(400)
         page.screenshot(path=f'{SHOTS}/{name}-albums.png')
@@ -350,6 +360,16 @@ with sync_playwright() as p:
             if sec != 'albums': page.screenshot(path=f'{SHOTS}/{name}-{sec}.png')
             small = page.evaluate('[...document.querySelectorAll(".page:not([hidden]) .page-head button, .page:not([hidden]) .mt-bar button")].filter(b => b.getBoundingClientRect().width < 44 || b.getBoundingClientRect().height < 44).length')
             check(small == 0, f'{name}: every header control on {sec} is at least 44x44')
+        if w > h:
+            # Booth in landscape: the six mode chips are >= 44 px wide, and the last pads scroll clear of the mini bar (forced visible here)
+            to_section(page, 'booth'); page.wait_for_selector('.fx-row', timeout=10000); page.wait_for_timeout(800)
+            ws = page.evaluate('[...document.querySelectorAll(".fx-row")].map(e => Math.round(e.getBoundingClientRect().width * 10) / 10)')
+            check(len(ws) == 6 and min(ws) >= 44, f'{name}: the six Booth mode chips are at least 44 px wide ({ws})')
+            r = page.evaluate("""() => { const m = document.querySelector('.minibar'); m.hidden = false; document.getElementById('card').dataset.mini = 'true';
+              const f = document.querySelector('.fx-screen'); f.scrollTop = 99999; const pads = [...document.querySelectorAll('.fx-perf')].map(e => e.getBoundingClientRect().bottom);
+              return { pad: Math.max(...pads), mini: m.getBoundingClientRect().top }; }""")
+            check(r['pad'] <= r['mini'] + 1, f'{name}: scrolled to the end, the Booth pads end above the mini bar ({r["pad"]:.0f} <= {r["mini"]:.0f})')
+            to_section(page, 'albums')
         page.click('.page:not([hidden]) .hamburger'); settle(page)
         page.screenshot(path=f'{SHOTS}/{name}-drawer-open.png')
         check(is_open(page), f'{name}: drawer opens')

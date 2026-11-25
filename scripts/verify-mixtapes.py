@@ -350,6 +350,30 @@ def run_viewport(b, w, h):
     ctx.close()
 
 
+def trap_check(page, tag, name, opener_sel, open_fn, root_sel):
+    """Focus management of a modal surface: focus moves in on open, Tab / Shift+Tab never leave it, Escape closes it, focus returns to the opener."""
+    page.evaluate("s => document.querySelector(s).focus()", opener_sel)
+    open_fn(); page.wait_for_selector(root_sel, state='visible'); page.wait_for_timeout(350)
+    inside = lambda: page.evaluate("s => { const r = document.querySelector(s); return !!r && r.contains(document.activeElement); }", root_sel)
+    check(inside(), f'{tag}: {name}: focus moves inside on open')
+    ok = True
+    for _ in range(14): page.keyboard.press('Tab'); ok = ok and inside()
+    for _ in range(4): page.keyboard.press('Shift+Tab'); ok = ok and inside()
+    check(ok, f'{tag}: {name}: Tab / Shift+Tab stay inside')
+    page.keyboard.press('Escape'); page.wait_for_timeout(350)
+    gone = page.evaluate("s => { const r = document.querySelector(s); return !r || r.getClientRects().length === 0; }", root_sel)
+    check(gone, f'{tag}: {name}: Escape closes it')
+    check(page.evaluate("s => document.activeElement === document.querySelector(s)", opener_sel), f'{tag}: {name}: focus returns to the opener')
+
+def acc_name_ok(page, sel):
+    """label-in-name: the accessible name (aria-label, else the content without aria-hidden glyphs) starts with the visible text (arrows / symbols aside)"""
+    return page.evaluate("""(s) => { const e = document.querySelector(s); if (!e) return 'missing';
+      const vis = (e.textContent || '').replace(/[\u2190-\u21ff]/g, '').trim().toLowerCase();
+      const own = (n) => n.nodeType === 3 ? n.textContent : (n.nodeType === 1 && n.getAttribute('aria-hidden') !== 'true' ? [...n.childNodes].map(own).join('') : '');
+      const name = (e.getAttribute('aria-label') || own(e)).trim().toLowerCase();
+      return name.startsWith(vis) && vis.length > 0 ? 'ok' : `name "${name}" vs visible "${vis}"`; }""", sel)
+
+
 def run_layout(b, w, h):
     """Every mixtape task (the editor's four tabs, import) is a FULL-SCREEN page on a phone: the editor box equals the viewport (the test
     browser has no safe-area insets; the CSS pads by env(safe-area-inset-*)), the tab bar is sticky and visible, the body scrolls,
@@ -405,14 +429,18 @@ def run_layout(b, w, h):
     check(near(rect('.mt-dialog .theme-card'), [0, 0, w, h]), f'{tag}: the import page is the whole viewport ({rect(".mt-dialog .theme-card")})')
     check(rect('.mt-dialog .mt-textarea')[2] >= w - 40, f'{tag}: the paste box uses the width')
     shot(page, 'import')
+    check(acc_name_ok(page, '.mt-dialog .theme-x') == 'ok', f'{tag}: the import page Back button has an accessible name that starts with its visible text ({acc_name_ok(page, ".mt-dialog .theme-x")})')
     page.tap('.mt-dialog .theme-x'); page.wait_for_timeout(200)
     check(page.locator('.mt-dialog').count() == 0, f'{tag}: Back closes the import page')
+    trap_check(page, tag, 'import dialog', '#mtImport', lambda: page.keyboard.press('Enter'), '.mt-dialog .theme-card')
     # search + deck details + device-mode sheet are pages too
     page.locator('.page:not([hidden]) .page-search').first.tap(); page.wait_for_selector('.so-card'); page.wait_for_timeout(300)
     check(near(rect('.so-card'), [0, 0, w, h]), f'{tag}: Search fills the viewport ({rect(".so-card")})')
     shot(page, 'search')
     page.keyboard.press('Escape'); page.wait_for_timeout(300)
+    trap_check(page, tag, 'search overlay', '.page:not([hidden]) .page-search', lambda: page.keyboard.press('Enter'), '.search-ov')
     to_section(page, 'albums'); page.wait_for_timeout(400)
+    trap_check(page, tag, 'turntable settings sheet', '#btnDeck', lambda: page.keyboard.press('Enter'), '#deckSheet')
     page.tap('#btnDeck'); page.wait_for_timeout(300)
     dk = rect('#deckSheet')
     check(dk[2] >= w - 2 and dk[3] >= h - 4, f'{tag}: Turntable settings is a full page ({dk})')
@@ -421,8 +449,13 @@ def run_layout(b, w, h):
     page.evaluate("import('/src/devicemode/sheet.js').then((m) => m.openSheet({ settings: { get: () => ({}), set() {} } }))"); page.wait_for_selector('.dm-sheet-card'); page.wait_for_timeout(200)
     dm = rect('.dm-sheet-card')
     check(near(dm, [0, 0, w, h]), f'{tag}: the Device mode sheet is a full page ({dm})')
+    page.keyboard.press('Escape'); page.wait_for_timeout(200)
+    trap_check(page, tag, 'device mode sheet', '.page:not([hidden]) .hamburger', lambda: page.evaluate("import('/src/devicemode/sheet.js').then((m) => m.openSheet({ settings: { get: () => ({}), set() {} } }))"), '.dm-sheet-card')
+    page.evaluate("import('/src/devicemode/sheet.js').then((m) => m.openSheet({ settings: { get: () => ({}), set() {} } }))"); page.wait_for_selector('.dm-sheet-card'); page.wait_for_timeout(200)
     page.tap('.dm-done'); page.wait_for_timeout(200)
     check(page.locator('.dm-sheet').count() == 0, f'{tag}: Done closes the Device mode page')
+    # the first-run tour is a dialog too: focus in, trapped, Escape closes, focus back
+    trap_check(page, tag, 'walkthrough', '.page:not([hidden]) .hamburger', lambda: page.evaluate("import('/src/walkthrough.js').then((m) => { window.__wt = new m.Walkthrough(); window.__wt.show(0); })"), '.wt-card')
     check(errs == [], f'{tag}: no page errors {errs[:3]}')
     ctx.close()
 
@@ -456,6 +489,7 @@ def run_ux(b, w, h):
     check(all(t.strip() == 'Create' for t in page.eval_on_selector_all('.mt-sug-create', 'els => els.map(e => e.textContent)')), f'{tag}: every suggestion has a Create button')
     shot(page, 'shelf')
     # ── the per-tape menu: the visible ⋯ button and a long press both open it; Edit lives there
+    trap_check(page, tag, 'tape menu', '.cs-more', lambda: page.keyboard.press('Enter'), '.mt-menu')
     page.locator('.cs-more').first.tap(); page.wait_for_selector('.mt-menu')
     items = page.eval_on_selector_all('.mt-menu-item b', 'els => els.map(e => e.textContent)')
     check(items[:1] == ['Play'] and 'Edit tape' in items and 'Export' in items, f'{tag}: the tape menu offers Play / Edit / Export ({items})')
@@ -500,6 +534,7 @@ def run_ux(b, w, h):
     for want in ['Back', 'Songs', 'Auto-flip: On', 'Click sounds: Off', 'Vibration:']:
         check(any(want in l for l in labels), f'{tag}: a control is labelled "{want}" ({labels})')
     check(not any(l in ('Deck', 'Player', 'Haptics', 'Click') for l in labels), f'{tag}: the old jargon chips are gone')
+    check(acc_name_ok(page, '.tp-back') == 'ok' and acc_name_ok(page, '.tp-songs-btn') == 'ok', f'{tag}: Back / Songs accessible names start with their visible text ({acc_name_ok(page, ".tp-back")}, {acc_name_ok(page, ".tp-songs-btn")})')
     check(not small('.tp-chip, .tp-back, .tp-songs-btn'), f'{tag}: every player control is >= 44 px ({small(".tp-chip, .tp-back, .tp-songs-btn")})')
     rect = lambda sel: page.evaluate('(s) => { const e = document.querySelector(s); if (!e) return null; const r = e.getBoundingClientRect(); return [r.x, r.y, r.right, r.bottom]; }', sel)
     lock = rect('.dm-key-float')

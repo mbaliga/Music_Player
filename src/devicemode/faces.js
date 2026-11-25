@@ -12,9 +12,9 @@
 // Selectors are plain CSS and may be a bit generous; they are evaluated against the whole document (overlays such as the cassette player live
 // outside the section element).
 
-/** Allowed in EVERY section while locked: the lock key itself, the unlock/notice/hint UI, explicit opt-ins, the mini bar's Stop. */
-export const GLOBAL_LIVE = Object.freeze(['.dm-key', '.dm-ui', '[data-lock-ok]', '.minibar-stop']);
-export const GLOBAL_AOD = Object.freeze(['[data-lock-ok]', '.minibar-stop']);   // the lock key styles itself in AOD (devicemode.css)
+/** Allowed in EVERY section while locked: the lock key itself, the unlock/notice/hint UI, explicit opt-ins, the mini bar's Stop / Pause / Next (its title button, which navigates, stays frozen). */
+export const GLOBAL_LIVE = Object.freeze(['.dm-key', '.dm-ui', '[data-lock-ok]', '.minibar-stop', '.minibar-toggle', '.minibar-next']);
+export const GLOBAL_AOD = Object.freeze(['[data-lock-ok]', '.minibar-stop', '.minibar-toggle', '.minibar-next']);   // the lock key styles itself in AOD (devicemode.css)
 export const GLOBAL_AOD_TEXT = Object.freeze(['.dm-key', '.dm-notice', '.minibar-title']);
 
 /** Always frozen, even if a face selector is generous enough to match them: the shell chrome of a fixed device face. */

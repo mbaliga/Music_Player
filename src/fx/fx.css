@@ -165,7 +165,7 @@
 /* ── landscape phones: plate on the left, everything else beside it ──────────────────────────────────────────────────────── */
 @media (orientation: landscape) and (max-height: 640px) {
   .fx-screen {
-    --gap: 6px; --plate: clamp(170px, min(calc(100vh - var(--head-h, 56px) - 28px), calc(min(100vw, 560px) - 338px)), 330px);
+    --gap: 6px; --plate: clamp(170px, min(calc(100vh - var(--head-h, 56px) - 28px), calc(min(100vw, 560px) - 352px)), 330px);   /* 352 = padding 20 + side 60 + gaps 12 + a rack of six >= 44 px chips (6 x 44 + 5 x 2 + 6 = 280) */
     padding: 8px 10px calc(8px + var(--safe-bottom, 0px));
     grid-template-columns: var(--plate) 60px minmax(0, 1fr);
     grid-template-areas: "plate side deck" "plate side rack" "plate side knobs" "sw sw pads";
@@ -177,7 +177,10 @@
   .fx-wave { height: 16px; }
   .fx-disc { width: 28px; height: 28px; } .fx-disc i { inset: 9px; }
   .fx-deck-t { font-size: 12px; } .fx-deck-s { font-size: 10px; } .fx-bpm { min-width: 48px; font-size: 16px; padding: 4px 6px 12px; }
-  .fx-rack { padding: 3px; gap: 2px; grid-template-columns: repeat(6, 1fr); }
+  .fx-rack { padding: 3px; gap: 2px; grid-template-columns: repeat(6, minmax(44px, 1fr)); }
+  .fx-row { min-width: 44px; }
+  /* the Booth sits under the mini bar: keep the last row of pads clear of it when it is showing */
+  .card[data-mini="true"] .fx-screen { padding-bottom: calc(8px + var(--safe-bottom, 0px) + 6px); }
   .fx-row { min-height: 44px; padding: 4px 0; gap: 3px; } .fx-row .fx-row-t { font-size: 7px; letter-spacing: .02em; }
   .fx-tog { min-height: 44px; font-size: 7.5px; gap: 3px; letter-spacing: .02em; } .fx-tog .l { display: none; } .fx-tog .s { display: inline; } .fx-switches { padding: 3px; gap: 3px; }
   .fx-knobs { padding: 3px 2px 3px; } .fx-k-svg { width: 38px; height: 38px; } .fx-k-owner { display: none; } .fx-k-name { font-size: 7.5px; } .fx-k-out { font-size: 9px; min-width: 40px; padding: 1px 3px; }

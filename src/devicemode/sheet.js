@@ -2,6 +2,7 @@
 // automatically; the controls are the Settings page's own (switches, segmented choices, sliders: src/settings/controls.js), never native
 // checkboxes or <select>s.
 import { SPEC } from './settings.js';
+import { trapFocus } from '../ui/focus-trap.js';
 import { h, seg, sw, range } from '../settings/controls.js';
 
 // key: [label, short helper text | null, { value: label } for choices]
@@ -52,8 +53,8 @@ export function openSheet({ settings, doc = document }) {
     ...groups.map(([title, keys]) => h('section', { class: 'dm-group' }, h('h3', {}, title), ...keys.filter((k) => SPEC[k]).map(control))));
   const ov = h('div', { class: 'dm-sheet', role: 'dialog', 'aria-label': 'Device mode', 'aria-modal': 'true' }, card);
   const unsub = settings.subscribe ? settings.subscribe(() => { for (const p of painters) { try { p(); } catch { /* */ } } }) : null;
-  const close = () => { ov.remove(); doc.removeEventListener('keydown', esc, true); if (unsub) unsub(); };
-  const esc = (e) => { if (e.key === 'Escape') { e.stopPropagation(); close(); } };
-  done.addEventListener('click', close); ov.addEventListener('click', (e) => { if (e.target === ov) close(); }); doc.addEventListener('keydown', esc, true);
-  doc.body.append(ov); done.focus();
+  let release = () => {};
+  const close = () => { ov.remove(); release(); if (unsub) unsub(); };
+  done.addEventListener('click', close); ov.addEventListener('click', (e) => { if (e.target === ov) close(); });
+  doc.body.append(ov); release = trapFocus(card, { initial: done, onEscape: close });
 }

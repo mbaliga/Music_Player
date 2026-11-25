@@ -28,7 +28,7 @@
 .dm-ring-fg { stroke: var(--violet, #8E7BFF); stroke-dasharray: 100; stroke-dashoffset: 100; stroke-linecap: round; }
 .dm-key-float { position: fixed; z-index: 400; right: 12px; bottom: max(14px, env(safe-area-inset-bottom)); display: none; background: color-mix(in srgb, var(--surface, #111) 85%, transparent); border-radius: 14px; }
 body[data-dm-overlay="1"] .dm-key-float { display: block; }
-body[data-devicemode~="locked"] @media (prefers-reduced-motion: reduce) { .dm-thumb { transition: none; } }
+@media (prefers-reduced-motion: reduce) { body[data-devicemode~="locked"] .dm-thumb { transition: none; } }
 :root[data-reduce-motion="reduce"] .dm-thumb { transition: none; }
 
 /* ── hints, the timeout notice, the AOD title ─────────────────────────────────────────────────────────────────────────── */

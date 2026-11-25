@@ -38,3 +38,47 @@ test('allowsGesture: everything frozen while locked except buttons/keys/sliders;
   for (const k of ['button', 'key', 'wind-hold', 'slider']) assert.equal(allowsGesture(k), true, k);
   _setGuard({ locked: true, fxPadWhileLocked: true }); assert.equal(allowsGesture('fx-pad'), true); _setGuard({ locked: false });
 });
+
+import { readFileSync } from 'node:fs';
+import { GLOBAL_LIVE, GLOBAL_AOD } from '../src/devicemode/faces.js';
+const rd = (p) => readFileSync(new URL('../' + p, import.meta.url), 'utf8');
+
+test('the mini bar Pause / Next keys are live in every section while locked and lit in AOD; its title (navigation) is not', () => {
+  for (const sel of ['.minibar-stop', '.minibar-toggle', '.minibar-next']) { assert.ok(GLOBAL_LIVE.includes(sel), sel); assert.ok(GLOBAL_AOD.includes(sel), sel); }
+  assert.ok(!GLOBAL_LIVE.includes('.minibar-main') && !GLOBAL_LIVE.includes('.minibar'));
+  _clearFacesForTests(); registerDefaultFaces();
+  for (const id of Object.keys(DEFAULT_FACES)) {
+    assert.ok(liveSelectors(id).includes('.minibar-toggle') && liveSelectors(id).includes('.minibar-next'), id);
+    assert.match(faceCss(id), /\.minibar-toggle/);
+  }
+  const nav = rd('src/shell/nav.js'); assert.match(nav, /minibar-toggle/); assert.match(nav, /minibar-next/);
+});
+
+test('the labelled Flip / Auto-flip buttons are on the Mixtapes live list; Look, Click sounds and Vibration stay frozen', () => {
+  const live = DEFAULT_FACES.mixtapes.buttons.join(' ');
+  assert.ok(live.includes('.tp-flip') && live.includes('.tp-auto'));
+  for (const bad of ['.tp-look', '.tp-click', '.tp-vib', '.tp-back', '.tp-songs-btn', '.tp-chip']) assert.ok(!live.includes(bad), bad);
+  const ui = rd('src/mixtape-ui.js');
+  for (const c of ['tp-flip', 'tp-auto', 'tp-look', 'tp-click', 'tp-vib']) assert.ok(ui.includes(`'tp-chip ${c}'`), c);
+  assert.match(rd('docs/DEVICE_MODE.md'), /tp-flip/);
+});
+
+test('devicemode.css has no at-rule nested inside a selector (invalid CSS)', () => {
+  const css = rd('src/devicemode/devicemode.css');
+  assert.ok(!/\]\s*@media/.test(css) && !/[a-z\]\)]\s+@media/i.test(css.replace(/\}\s*@media/g, '}')), 'an @media must start a rule, not follow a selector');
+  assert.match(css, /@media \(prefers-reduced-motion: reduce\) \{ body\[data-devicemode~="locked"\] \.dm-thumb/);
+});
+
+test('the timeout notice is guarded like the hint card: not shown in AOD, cleared on entering it', () => {
+  const idx = rd('src/devicemode/index.js');
+  assert.match(idx, /function showNotice\(\) \{\s*if \(!noticeEl \|\| aodApplied \|\| machine\.state\.aod\) return;/);
+  assert.match(idx, /if \(on\) \{ clearHint\(\); noticeEl && \(noticeEl\.hidden = true\); \}/);
+});
+
+test('AOD stage: redraws on change only, and no label-art work while the outline is on', () => {
+  const st = rd('src/turntable/stage.js');
+  assert.match(st, /if \(outline\) \{[^]*?outlineSig[^]*?P\.playing && t - outlineAt >= 10000/);
+  assert.ok(!/if \(outline\) \{ if \(dirty \|\| was !== P\)/.test(st));
+  assert.match(st, /setLabelArt\(album\) \{\s*if \(outline\) \{ pendingLabel = album \|\| null; return; \}/);
+  assert.match(st, /pendingLabel !== undefined/);
+});

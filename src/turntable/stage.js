@@ -56,7 +56,7 @@ export function createStage(host, hooks = {}) {
   let P = createPlayer();
   const view = { posS: 0, dust: 0, name: '', trackCount: 1, trackIndex: 0, loading: false, lit: false, dispMode: 0, ana: null, level: 0 };
   let visible = false, W = 0, H = 0, DPR = 1, portrait = false, MX = [1, 0, 0, 1, 0, 0], dirty = true, preview = null, scrollT = 0;
-  let ghost = null, drop = null, lib = null, lastLive = null, lastZ = -1, outline = false, libOpen = false;
+  let ghost = null, drop = null, lib = null, lastLive = null, lastZ = -1, outline = false, libOpen = false, outlineAt = 0, outlineSig = '', pendingLabel, stats = { draws: 0, places: 0 };
   const anaBuf = new Uint8Array(32);
   let labelCv = null, labelTok = 0;
 
@@ -302,7 +302,7 @@ export function createStage(host, hooks = {}) {
   const setM = (m) => ctx.setTransform(m[0] * DPR, m[1] * DPR, m[2] * DPR, m[3] * DPR, m[4] * DPR, m[5] * DPR);
   function draw() {
     if (!W) return;
-    dirty = false;
+    dirty = false; stats.draws++;
     const L = layers(P.z), now = performance.now();
     ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, cv.width, cv.height);
     if (outline) { drawOutline(L); return; }
@@ -352,7 +352,11 @@ export function createStage(host, hooks = {}) {
     const r = dispatch({ type: 'tick', dt, posS: input.posS, easeZ, reduced: reducedFn() });
     if (P.z !== lastZ) applyCam();
     if (drop) { drop.t = (performance.now() - drop.t0) / 340; if (drop.t >= 1) { drop = null; dirty = true; } }
-    if (outline) { if (dirty || was !== P) { placeArm(); setLiveUI(P.playing || P.starting); if (visible && W) draw(); } return; }   // AOD: static, redraw only on change
+    if (outline) {   // AOD: static. Redraw on a real change (state flags, an explicit kick) at once; while playing, the arm creeps: at most once per 10 s.
+      const sig = `${P.playing}|${P.starting}|${P.dragging}|${P.z}|${P.speed}|${view.loading}|${view.name}|${view.trackIndex}`, t = performance.now();
+      if (dirty || sig !== outlineSig || (P.playing && t - outlineAt >= 10000)) { outlineSig = sig; outlineAt = t; stats.places++; placeArm(); setLiveUI(P.playing || P.starting); if (visible && W) draw(); }
+      return;
+    }
     if (needsFrame(P) || dirty || was !== P || drop || view.loading) { placeArm(); setLiveUI(P.playing || P.starting); if (visible && W) draw(); }
   }
   function kick() { dirty = true; if (hooks.wake) hooks.wake(); }
@@ -394,6 +398,7 @@ export function createStage(host, hooks = {}) {
     },
     /** the record label: the album's own art / a generated label, or the default swirl for null / the demo record */
     setLabelArt(album) {
+      if (outline) { pendingLabel = album || null; return; }   // AOD: no 868 px canvas, no cover decode; applied when the outline mode ends
       const tok = ++labelTok;
       if (!album || album.builtin) { painter.labelArt = null; dirty = true; kick(); return; }
       if (!labelCv) { labelCv = document.createElement('canvas'); labelCv.width = labelCv.height = 868; }
@@ -443,8 +448,9 @@ export function createStage(host, hooks = {}) {
       dirty = true;
     },
     /** device mode AOD: outline-only draw (see drawOutline); the CSS shows the canvas + hairline SVG while body[data-aod-outline] */
-    setOutline(on) { on = !!on; if (on === outline) return; outline = on; cv.dataset.outline = on ? '1' : ''; dirty = true; ghost = null; drop = null; if (visible) { placeArm(); draw(); } kick(); },
+    setOutline(on) { on = !!on; if (on === outline) return; outline = on; outlineSig = ''; if (!on && pendingLabel !== undefined) { const a = pendingLabel; pendingLabel = undefined; api.setLabelArt(a); } cv.dataset.outline = on ? '1' : ''; dirty = true; ghost = null; drop = null; if (visible) { placeArm(); draw(); } kick(); },
     get outline() { return outline; },
+    get stats() { return stats; },
     /** true while the disc wears the album's own label (test hook) */
     get hasLabelArt() { return !!painter.labelArt; },
     layers: () => layers(P.z),
