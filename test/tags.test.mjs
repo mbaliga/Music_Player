@@ -115,3 +115,12 @@ test('readBytesTags: an ID3v2 MP3 without TLEN gets a duration from its first fr
   assert.ok(Math.abs(m.durationSec - 12) < 0.05, 'duration ' + m.durationSec);
   assert.equal(m.durationFromFrames, true);
 });
+
+test('ogg vorbis and opus durationSec come from the last page granule (rate from the id packet; opus 48 kHz minus pre-skip)', async () => {
+  const v = await readBytesTags(makeOgg([['TITLE', 'V']], { seconds: 185.5, rate: 44100 }));
+  assert.ok(Math.abs(v.durationSec - 185.5) < 0.01, 'vorbis ' + v.durationSec);
+  const o = await readBytesTags(makeOgg([['TITLE', 'O']], { opus: true, seconds: 61.25 }));
+  assert.ok(Math.abs(o.durationSec - 61.25) < 0.01, 'opus ' + o.durationSec);
+  const none = await readBytesTags(makeOgg([['TITLE', 'N']]));
+  assert.equal(none.durationSec, undefined);
+});

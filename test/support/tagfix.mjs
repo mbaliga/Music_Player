@@ -85,21 +85,23 @@ export function makeFlac(pairs, { durationSec = 0, rate = 44100, cover = null, a
   out.push(new Uint8Array(audioBytes).fill(0x33));
   return cat(...out);
 }
-function oggPage(seq, packets, { bos = false, serial = 1 } = {}) {
+function oggPage(seq, packets, { bos = false, serial = 1, granule = 0 } = {}) {
   const segs = []; const data = [];
   for (const p of packets) {
     let n = p.length;
     while (n >= 255) { segs.push(255); n -= 255; }
     segs.push(n); data.push(p);
   }
-  return cat(ascii('OggS'), Uint8Array.of(0, bos ? 2 : 0), new Uint8Array(8), le32(serial), le32(seq), new Uint8Array(4),
+  return cat(ascii('OggS'), Uint8Array.of(0, bos ? 2 : 0), le32(granule % 4294967296), le32(Math.floor(granule / 4294967296)), le32(serial), le32(seq), new Uint8Array(4),
     Uint8Array.of(segs.length), Uint8Array.from(segs), ...data);
 }
-export function makeOgg(pairs, { opus = false } = {}) {
-  const idp = opus ? cat(ascii('OpusHead'), new Uint8Array(11)) : cat(Uint8Array.of(1), ascii('vorbis'), new Uint8Array(23));
+export function makeOgg(pairs, { opus = false, seconds = 0, rate = 44100, preSkip = 312 } = {}) {
+  const idp = opus ? cat(ascii('OpusHead'), Uint8Array.of(1, 2, preSkip & 255, preSkip >> 8), new Uint8Array(7))
+    : cat(Uint8Array.of(1), ascii('vorbis'), new Uint8Array(4), Uint8Array.of(2), le32(rate), new Uint8Array(11));
   const cm = opus ? vorbisComment(pairs, { prefix: ascii('OpusTags') })
     : cat(vorbisComment(pairs, { prefix: cat(Uint8Array.of(3), ascii('vorbis')) }), Uint8Array.of(1));
-  return cat(oggPage(0, [idp], { bos: true }), oggPage(1, [cm]), new Uint8Array(500).fill(0x11));
+  const granule = seconds > 0 ? Math.round(seconds * (opus ? 48000 : rate)) + (opus ? preSkip : 0) : 0;
+  return cat(oggPage(0, [idp], { bos: true }), oggPage(1, [cm]), new Uint8Array(500).fill(0x11), ...(seconds > 0 ? [oggPage(2, [new Uint8Array(40)], { granule })] : []));
 }
 
 // ── MP4 ──

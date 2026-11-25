@@ -70,3 +70,16 @@ test('survives an empty output quantum without throwing', () => {
   assert.doesNotThrow(() => p.process([], [[]], {}));
   assert.doesNotThrow(() => p.process([], [], {}));
 });
+
+test('the runout: at the last frame the output is exactly 0 (no held last sample as DC), plain and FX path', () => {
+  for (const fx of [false, true]) {
+    const frames = 600, pcm = new Float32Array(frames).fill(0.5);   // a constant 0.5 would be a DC hold at the end
+    const p = new Processor({ processorOptions: { channels: 1, frames, pcm: pcm.buffer, control: null } });
+    p.onMessage({ type: 'rate', value: 1 }); p.onMessage({ type: 'playing', value: true });
+    if (fx) p.onMessage({ type: 'fx', mode: 1, engage: 0, len: 0, rate: 1, gate: 1, amount: 0.5, resume: 0 });
+    let first = null, last = null;
+    for (let b = 0; b < 12; b++) { const o = block(); p.process([], [o], {}); if (b === 0) first = o[0][100]; last = o; }
+    assert.ok(first > 0.4, 'plays before the end');
+    assert.ok(last[0].every((v) => v === 0) && last[1].every((v) => v === 0), 'every sample past the end is 0 (fx ' + fx + ')');
+  }
+});

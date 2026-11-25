@@ -89,6 +89,7 @@ class RunoutProcessor extends AudioWorkletProcessor {
     const base = ch * this.frames;
     const n = this.frames;
     if (n === 0) return 0;
+    if (pos >= n - 1) return 0;   // the runout: the needle at the very end reads silence, not the last sample held as DC
     const i = Math.floor(pos);
     const frac = pos - i;
     const i0 = clampIdx(i - 1, n);

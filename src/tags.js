@@ -363,7 +363,25 @@ async function parseOgg(reader) {
   let out = {};
   if (cm[0] === 3 && latin1(cm.subarray(1, 7)) === 'vorbis') out = parseVorbisComment(cm, 7, cm.length);
   else if (latin1(cm.subarray(0, 8)) === 'OpusTags') out = parseVorbisComment(cm, 8, cm.length);
-  void idp;
+  // Duration: the last page's granule position (Vorbis: samples at the id packet's rate; Opus: 48 kHz minus the pre-skip). Read the tail only.
+  try {
+    let rate = 0, skip = 0;
+    if (idp[0] === 1 && latin1(idp.subarray(1, 7)) === 'vorbis' && idp.length >= 16) rate = u32le(idp, 12);
+    else if (latin1(idp.subarray(0, 8)) === 'OpusHead' && idp.length >= 12) { rate = 48000; skip = idp[10] | (idp[11] << 8); }
+    if (rate > 0 && reader.size > 27) {
+      const tailLen = Math.min(reader.size, 65536 + 27);
+      const t = await reader.read(reader.size - tailLen, tailLen);
+      for (let i = t.length - 27; i >= 0; i--) {
+        if (t[i] === 0x4f && t[i + 1] === 0x67 && t[i + 2] === 0x67 && t[i + 3] === 0x53) {   // "OggS"
+          const lo = u32le(t, i + 6), hi = u32le(t, i + 10);
+          if (hi === 0xffffffff && lo === 0xffffffff) continue;                                 // -1: no granule on this page
+          const samples = hi * 4294967296 + lo - skip;
+          if (samples > 0) { const dur = samples / rate; if (dur > 0.05 && dur < 360000) out.durationSec = Math.round(dur * 1000) / 1000; }
+          break;
+        }
+      }
+    }
+  } catch { /* no duration is fine */ }
   return out;
 }
 
