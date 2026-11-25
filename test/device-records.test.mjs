@@ -112,3 +112,9 @@ test('hostile / odd rows never throw', () => {
     assert.equal(typeof t.title, 'string'); assert.ok(t.title.length <= 300);
   }
 });
+
+test('mapRow keeps mime and volume (a trailing comment once swallowed them) and DeviceFile gets a type', () => {
+  const t = mapRow(makeRow(3, { mime: 'audio/flac', volume: 'external_primary', name: 'x.flac' }), { makeFile: (tr) => ({ type: tr.mime }) });
+  assert.equal(t.mime, 'audio/flac'); assert.equal(t.volume, 'external_primary'); assert.equal(t.file.type, 'audio/flac');
+  assert.equal(mapRow({ id: 1, name: 'a.mp3' }).mime, ''); assert.equal(mapRow({ id: 1, name: 'a.mp3' }).volume, '');
+});

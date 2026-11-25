@@ -92,7 +92,8 @@ export function mapRow(row, { makeFile } = {}) {
   const t = {
     id: deviceTrackId(row), source: SOURCE_DEVICE, mediaId: row.id, uri: deviceUri(row.id),
     title, artist, albumArtist, album: albumTag, path, folder, genre,
-    size: Number(row.size) || 0, modified: Number(row.modified) || 0, added: addedMs(row.modified, 's'),   // date added = MediaStore date_modified (seconds) in epoch ms, same unit as a folder file's lastModified mime: String(row.mime || ''), volume: String(row.volume || ''),
+    size: Number(row.size) || 0, modified: Number(row.modified) || 0, added: addedMs(row.modified, 's'),   // date added = MediaStore date_modified (seconds) in epoch ms, same unit as a folder file's lastModified
+    mime: String(row.mime || ''), volume: String(row.volume || ''),
     year, kind: kindOf(row), albumMediaId: Number(row.albumId) || 0,
     coverUrl: null, hue, color: hueToHex(hue), file: null,
     // MediaStore had nothing for artist AND album: worth reading the file's own tags.
