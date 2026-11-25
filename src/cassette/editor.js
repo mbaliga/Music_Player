@@ -119,22 +119,22 @@ export function openEditor(ctx) {
   const saveBtn = h('button', { type: 'button', class: 'sv', onclick: () => { commit(); closeEd(); } }, 'Save');
   const playBtn = h('button', { type: 'button', class: 'pl', 'aria-label': 'Save and play', onclick: () => { const saved = commit(); closeEd(); ctx.onPlay(saved, 0); } }, icon(ICONS.play, { size: 14, fill: 'currentColor', stroke: 0 }), ' Play');
   const backBtn = h('button', { type: 'button', id: 'ed-back', class: 'bk', 'aria-label': 'Back', onclick: () => askLeave() }, icon(ICONS.back, { size: 20, stroke: 2.6 }), h('span', {}, 'Back'));
-  const bar = h('div', { class: 'ed-bar' }, backBtn, title, h('span', { class: 'sp' }), playBtn, saveBtn);
+  // the tape's name on every tab (it lived only on the Tape tab while the editor opens on Add): tap to rename
+  const nameChip = h('button', { type: 'button', class: 'ed-namechip', onclick: () => { goTab('tape'); try { fName.focus(); fName.select(); } catch { /* */ } } });
+  const paintName = () => { const n = (m.name || '').trim(); nameChip.replaceChildren(h('b', {}, n || 'Name your mixtape'), h('span', { 'aria-hidden': 'true' }, ' ✎')); nameChip.classList.toggle('unnamed', !n); nameChip.setAttribute('aria-label', n ? `Tape name: ${n}. Tap to rename` : 'Name your mixtape'); };
+  const bar = h('div', { class: 'ed-bar' }, backBtn, title, nameChip, playBtn, saveBtn);
 
   const prev = h('button', { type: 'button', class: 'ed-tape', onclick: () => api.setSide(side === 'A' ? 'B' : 'A') });
   const prevWrap = h('div', { class: 'ed-prevwrap' }, prev, h('span', { class: 'ed-flipchip' }, icon(ICONS.flip, { size: 13, stroke: 2.2 }), h('span', { class: 'ed-sidelabel' })));
   const gA = h('button', { type: 'button', class: 'ed-gauge', onclick: () => api.setSide('A') });
   const gB = h('button', { type: 'button', class: 'ed-gauge', onclick: () => api.setSide('B') });
   const top = h('div', { class: 'ed-top' }, prevWrap, h('div', { class: 'ed-gauges', role: 'group', 'aria-label': 'Tape capacity per side' }, gA, gB));
-  // the tape's name on every tab (it lived only on the Tape tab while the editor opens on Add): tap to rename
-  const nameChip = h('button', { type: 'button', class: 'ed-namechip', onclick: () => { goTab('tape'); try { fName.focus(); fName.select(); } catch { /* */ } } });
-  const paintName = () => { const n = (m.name || '').trim(); nameChip.replaceChildren(h('b', {}, n || 'Name your mixtape'), h('span', { 'aria-hidden': 'true' }, ' ✎')); nameChip.classList.toggle('unnamed', !n); nameChip.setAttribute('aria-label', n ? `Tape name: ${n}. Tap to rename` : 'Name your mixtape'); };
   const TABS = [['tape', 'Tape'], ['add', 'Add'], ['tracks', 'Tracks'], ['style', 'Style']];
   const tabBtns = {};
   const tabs = h('div', { class: 'ed-tabs', role: 'tablist' }, ...TABS.map(([id, label]) => (tabBtns[id] = h('button', { type: 'button', role: 'tab', id: 'edtab-' + id, onclick: () => api.goTab(id) }, label))));
   const panels = {};
   const panel = h('div', { class: 'ed-panel' });
-  const ed = h('div', { class: 'ed', role: 'dialog', 'aria-label': isNew ? 'New mixtape' : 'Edit mixtape' }, bar, top, nameChip, tabs, panel, toastEl, live);
+  const ed = h('div', { class: 'ed', role: 'dialog', 'aria-label': isNew ? 'New mixtape' : 'Edit mixtape' }, bar, top, tabs, panel, toastEl, live);
   const ov = h('div', { class: 'ed-ov' }, ed);
   document.body.appendChild(ov); edEl = ov;
 

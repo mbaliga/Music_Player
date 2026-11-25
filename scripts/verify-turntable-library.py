@@ -89,7 +89,17 @@ try:
         J(pg, '__lib.setPickHint("Pick an album")'); pg.wait_for_timeout(100)
         ph = J(pg, '(() => { const e = document.querySelector(".tl-pick"); const r = e.getBoundingClientRect(); return { hidden: e.hidden, text: e.textContent, w: r.width, h: r.height, bottom: r.bottom, vh: innerHeight, pe: getComputedStyle(e).pointerEvents }; })()')
         check(not ph['hidden'] and ph['text'] == 'Pick an album' and ph['w'] > 80 and ph['bottom'] <= ph['vh'] and ph['pe'] == 'none', f'the "Pick an album" nudge is pinned in view and never eats a swipe ({ph})')
+        dock = J(pg, '(() => { const s = document.querySelector(".tl-scroll").getBoundingClientRect(), p = document.querySelector(".tl-pick").getBoundingClientRect(); return { sb: s.bottom, pt: p.top }; })()')
+        check(dock['sb'] <= dock['pt'] + 1, f'the "Pick an album" pill is docked below the scroll area, over no row or footer ({dock})')
         J(pg, '__lib.setPickHint(null)'); check(J(pg, 'document.querySelector(".tl-pick").hidden'), 'and it can be cleared')
+        ctx.close()
+
+        # ── landscape: the tracks sit beside the cover fan, with room for several rows ───────────────────────────────────────────────
+        ctx, pg = open_page(b, 915, 412, 'set=40')
+        J(pg, '__lib.setPickHint("Pick an album")'); pg.wait_for_timeout(150)
+        ls = J(pg, '(() => { const f = document.querySelector(".tl-flow").getBoundingClientRect(), t = document.querySelector(".tl-tracks").getBoundingClientRect(), vh = innerHeight; const rows = [...document.querySelectorAll(".tl-trk")].filter((e) => { const r = e.getBoundingClientRect(); return r.top >= t.top - 1 && r.bottom <= t.bottom + 1 && r.height > 0; }).length; const m = document.querySelector(".tl-meta").getBoundingClientRect(), pk = document.querySelector(".tl-pick").getBoundingClientRect(); return { fr: f.right, tl: t.left, rows, pickOnMeta: !(pk.right < m.left || pk.left > m.right || pk.bottom < m.top || pk.top > m.bottom) }; })()')
+        check(ls['tl'] >= ls['fr'] - 2 and ls['rows'] >= 3 and not ls['pickOnMeta'], f'915x412: tracks beside the cover (>= 3 rows visible) and the pick pill is clear of the title ({ls})')
+        pg.screenshot(path=os.path.join(OUT, 'lib-landscape-two-column.png'))
         ctx.close()
 
         # ── behaviour at 360x780, 40 albums (mouse) ────────────────────────────────────────────────────────────────

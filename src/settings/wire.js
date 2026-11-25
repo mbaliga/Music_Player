@@ -36,5 +36,7 @@ export function initSettings({ win = window, doc = document, storage = safeStora
     onCustomTheme(fn) { listeners.add(fn); return () => listeners.delete(fn); },
     /** The drawer's moon / sun button: Light <-> the dark tone you last used. */
     toggleLightDark() { store.set('appearance.theme', store.get('appearance.theme') === 'light' ? lastDark : 'light'); },
+    /** The drawer's Theme pill: Light -> Dark -> OLED -> Light (the three Settings offers; the Settings chips follow the store live). */
+    cycleTheme() { const order = ['light', 'dark', 'oled']; store.set('appearance.theme', order[(order.indexOf(store.get('appearance.theme')) + 1) % order.length]); },
   };
 }

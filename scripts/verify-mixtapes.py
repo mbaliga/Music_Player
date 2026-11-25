@@ -513,6 +513,13 @@ def run_ux(b, w, h):
     page.tap('.pk-sel-toggle'); page.wait_for_timeout(200)
     check(sel == 'Pick several' and 'pick several' in page.inner_text('.pk-status').lower(), f'{tag}: "Select" is "Pick several" and says how it works ({sel!r})')
     shot(page, 'editor-add')
+    nm = lambda: page.inner_text('.ed-namechip')
+    check(page.locator('.ed-namechip:visible').count() == 1 and nm().strip() != '', f'{tag}: the tape name shows on the Add tab ({nm()!r})')
+    page.tap('#edtab-tracks'); page.wait_for_timeout(200)
+    check(page.locator('.ed-namechip:visible').count() == 1, f'{tag}: ... and on the Tracks tab')
+    page.tap('.ed-namechip'); page.wait_for_timeout(250)
+    check(page.get_attribute('#edtab-tape', 'aria-selected') == 'true', f'{tag}: tapping the name opens the Tape tab to rename it')
+    page.tap('#edtab-add'); page.wait_for_timeout(250)
     page.tap('#ed-back'); page.wait_for_timeout(400)
     if page.locator('.ed-warn').count(): page.tap('.ed-warn .dc'); page.wait_for_timeout(300)
     # ── the player

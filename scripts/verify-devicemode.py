@@ -614,6 +614,24 @@ def locked_hint_card(p):
     check(not errs, f'{tag}: no page errors {errs[:3]}')
     b.close()
 
+def locked_layout_cue(p, w, h):
+    """UX review: locked, the 'Open album library' pill is gone (it covered the title / time); a tap on the key shows 'Hold to unlock' beside it (never in AOD)."""
+    tag = f'{w}x{h} cue'
+    b = launch(p); ctx, page, errs = boot(b, w, h, seed=False); T = Touch(page)
+    sr = lambda: page.evaluate("getComputedStyle(document.querySelector('.tt-sr')).display")
+    lock(page, T); time.sleep(0.4)
+    check(sr() == 'none', f'{tag}: the library pill is hidden while locked ({sr()})')
+    x, y, _, _ = key_center(page); T.tap(x, y); time.sleep(0.3)
+    cue = page.evaluate("(() => { const k = document.querySelector('.page:not([hidden]) .dm-key'); return k.classList.contains('dm-nudge') ? getComputedStyle(k, '::after').content : ''; })()")
+    check('Hold to unlock' in cue, f'{tag}: a tap on the locked key shows a "Hold to unlock" cue ({cue})')
+    time.sleep(2.2)
+    check(not page.evaluate("document.querySelector('.page:not([hidden]) .dm-key').classList.contains('dm-nudge')"), f'{tag}: the cue auto-hides')
+    jump(page, 61000); time.sleep(0.4)
+    x, y, _, _ = key_center(page) if not dm(page)['aod'] else (0, 0, 0, 0)
+    check(dm(page)['aod'] and not page.evaluate("document.querySelector('.dm-key.dm-nudge') !== null"), f'{tag}: no cue in AOD')
+    check(not errs, f'{tag}: no page errors {errs[:3]}')
+    b.close()
+
 def aod_new_ui(p, w, h):
     """AOD on every section: rAF rate <= 1/s, no visible canvases except the Albums outline, audio keeps running across enter/exit, scratching works afterwards."""
     tag = f'{w}x{h} aod'
@@ -689,5 +707,6 @@ if __name__ == '__main__' or True:
         for (w, h) in [(412, 915), (360, 780)]:
             new_ui_albums(p, w, h); new_ui_cassette(p, w, h); aod_new_ui(p, w, h); minibar_locked(p, w, h)
         locked_hint_card(p)
+        locked_layout_cue(p, 360, 780); locked_layout_cue(p, 915, 412)
     print('\nFAILED: %d' % len(fails)); [print(' -', f) for f in fails]
     sys.exit(1 if fails else 0)

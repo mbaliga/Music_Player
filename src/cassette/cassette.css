@@ -448,8 +448,9 @@
   .ed-tabs{grid-area:tabs}.ed-panel{grid-area:panel}
 }
 @media (min-width:900px) and (min-height:700px){ .ed-top .ed-prevwrap{width:min(100%,460px)} }
-/* the tape's name, on every editor tab (tap = rename on the Tape tab) */
-.ed-namechip{flex:none;display:flex;align-items:center;justify-content:center;gap:4px;min-height:44px;margin:0 12px;padding:0 14px;background:none;border:0;color:#e9e9ee;font-size:15px;cursor:pointer;max-width:calc(100% - 24px);overflow:hidden}
+/* the tape's name, in the editor header on every tab (tap = rename on the Tape tab); the "New / Edit mixtape" caption stays for screen readers */
+.ed-bar h2{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.ed-bar .ed-namechip{flex:1 1 auto;min-width:0;justify-content:center;gap:4px;min-height:44px;margin:0 4px;padding:0 8px;color:#e9e9ee;font-size:15px;overflow:hidden}
 .ed-namechip b{font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ed-namechip.unnamed b{font-weight:500;color:#b9b9be}
-.ed-namechip span{color:#ffb347}
+.ed-namechip span{color:#ffb347;flex:none}

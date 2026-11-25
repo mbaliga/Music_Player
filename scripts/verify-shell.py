@@ -248,13 +248,19 @@ with sync_playwright() as p:
         # ---- light theme (the reference is light)
         page.click('#btnTheme') if False else None
         T.drag(T.line(10, 420, 150, 420, 8)); settle(page)
-        page.click('#btnTheme'); page.wait_for_timeout(400)
+        for _ in range(3):   # the Theme pill cycles Light -> Dark -> OLED: step until Light
+            page.click('#btnTheme'); page.wait_for_timeout(400)
+            if page.evaluate('document.documentElement.dataset.theme') == 'light': break
         shot('drawer-open-light')
         lt = page.evaluate('''(() => { const lum = (c) => { const m = c.match(/[\\d.]+/g).map(Number); const f = (v) => { v /= 255; return v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4); }; return .2126 * f(m[0]) + .7152 * f(m[1]) + .0722 * f(m[2]); };
           const t = document.querySelector('#pageAlbums .page-title'), hs = document.querySelector('#pageAlbums .page-search'), hz = document.querySelector('#pageAlbums .dm-housing');
           return { theme: document.documentElement.dataset.theme, title: lum(getComputedStyle(t).color), search: lum(getComputedStyle(hs).color), housing: lum(getComputedStyle(hz).backgroundColor), page: lum(getComputedStyle(document.getElementById('pageAlbums')).backgroundColor) }; })()''')
         check(lt['theme'] == 'light' and lt['title'] > 0.6 and lt['search'] > 0.6 and lt['housing'] < 0.1 and lt['page'] < 0.05, f'{tag}: light theme: the player surface stays dark and the chrome on it is light-on-dark ({lt})')
-        page.click('#btnTheme'); page.wait_for_timeout(300)   # back to dark
+        page.click('#btnTheme'); page.wait_for_timeout(300)   # Light -> Dark
+        th = lambda: page.evaluate('document.documentElement.dataset.theme + "/" + (document.documentElement.dataset.tone || "")')
+        check(th() == 'dark/soft', f'{tag}: the drawer Theme pill goes Light -> Dark ({th()})')
+        page.click('#btnTheme'); page.wait_for_timeout(300)
+        check(th() == 'dark/' and 'OLED' in page.get_attribute('#btnTheme', 'aria-label'), f'{tag}: ... -> OLED, and the pill says so ({th()})')
         page.keyboard.press('Escape'); settle(page)
 
         # ---- walkthrough does not cover the hamburger

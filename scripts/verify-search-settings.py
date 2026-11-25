@@ -103,6 +103,7 @@ def run_viewport(b, w, h):
     check(page.evaluate('document.getElementById("shell").dataset.open') == 'false', f'{tag}: the drawer closed behind the overlay')
     check(page.get_attribute('.so-input', 'role') == 'combobox' and page.get_attribute('#so-list', 'role') == 'listbox', f'{tag}: combobox + listbox roles')
     shot('search-empty')
+    check('Try an artist, album or song' in page.inner_text('.so-body') and 'type:' not in page.inner_text('.so-body'), f'{tag}: the empty-search tip is plain words, no query syntax')
     ph = page.evaluate('''() => { const i = document.querySelector(".so-input"); const c = document.createElement("canvas").getContext("2d"); const cs = getComputedStyle(i); c.font = cs.fontWeight + " " + cs.fontSize + " " + cs.fontFamily;
         return {text: i.placeholder, textW: c.measureText(i.placeholder).width, boxW: i.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight)}; }''')
     check(ph['text'] == 'Search your music and radio' and ph['textW'] <= ph['boxW'], f'{tag}: the placeholder "{ph["text"]}" fits its field ({ph["textW"]:.0f} <= {ph["boxW"]:.0f} px)')
@@ -119,7 +120,10 @@ def run_viewport(b, w, h):
     heights = page.evaluate('[...document.querySelectorAll(".so-row")].map(r => r.getBoundingClientRect().height)')
     check(min(heights) >= 44, f'{tag}: rows are >= 44 px tall (min {min(heights):.0f})')
     check(len([u for u in reqs if 'radio-browser' in u]) == n_dir, f'{tag}: no directory request while typing')
-    check(page.locator('.so-dirbtn').count() == 1 and 'Search the internet radio directory for' in page.inner_text('.so-dirbtn'), f'{tag}: explicit directory row at the bottom')
+    check(page.locator('.so-dirbtn').count() == 0, f'{tag}: a local-results query does not push the radio directory row (UX review)')
+    type_q(page, 'night radio')
+    check(page.locator('.so-dirbtn').count() == 1 and 'Search the internet radio directory for' in page.inner_text('.so-dirbtn'), f'{tag}: a radio-like query offers the explicit directory row at the bottom')
+    type_q(page, 'night')
     shot('search-results-all-groups')
     # chips
     page.click('.so-chip[data-chip="songs"]'); page.wait_for_timeout(200)

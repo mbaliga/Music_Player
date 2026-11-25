@@ -85,9 +85,13 @@ with sync_playwright() as p:
         page.wait_for_function('document.querySelectorAll(".ai-cap").length>0', timeout=30000)
         snap('playing')
         time.sleep(1.0)
-        pb = page.evaluate('''() => { const w = document.querySelector('#paneRadio .lib-grid-wrap').getBoundingClientRect(), bs = [...document.querySelectorAll('.radio-row.on .rr-play, .dial-card.on .dial-play[data-play]')].map((b) => b.getBoundingClientRect());
-            return {inView: bs.some((r) => r.top >= w.top - 1 && r.bottom <= w.bottom + 1)} }''')
-        check(pb['inView'], f'{tag}: a Stop button for the playing station stays in view above the now-playing card')
+        # UX review: one Stop while a show plays (the now-playing card's, beside Skip), in view, with its last row ("Cast and voices") not cut off
+        pb = page.evaluate('''() => { const vis = (e) => { const r = e.getBoundingClientRect(); const cs = getComputedStyle(e); return r.width > 0 && r.height > 0 && cs.display !== 'none' && cs.visibility !== 'hidden'; };
+            const stops = [...document.querySelectorAll('#paneRadio button')].filter((b) => vis(b) && /^(■ )?Stop( now)?$/.test(b.textContent.trim()));
+            const ctl = document.querySelector('.ai-controls'), cr = ctl ? ctl.getBoundingClientRect() : null, sm = document.querySelector('.ai-voices summary'), panel = document.querySelector('.ai-panel');
+            const pr = panel.getBoundingClientRect(), sr = sm ? sm.getBoundingClientRect() : null;
+            return {n: stops.length, inView: !!cr && cr.top >= 0 && cr.bottom <= innerHeight, voicesReachable: !!sr && (sr.bottom <= pr.bottom + 1 || panel.scrollHeight > panel.clientHeight)} }''')
+        check(pb['n'] == 1 and pb['inView'] and pb['voicesReachable'], f'{tag}: exactly one Stop while a show plays, in view, and the cast row is reachable ({pb})')
         page.evaluate('''(L) => { document.querySelector('.ai-captions').replaceChildren(...[1, 2, 3].map(i => { const d = document.createElement('div'); d.className = 'ai-cap'; d.textContent = 'Speaker ' + i + ': ' + L; return d; })); }''', LONG)
         snap('long-captions')
         page.evaluate('''(L) => { const n = document.querySelector('.ai-panel .ai-note'); n.textContent = L; n.classList.add('warn'); }''', LONG[:200])
