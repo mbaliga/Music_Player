@@ -38,6 +38,8 @@ export function createLockKey(deps) {
     fg.style.transition = on ? `stroke-dashoffset ${HOLD_MS}ms linear` : 'none';
     fg.style.strokeDashoffset = on ? '0' : '100';
   };
+  let nudgeT = 0;   // a tap on a locked key: ring + "Hold to unlock" tag beside it for 1.8 s (CSS hides the tag in AOD)
+  const nudge = () => { el.classList.add('dm-nudge'); clearTimeout(nudgeT); nudgeT = setTimeout(() => el.classList.remove('dm-nudge'), 1800); };
   const stopHold = () => { if (holdT) { clearTimeout(holdT); holdT = 0; } ring(false); };
   const startHold = () => {
     stopHold(); ring(false); void el.getBoundingClientRect(); ring(true);
@@ -66,7 +68,7 @@ export function createLockKey(deps) {
     if (!deps.getLocked()) { deps.onLock(); return; }
     const m = deps.getMethod();
     if (m === 'double') { const t = e.timeStamp; if (isDoubleTap(lastTap, t)) { lastTap = NaN; deps.onUnlock(); } else { lastTap = t; deps.onHint('Double-tap to unlock'); } }
-    else if (m === 'hold' && wasHolding) deps.onHint('Hold to unlock');
+    else if (m === 'hold' && wasHolding) nudge();
     else if (m === 'slide' && hadSlide) deps.onHint('Slide to unlock');
     deps.onTick && deps.onTick();
   };

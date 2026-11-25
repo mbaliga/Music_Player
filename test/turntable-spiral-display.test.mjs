@@ -90,7 +90,7 @@ test('name rows are -3..3 and wrap around the scroll width', () => {
   let any = false; for (let k = 0; k < lit.length; k++) if (lit[k]) any = true;
   assert.ok(any);
   for (let j = 0; j < D.GRID; j++) for (let i = 0; i < D.GRID; i++) if (lit[j * D.GRID + i]) assert.ok(j >= D.DN - 3 && j <= D.DN + 3, 'rows -3..3 only');
-  assert.equal(D.scrollOffset(1, 20), 9); assert.equal(D.scrollOffset(3, 20), 7);
+  assert.equal(D.scrollOffset(1, 20), 13 % 20); assert.equal(D.scrollOffset(3, 20), 39 % 20);
 });
 
 test('track pips: 1 track none, 5 tracks 2-col spacing, 12 tracks 1-col, 30 tracks mapped onto 21', () => {

@@ -41,6 +41,7 @@ import { startBackground } from './background.js';        // background playback
 import { installBackButton } from './backbutton.js';      // hardware Back: close the topmost layer, else minimise
 import { LibraryManager } from './library.js';
 import { orderForPlayAll } from './albums.js';
+import { isAccessError, shortTitle, friendlyReason, LOST_ACCESS } from './errtext.js';
 import { deviceLibrary, installDeviceLibrary, describeStatus } from './device/index.js';   // the phone's own audio library (Android app only; docs/DEVICE_LIBRARY.md)
 import { createStage } from './turntable/stage.js';
 import { FINISHED } from './turntable/state.js';
@@ -290,12 +291,12 @@ function searchActionsImpl() {
       for (; at < list.length; at++) {   // the first track that decodes starts it (the others are skipped, marked, and said so)
         if (!list[at].file) continue;
         try { track = await loadFile(list[at].file, state.engine.ctx, { copy: false, durationSec: list[at].durationSec }); break; }
-        catch (err) { if (my !== intent) return false; console.error('play all failed', err); q.items[at].bad = true; toast(`Cannot play "${list[at].title || 'this track'}": ${failText(err, list[at])}`); }
+        catch (err) { if (my !== intent) return false; console.error('play all failed', err); q.items[at].bad = true; failToast(list[at].title, err, list[at]); }
       }
       if (!track) return false;
       if (my !== intent) return false;
       q.index = at;
-      try { await loadTrack(track, q, false, false, { id: null, meta: null }); } catch (err) { toast(`Cannot play "${list[at].title || 'this track'}": ${errMsg(err)}`); return false; }
+      try { await loadTrack(track, q, false, false, { id: null, meta: null }); } catch (err) { failToast(list[at].title, err, list[at]); return false; }
       stage.setDisplay({ lit: true });
       playTarget({ index: at, time: 0 }, { needle: false });
       syncDisplay(); syncAlbumUI();
@@ -395,11 +396,11 @@ function trackTitle() {
 function syncDisplay(extra = null) {
   if (!stage) return;
   const q = state.queue;
-  stage.setDisplay({ name: trackTitle(), trackCount: q ? q.items.length : 1, trackIndex: q ? q.index : 0, ...(extra || null) });
+  stage.setDisplay({ msg: false, name: trackTitle(), trackCount: q ? q.items.length : 1, trackIndex: q ? q.index : 0, ...(extra || null) });
 }
 let flashT = 0;
 function flash(text) {   // a short message on the dot display ("RADIO ON", "RE-LINK FILES")
-  stage.setDisplay({ name: text, lit: true, trackCount: 1 });
+  stage.setDisplay({ msg: true, name: text, lit: true, trackCount: 1 });
   clearTimeout(flashT); flashT = setTimeout(() => syncDisplay(), 2400);
 }
 
@@ -417,12 +418,17 @@ function toast(text, ms = 6000) {
         + 'pointer-events:none;text-align:center;border:1px solid rgba(255,255,255,.18)';
       document.body.appendChild(toastEl);
     }
-    toastEl.textContent = String(text);
+    { const t = String(text); toastEl.textContent = t.length > 110 ? t.slice(0, 109) + '…' : t; }
     toastEl.style.display = 'block';
     clearTimeout(toastT); toastT = setTimeout(() => { if (toastEl) toastEl.style.display = 'none'; }, ms);
   } catch { /* no DOM */ }
 }
-const errMsg = (e) => String((e && e.message) || e || 'unknown error').slice(0, 120);
+// A track that will not play: plain words only (no file names / byte offsets); a lost storage permission also raises the Allow card.
+function failToast(title, err, it) {
+  if (isAccessError(err)) toast(LOST_ACCESS);
+  else toast(`Cannot play "${shortTitle(title) || 'this track'}": ${friendlyReason({ message: failText(err, it) })}`);
+  try { if (isAccessError(err) && deviceLibrary.isAvailable()) deviceLibrary.status.set({ phase: 'denied', permission: 'denied' }); } catch { /* card is best effort */ }
+}
 
 // The platter still holds the built-in synthesized test pressing although the library has real albums. The demo is only for an empty
 // library (or when the user picks it); with real albums on the shelf it must be replaced by the focused album before anything plays.
@@ -498,6 +504,7 @@ function loop(now, hidden = false) {   // hidden: the page is not visible, so no
 
   // 2. Step the platter physics (pure model). The motor runs while the vinyl record is playing (Stop = motor off), or always for
   //    a mixtape / radio track as before. The motor target follows the speed.
+  syncOwner();
   const vinylIdle = state.vinylOwned && state.view === 'vinyl' && !pl.playing;   // stopped, arm lowering, or arm held: frozen + silent
   const omegaTarget = vinylIdle ? 0 : omegaNominal(state.rpm);
   state.platter = stepPlatter(
@@ -677,6 +684,12 @@ function getAnalyser() {
 
 // ── Play / Stop ───────────────────────────────────────────────────────────────────────────────────────────────────────────
 async function onToggle() {
+  const own = engineOwner();
+  if (own) {   // a tape / station owns the engine: the key acts on IT (never a stale platter state)
+    if (own === 'radio') { try { radio.stop(); } catch { /* */ } } else await miniActions.toggle('mixtape');   // same hold as the mini bar: it stays so the paused tape can resume
+    refreshNowPlaying(); syncOwner();
+    return;
+  }
   await state.engine.resume();
   if (state.albumId !== TEST_PRESSING_ID) markPicked();
   const pl = stage.player;
@@ -817,7 +830,7 @@ async function jumpTo(target, needle, { natural = false } = {}) {
         q.index = from;
         it.bad = true; tooLong = tooLong || !!(err && err.tooLong);
         console.error('track jump failed', err);
-        toast(`Cannot play "${it.title || 'that track'}": ${failText(err, it)}`);
+        failToast(it.title, err, it);
         if (state.aq) state.aq = { ...state.aq, failed: [...state.aq.failed, idx] };
       }
     }
@@ -837,6 +850,7 @@ async function jumpTo(target, needle, { natural = false } = {}) {
   stage.dispatch({ type: 'play', s: currentS(state.engine.position / state.engine.sampleRate) });   // stay on (and keep playing) the track that is still loaded
   if (state.view === 'cd') cdSkipMute(); else finishDrop(false);
 }
+const errMsg = (e) => String((e && e.message) || e || 'unknown error').slice(0, 120);
 const failText = (err, it) => (err && err.tooLong ? 'too long to load' : unsupportedReason(it) || (/\.(m4a|m4b|mp4)$/i.test((it && ((it.file && it.file.name) || it.path || it.name)) || '') && err && err.name === 'EncodingError') ? UNSUPPORTED_TEXT : errMsg(err));
 
 // Needle lands: thump + ripple, then the music bus reopens a beat later (if the record is meant to be playing).
@@ -896,7 +910,28 @@ function albumLine() {   // "Artist · Album" for the album on the platter / in 
   const parts = [(it && it.artist) || (m && m.artist) || '', m ? m.title : ''].filter(Boolean);
   return parts.filter((v, i) => parts.indexOf(v) === i).join(' · ');
 }
+// A tape / station owns the engine: the stage says so by name, the platter stands still and Play/Stop acts on the owner.
+let ownerKey = '';
+function ownerInfo() {
+  const own = engineOwner();
+  if (!own) return null;
+  if (own === 'radio') return { own, title: radio.station.name || 'Radio', sub: 'Radio playing · tap Stop to end it', playing: true };
+  const p = state.mixtapes.play;
+  return { own, title: (p.mix && p.mix.name) || 'Mixtape', sub: p.paused ? 'Tape paused · tap Play to resume it' : 'Tape playing · tap Stop to pause it', playing: !p.paused };
+}
+function syncOwner() {
+  if (!stage) return;
+  const o = ownerInfo();
+  const key = o ? `${o.own}|${o.title}|${o.playing}` : '';
+  if (key === ownerKey) return;
+  ownerKey = key;
+  stage.setPlayOverride(o ? o.playing : null);
+  if (o && (stage.player.playing || stage.player.starting)) stage.dispatch({ type: 'stop' });   // the old record must not keep spinning under a tape
+  syncNow();
+}
 function nowInfo() {
+  const oi = ownerInfo();
+  if (oi) return { mode: 'owner', title: oi.title, sub: oi.sub, time: false };
   if (platterIsDemo()) return { mode: 'pick', title: 'Pick an album', sub: 'Tap Library to choose your music', time: false };
   if (!state.vinylOwned) return null;                                   // a tape / station owns the engine: the Albums page says nothing
   if (state.albumId === TEST_PRESSING_ID) return { mode: 'demo', title: 'Demo record', sub: 'Built-in demo sound', time: true };
@@ -1001,9 +1036,9 @@ function installControls() {
     await state.engine.resume();
     let track;
     try { track = await loadFile(f, state.engine.ctx, { copy: false }); }
-    catch (err) { if (my === intent) toast(`Cannot play "${stripExt(f.name)}": ${failText(err, { name: f.name })}`); return; }
+    catch (err) { if (my === intent) failToast(stripExt(f.name), err, { name: f.name }); return; }
     if (my !== intent) return;
-    try { await loadTrack(track, null, false, false, { id: null, meta: null }); } catch (err) { toast(`Cannot play "${stripExt(f.name)}": ${errMsg(err)}`); return; }
+    try { await loadTrack(track, null, false, false, { id: null, meta: null }); } catch (err) { failToast(stripExt(f.name), err, { name: f.name }); return; }
     stage.setDisplay({ lit: true });
     stage.dispatch({ type: 'play', s: 0 });
   };
@@ -1245,7 +1280,7 @@ async function loadAlbum(index, trackIndex = 0, my = newIntent()) {
     if (my !== intent) return false;
     console.error('album load failed', err);
     flash(err && err.tooLong ? 'TOO LONG TO LOAD' : 'CANNOT READ FILE');
-    toast(`Cannot play "${trackObj.title || 'this track'}": ${failText(err, trackObj)}`);
+    failToast(trackObj.title, err, trackObj);
     return false;
   } finally {
     if (my === intent) stage.setDisplay({ loading: false });

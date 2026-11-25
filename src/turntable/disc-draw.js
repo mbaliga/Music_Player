@@ -103,8 +103,13 @@ export class DiscPainter {
     if (o.active) {
       lit.fill(0); any = true;
       if (o.mode === 0) {
-        const cols = D.textColsCached(o.name || '');
-        D.fillName(lit, cols, D.scrollOffset(o.now / 1000, cols.length));
+        const nm = o.name || '';
+        if (!o.msg && nm !== 'LOADING...' && nm.length > D.FIT_CHARS) {   // a 25-column window shows ~4 letters: a long title scrolled through it reads as fragments ("ALLY", "QUI"), so the display shows the track number and the stage prints the title
+          D.fillName(lit, D.textColsCached(String((o.trackIndex | 0) + 1).padStart(2, '0')), -5);
+        } else {
+          const cols = D.textColsCached(nm);
+          D.fillName(lit, cols, nm.length <= D.FIT_CHARS ? -Math.floor((D.DN * 2 + 1 - (nm.length * 6 - 1)) / 2) : D.scrollOffset(o.now / 1000, cols.length));
+        }
         D.fillPips(lit, D.pipLayout(o.trackCount, o.trackIndex));
       } else if (o.vals) D.fillEq(lit, o.vals, this.eqHold);
     }

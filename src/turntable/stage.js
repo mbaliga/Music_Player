@@ -286,7 +286,9 @@ export function createStage(host, hooks = {}) {
     armG.setAttribute('transform', armTransform(p));
     grabG.setAttribute('transform', dimpleTransform(p));
   }
+  let playOvr = null;   // null, or true/false: the Play/Stop key shows (and the host acts on) another engine owner (a tape / station), never the idle platter
   function setLiveUI(on) {
+    if (playOvr !== null) on = playOvr;
     if (on === lastLive) return; lastLive = on;
     playBtn.classList.toggle('live', on);
     if (hooks.liveChange) hooks.liveChange(on);
@@ -317,7 +319,7 @@ export function createStage(host, hooks = {}) {
       }
       painter.drawDisplay(ctx, {
         portrait, active: preview ? preview.lit : view.lit, mode: view.dispMode,
-        name: view.loading ? 'LOADING...' : view.name, trackCount: view.trackCount, trackIndex: view.trackIndex, now: scrollT * 1000, vals,
+        name: view.loading ? 'LOADING...' : view.name, msg: view.msg, trackCount: view.trackCount, trackIndex: view.trackIndex, now: scrollT * 1000, vals,
       });
       ctx.globalAlpha = 1;
     }
@@ -360,6 +362,7 @@ export function createStage(host, hooks = {}) {
     if (needsFrame(P) || dirty || was !== P || drop || view.loading) { placeArm(); setLiveUI(P.playing || P.starting); if (visible && W) draw(); }
   }
   function kick() { dirty = true; if (hooks.wake) hooks.wake(); }
+  libEl.addEventListener('scroll', () => kick(), true);   // the coverflow scrolled: the ghost record follows its cover slot (a stale canvas left it drawn across the title and tracks)
 
   // ── API for the app ───────────────────────────────────────────────────────────────────────────────────────────────────
   const api = {
@@ -388,6 +391,8 @@ export function createStage(host, hooks = {}) {
       placeHud();
     },
     /** elapsed / total of what is playing, "0:42 / 3:21"; '' hides it */
+    /** a tape / station owns the engine: true = it is playing (key says Stop), false = paused (Play), null = the platter's own state */
+    setPlayOverride(v) { const n = v == null ? null : !!v; if (n === playOvr) return; playOvr = n; lastLive = null; setLiveUI(!!(P.playing || P.starting)); },
     setNowTime(text) { if (nowTime.textContent !== text) nowTime.textContent = text; },
     /** the empty-state card: { show, title, body, button } (button = label of the one action, '' for none) */
     setEmpty(o = {}) {

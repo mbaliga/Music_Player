@@ -466,7 +466,7 @@ export function mountTurntableLibrary(container, deps = {}) {
     /** one line under the track list ('50 songs · last scan 3 min ago'); also the Scan chip's tooltip. '' clears it. */
     setScanInfo(text) { foot.textContent = text || ''; foot.hidden = !text; if (text) scanBtn.btn.title = text; else scanBtn.btn.removeAttribute('title'); },
     /** a short nudge pinned to the bottom of the library ('Pick an album'); null / '' hides it */
-    setPickHint(text) { pick.textContent = text || ''; pick.hidden = !text; },
+    setPickHint(text) { pick.textContent = text || ''; pick.hidden = !text; root.classList.toggle('tl-has-pick', !!text); },
     setFilter(f) { if (FILTERS.includes(f)) { filterState = f; paintChips(); } },
     setSort(s) { if (SORTS.includes(s)) { sortState = s; paintChips(); } },
     get el() { return root; },

@@ -23,8 +23,8 @@
   min-height: calc(var(--albums-head-h) + var(--safe-top)); padding: var(--safe-top) 12px 0 6px; background: #000;
 }
 #pageAlbums .page-title { display: block; color: #e8e8f0; }
-/* 360 px wide phones: menu + title + Library + search + settings + lock do not fit (the lock key was pushed off screen). The title steps aside (still read by screen readers); the page is evident from the stage. */
-@media (max-width: 399px) {
+/* Phones up to 439 px wide (the Library pill touched the title at 412): menu + title + Library + search + settings + lock do not fit (the lock key was pushed off screen). The title steps aside (still read by screen readers); the page is evident from the stage. */
+@media (max-width: 439px) {
   #pageAlbums .page-title { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   #pageAlbums .page-actions { gap: 4px; }
 }

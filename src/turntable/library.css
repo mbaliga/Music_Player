@@ -147,3 +147,16 @@
 @media (prefers-reduced-motion: reduce) {
   .tl-pill { transition: none; }
 }
+
+/* ── UX review: the "Pick an album" pill is docked in its own strip under the list (portrait) instead of floating over rows / the footer ── */
+.tl-has-pick:not(.tl-landscape) .tl-scroll { bottom: calc(env(safe-area-inset-bottom, 0px) + 66px); }
+/* ── landscape: cover fan + toolbar on the left, album title and tracks beside them on the right (the stacked layout left one track row) ── */
+.tl-lib.tl-landscape:not(.tl-empty) .tl-scroll { display: grid; grid-template-columns: minmax(0, 44%) minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto; overflow: hidden; }
+.tl-lib.tl-landscape:not(.tl-empty) .tl-bar { right: auto; width: 44%; box-sizing: border-box; }
+.tl-lib.tl-landscape:not(.tl-empty) .tl-row1 { padding-right: 0; }
+.tl-lib.tl-landscape:not(.tl-empty) .tl-flow { grid-column: 1; grid-row: 1 / span 3; overflow: hidden; }
+.tl-lib.tl-landscape:not(.tl-empty) .tl-meta { grid-column: 2; grid-row: 1; height: auto; min-height: var(--mh); padding: 10px 20px 8px 8px; text-align: left; }
+.tl-lib.tl-landscape:not(.tl-empty) .tl-tracks { grid-column: 2; grid-row: 2; min-height: 0; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; scrollbar-width: none; padding: 0 20px 12px 8px; }
+.tl-lib.tl-landscape:not(.tl-empty) .tl-tracks::-webkit-scrollbar { display: none; }
+.tl-lib.tl-landscape:not(.tl-empty) .tl-foot { grid-column: 2; grid-row: 3; padding: 4px 8px 12px; text-align: left; }
+.tl-lib.tl-landscape.tl-has-pick .tl-pick { left: 22%; }

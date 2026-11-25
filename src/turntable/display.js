@@ -6,7 +6,8 @@
 
 export const DN = 12, DP = 8, GRID = 2 * DN + 1;
 export const R_USE = 96, R_BEZEL = 108, R_LIT = 3, R_UNLIT = 2.3, R_PIP = 2.8, R_GLOW = 5.6;
-export const SCROLL_COLS_PER_SEC = 9;
+export const SCROLL_COLS_PER_SEC = 13;
+export const FIT_CHARS = 4;   // letters that fit the 25-column window without scrolling
 export const PIP_ROW = 6, PIP_MAX = 21;
 export const EQ_BARS = 13, EQ_BINS = [1, 2, 3, 4, 5, 6, 8, 10, 12, 15, 19, 24, 29];
 
