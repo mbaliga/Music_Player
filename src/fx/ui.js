@@ -162,7 +162,7 @@ export function mountFxSection(root, deps) {
           if (noBlend) { note(cd ? 'Blend scratch needs a vinyl record: a CD has no scratch.' : 'Blend scratch needs the platter, which is on Albums.'); return; }
           haptic(6); ctl.setMode(r.id); api.resume().catch(() => {});
         } },
-        h('span', { class: 'fx-led', 'aria-hidden': 'true' }), h('span', { class: 'fx-row-t' }, r.name), noBlend ? h('span', { class: 'fx-row-why' }, cd ? 'Vinyl only' : 'Needs a playing record') : null);
+        h('span', { class: 'fx-led', 'aria-hidden': 'true' }), h('span', { class: 'fx-row-t' }, r.name), null);
       rackBtns.push(b); return b;
     }));
   on(rack, 'keydown', (e) => {
@@ -545,7 +545,7 @@ export function mountFxSection(root, deps) {
     const beat = ctl.tempoState === 'analysing' ? 'Listening for the tempo…' : beatLabel(ctl.beat);
     pSub.textContent = m === 'repeat' || m === 'stutter' ? `${needsTempo(m) ? beat : ''}${o.sliceMs ? ` · loops ${Math.round(o.sliceMs)} ms` : ''}` : needsTempo(m) ? beat : '';
     const ax = AXES[m];
-    axX.textContent = ax ? ax.x : (HINTS[m] || ''); axY.textContent = ax ? ax.y : ''; axY.style.display = ax ? '' : 'none';
+    axX.textContent = ax ? ax.x : (HINTS[m] || '') + (m === 'scratch' && !api.hasPlatter ? (api.host.view() === 'cd' ? ' · BLEND is for vinyl only' : ' · BLEND needs a playing record') : ''); axY.textContent = ax ? ax.y : ''; axY.style.display = ax ? '' : 'none';
     plate.classList.toggle('xy', !!ax);
     deckBpm.textContent = needsTempo(m) || ctl.tempo ? `${Math.round(ctl.beat.bpm)}` : '—';
     deckBpm.dataset.u = ctl.beat.fixed ? 'STEADY BPM' : 'BPM';

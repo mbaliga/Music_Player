@@ -350,8 +350,8 @@ def _run():
         R['F_blend'] = {'row_disabled_without_platter': pg.evaluate("document.querySelector('.fx-row[data-id=\"blend\"]').getAttribute('aria-disabled')"),
                         'note': 'Blend scratch needs the platter, which the Booth screen does not have; the worklet blend is covered by test/fx-worklet.test.mjs (an earlier run of this script on the old panel measured blend 100 % RMS 0.0295 vs song 0.0315, blend 50 % 0.0158)'}
 
-        why = pg.evaluate("(document.querySelector('.fx-row[data-id=\"blend\"] .fx-row-why') || {}).textContent || ''")
-        assert 'Needs a playing record' in why or 'Vinyl only' in why, f'BLEND must say why it is unavailable, visibly (got {why!r})'
+        why = pg.evaluate("document.body.innerText")
+        assert 'BLEND needs a playing record' in why or 'BLEND is for vinyl only' in why, 'BLEND must say why it is unavailable, visibly'
         hint = pg.evaluate("document.body.innerText")
         assert 'NORMAL PLAY' not in hint and 'FIXED BPM' not in hint and 'no tempo found' not in hint, 'Booth jargon must be gone'
 
