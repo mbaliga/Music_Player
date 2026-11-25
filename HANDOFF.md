@@ -17,7 +17,7 @@ APK: rolling `https://github.com/mbaliga/Music_Player/releases/download/v0-lates
 | What | Command |
 |---|---|
 | Dev server (COOP/COEP set, SharedArrayBuffer on) | `python3 serve.py [port]` |
-| Unit tests (node:test, no deps; currently ~1,030) | `npm test` |
+| Unit tests (node:test, no deps; currently 1,099, 1 skipped) | `npm test` |
 | Stage the web build (what the APK ships) | `npm run build:web` → `www/` (gitignored) |
 | Every browser verifier in one go | `CHROME=/path/to/chrome python3 scripts/verify-all.py [outdir] [name-filter...]` |
 | One verifier | start `serve.py`, then `URL=http://localhost:PORT/index.html CHROME=... python3 scripts/verify-X.py outdir` |
@@ -91,7 +91,7 @@ helper block above `def run():`.
 
 ## 5. Verified vs not verified
 
-**Verified (desktop Chromium + node):** everything in §3 as listed by the scripts in §1; 1,030+ unit tests; the tour (`verify-tour.py`) end to end at 360x780, 412x915 and landscape with zero console errors / failed requests beyond the known `stations/` 404 on the dev server (that server has no `stations/` folder; the packs live in `content/stations/` and the app falls back); CI compiles and packages both Java plugins.
+**Verified (desktop Chromium + node):** everything in §3 as listed by the scripts in §1; 1,099 unit tests (1 skipped); the tour (`verify-tour.py`) end to end at 360x780, 412x915 and landscape with zero console errors / failed requests beyond the known `stations/` 404 on the dev server (that server has no `stations/` folder; the packs live in `content/stations/` and the app falls back); CI compiles and packages both Java plugins.
 
 **Not verified anywhere (needs the phone):** real-finger gestures (scratch feel, dimple drag, pinch, swipe), latency and the §3 gate, frame rate and memory on a mid phone, the Android WebView behaviour of audio / Web Speech / SVG filters / fonts, the native plugins at runtime (CI compiles them; nobody has called them on a device), keep-awake / refresh rate / brightness, TalkBack, system back gesture interplay, battery. Real speech is never heard in any test (a fake `speechSynthesis` is injected). `postMessage` (non-SAB) engine path is unit-compared, not run in the browser.
 

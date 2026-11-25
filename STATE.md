@@ -12,7 +12,7 @@ All of it has been integrated and exercised together by `scripts/verify-tour.py`
 
 ## Verified (desktop Chromium, node)
 
-`npm test`: all pass (1,030+). `python3 scripts/verify-all.py`: every browser verifier plus the end-to-end tour (see `HANDOFF.md` §1 for what each proves).
+`npm test`: all pass (1,099, 1 skipped). `python3 scripts/verify-all.py`: every browser verifier plus the end-to-end tour (see `HANDOFF.md` §1 for what each proves).
 CI builds the debug APK on every push, compiling both custom Java plugins (device library, device display). Tour measurements (headless CPU renderer, not a phone)
 are in the table below (run B of `verify-all.py`; the screenshots of the tour are in `docs/screenshots/tour/`, 1x, 412x915 portrait + landscape + the native and 5k phases).
 
@@ -28,6 +28,10 @@ are in the table below (run B of `verify-all.py`; the screenshots of the tour ar
 ## UX round (final integration)
 
 Seven parallel UX fixes were merged and proven together: `verify-tour.py` has a real-library journey that asserts the audio actually playing is the chosen real track (dominant frequency of the engine output, never the Demo record). Found and fixed while integrating: the stage measured its card while the shell scaled it (the now-playing line sat on the keys after visiting another section); a tape kept "owning" the engine after the user started an album track (Booth said a mixtape was playing); `verify-you-radio.py` crashed on an empty list (now fixed and a real gate); the Device mode sheet is full width on landscape phones; Booth landscape rows / switches / pads are 44 px tall. On-device checklist item 12 in `HANDOFF.md` §6 lists what only a phone can settle.
+
+## Final integration pass (four fix rounds: shell/turntable/native, playback + memory, Booth/mixtape/radio, first-time user)
+
+`verify-all.py` was run twice on the merged main (all 13 scripts). The only failure that repeated was `verify-canned-radio.py` (a stale test: since the single-Stop change the dial card's own Stop is hidden while a show plays, so the script now ends a sign-off with the panel's "Stop now"). `verify-real-playback.py` failed once and passed once: the unreadable-file toast is "Runout lost access to your music. Tap Allow." for a permission-type failure and "Cannot play ..." otherwise; the check now accepts either (this is D's errtext.js and B's failText agreeing, not a bug). One small seam fix: the "unsupported format" toast now shortens a long title like every other play failure. Still open and documented: in landscape the last row of Booth pads can sit partly under the mini bar until the page is scrolled a little (reachable by scrolling; judge on the phone). The repo has no `package-lock.json`, so `npm ci` fails and `npm install` is used (CI does the same).
 
 ## Not verified
 

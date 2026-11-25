@@ -35,7 +35,7 @@ the navigation shell — [`docs/SHELL.md`](docs/SHELL.md).
 
 ```bash
 python3 serve.py            # http://localhost:8000  (sets COOP/COEP so SharedArrayBuffer works)
-npm test                    # node:test, no dependencies: ~1,030 tests
+npm test                    # node:test, no dependencies: 1,099 tests, 1 skipped
 npm run build:web           # stages index.html + src + assets + content/stations into www/ (what the APK ships)
 ```
 

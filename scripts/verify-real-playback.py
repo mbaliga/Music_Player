@@ -235,7 +235,7 @@ def run_unreadable(b):
     pg.evaluate("window.__rt.setZ(0)"); pg.wait_for_timeout(600)
     pg.evaluate(PLAY_JS); pg.wait_for_timeout(2500)
     vis = pg.evaluate("(() => { const t = document.getElementById('rtToast'); return t && t.style.display !== 'none' ? t.textContent : ''; })()")
-    check('Cannot play' in vis, f'[unreadable] a visible toast says what failed: {vis!r}')
+    check(('Cannot play' in vis) or ('lost access' in vis), f'[unreadable] a visible toast says what failed: {vis!r}')
     st = state(pg); dom = pg.evaluate('window.__dom()')
     check(st['albumId'] == 'builtin:test-pressing' and not st['playing'], f"[unreadable] nothing plays (no demo fallback): playing={st['playing']}")
     ctx.close()

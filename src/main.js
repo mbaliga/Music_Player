@@ -817,7 +817,7 @@ async function jumpTo(target, needle, { natural = false } = {}) {
     for (let idx = target.index; idx >= 0 && idx < q.items.length; idx += dir) {
       const it = q.items[idx];
       if (!it || !it.file) continue;
-      if (it.bad) { if (idx === target.index && it.unsupported) toast(`Cannot play "${it.title || 'that track'}": ${UNSUPPORTED_TEXT}`); continue; }   // known undecodable: skipped without a decode attempt
+      if (it.bad) { if (idx === target.index && it.unsupported) toast(`Cannot play "${shortTitle(it.title) || 'that track'}": ${UNSUPPORTED_TEXT}`); continue; }   // known undecodable: skipped without a decode attempt
       try {
         const track = await loadFile(it.file, state.engine.ctx, { copy: false, durationSec: it.dur });
         if (my !== intent) return;
