@@ -53,5 +53,5 @@ export function stepDivision(div, dir) {
 
 /** Human label of the beat source: "120 BPM" or "fixed 500 ms beat (no tempo found)". */
 export function beatLabel(info) {
-  return info.fixed ? `no tempo found · fixed ${Math.round(info.beatSec * 1000)} ms beat` : `${Math.round(info.bpm * 10) / 10} BPM`;
+  return info.fixed ? 'No beat detected: using a steady beat' : `${Math.round(info.bpm * 10) / 10} BPM`;
 }

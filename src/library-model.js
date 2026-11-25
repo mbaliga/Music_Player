@@ -67,6 +67,23 @@ export function filterDeviceTracks(tracks, prefs = {}) {
   });
 }
 
+/** How many tracks the "hide short songs" preference alone is hiding (so the UI can say so instead of silently showing an empty shelf). */
+export function countShortHidden(tracks, prefs = {}) {
+  const min = Number.isFinite(prefs.minDurationSec) ? prefs.minDurationSec : 0;
+  if (!(min > 0)) return 0;
+  const ex = Array.isArray(prefs.excludeFolders) ? prefs.excludeFolders : [];
+  const inc = Array.isArray(prefs.includeFolders) ? prefs.includeFolders : [];
+  let n = 0;
+  for (const t of tracks) {
+    if (t.kind === 'ringtone' || t.kind === 'alarm' || t.kind === 'notification') continue;
+    const folder = folderOfTrack(t);
+    if (inc.length && !inc.some((p) => folderMatches(folder, p))) continue;
+    if (ex.some((p) => folderMatches(folder, p))) continue;
+    if (t.durationSec > 0 && t.durationSec < min) n++;
+  }
+  return n;
+}
+
 /** Content identity across sources (a folder scan and the device scan finding the same song). */
 export function contentKey(t) {
   return [norm(t.title), norm(t.artist), norm(t.album), t.size | 0].join('\u0001');
@@ -101,6 +118,7 @@ export function mergeSources(extraLists, folderTracks = []) {
 export function deriveArtists(shelf) {
   const m = new Map();
   for (const it of shelf) {
+    if (it.unsorted) continue;   // untagged files are not an artist
     const name = it.artist || 'Unknown Artist';
     const k = norm(name);
     let a = m.get(k);

@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { mapRow, applyTags, deviceTrackId, mediaIdOfDeviceId, trackAndDisc, relativeFromData, folderOf, isAudioRow, isUnknown, toStored, fromStored, UNKNOWN_ARTIST } from '../src/device/records.js';
 import { groupTracks, shelfItems } from '../src/albums.js';
 import { makeRow } from './support/fake-device-native.mjs';
+import { deriveArtists } from '../src/library-model.js';
 
 test('a fully tagged row maps to the library track shape', () => {
   const t = mapRow(makeRow(0, { title: 'Heat Wave', artist: 'Martha & The Vandellas', album: 'Heat Wave', albumArtist: 'Martha', genre: 'Soul', track: 3, year: 1963, durationMs: 150500, size: 12345, modified: 99 }));
@@ -97,6 +98,14 @@ test('untagged files group by folder; an unknown artist lands in one bucket', ()
   const tracks = ['x', 'y'].map((n, i) => mapRow(makeRow(i, { title: '', artist: '<unknown>', album: '<unknown>', name: `${n}.mp3`, relativePath: 'Download/Mixed Bag/' })));
   const [item] = shelfItems(groupTracks(tracks));
   assert.equal(item.label, 'Mixed Bag'); assert.equal(item.album.artist, 'Unknown Artist'); assert.equal(item.tracks.length, 2);
+});
+
+test('untagged files in Download/ gather in "Unsorted (Download)", sort last and stay out of the artist list', () => {
+  const real = ['a', 'b'].map((n, i) => mapRow(makeRow(i, { title: `T${n}`, artist: 'Zed', album: 'Zed Album', name: `${n}.mp3`, relativePath: 'Music/Zed/' })));
+  const raw = ['x', 'y'].map((n, i) => mapRow(makeRow(10 + i, { title: '', artist: '<unknown>', album: '<unknown>', name: `${n}.mp3`, relativePath: 'Download/' })));
+  const albums = groupTracks([...raw, ...real]);
+  assert.equal(albums[albums.length - 1].title, 'Unsorted (Download)'); assert.equal(albums[albums.length - 1].unsorted, true); assert.equal(albums[0].title, 'Zed Album');
+  assert.equal(deriveArtists(shelfItems(albums).map((i) => ({ id: i.id, artist: i.album.artist, unsorted: i.album.unsorted, tracks: i.tracks }))).map((a) => a.name).join(), 'Zed');
 });
 
 test('applyTags fills only what MediaStore left blank and re-keys the colour', () => {

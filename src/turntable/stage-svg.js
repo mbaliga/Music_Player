@@ -74,6 +74,7 @@ export function topSvgInner() {
   <!-- carriage track: the arm's pivot rides this line -->
   <path id="tt-trackHi" d="M920 81.6H1340" stroke="#fff" stroke-opacity=".17" stroke-width="1.2" stroke-linecap="round"/>
   <path id="tt-trackLo" d="M920 80H1340" stroke="#040405" stroke-width="2.6" stroke-linecap="round"/>
+  <text id="tt-parkLbl" x="1140" y="104" text-anchor="middle" fill="#fff" opacity=".3" style="font:600 14px system-ui,sans-serif;letter-spacing:3px" aria-hidden="true">TONEARM REST</text>
 </g>
 
 <!-- controls: a visible button (bg), a larger transparent hit area (hit) and the label; stage.js sizes the rects per orientation (>= 44 px hit areas) -->

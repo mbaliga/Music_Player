@@ -17,7 +17,7 @@ import { readFileTags } from './tags.js';
 import { trackId, serializeIndex, parseIndex, mergeScanned, linkSummary } from './libindex.js';
 import { saveIndex, loadIndex, saveHandle, loadHandles } from './library-store.js';
 import { libraryPrefs } from './library-prefs.js';
-import { trackSource, filterDeviceTracks, mergeSources, deriveArtists, deriveGenres, folderTrackFields } from './library-model.js';
+import { trackSource, filterDeviceTracks, mergeSources, deriveArtists, deriveGenres, folderTrackFields, countShortHidden } from './library-model.js';
 
 // ── Dominant hue extraction from album art ───────────────────────────────────
 async function dominantHue(imageUrl) {
@@ -149,6 +149,8 @@ export class LibraryManager {
       lists.push(name === 'device' ? filterDeviceTracks(all, p) : all);
     }
     this._merged = mergeSources(lists, p.sources.folder ? this._folder : []);
+    this._shortHidden = 0;
+    for (const [name, all] of this._sourceAll) if (name === 'device' && p.sources[name]) this._shortHidden += countShortHidden(all, p);
     this._shelf = null;
     for (const fn of [...this._listeners]) { try { fn(this._merged); } catch { /* ignore */ } }
   }
@@ -260,17 +262,21 @@ export class LibraryManager {
         return {
           id: it.id, kind: it.kind, album: it.label, artist: it.album.artist,
           genre: pick('genre') || '', coverUrl: pick('coverUrl') || null,
-          color: it.tracks[0].color, hue: it.tracks[0].hue, tracks: it.tracks,
+          color: it.tracks[0].color, hue: it.tracks[0].hue, tracks: it.tracks, unsorted: !!it.album.unsorted,
         };
       });
     }
     const list = [...this._shelf];
-    if (sortBy === 'color')  list.sort((a, b) => a.hue - b.hue);
-    else if (sortBy === 'genre') list.sort((a, b) => (a.genre || 'zzz').localeCompare(b.genre || 'zzz') || a.album.localeCompare(b.album));
-    else if (sortBy === 'album') list.sort((a, b) => a.album.localeCompare(b.album));
-    else list.sort((a, b) => a.artist.localeCompare(b.artist) || a.album.localeCompare(b.album));
+    const last = (a, b) => (a.unsorted ? 1 : 0) - (b.unsorted ? 1 : 0);   // "Unsorted (folder)" always sorts after real albums
+    if (sortBy === 'color')  list.sort((a, b) => last(a, b) || a.hue - b.hue);
+    else if (sortBy === 'genre') list.sort((a, b) => last(a, b) || (a.genre || 'zzz').localeCompare(b.genre || 'zzz') || a.album.localeCompare(b.album));
+    else if (sortBy === 'album') list.sort((a, b) => last(a, b) || a.album.localeCompare(b.album));
+    else list.sort((a, b) => last(a, b) || a.artist.localeCompare(b.artist) || a.album.localeCompare(b.album));
     return list;
   }
+
+  /** songs hidden only because they are shorter than the "hide short songs" setting */
+  get shortHidden() { return this._shortHidden || 0; }
 
   get isEmpty() { return this.tracks.length === 0; }
 }

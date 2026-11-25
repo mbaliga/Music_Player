@@ -94,8 +94,8 @@ export class RadioUI {
     this.resTitle = h('div', { class: 'radio-res-title' });
     this.resHead = h('div', { class: 'radio-res-head' },
       h('button', { class: 'radio-back', type: 'button', onclick: () => this.exitSearch() }, h('span', { 'aria-hidden': 'true' }, '←'), ' All stations'), this.resTitle);
-    const form = h('form', { class: 'radio-search', role: 'search', onsubmit: (e) => { e.preventDefault(); this.input.blur(); this.runSearch(); } },
-      h('div', { class: 'radio-field' }, this.input, this.clearBtn), h('button', { class: 'lib-scan radio-go', type: 'submit' }, 'Search'));
+    const form = h('form', { class: 'radio-search', role: 'search', onsubmit: (e) => { e.preventDefault(); this.runSearch(); this.input.blur(); } },
+      h('div', { class: 'radio-field' }, this.input, this.clearBtn), h('button', { class: 'lib-scan radio-go', type: 'submit', onmousedown: (e) => e.preventDefault(), onpointerdown: (e) => { if (e.pointerType !== 'mouse') e.preventDefault(); } }, 'Search'));   // keep the field focused: the keyboard closing under the tap used to swallow it
     this.chipEls = new Map();
     const mk = (label, tag) => { const b = h('button', { class: 'sort-chip', type: 'button', 'aria-pressed': 'false', onclick: () => this._pickTag(tag) }, label); this.chipEls.set(tag, b); return b; };
     const chips = h('div', { class: 'sort-chips radio-chips', role: 'group', 'aria-label': 'Genres' }, mk('Top', ''), ...GENRES.map((g) => mk(g, g)));

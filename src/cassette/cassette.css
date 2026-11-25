@@ -448,3 +448,8 @@
   .ed-tabs{grid-area:tabs}.ed-panel{grid-area:panel}
 }
 @media (min-width:900px) and (min-height:700px){ .ed-top .ed-prevwrap{width:min(100%,460px)} }
+/* the tape's name, on every editor tab (tap = rename on the Tape tab) */
+.ed-namechip{flex:none;display:flex;align-items:center;justify-content:center;gap:4px;min-height:44px;margin:0 12px;padding:0 14px;background:none;border:0;color:#e9e9ee;font-size:15px;cursor:pointer;max-width:calc(100% - 24px);overflow:hidden}
+.ed-namechip b{font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ed-namechip.unnamed b{font-weight:500;color:#b9b9be}
+.ed-namechip span{color:#ffb347}

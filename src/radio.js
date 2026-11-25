@@ -124,8 +124,21 @@ export function parseStations(json, { httpsOnly = true, allowHls = false } = {})
 
 /** One-line secondary text for a list row: "Germany · MP3 128k · jazz, lounge". */
 export function describeStation(s) {
-  const q = s.codec ? `${s.codec}${s.bitrate ? ' ' + s.bitrate + 'k' : ''}` : (s.bitrate ? s.bitrate + 'k' : '');
-  return [s.country, q, s.tags.slice(0, 2).join(', ')].filter(Boolean).join(' · ');
+  const q = s.bitrate >= 192 ? 'High quality' : '';   // codec names and low bitrates mean nothing to a listener
+  return [shortCountry(s.country), q, s.tags.slice(0, 2).join(', ')].filter(Boolean).join(' · ');
+}
+
+const COUNTRY_SHORT = {
+  'the united kingdom of great britain and northern ireland': 'UK', 'united kingdom': 'UK', 'the united states of america': 'US', 'united states of america': 'US',
+  'united states': 'US', 'the netherlands': 'Netherlands', 'the russian federation': 'Russia', 'russian federation': 'Russia',
+  'the czech republic': 'Czechia', 'czech republic': 'Czechia', 'republic of korea': 'South Korea', 'the republic of korea': 'South Korea',
+  'the united arab emirates': 'UAE', 'united arab emirates': 'UAE', 'the philippines': 'Philippines', 'türkiye': 'Turkey',
+  "the democratic people's republic of korea": 'North Korea', 'the islamic republic of iran': 'Iran', 'the bahamas': 'Bahamas',
+};
+/** A country as a listener says it: "The United Kingdom Of Great Britain And Northern Ireland" -> "UK". */
+export function shortCountry(c) {
+  const k = String(c || '').trim();
+  return COUNTRY_SHORT[k.toLowerCase()] || (k.length > 22 ? k.replace(/^the /i, '').slice(0, 21) + '…' : k);
 }
 
 // ── Network with server fallback (fetchImpl injected → testable) ─────────────

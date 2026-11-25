@@ -177,7 +177,7 @@ function installSettingsAndSearch() {
     if (path === 'playback.defaultRpm') setSpeed(RPM_ID(all.playback.defaultRpm));
     if (path === 'radio.aiStations' && radio && radio._aiOn() !== all.radio.aiStations) radio._setAi(all.radio.aiStations);
   });
-  el('btnTheme').addEventListener('click', () => settings.toggleLightDark());
+  el('btnTheme').addEventListener('click', () => settings.cycleTheme());
 
   // Search
   search = createSearchLauncher({
@@ -1180,7 +1180,8 @@ function syncScanChip() {
     const needsAccess = st.phase === 'needs-permission' || st.phase === 'denied' || st.phase === 'blocked';
     const busy = st.phase === 'scanning' || st.phase === 'tagging';
     const ago = agoText(st.lastScanAt);
-    const info = n ? `${plural(n, 'song', 'songs')}${ago ? ` · last scan ${ago}` : ''}` : '';
+    const sh = library.shortHidden | 0;
+    const info = [n ? `${plural(n, 'song', 'songs')}${ago ? ` · last scan ${ago}` : ''}` : '', sh ? `${plural(sh, 'short song', 'short songs')} hidden · change in Settings` : ''].filter(Boolean).join(' · ');
     if (needsAccess || (!n && !busy)) tlib.setScanLabel({ long: 'Scan phone', short: 'Scan', aria: 'Scan phone for music' });
     else if (busy) tlib.setScanLabel({ long: 'Scanning…', short: 'Scanning', aria: 'Scanning your phone for music' });
     else tlib.setScanLabel({ long: 'Rescan phone', short: 'Rescan', aria: `Rescan phone for music${info ? '. ' + info : ''}` });
@@ -1200,7 +1201,7 @@ function syncEmpty() {
   if (show && native && describeStatus(deviceLibrary.status.get()).show) show = false;
   stage.setEmpty({
     show, title: 'Demo record',
-    body: native ? 'Scan your phone to play your own music.' : 'Scan a music folder to play your own music.',
+    body: native ? (library.shortHidden ? `${plural(library.shortHidden, 'short song', 'short songs')} hidden (under 30 s). Change that in Settings, or scan your phone again.` : 'Scan your phone to play your own music.') : 'Scan a music folder to play your own music.',
     button: native ? 'Scan phone' : 'Choose music folder',
   });
 }

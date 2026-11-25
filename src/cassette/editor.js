@@ -126,12 +126,15 @@ export function openEditor(ctx) {
   const gA = h('button', { type: 'button', class: 'ed-gauge', onclick: () => api.setSide('A') });
   const gB = h('button', { type: 'button', class: 'ed-gauge', onclick: () => api.setSide('B') });
   const top = h('div', { class: 'ed-top' }, prevWrap, h('div', { class: 'ed-gauges', role: 'group', 'aria-label': 'Tape capacity per side' }, gA, gB));
+  // the tape's name on every tab (it lived only on the Tape tab while the editor opens on Add): tap to rename
+  const nameChip = h('button', { type: 'button', class: 'ed-namechip', onclick: () => { goTab('tape'); try { fName.focus(); fName.select(); } catch { /* */ } } });
+  const paintName = () => { const n = (m.name || '').trim(); nameChip.replaceChildren(h('b', {}, n || 'Name your mixtape'), h('span', { 'aria-hidden': 'true' }, ' ✎')); nameChip.classList.toggle('unnamed', !n); nameChip.setAttribute('aria-label', n ? `Tape name: ${n}. Tap to rename` : 'Name your mixtape'); };
   const TABS = [['tape', 'Tape'], ['add', 'Add'], ['tracks', 'Tracks'], ['style', 'Style']];
   const tabBtns = {};
   const tabs = h('div', { class: 'ed-tabs', role: 'tablist' }, ...TABS.map(([id, label]) => (tabBtns[id] = h('button', { type: 'button', role: 'tab', id: 'edtab-' + id, onclick: () => api.goTab(id) }, label))));
   const panels = {};
   const panel = h('div', { class: 'ed-panel' });
-  const ed = h('div', { class: 'ed', role: 'dialog', 'aria-label': isNew ? 'New mixtape' : 'Edit mixtape' }, bar, top, tabs, panel, toastEl, live);
+  const ed = h('div', { class: 'ed', role: 'dialog', 'aria-label': isNew ? 'New mixtape' : 'Edit mixtape' }, bar, top, nameChip, tabs, panel, toastEl, live);
   const ov = h('div', { class: 'ed-ov' }, ed);
   document.body.appendChild(ov); edEl = ov;
 
@@ -202,7 +205,7 @@ export function openEditor(ctx) {
     prevWrap.querySelector('.ed-sidelabel').textContent = `Side ${side}`;
   }
 
-  function changed() { paintTop(); retape(); addTab.refresh(); tracksTab.refresh(); paintTape(); }
+  function changed() { paintName(); paintTop(); retape(); addTab.refresh(); tracksTab.refresh(); paintTape(); }
 
   // ── tabs
   function goTab(id) {
@@ -223,7 +226,7 @@ export function openEditor(ctx) {
   const fTag = h('input', { class: 'fld', maxlength: MAX_TAGLINE, placeholder: 'A few words about it', autocomplete: 'off', 'aria-label': 'Line on the label' });
   const fBy = h('input', { class: 'fld', maxlength: MAX_AUTHOR, placeholder: 'your name', autocomplete: 'off', 'aria-label': 'Made by' });
   fName.value = m.name; fTag.value = m.cfg.text.subtitle; fBy.value = m.author;
-  fName.addEventListener('input', () => { m = { ...m, name: fName.value.slice(0, MAX_NAME) }; retape(); });
+  fName.addEventListener('input', () => { m = { ...m, name: fName.value.slice(0, MAX_NAME) }; retape(); paintName(); });
   fTag.addEventListener('input', () => { m = withText(m, { subtitle: fTag.value }); retape(); });
   fBy.addEventListener('input', () => { m = withAuthor(m, fBy.value); });
   const lenBox = h('div', { class: 'ed-lens', role: 'radiogroup', 'aria-label': 'Tape length' });
@@ -329,7 +332,7 @@ export function openEditor(ctx) {
   document.addEventListener('keydown', edKey);
 
   mountTape();
-  paintTop();
+  paintName(); paintTop();
   goTab(tab);
   if (ctx.notice) toast(ctx.notice);
   setTimeout(() => { if (isNewInit && !ctx.mixtape) fName.focus(); }, 80);

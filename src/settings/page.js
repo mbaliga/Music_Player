@@ -119,7 +119,7 @@ export function mountSettings(host, deps) {
     libBody.push(bool('rescanOnResume', 'Look for new songs when I come back to the app', 'A quick check each time you open Runout.'));
     libBody.push(bool('parseUntagged', 'Read song details from the files', 'Slower the first time, better titles.'));
     const btns = [];
-    if (lib.scanNow) btns.push(h('button', { type: 'button', class: 'st-btn primary', onclick: () => lib.scanNow() }, 'Scan now'));
+    if (lib.scanNow) btns.push(h('button', { type: 'button', class: 'st-btn primary', onclick: () => lib.scanNow() }, (lib.deviceAvailable && lib.deviceAvailable() ? 'Rescan phone (same as Albums)' : 'Rescan music folder (same as Albums)')));
     if (lib.clearCache) btns.push(confirmBtn('Clear library cache', 'Tap again to clear', () => lib.clearCache()));
     btns.push(confirmBtn('Reset library options', 'Tap again to reset', () => prefs.reset()));
     libBody.push(h('div', { class: 'st-btns' }, ...btns));

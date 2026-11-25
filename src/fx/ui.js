@@ -76,7 +76,7 @@ const PADS = [
 ];
 
 const HINTS = {
-  scratch: 'NORMAL PLAY · hit a pad or pick an effect',
+  scratch: 'Play: hit a pad or pick an effect',
   blend: 'Scratch the platter on Albums · the song keeps playing under it',
   repeat: 'HOLD · slide in = shorter, out = longer · spin = faster',
   stutter: 'HOLD · slide in = faster, out = slower',
@@ -162,7 +162,7 @@ export function mountFxSection(root, deps) {
           if (noBlend) { note(cd ? 'Blend scratch needs a vinyl record: a CD has no scratch.' : 'Blend scratch needs the platter, which is on Albums.'); return; }
           haptic(6); ctl.setMode(r.id); api.resume().catch(() => {});
         } },
-        h('span', { class: 'fx-led', 'aria-hidden': 'true' }), h('span', { class: 'fx-row-t' }, r.name));
+        h('span', { class: 'fx-led', 'aria-hidden': 'true' }), h('span', { class: 'fx-row-t' }, r.name), noBlend ? h('span', { class: 'fx-row-why' }, cd ? 'Vinyl only' : 'Needs a playing record') : null);
       rackBtns.push(b); return b;
     }));
   on(rack, 'keydown', (e) => {
@@ -296,6 +296,8 @@ export function mountFxSection(root, deps) {
     tog('half', '½× TEMPO', 'Halve the tempo', () => ctl.setParam('root', 'bpmScale', ctl.state.bpmScale === 0.5 ? 1 : 0.5), '½×'),
     tog('double', '2× TEMPO', 'Double the tempo', () => ctl.setParam('root', 'bpmScale', ctl.state.bpmScale === 2 ? 1 : 2), '2×'),
     tog('resume', 'RESTART', 'Beat repeat: go back to the start of the slice when released instead of keeping time', () => ctl.setParam('repeat', 'resume', ctl.state.repeat.resume === 'capture' ? 'time' : 'capture'), 'RESTART'));
+
+  on(togs.resume, 'click', () => { if (togs.resume.classList.contains('dim')) note('RESTART only applies to Beat repeat: pick it in the rack.'); });
 
   // ── pad grid ─────────────────────────────────────────────────────────────────────────────────────────────────────────
   const padBtns = [];
@@ -541,12 +543,12 @@ export function mountFxSection(root, deps) {
     pDiv.textContent = why ? '' : o.division && (m === 'repeat' || m === 'stutter') ? o.division : (m === 'blend' || m === 'bandpass' || m === 'echo') ? (o.text || '') : modeInfo(m).label;
     pPct.textContent = m === 'repeat' && o.percent != null && !why ? formatPercent(o.percent) : m === 'stutter' && !why ? `gate ${Math.round(ctl.state.stutter.gate * 100)}%` : '';
     const beat = ctl.tempoState === 'analysing' ? 'Listening for the tempo…' : beatLabel(ctl.beat);
-    pSub.textContent = m === 'repeat' || m === 'stutter' ? `${needsTempo(m) ? beat : ''}${o.sliceMs ? ` · slice ${Math.round(o.sliceMs)} ms` : ''}` : needsTempo(m) ? beat : '';
+    pSub.textContent = m === 'repeat' || m === 'stutter' ? `${needsTempo(m) ? beat : ''}${o.sliceMs ? ` · loops ${Math.round(o.sliceMs)} ms` : ''}` : needsTempo(m) ? beat : '';
     const ax = AXES[m];
     axX.textContent = ax ? ax.x : (HINTS[m] || ''); axY.textContent = ax ? ax.y : ''; axY.style.display = ax ? '' : 'none';
     plate.classList.toggle('xy', !!ax);
     deckBpm.textContent = needsTempo(m) || ctl.tempo ? `${Math.round(ctl.beat.bpm)}` : '—';
-    deckBpm.dataset.u = ctl.beat.fixed ? 'FIXED BPM' : 'BPM';
+    deckBpm.dataset.u = ctl.beat.fixed ? 'STEADY BPM' : 'BPM';
     const b = (id, v, dis) => { const e = togs[id]; e.setAttribute('aria-pressed', String(!!v)); e.classList.toggle('dim', !!dis); };
     b('latch', ctl.state.latch); b('ring', ctl.state.ring); b('half', ctl.state.bpmScale === 0.5); b('double', ctl.state.bpmScale === 2); b('resume', ctl.state.repeat.resume === 'capture', m !== 'repeat');
     // knobs + fader follow the state; the ones that do nothing in this mode are dimmed

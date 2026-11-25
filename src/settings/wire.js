@@ -16,7 +16,12 @@ export function initSettings({ win = window, doc = document, storage = safeStora
     const c = custom();
     applyPlan(planAppearance(store.get(), { customTheme: c }), { root: doc.documentElement, customTheme: c, setThemeVars, clearThemeVars });
     const b = doc.getElementById('btnTheme');
-    if (b) { const light = store.get('appearance.theme') === 'light'; const ic = b.querySelector('.ic') || b; ic.textContent = light ? '☀' : '☾'; }
+    if (b) {
+      const t = store.get('appearance.theme'); const ic = b.querySelector('.ic') || b;
+      ic.textContent = t === 'light' ? '☀' : t === 'oled' ? '●' : '☾';
+      const name = t === 'light' ? 'Light' : t === 'oled' ? 'OLED' : 'Dark';
+      b.setAttribute('aria-label', `Theme: ${name}. Tap to change`); b.title = `Theme: ${name}. Tap to change (Light, Dark, OLED)`;
+    }
   }
   installMotionOverride(win);
   apply();

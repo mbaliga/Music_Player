@@ -154,3 +154,9 @@
   .radio-chips { flex: 1 1 45%; }
   .ai-panel:not(.hidden) { max-height: 60%; }
 }
+
+/* ── UX review: one Stop while a show plays (the panel's, beside Skip); the recents row and the dial card keep their "Now playing" label, a tap on the row still stops it ── */
+body:has(.ai-panel:not(.hidden) .ai-card) :is(.radio-row.on .rr-play.stop, .dial-card.on .dial-play[data-play].stop) { display: none; }
+/* the last row ("Cast and voices") was cut by the screen edge */
+.ai-panel:not(.hidden) { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 12px); scroll-padding-bottom: 24px; }
+.ai-panel .ai-card:last-child { margin-bottom: 14px; }

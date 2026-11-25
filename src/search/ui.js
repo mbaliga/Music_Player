@@ -16,6 +16,7 @@ import { loadRecents, saveRecents, addRecent, removeRecent, clearRecents } from 
 import { stepActive, debounceMs, librarySignature, segments, CHIPS, limitsFor } from './view.js';
 import { OFFLINE_NOTE, clean } from './directory.js';
 import { trapFocus } from '../ui/focus-trap.js';
+import { shortCountry } from '../radio.js';
 
 const ICONS = {   // static markup only
   song: '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M9 18V6l10-2v12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="7" cy="18" r="2.4" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="17" cy="16" r="2.4" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>',
@@ -192,7 +193,7 @@ export function createSearchOverlay(deps) {
         frag.append(h('div', { class: 'so-empty' }, h('b', {}, 'Search your music and radio'),
           total ? 'Songs, albums, artists, mixtapes and stations, all on this phone. Try a name, or filter with the chips.' : 'Your library is empty. Scan a folder in Albums, then search it here. The pre-written radio shows are searchable already.'));
       }
-      frag.append(h('div', { class: 'so-tip' }, 'Tip: start with ', h('code', {}, 'type:artist'), ' (or song, album, mixtape, radio) to search one kind.'));
+      frag.append(h('div', { class: 'so-tip' }, 'Try an artist, album or song. The chips above narrow it to one kind.'));
       liveEl.textContent = '';
     } else {
       for (const type of typesShown()) {
@@ -205,14 +206,16 @@ export function createSearchOverlay(deps) {
       liveEl.textContent = any ? `${r.counts.total} result${r.counts.total === 1 ? '' : 's'}` : 'No results';
     }
     // the explicit, user-started network search: only for a typed query, never automatic
-    if (!r.empty && r.tokens.length && (chip === 'all' || chip === 'stations')) frag.append(directoryBlock(r.text));
+    if (!r.empty && r.tokens.length && (chip === 'all' || chip === 'stations') && (chip === 'stations' || !any || RADIO_LIKE.test(r.text))) frag.append(directoryBlock(r.text));   // not under every query: only for a radio-like query, the Radio chip, or when nothing local matched
     bodyEl.replaceChildren(frag);
     clearBtn.hidden = !input.value;
     paintStatus();
     if (!r.empty && bodyEl.querySelector('.so-row')) setActive(0, false);
   }
 
-  function directoryBlock(text) {
+  const RADIO_LIKE = /\b(fm|am|radio|station|stations|bbc|npr|kexp|live|stream|\d{2,3}[.,]\d)\b/i;
+
+function directoryBlock(text) {
     const wrap = h('div', { class: 'so-dir' });
     const label = clean(text);
     const go = h('button', { type: 'button', class: 'so-dirbtn', onclick: () => searchDirectory(label) }, icon('globe'), h('span', { class: 'so-txt' }, h('span', { class: 'so-t' }, `Search the internet radio directory for “${label}”`), h('span', { class: 'so-s' }, 'Uses the network, only when you tap this')));
@@ -225,7 +228,7 @@ export function createSearchOverlay(deps) {
         wrap.append(h('div', { class: 'so-sec' }, h('span', { class: 'so-sec-t' }, 'Internet radio'), h('span', { class: 'so-sec-n' }, String(dirState.stations.length))));
         for (const st of dirState.stations) {
           const n = 1000 + rows.length + wrap.querySelectorAll('.so-row').length;
-          const res = { type: 'station', id: st.id, title: st.name, subtitle: [st.country, st.tags && st.tags.slice(0, 2).join(', ')].filter(Boolean).join(' · '), station: st, ranges: { title: [], subtitle: [] }, stationType: st.type };
+          const res = { type: 'station', id: st.id, title: st.name, subtitle: [shortCountry(st.country), st.tags && st.tags.slice(0, 2).join(', ')].filter(Boolean).join(' · '), station: st, ranges: { title: [], subtitle: [] }, stationType: st.type };
           wrap.append(rowEl(res, n));
         }
       }

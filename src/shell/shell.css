@@ -24,7 +24,7 @@
 
 .shell {
   position: fixed; top: 0; bottom: 0; left: 0; right: 0; margin: 0 auto;
-  width: min(100%, 560px);                      /* landscape / tablets: the frame is capped and centred */
+  width: min(100%, 560px);                      /* tablets / portrait: the frame is capped and centred */
   overflow: hidden; z-index: 1;
   background: var(--shell-bg);
   color: var(--ink-bg, var(--ink));
@@ -136,3 +136,6 @@
   .page.enter { animation: none; }
   .drawer-item { transition: none; }
 }
+
+/* Landscape phones: a 560 px column left two thirds of the screen empty and the mini bar covered the lower half of Booth and Radio, so the frame uses the width (capped for tablets). */
+@media (orientation: landscape) and (min-width: 700px) { .shell { width: min(100%, 1100px); } }

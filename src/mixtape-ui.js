@@ -183,7 +183,7 @@ export class MixtapeUI {
     const sug = this._suggestRow();
     if (sug) el.append(sug);
     if (!this.list.length) {
-      el.append(h('div', { class: 'mt-empty' }, 'No mixtapes yet. Tap “+ New” to make one from your library.'));
+      el.append(h('div', { class: 'mt-empty' }, sug ? 'Start with a suggestion above, or tap “+ New”.' : 'No mixtapes yet. Tap “+ New” to make one from your library.'));
       return;
     }
     const items = this.list.map((m) => ({ id: m.id, cfg: cassetteCfg(m), meta: tapeMeta(m), caption: tapeCaption(m) }));
@@ -543,7 +543,7 @@ export class MixtapeUI {
     if (!tp.n.A && !tp.n.B) {
       this._showMsg(relink.some(Boolean)
         ? 'This tape’s tracks are remembered but need re-linking to your music folder.'
-        : 'None of this tape’s tracks are in the library right now. Scan your music folder, then play again.',
+        : 'None of this tape’s tracks are in the library right now. Scan your music (Scan phone on Android), then play again.',
       relink.some(Boolean));
       return;
     }

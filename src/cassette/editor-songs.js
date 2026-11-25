@@ -95,7 +95,7 @@ export function createAddTab(E) {
     const lib = E.lib();
     if (!lib.length) status.textContent = '';
     else if (result && !result.empty) status.textContent = result.total ? `${result.total} song${result.total === 1 ? '' : 's'}${result.truncated ? ' (showing the first 400, refine to see more)' : ''}` : `No songs match “${q.trim()}”.`;
-    else status.textContent = `${picker ? picker.browse().length : 0} albums · ${lib.length} songs`;
+    else status.textContent = `${picker ? picker.browse().length : 0} albums · ${lib.length} songs · “Pick several” adds many at once`;
     selBtn.setAttribute('aria-pressed', String(selectMode)); selBtn.classList.toggle('on', selectMode);
     if (selectMode && lib.length) status.textContent = selected.size ? `${selected.size} picked. Tap more songs, then Add.` : 'Tap songs to pick several, then tap Add. Tap “Pick several” again to stop.';
     bar.classList.toggle('hidden', !(selectMode && selected.size));
@@ -111,7 +111,7 @@ export function createAddTab(E) {
   function paintRows() {
     const lib = E.lib();
     if (!lib.length) {
-      spacer.style.height = '0px'; spacer.replaceChildren(h('div', { class: 'pk-empty' }, 'Your library is empty. Scan your music folder in Albums first.'));
+      spacer.style.height = '0px'; spacer.replaceChildren(h('div', { class: 'pk-empty' }, (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform() ? 'Your library is empty. Open Albums and tap Scan phone first.' : 'Your library is empty. Scan your music folder in Albums first.')));
       return;
     }
     if (!rows.length) { spacer.style.height = '0px'; spacer.replaceChildren(h('div', { class: 'pk-empty' }, q.trim() ? 'No songs match.' : 'Nothing to show.')); return; }

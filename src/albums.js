@@ -113,6 +113,9 @@ const norm = (s) => String(s || '').trim().toLowerCase().replace(/\s+/g, ' ');
  *     has numbered discs joins the lowest-numbered disc (1 if none).
  * Output order is stable: by artist, then title.
  */
+const GENERIC_FOLDER_RE = /^(download|downloads|recordings?|voice recorder|voice recordings?|documents?|sounds?|audio|music|ringtones?|notifications?|alarms?|podcasts?|bluetooth|whatsapp.*|telegram.*|dcim|movies|0)$/i;
+const UNKNOWN_ARTIST_RE = /^\s*(unknown artist|<unknown>|unknown|)\s*$/i;
+
 export function groupTracks(tracks) {
   const byKey = new Map();
   for (const t of tracks) {
@@ -121,9 +124,13 @@ export function groupTracks(tracks) {
     const { kind, disc } = classifyAlbum({ album: rawAlbum, folders });
     const title = stripDiscLabel(rawAlbum) || rawAlbum;
     const artist = (t.albumArtist && String(t.albumArtist).trim()) || t.artist || 'Unknown Artist';
-    const key = `${norm(artist)}\0${norm(title)}`;
+    // Untagged files (no album tag, no artist: a voice memo or a download in Download/) are not an album called "Download" by "Unknown Artist":
+    // they gather in "Unsorted (<folder>)", which sorts last and stays out of the artist list.
+    const unsorted = (!folders.length || GENERIC_FOLDER_RE.test(folders[folders.length - 1])) && !(t.album && String(t.album).trim()) && UNKNOWN_ARTIST_RE.test(artist) && !(t.albumArtist && String(t.albumArtist).trim());
+    const shownTitle = unsorted ? `Unsorted (${(folders[folders.length - 1] || 'no folder').slice(0, 40)})` : title;
+    const key = `${norm(artist)}\0${norm(shownTitle)}`;
     let a = byKey.get(key);
-    if (!a) { a = { key, title, artist, isCd: false, byDisc: new Map() }; byKey.set(key, a); }
+    if (!a) { a = { key, title: shownTitle, artist, unsorted, isCd: false, byDisc: new Map() }; byKey.set(key, a); }
     // Any labelled member makes the whole album a CD (tags often label only some tracks).
     if (kind === KIND_CD) a.isCd = true;
     const d = kind === KIND_CD ? disc : null;
@@ -152,12 +159,12 @@ export function groupTracks(tracks) {
       discs = [{ number: 1, tracks: [...a.byDisc.values()].flat().sort(compareVinyl) }];
     }
     out.push({
-      key: a.key, title: a.title, artist: a.artist,
+      key: a.key, title: a.title, artist: a.artist, unsorted: !!a.unsorted,
       kind: a.isCd ? KIND_CD : KIND_VINYL,
       discs, tracks: discs.flatMap((d) => d.tracks),
     });
   }
-  out.sort((x, y) => naturalCmp(x.artist, y.artist) || naturalCmp(x.title, y.title));
+  out.sort((x, y) => (x.unsorted ? 1 : 0) - (y.unsorted ? 1 : 0) || naturalCmp(x.artist, y.artist) || naturalCmp(x.title, y.title));
   return out;
 }
 

@@ -76,7 +76,7 @@ test('parseStations: filters broken, hls, http, nameless, duplicate; keeps good'
 
 test('describeStation formats compactly', () => {
   const s = parseStations([raw()]).stations[0];
-  assert.equal(describeStation(s), 'Germany · MP3 128k · jazz, lounge');
+  assert.equal(describeStation(s), 'Germany · jazz, lounge');
   assert.equal(describeStation({ country: '', codec: '', bitrate: 0, tags: [] }), '');
 });
 

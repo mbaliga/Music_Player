@@ -113,3 +113,4 @@ body[data-devicemode~="locked"] .tt-sr, body[data-devicemode~="aod"] .tt-sr { di
 @keyframes dm-nudge { 0% { opacity: 0; } 15% { opacity: 1; } 100% { opacity: 1; } }
 body[data-devicemode~="aod"] .dm-key.dm-nudge::after { display: none; }
 @media (prefers-reduced-motion: reduce) { .dm-key.dm-nudge .dm-ring { animation: none; } }
+body:has(.dm-key.dm-nudge) .dm-hint { display: none; }   /* the tag under the key says it; two overlapping cards do not */

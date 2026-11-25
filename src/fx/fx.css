@@ -62,7 +62,8 @@
 .fx-row.lit .fx-led, .fx-tog[aria-pressed="true"] .fx-led, .fx-perf.sel .fx-led { background: var(--c, var(--violet)); box-shadow: 0 0 8px var(--c, var(--violet)), 0 0 2px #fff inset; }
 .fx-row.live .fx-led { animation: fxPulse .5s ease-in-out infinite alternate; }
 @keyframes fxPulse { to { box-shadow: 0 0 14px 3px var(--c), 0 0 2px #fff inset; } }
-.fx-row[aria-disabled="true"] { opacity: .4; }
+.fx-row[aria-disabled="true"] { opacity: .62; }
+.fx-row .fx-row-why { font-size: 7px; font-weight: 600; line-height: 1.15; letter-spacing: 0; color: var(--ink2); max-width: 100%; }
 .fx-row:focus-visible, .fx-tog:focus-visible, .fx-perf:focus-visible, .fx-knob:focus-visible, .fx-fader:focus-visible, .fx-btn:focus-visible, .fx-pad:focus-visible { outline: 2px solid var(--violet); outline-offset: 2px; }
 
 /* ── XY plate ─────────────────────────────────────────────────────────────────────────────────────────────────────────────── */

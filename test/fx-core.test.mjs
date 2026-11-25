@@ -41,7 +41,7 @@ test('beatInfo: confident tempo -> real beat; otherwise the FIXED fallback, and 
   for (const t of [null, undefined, {}, { bpm: 120, confidence: 0.05 }, { bpm: NaN, confidence: 1 }, { bpm: 900, confidence: 1 }]) {
     const b = beatInfo(t);
     assert.equal(b.fixed, true); assert.equal(b.beatSec, FALLBACK_BEAT_SEC);
-    assert.match(beatLabel(b), /no tempo found · fixed 500 ms/);
+    assert.match(beatLabel(b), /No beat detected: using a steady beat/);
   }
   assert.equal(beatInfo({ bpm: 90, confidence: 1 }, { scale: 2 }).bpm, 180);
   assert.equal(beatInfo({ bpm: 90, confidence: 1 }, { scale: 0.5 }).bpm, 45);
@@ -177,7 +177,7 @@ test('beat repeat derive: slice length from the division, rate from spin, readou
 });
 test('fixed-beat fallback is reported on the readout', () => {
   const d = derive(setMode(defaultFx(), 'repeat'), rt({ beat: beatInfo(null), div: '1/2' }));
-  assert.equal(d.readout.fixedBeat, true); assert.match(d.readout.beat, /fixed 500 ms/); assert.equal(d.worklet.len, 11025);
+  assert.equal(d.readout.fixedBeat, true); assert.match(d.readout.beat, /steady beat/); assert.equal(d.worklet.len, 11025);
 });
 test('stutter derive: period = division, gate from the knob (clamped), rate 1', () => {
   let st = setParam(setMode(defaultFx(), 'stutter'), 'stutter', 'gate', 0.3);
