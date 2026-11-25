@@ -13,14 +13,16 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { AudioEngine } from './audio-engine.js';
-import { synthesizeTrack, loadFile } from './track.js';
+import { synthesizeTrack, loadFile, DECODE_LIMITS, decodedBytes } from './track.js';
+import { createQueue, reduce as queueReduce } from './queue.js';
+import { unsupportedReason, UNSUPPORTED_TEXT } from './formats.js';
 import {
   createPlatter, stepPlatter, rateFromOmega, omegaNominal,
-  computeEnvelope, angleDelta, clamp, DEFAULT_PARAMS,
+  computeEnvelope, makeTempoFeed, angleDelta, clamp, DEFAULT_PARAMS,
 } from './model.js';
 import { Walkthrough } from './walkthrough.js';
 import {
-  TONEARM_KNOBS, estimateDurations, buildArmLayout, locateS, seekTargetS, sFor, stepIndex,
+  TONEARM_KNOBS, estimateDurations, buildArmLayout, locateS, seekTargetS, sFor,
   previousTarget, gapCentreS,
 } from './tonearm.js';
 import { NeedleFX } from './needle-fx.js';
@@ -38,6 +40,7 @@ import { createEngineGate } from './engine-gate.js';
 import { startBackground } from './background.js';        // background playback: timer-driven loop while hidden, native media service, media buttons (docs/DEVICE_LIBRARY.md)
 import { installBackButton } from './backbutton.js';      // hardware Back: close the topmost layer, else minimise
 import { LibraryManager } from './library.js';
+import { orderForPlayAll } from './albums.js';
 import { deviceLibrary, installDeviceLibrary, describeStatus } from './device/index.js';   // the phone's own audio library (Android app only; docs/DEVICE_LIBRARY.md)
 import { createStage } from './turntable/stage.js';
 import { FINISHED } from './turntable/state.js';
@@ -99,6 +102,9 @@ const state = {
   cdMute: false,             // brief CD "re-read" silence after a skip
   jumping: false,            // a track change is decoding (arm stays lifted)
   jumpS: 0,                  // where the arm shows while jumping
+  jumpTarget: null,          // { index, time } of the jump in flight (last tap wins)
+  pre: null,                 // the album's decoded-ahead next track, parked in the engine's next deck: { index, frames, envelope, name, tempoFeed, nch }
+  aq: null,                  // queue.js model for the vinyl album queue (gapless preload + join)
   trail: [],
   ghost: null,
   _inGap: false,
@@ -264,24 +270,34 @@ function searchActionsImpl() {
       await gotoSection('albums');
       tlib.focus(i, { animate: false });
       stage.dispatch({ type: 'zoomTo', z: 1 });
+      adoptFocusSoon(i);   // tlib.focus() does not emit 'focus': the album goes onto the platter the way a swipe would
       return true;
     },
     // artist "Play all": the artist's songs as one queue
     async playTracks(ids) {
-      const list = ids.map(trackObj).filter(Boolean);
+      // an artist's songs play album by album, in disc / track order inside each album
+      const list = orderForPlayAll(ids.map(trackObj).filter(Boolean));
       const first = list.findIndex((t) => t.file);
       if (first < 0) { flash('RE-LINK FILES'); return false; }
       markPicked();
+      const my = newIntent();
       await gotoSection('albums');
       await state.engine.resume();
+      if (my !== intent) return false;
       stage.dispatch({ type: 'zoomTo', z: 0 }); stage.dispatch({ type: 'stop', s: 0 });
-      let track;
-      try { track = await loadFile(list[first].file, state.engine.ctx, { copy: false }); }
-      catch (err) { console.error('play all failed', err); toast(`Cannot play "${list[first].title || 'this track'}": ${errMsg(err)}`); return false; }
-      state.albumId = null; state.albumMeta = null;
-      await loadTrack(track, queueFor({ kind: 'vinyl', id: null, tracks: list }, first));
+      const q = queueFor({ kind: 'vinyl', id: null, tracks: list }, first);
+      let at = first, track = null;
+      for (; at < list.length; at++) {   // the first track that decodes starts it (the others are skipped, marked, and said so)
+        if (!list[at].file) continue;
+        try { track = await loadFile(list[at].file, state.engine.ctx, { copy: false, durationSec: list[at].durationSec }); break; }
+        catch (err) { if (my !== intent) return false; console.error('play all failed', err); q.items[at].bad = true; toast(`Cannot play "${list[at].title || 'this track'}": ${failText(err, list[at])}`); }
+      }
+      if (!track) return false;
+      if (my !== intent) return false;
+      q.index = at;
+      try { await loadTrack(track, q, false, false, { id: null, meta: null }); } catch (err) { toast(`Cannot play "${list[at].title || 'this track'}": ${errMsg(err)}`); return false; }
       stage.setDisplay({ lit: true });
-      playTarget({ index: first, time: 0 }, { needle: false });
+      playTarget({ index: at, time: 0 }, { needle: false });
       syncDisplay(); syncAlbumUI();
       return true;
     },
@@ -289,7 +305,7 @@ function searchActionsImpl() {
     async openArtist(name) {
       const lk = (library.albums('artist') || []).findIndex((a) => String(a.artist).toLowerCase() === String(name).toLowerCase());
       if (lk < 0) return false;
-      await gotoSection('albums'); tlib.focus(lk, { animate: false }); stage.dispatch({ type: 'zoomTo', z: 1 });
+      await gotoSection('albums'); tlib.focus(lk, { animate: false }); stage.dispatch({ type: 'zoomTo', z: 1 }); adoptFocusSoon(lk);
       return true;
     },
     async openMixtape(id) {
@@ -324,28 +340,37 @@ function searchActionsImpl() {
 // `foreign` = a mixtape tape player loaded it: the engine is then not the vinyl player's (see state.vinylOwned).
 const engineGate = createEngineGate();
 let foreignPlaybackHook = null; // set once the Radio tab exists: ends an engine-backed station when the user starts their own track
-async function loadTrack(track, q = null, fromRadio = false, foreign = false) {
-  if (!fromRadio) { engineGate.bump(); try { foreignPlaybackHook && foreignPlaybackHook(); } catch { /* */ } }
-  if (!fromRadio && !foreign) { try { state.mixtapes && state.mixtapes.releaseEngine(); } catch { /* */ } }   // the user's own album track replaces a tape that was still playing
+// `album` = { id, meta } committed together with the track (undefined: leave the platter's album as it is; a loose file passes { id: null, meta: null }).
+// Nothing of the app state is touched until the engine really holds the new audio: a failure leaves the old record, its album and its queue exactly as they were.
+async function loadTrack(track, q = null, fromRadio = false, foreign = false, album = undefined) {
+  if (!fromRadio) engineGate.bump();
+  const [L, R] = track.channels;
+  const mono = (i) => (R ? (L[i] + R[i]) * 0.5 : L[i]);
+  const envelope = computeEnvelope(mono, track.frames, 1024);   // windowed RMS (mixtape level meter, You Radio); the spiral's min/max peaks are a separate pass in refreshRecord()
+  const nch = track.channels.length;
+  const feed = makeTempoFeed(track.channels, track.frames, state.engine.sampleRate);   // the Booth's tempo needs a 60 s excerpt, not the whole PCM
+  await state.engine.load(track.channels, track.frames);   // may throw: nothing is committed yet
+  // committed: the engine holds this audio now
+  if (!fromRadio) { try { foreignPlaybackHook && foreignPlaybackHook(); } catch { /* */ } }
+  if (!foreign) { try { state.mixtapes && state.mixtapes.releaseEngine(); } catch { /* */ } }   // an album track / a station replaces a tape that was still playing
+  if (!foreign) state.braking = false;                                                        // a released paused tape must not leave the platter braked
   state.vinylOwned = !(fromRadio || foreign);
   state.track = track;
+  track.nch = nch; track.tempoFeed = feed;
   state.frames = track.frames;
   state.T = track.frames / state.engine.sampleRate;
   state.queue = q;
+  if (album !== undefined) { state.albumId = album ? album.id : null; state.albumMeta = album ? album.meta : null; }
   if (q) q.items[q.index].dur = state.T;
   setView(q?.kind === 'cd' ? 'cd' : 'vinyl');
-
-  // Envelope: windowed RMS over a mono mixdown (mixtape level meter, You Radio). The spiral's min/max peaks are a separate pass
-  // over the same PCM (turntable/spiral.js computePeaks), made in refreshRecord().
-  const [L, R] = track.channels;
-  const mono = (i) => (R ? (L[i] + R[i]) * 0.5 : L[i]);
-  state.envelope = computeEnvelope(mono, track.frames, 1024);
-
-  await state.engine.load(track.channels, track.frames);
+  state.envelope = envelope;
   state.engine.setPlaying(!state.radioOn); // load() re-arms the bus; keep it muted under a live station
   state.engine.setRate(0);
   state.reachedEnd = false;
+  preTok++; state.pre = null; state.aq = q && q.kind === 'vinyl' && q.items.length > 1 ? createQueue({ playable: q.items.map((it) => !!it.file && !it.bad), durations: q.items.map((it) => it.dur), opts: { maxResidentBytes: DECODE_LIMITS.preloadBytes * 2, bytesPerSec: state.engine.sampleRate * 8 } }) : null;   // current + next deck within the memory budget, else the boundary is a cold load
+  if (state.aq) state.aq = queueReduce(state.aq, { type: 'start', index: q.index }).state;
   refreshRecord();
+  track.channels = null;     // the engine packed its own copy and the peaks / envelope / tempo feed are made: do not keep the decoded PCM alive (a 100 MB FLAC is ~500 MB)
   syncAlbumUI();
 }
 
@@ -401,7 +426,19 @@ const errMsg = (e) => String((e && e.message) || e || 'unknown error').slice(0, 
 
 // The platter still holds the built-in synthesized test pressing although the library has real albums. The demo is only for an empty
 // library (or when the user picks it); with real albums on the shelf it must be replaced by the focused album before anything plays.
-const platterIsDemo = () => state.albumId === TEST_PRESSING_ID && shelf.length > 0;
+// One playback-intent token: every user-initiated play action (a library pick, Play all, a track jump, a loose file, a tape song, a station) bumps it, and every
+// async path re-checks it after each await BEFORE it commits a decoded track. A stale decode then simply drops its result instead of overwriting a newer choice.
+let intent = 0;
+let preTok = 0;                          // bumped whenever the engine's deck changes: a decode-ahead that began earlier must not park its track
+const newIntent = () => { state.jumping = false; return ++intent; };
+const unfiltered = () => (library ? library.albums('artist') : []);   // the whole library (the shelf is only the filtered view of it)
+const libHasAlbums = () => unfiltered().length > 0;
+let libLoaded = false;                   // the persisted library finished restoring (before that an empty shelf does not mean an empty library)
+let libReady = Promise.resolve();
+const whenLibraryReady = () => Promise.race([libReady, new Promise((r) => setTimeout(r, 1500))]);
+// a station / a tape owns the engine right now (not merely left a loose track in it)
+const foreignPlaying = () => !!(engineOwner() || state.radioOn);
+const platterIsDemo = () => state.albumId === TEST_PRESSING_ID && libHasAlbums();
 let adoptTimer = 0;
 function scheduleAdopt() {   // after the library settles (a device scan rebuilds the shelf every 400 ms): put the focused album on the platter, silently
   clearTimeout(adoptTimer);
@@ -410,16 +447,20 @@ function scheduleAdopt() {   // after the library settles (a device scan rebuild
     if (engineOwner() || state.radioOn || !state.vinylOwned) return;     // a station / tape owns the engine: do not stomp it
     const i = tlib.getFocus();
     const a = albums[i];
-    if (!a || a.builtin || a.kind === 'cd') return;
-    await loadAlbum(i, 0);
+    if (!a || a.builtin) return;
+    const my = intent;                                                    // not a user action: any later intent wins over this silent load
+    if (await loadAlbum(i, 0, my) && a.kind === 'cd') {
+      state.cdPlaying = false;
+      if (stage.zoom > 0.5) el('pageAlbums').dataset.lib = '1';   // adopted while the library is open: the library must stay visible (.tt-wrap is hidden for a CD without data-lib)
+    }   // a CD adopts too, paused (the demo must not stay on the platter behind it)
   }, 700);
 }
 // Play with the demo on the platter and real albums on the shelf: load the focused album's first track (loud on failure) and report whether it is there.
-async function adoptFocusedAlbum() {
+async function adoptFocusedAlbum(my = intent) {
   let i = tlib.getFocus();
   if (!albums[i] || albums[i].builtin) i = albums.findIndex((a) => !a.builtin);
-  if (i < 0) return false;
-  return loadAlbum(i, 0);
+  if (i < 0) { flash('PICK AN ALBUM'); return false; }   // a filter hides every album: never fall back to the demo
+  return loadAlbum(i, 0, my);
 }
 
 // arm position s (0..1 along the album chord) for the audio time t
@@ -473,7 +514,8 @@ function loop(now, hidden = false) {   // hidden: the page is not visible, so no
     : (vinylIdle || state.seeking || state.jumping ? 0 : rateFromOmega(state.platter.omega, REFERENCE_RPM));
   state.engine.setRate(rate);
 
-  // 4. Read audio time back from the worklet to position the arm.
+  // 4. Read audio time back from the worklet to position the arm. The album queue may join the decoded-ahead next track first.
+  albumQueueTick(state.engine.position / state.engine.sampleRate, rate);
   const t = state.engine.position / state.engine.sampleRate;
 
   // wear: bump play count once when the needle first reaches the runout
@@ -482,8 +524,8 @@ function loop(now, hidden = false) {   // hidden: the page is not visible, so no
     state.playCount += 1;
     localStorage.setItem('runout.playCount', String(state.playCount));
     // A CD runs on to the next track by itself; so does a record side with more tracks on it (the needle crosses the gap).
-    if (state.view === 'cd' && state.queue && stepIndex(state.queue.index, 1, state.queue.items.length) != null) {
-      goTo({ index: state.queue.index + 1, time: 0 }, false);
+    if (state.view === 'cd' && state.queue && nextGood(state.queue, state.queue.index, 1) >= 0) {
+      goTo({ index: nextGood(state.queue, state.queue.index, 1), time: 0 }, false, { natural: true });
     } else if (state.view === 'vinyl' && state.vinylOwned && pl.playing) onVinylTrackEnd();
   }
   if (t < state.T - 0.2) state.reachedEnd = false;
@@ -503,14 +545,77 @@ function loop(now, hidden = false) {   // hidden: the page is not visible, so no
   if (!hidden) updateHud(rate, t);
 }
 
-// The record ran out: the next track of the side (the needle crosses the gap and goes on), or the end of the album (frozen at the runout).
+// The next / previous track of the album that can actually play (has its file, did not fail to decode), or -1.
+function nextGood(q, from, dir) {
+  for (let j = from + dir; j >= 0 && j < q.items.length; j += dir) { const it = q.items[j]; if (it && it.file && !it.bad) return j; }
+  return -1;
+}
+// The record ran out: the next playable track of the side (the needle crosses the gap and goes on), or the end of the album (frozen at the runout).
 function onVinylTrackEnd() {
   const q = state.queue;
-  if (q && stepIndex(q.index, 1, q.items.length) != null) {
-    playTarget({ index: q.index + 1, time: 0 }, { needle: false });
-  } else {
-    stage.dispatch({ type: 'finished' });
+  const nx = q ? nextGood(q, q.index, 1) : -1;
+  if (nx >= 0) playTarget({ index: nx, time: 0 }, { needle: false, natural: true });
+  else stage.dispatch({ type: 'finished' });
+}
+
+// ── album gapless (queue.js model, AudioEngine.prepareNext / joinNext) ──────────────────────────────────────────────────────
+// While a vinyl album track plays, the next playable one is decoded ahead into the engine's parked second deck; at the end the engine joins it (equal-power,
+// ~50 ms) at the current platter rate, so scratch / brake / speed keep acting on whatever deck is active. Over the memory budget (or a failed decode ahead) the
+// boundary is the old cold load. The spiral of a joined track is drawn from the RMS envelope (the engine owns the PCM; see refreshRecord).
+function albumQueueTick(t, rate) {
+  const q = state.queue;
+  if (!state.aq || !q || q.kind !== 'vinyl' || !state.vinylOwned || state.jumping || state.view !== 'vinyl' || !stage.player.playing || state.radioOn) return;
+  const r = queueReduce(state.aq, { type: 'tick', t, T: state.T, rate });
+  state.aq = r.state;
+  for (const a of r.actions) {
+    if (a.type === 'preload') preloadAlbumNext(a.index);
+    else if (a.type === 'join') joinAlbumNext(a.index, a.fadeSec);
   }
+}
+async function preloadAlbumNext(index) {
+  const q = state.queue, it = q && q.items[index], aq = state.aq;
+  if (!it || !it.file) return;
+  const tok = ++preTok;
+  const stale = () => tok !== preTok || state.queue !== q || state.aq == null;
+  try {
+    const track = await loadFile(it.file, state.engine.ctx, { copy: false, durationSec: it.dur });
+    if (stale()) return;
+    const [L, R] = track.channels;
+    const envelope = computeEnvelope((i) => (R ? (L[i] + R[i]) * 0.5 : L[i]), track.frames, 1024);
+    const tempoFeed = makeTempoFeed(track.channels, track.frames, state.engine.sampleRate);
+    const nch = track.channels.length, bytes = track.frames * nch * 4;
+    await state.engine.prepareNext(track.channels, track.frames);
+    track.channels = null;
+    if (stale()) { state.engine.dropNext(); return; }
+    state.pre = { index, frames: track.frames, envelope, name: track.name, tempoFeed, nch };
+    state.aq = queueReduce(state.aq, { type: 'preloaded', index, bytes }).state;
+  } catch (err) {
+    if (stale()) return;
+    if (err && err.tooLong) state.aq = { ...state.aq, phase: 'skipped', next: index };       // too big to hold two: the boundary is a cold load (which says so)
+    else { it.bad = true; state.aq = queueReduce(state.aq, { type: 'preloadFailed', index }).state; }   // undecodable: skipped from now on
+  }
+}
+function joinAlbumNext(index, fadeSec) {
+  const q = state.queue, pre = state.pre;
+  if (!q || !pre || pre.index !== index || !state.engine.hasNext || state.engine.nextFrames !== pre.frames || !state.engine.joinNext({ fadeSec })) {
+    state.pre = null; state.engine.dropNext();
+    if (state.aq) state.aq = { ...state.aq, phase: 'skipped', next: index, cold: false };   // the loop's natural-end handling cold-loads it
+    return;
+  }
+  preTok++; state.pre = null;
+  q.index = index;
+  state.track = { frames: pre.frames, name: pre.name, channels: null, nch: pre.nch, tempoFeed: pre.tempoFeed };
+  state.frames = pre.frames;
+  state.T = pre.frames / state.engine.sampleRate;
+  state.envelope = pre.envelope;
+  q.items[index].dur = state.T;
+  state.reachedEnd = false;
+  state.aq = queueReduce(state.aq, { type: 'joined' }).state;
+  state.aq = queueReduce(state.aq, { type: 'start', index }).state;
+  refreshRecord();
+  stage.dispatch({ type: 'play', s: sFor(state.layout, index, 0) });
+  syncAlbumUI();
+  lsSet(LS.last, { id: q.albumId, index });
 }
 
 // ── the turntable stage: gestures in, hooks out ──────────────────────────────────────────────────────────────────────────
@@ -543,7 +648,7 @@ function installTurntable() {
   stage.setSpeedUI(state.speedBase);
   // rt test hooks (the prototype's window.__rt, plus the app handle for scripts/verify-turntable.py)
   window.__rt = Object.assign(stage.rt, {
-    app: () => ({ state, stage, tlib, albums, shelf }),
+    app: () => ({ state, stage, tlib, albums, shelf, limits: DECODE_LIMITS, aiHost: () => makeAiHost(library), actions: () => searchActionsImpl(), library, intent: () => intent }),
     goTo: (t, n) => goTo(t, n),
   });
 }
@@ -581,10 +686,12 @@ async function onToggle() {
   }
   const owner = engineOwner();
   if (owner) { flash(owner === 'radio' ? 'RADIO ON' : 'TAPE ON'); return; }   // the engine is a station's / a tape's right now
-  if (platterIsDemo()) {   // real albums on the shelf but the demo on the platter: never play the demo, load the focused album (loud on failure)
+  const my = newIntent();
+  if (!libLoaded) { await whenLibraryReady(); if (my !== intent) return; }    // the persisted library may still be restoring: an empty shelf is not an empty library
+  if (platterIsDemo()) {   // real albums in the library but the demo on the platter: never play the demo, load the focused album (loud on failure)
     const a0 = albums[tlib.getFocus()];
     stage.setDisplay({ lit: true });
-    if (!(await adoptFocusedAlbum())) return;
+    if (!(await adoptFocusedAlbum(my)) || my !== intent) return;
     if (a0 && a0.kind === 'cd') { state.cdPlaying = true; return; }
     playTarget({ index: 0, time: 0 }, { needle: false });
     return;
@@ -600,7 +707,7 @@ async function onToggle() {
 }
 
 // Put the needle down at `target` ({index, time}), lower the arm and play. Used by the library, next / previous, a finished record.
-async function playTarget(target, { needle = false } = {}) {
+async function playTarget(target, { needle = false, natural = false } = {}) {
   await state.engine.resume();
   state.vinylOwned = true;
   state.engine.setPlaying(false);
@@ -608,7 +715,7 @@ async function playTarget(target, { needle = false } = {}) {
   const s = sFor(state.layout, target.index, target.time);
   stage.dispatch({ type: 'play', s });
   state.jumpS = s;
-  await goTo(target, needle);
+  await goTo(target, needle, { natural });
 }
 
 // ── speed ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -643,7 +750,7 @@ function onArmRelease(s, flickDir) {
   let target = null;
   if (flickDir && q) {
     target = flickDir === 'next'
-      ? (stepIndex(q.index, 1, q.items.length) != null ? { index: q.index + 1, time: 0 } : null)
+      ? (nextGood(q, q.index, 1) >= 0 ? { index: nextGood(q, q.index, 1), time: 0 } : null)
       : previousTarget(q.index, state.engine.position / state.engine.sampleRate, q.items.length);
   }
   if (!target) target = seekTargetS(state.layout, s);
@@ -665,42 +772,72 @@ function nudgePlayhead(dir) {
 }
 
 // Commit a (index, time) target. Same track: a hard seek. Other track: decode it, then seek. `needle` = play the vinyl set-down
-// sound/animation (CD skips are silent).
-function goTo(target, needle) {
+// sound/animation (CD skips are silent). `natural` = the record ran out by itself (a failure then ends the record instead of resuming the old track).
+function goTo(target, needle, opts = {}) {
   const q = state.queue;
   const sr = state.engine.sampleRate;
   if (!q || target.index === q.index) {
+    if (state.jumping) { newIntent(); syncDisplay({ loading: false }); }   // a seek on the track that is still loaded cancels the jump that was decoding
     state.engine.seek(target.time * sr);
     state.reachedEnd = false;
     if (state.view === 'cd') cdSkipMute(); else finishDrop(needle);
     return Promise.resolve();
   }
-  return jumpTo(target, needle);
+  return jumpTo(target, needle, opts);
 }
 
-async function jumpTo(target, needle) {
+// Last tap wins: a jump supersedes the one still decoding (that one drops its result after its await). A track that cannot be decoded is marked, and the
+// jump moves on to the next playable one in the direction of travel; nothing playable left = a natural end finishes the record, a manual jump stays where it was.
+async function jumpTo(target, needle, { natural = false } = {}) {
   const q = state.queue;
-  if (!q || state.jumping) return;
-  state.jumping = true;
+  if (!q) return;
+  const my = ++intent;
+  const from = q.index, dir = target.index >= from ? 1 : -1;
+  const pending = state.jumping;
+  state.jumping = true; state.jumpTarget = target;
   if (state.view === 'vinyl') { state.jumpS = sFor(state.layout, target.index, target.time); syncDisplay({ loading: true }); }
   state.engine.setPlaying(false);
+  let landed = -1, tooLong = false;
   try {
     await state.engine.resume();
-    const it = q.items[target.index];
-    if (!it || !it.file) throw new Error('its file is not linked');
-    const track = await loadFile(it.file, state.engine.ctx, { copy: false });
-    q.index = target.index;
-    await loadTrack(track, q);
-    state.engine.seek(target.time * state.engine.sampleRate);
-  } catch (err) {
-    console.error('track jump failed', err);
-    toast(`Cannot play "${(q.items[target.index] || {}).title || 'that track'}": ${errMsg(err)}`);
+    if (my !== intent) return;
+    for (let idx = target.index; idx >= 0 && idx < q.items.length; idx += dir) {
+      const it = q.items[idx];
+      if (!it || !it.file) continue;
+      if (it.bad) { if (idx === target.index && it.unsupported) toast(`Cannot play "${it.title || 'that track'}": ${UNSUPPORTED_TEXT}`); continue; }   // known undecodable: skipped without a decode attempt
+      try {
+        const track = await loadFile(it.file, state.engine.ctx, { copy: false, durationSec: it.dur });
+        if (my !== intent) return;
+        q.index = idx;
+        await loadTrack(track, q);
+        landed = idx;
+        break;
+      } catch (err) {
+        if (my !== intent) return;
+        q.index = from;
+        it.bad = true; tooLong = tooLong || !!(err && err.tooLong);
+        console.error('track jump failed', err);
+        toast(`Cannot play "${it.title || 'that track'}": ${failText(err, it)}`);
+        if (state.aq) state.aq = { ...state.aq, failed: [...state.aq.failed, idx] };
+      }
+    }
   } finally {
-    state.jumping = false;
-    syncDisplay({ loading: false });
+    if (my === intent) { state.jumping = false; state.jumpTarget = null; syncDisplay({ loading: false }); }
   }
-  if (state.view === 'cd') cdSkipMute(); else finishDrop(needle);
+  if (my !== intent) return;
+  if (landed >= 0) {
+    if (landed === target.index && target.time > 0) state.engine.seek(target.time * state.engine.sampleRate);
+    if (landed !== target.index && state.view === 'vinyl') stage.dispatch({ type: 'play', s: sFor(state.layout, landed, 0) });   // the arm settles on the track that did load
+    if (state.view === 'cd') cdSkipMute(); else finishDrop(needle);
+    return;
+  }
+  void pending;
+  // nothing playable in that direction
+  if (natural) { stage.dispatch({ type: 'finished' }); return; }
+  stage.dispatch({ type: 'play', s: currentS(state.engine.position / state.engine.sampleRate) });   // stay on (and keep playing) the track that is still loaded
+  if (state.view === 'cd') cdSkipMute(); else finishDrop(false);
 }
+const failText = (err, it) => (err && err.tooLong ? 'too long to load' : unsupportedReason(it) || (/\.(m4a|m4b|mp4)$/i.test((it && ((it.file && it.file.name) || it.path || it.name)) || '') && err && err.name === 'EncodingError') ? UNSUPPORTED_TEXT : errMsg(err));
 
 // Needle lands: thump + ripple, then the music bus reopens a beat later (if the record is meant to be playing).
 function finishDrop(needle) {
@@ -724,7 +861,7 @@ function queueFor(item, index) {
     kind: item.kind,
     index,
     albumId: item.id,
-    items: item.tracks.map((t) => ({ file: t.file, title: cleanTrackTitle(t.title), artist: t.artist || '', dur: Number.isFinite(t.durationSec) && t.durationSec > 0 ? t.durationSec : null })),
+    items: item.tracks.map((t) => { const un = !!unsupportedReason(t); return { file: t.file, title: cleanTrackTitle(t.title), artist: t.artist || '', dur: Number.isFinite(t.durationSec) && t.durationSec > 0 ? t.durationSec : null, ...(un ? { bad: true, unsupported: true } : null) }; }),
   };
 }
 
@@ -808,18 +945,20 @@ function syncSheetAlbum() {
 }
 function pickSheetTrack(i) {
   const q = state.queue;
-  if (!q || state.jumping || i === q.index && state.view === 'vinyl' && stage.player.playing) return;
+  if (!q || (i === q.index && !state.jumping && state.view === 'vinyl' && stage.player.playing)) return;
   markPicked();
   state.engine.resume().then(() => { if (state.view === 'vinyl') { state.fx?.lift(); playTarget({ index: i, time: 0 }, { needle: true }); } else goTo({ index: i, time: 0 }, false); });
 }
 
 function stepTrack(dir) {
   const q = state.queue;
-  if (!q || state.jumping) return;
+  if (!q) return;
+  const base = state.jumping && state.jumpTarget ? state.jumpTarget.index : q.index;   // taps in a row step from where the last one is going
   const t = state.engine.position / state.engine.sampleRate;
-  const target = dir > 0
-    ? (stepIndex(q.index, 1, q.items.length) != null ? { index: q.index + 1, time: 0 } : null)
-    : previousTarget(q.index, t, q.items.length);
+  let target;
+  if (dir > 0) { const j = nextGood(q, base, 1); target = j >= 0 ? { index: j, time: 0 } : null; }
+  else if (base === q.index && !state.jumping && t > TONEARM_KNOBS.prevRestartSec) target = { index: base, time: 0 };
+  else { const j = nextGood(q, base, -1); target = j >= 0 ? { index: j, time: 0 } : { index: q.index, time: 0 }; }
   if (!target) return;
   if (state.view === 'vinyl') { state.fx?.lift(); playTarget(target, { needle: true }); }
   else goTo(target, false);
@@ -833,7 +972,7 @@ function installAlbumNav() {
     prev: el('cdPrev'), next: el('cdNext'), play: el('cdPlay'),
     num: el('cdNum'), time: el('cdTime'), title: el('cdTitle'), sub: el('cdSub'),
   }, {
-    onTrack: (i) => { if (state.queue && !state.jumping) goTo({ index: i, time: 0 }, false); },
+    onTrack: (i) => { if (state.queue) goTo({ index: i, time: 0 }, false); },
     onSeekFrac: (f) => { if (!state.jumping) goTo({ index: state.queue?.index ?? 0, time: f * state.T }, false); },
     onPrev: () => stepTrack(-1),
     onNext: () => stepTrack(1),
@@ -858,9 +997,13 @@ function installControls() {
 
   // Load a local file (drag-drop or picker).
   const loadLoose = async (f) => {
+    const my = newIntent();
     await state.engine.resume();
-    state.albumId = null; state.albumMeta = null;
-    await loadTrack(await loadFile(f, state.engine.ctx));
+    let track;
+    try { track = await loadFile(f, state.engine.ctx, { copy: false }); }
+    catch (err) { if (my === intent) toast(`Cannot play "${stripExt(f.name)}": ${failText(err, { name: f.name })}`); return; }
+    if (my !== intent) return;
+    try { await loadTrack(track, null, false, false, { id: null, meta: null }); } catch (err) { toast(`Cannot play "${stripExt(f.name)}": ${errMsg(err)}`); return; }
     stage.setDisplay({ lit: true });
     stage.dispatch({ type: 'play', s: 0 });
   };
@@ -1018,7 +1161,7 @@ function syncScanChip() {
 function syncEmpty() {
   if (!stage || !library) return;
   const native = deviceLibrary.isAvailable();
-  let show = !shelf.length && state.albumId === TEST_PRESSING_ID && !(stage.player.playing || stage.player.starting);   // out of the way while the demo plays
+  let show = libLoaded && !libHasAlbums() && state.albumId === TEST_PRESSING_ID && !(stage.player.playing || stage.player.starting);   // only for a truly empty library (a filter hiding every album, or a restore still running, is not empty); out of the way while the demo plays
   if (show && native && describeStatus(deviceLibrary.status.get()).show) show = false;
   stage.setEmpty({
     show, title: 'Demo record',
@@ -1069,46 +1212,59 @@ function rebuildAlbums() {
 }
 const indexOfAlbum = (id) => albums.findIndex((a) => a.id === id);
 
-// load album `index` of the library list (decode ONE track: the engine decodes whole files, the queue keeps a single resident track)
-let loadToken = 0;
-async function loadAlbum(index, trackIndex = 0) {
+// load album `index` of the library list (decode ONE track: the engine decodes whole files, the queue keeps a single resident track).
+// `my` is the playback intent this load belongs to: a user action takes a fresh one, a silent adopt passes the current one, so any later action wins.
+async function loadAlbum(index, trackIndex = 0, my = newIntent()) {
   const a = albums[index];
   if (!a) return false;
   if (a.builtin) {
-    const tok = ++loadToken;
     stage.setDisplay({ loading: true });
-    await state.engine.resume();
-    await loadTrack(synthesizeTrack(state.engine.sampleRate, 24));
-    if (tok !== loadToken) return false;
-    state.albumId = a.id; state.albumMeta = a; state.cdAlbum = false;
-    stage.setDisplay({ loading: false, lit: true }); syncDisplay();
-    syncAlbumUI();
+    try {
+      await state.engine.resume();
+      if (my !== intent) return false;
+      await loadTrack(synthesizeTrack(state.engine.sampleRate, 24), null, false, false, { id: a.id, meta: a });
+    } finally { if (my === intent) stage.setDisplay({ loading: false, lit: true }); }
+    state.cdAlbum = false;
+    syncDisplay(); syncAlbumUI();
     return true;
   }
   const item = shelf[index];
   const trackObj = item && item.tracks[trackIndex];
   if (!trackObj) return false;
+  const why = unsupportedReason(trackObj);
+  if (why) { flash('UNSUPPORTED FORMAT'); toast(`Cannot play "${trackObj.title || 'this track'}": ${why}`); return false; }   // wma, ALAC, ...: say so instead of a generic decode error
   if (!trackObj.file) { flash('RE-LINK FILES'); toast(`"${trackObj.title || 'This track'}" needs its file back: tap Scan to re-link your music.`); return false; }   // persisted metadata only: needs the file back (a user gesture)
-  const tok = ++loadToken;
   stage.setDisplay({ loading: true });
   try {
     await state.engine.resume();
-    const track = await loadFile(trackObj.file, state.engine.ctx, { copy: false });   // no second copy of a 100 MB decode: the engine packs its own
-    if (tok !== loadToken) return false;      // a newer pick superseded this decode
-    state.albumId = item.id; state.albumMeta = a;
-    await loadTrack(track, queueFor(item, trackIndex));
+    if (my !== intent) return false;
+    const track = await loadFile(trackObj.file, state.engine.ctx, { copy: false, durationSec: trackObj.durationSec });   // no second copy of a 100 MB decode: the engine packs its own
+    if (my !== intent) return false;      // a newer action superseded this decode
+    await loadTrack(track, queueFor(item, trackIndex), false, false, { id: item.id, meta: a });   // a failure leaves the old record, album and queue untouched
   } catch (err) {
+    if (my !== intent) return false;
     console.error('album load failed', err);
-    flash('CANNOT READ FILE');
-    toast(`Cannot play "${trackObj.title || 'this track'}": ${errMsg(err)}`);
+    flash(err && err.tooLong ? 'TOO LONG TO LOAD' : 'CANNOT READ FILE');
+    toast(`Cannot play "${trackObj.title || 'this track'}": ${failText(err, trackObj)}`);
     return false;
   } finally {
-    if (tok === loadToken) stage.setDisplay({ loading: false });
+    if (my === intent) stage.setDisplay({ loading: false });
   }
   lsSet(LS.last, { id: item.id, index: trackIndex });
   syncDisplay(); syncAlbumUI();
   return true;
 }
+
+// An album the carousel settled on (a swipe, or tlib.focus() from search's "Open album") goes onto the platter, silently. A tape / station that is playing is
+// left alone; CD cases stay shelved until a track is picked.
+let focusAdoptTimer = 0;
+function adoptFocus(index) {
+  const a = albums[index];
+  if (!a || a.id === state.albumId || a.kind === 'cd' || foreignPlaying()) return;
+  stage.dispatch({ type: 'stop', s: 0 });
+  return loadAlbum(index, 0);
+}
+function adoptFocusSoon(index) { clearTimeout(focusAdoptTimer); focusAdoptTimer = setTimeout(() => adoptFocus(index), 420); }
 
 function wireLibrary() {
   // tap a track in the library: zoom back in and play that track
@@ -1121,7 +1277,8 @@ function wireLibrary() {
     await state.engine.resume();
     if (a.kind === 'cd') {                       // CD cases open the CD view (src/cd.js) as before, not the platter
       delete el('pageAlbums').dataset.lib;
-      if (await loadAlbum(idx, trackIndex)) { state.cdPlaying = true; }
+      const my = ++intent; state.jumping = false;
+      if (await loadAlbum(idx, trackIndex, my) && my === intent) { state.cdPlaying = true; }
       return;
     }
     if (state.albumId === a.id && state.queue && state.view === 'vinyl') {   // already on the platter: just move the needle
@@ -1129,7 +1286,8 @@ function wireLibrary() {
       return;
     }
     stage.dispatch({ type: 'stop', s: 0 });
-    if (await loadAlbum(idx, trackIndex)) {
+    const my = ++intent; state.jumping = false;
+    if (await loadAlbum(idx, trackIndex, my) && my === intent) {
       stage.setDisplay({ lit: true });
       if (a.builtin) stage.dispatch({ type: 'play', s: 0 });
       else playTarget({ index: trackIndex, time: 0 }, { needle: false });
@@ -1141,19 +1299,15 @@ function wireLibrary() {
     const ai = indexOfAlbum(albumId);
     const a = albums[ai];
     stage.dispatch({ type: 'zoomTo', z: 0 });
-    if (a && !a.builtin && a.kind !== 'cd' && state.albumId !== a.id && !state.jumping) { stage.dispatch({ type: 'stop', s: 0 }); await loadAlbum(ai, 0); }   // the cover you tapped is the record you get
+    // The cover you tapped is the record you get, unless that would cut off a tape / station that is playing: leaving the library is then just a zoom back.
+    if (a && !a.builtin && a.kind !== 'cd' && state.albumId !== a.id && !state.jumping && !foreignPlaying()) { stage.dispatch({ type: 'stop', s: 0 }); await loadAlbum(ai, 0); }
     if (a && a.kind === 'cd' && state.queue && state.queue.kind === 'cd') delete el('pageAlbums').dataset.lib;
   });
   // swipe sideways: when the carousel settles on another album, load it (debounced: a fling past covers decodes nothing)
   let focusTimer = 0;
   tlib.on('focus', (index) => {
     clearTimeout(focusTimer);
-    focusTimer = setTimeout(async () => {
-      const a = albums[index];
-      if (!a || a.id === state.albumId || a.kind === 'cd') return;   // CD cases stay shelved until a track is picked
-      stage.dispatch({ type: 'stop', s: 0 });
-      await loadAlbum(index, 0);
-    }, 420);
+    focusTimer = setTimeout(() => adoptFocus(index), 420);
   });
   tlib.on('filter', (kind) => { view.kind = kind; rebuildAlbums(); });
   tlib.on('sort', (sort) => { view.sort = sort; rebuildAlbums(); });
@@ -1186,7 +1340,7 @@ function installLibrary() {
   library = new LibraryManager();
   // Persisted library metadata (tags only, no audio) -> albums + mixtape refs resolve before any re-scan;
   // those tracks show "needs re-link" until then.
-  library.restore().then((n) => { if (n) { rebuildAlbums(); state.mixtapes?.refresh?.(); restoreLast(); announceLibrary(false); } }).catch(() => {});
+  libReady = library.restore().then((n) => { libLoaded = true; if (n) { rebuildAlbums(); state.mixtapes?.refresh?.(); restoreLast(); announceLibrary(false); } else syncEmpty(); }).catch(() => { libLoaded = true; syncEmpty(); });
   rebuildAlbums();
   if (deviceLibrary.isAvailable()) {   // Android app only: device tracks stream into the same library; the card explains / asks / shows progress
     let t = 0;
@@ -1202,10 +1356,11 @@ function installLibrary() {
     getLibraryTracks: () => library.tracks,
     closeLibrary: () => { /* the player opens over the page; nothing to close */ },
     playFile: async (file) => {
+      const my = newIntent();                // the tape's own song is a user action too: it supersedes an album decode still in flight, and the other way round
       await state.engine.resume();
-      const track = await loadFile(file, state.engine.ctx);
-      await loadTrack(track, null, false, true);
-      state.albumId = null; state.albumMeta = null;
+      const track = await loadFile(file, state.engine.ctx, { copy: false });
+      if (my !== intent) throw new Error('superseded');
+      await loadTrack(track, null, false, true, { id: null, meta: null });
       return track;
     },
     relink: () => library.relink(),
@@ -1225,7 +1380,8 @@ function installLibrary() {
     decodeNext: async (file) => {
       const track = await loadFile(file, state.engine.ctx, { copy: false });
       const [L, R] = track.channels;
-      track.envelope = computeEnvelope((i) => (L[i] + R[i]) * 0.5, track.frames, 1024); // off the join path
+      track.nch = track.channels.length;
+      track.envelope = computeEnvelope((i) => (R ? (L[i] + R[i]) * 0.5 : L[i]), track.frames, 1024); // off the join path
       return track;
     },
     prepareNext: (track) => state.engine.prepareNext(track.channels, track.frames),
@@ -1234,7 +1390,7 @@ function installLibrary() {
     adoptTrack: (track) => {
       // The engine already switched decks; mirror loadTrack()'s non-engine state.
       state.vinylOwned = false;
-      state.track = { frames: track.frames, name: track.name, channels: null };
+      state.track = { frames: track.frames, name: track.name, channels: null, nch: track.nch };
       state.frames = track.frames;
       state.T = track.frames / state.engine.sampleRate;
       state.envelope = track.envelope;
@@ -1257,7 +1413,7 @@ function installLibrary() {
         async mount(host) {
           const { RadioUI } = await import('./radio-player.js');
           radio = new RadioUI({
-            onActive: (on) => { state.radioOn = on; state.engine.setPlaying(!on); },
+            onActive: (on) => { state.radioOn = on; state.engine.setPlaying(!on); if (on) { newIntent(); try { state.mixtapes && state.mixtapes.releaseEngine(); } catch { /* */ } } },   // a station and a tape never share the engine
             aiHost: makeAiHost(library), // You Radio (src/radio/offline) plays your library through this engine
           });
           radio.mount(host.querySelector('#paneRadio'));
@@ -1296,6 +1452,19 @@ function installLibrary() {
 function boothShown() {
   const pl = stage.player;
   if (pl.playing || pl.starting || !state.vinylOwned || engineOwner() || state.view !== 'vinyl') return;
+  if (!libLoaded || platterIsDemo()) {   // the demo is for an empty library only: with real albums (or while they are still restoring) put the focused one on the platter first
+    const my = newIntent();
+    (async () => {
+      if (!libLoaded) await whenLibraryReady();
+      if (my !== intent) return;
+      if (platterIsDemo() && !(await adoptFocusedAlbum(my))) return;
+      if (my !== intent) return;
+      if (pl.playing || pl.starting || !state.vinylOwned || engineOwner() || state.view !== 'vinyl') return;   // a CD took the platter, or something else started
+      stage.setDisplay({ lit: true });
+      stage.dispatch({ type: pl.frozenS > FINISHED ? 'play' : 'toggle', s: 0 });
+    })();
+    return;
+  }
   stage.setDisplay({ lit: true });
   stage.dispatch({ type: pl.frozenS > FINISHED ? 'play' : 'toggle', s: 0 });
 }
@@ -1525,6 +1694,7 @@ function refreshNowPlaying() {
   if (q && !state.radioOn && (state.view === 'cd' ? state.cdPlaying : (stage.player.playing && state.vinylOwned))) {
     src.album = { title: q.items[q.index].title || (state.track && state.track.name) || 'Album', sub: `${q.kind === 'cd' ? 'CD' : 'Vinyl'} · track ${q.index + 1} of ${q.items.length}`, playing: true, canNext: q.index + 1 < q.items.length };
   }
+  if (p && !p.ended && p.paused && !state.mixtapes.playerOpen && !miniHold) miniHold = 'mixtape';   // a paused tape whose player was closed stays on the mini bar, resumable
   if (miniHold && (src.radio || src[miniHold])) miniHold = null;          // something is playing again: no hold needed
   if (miniHold === 'mixtape' && p && !p.ended && !src.mixtape) src.mixtape = { title: p.mix.name || 'Mixtape', sub: `Mixtape · paused · track ${Math.max(1, p.idx + 1)} of ${p.files.length}`, playing: false, canNext: false };
   else if (miniHold === 'album' && q && !src.album) src.album = { title: q.items[q.index].title || (state.track && state.track.name) || 'Album', sub: `${q.kind === 'cd' ? 'CD' : 'Vinyl'} · paused · track ${q.index + 1} of ${q.items.length}`, playing: false, canNext: false };
@@ -1546,20 +1716,22 @@ function makeAiHost(library) {
     owner: () => engineGate.token(),
     cancelPending: () => { engineGate.bump(); }, // halt(): a decode still in flight must not install its song afterwards
     async load(libTrack) {
+      newIntent();                                // a station starting supersedes an album decode still in flight
       const tok = engineGate.token();
       await eng().resume();
-      const track = await loadFile(libTrack.file, eng().ctx);
+      const track = await loadFile(libTrack.file, eng().ctx, { copy: false, durationSec: libTrack.durationSec });
       engineGate.check(tok);
-      await loadTrack(track, null, true);
-      return { durationSec: state.T, envelope: state.envelope, bytes: track.frames * 8 };
+      const bytes = track.frames * track.channels.length * 4;
+      await loadTrack(track, null, true);         // releases a tape that was playing (a station and a tape never share the engine)
+      return { durationSec: state.T, envelope: state.envelope, bytes };
     },
     async decodeNext(libTrack) {
       const tok = engineGate.token();
-      const track = await loadFile(libTrack.file, eng().ctx, { copy: false });
+      const track = await loadFile(libTrack.file, eng().ctx, { copy: false, durationSec: libTrack.durationSec });
       engineGate.check(tok);
       const [L, R] = track.channels;
-      const envelope = computeEnvelope((i) => (L[i] + R[i]) * 0.5, track.frames, 1024);
-      return { track, tok, envelope, name: track.name, frames: track.frames, durationSec: track.frames / eng().sampleRate, bytes: track.frames * 8 };
+      const envelope = computeEnvelope((i) => (R ? (L[i] + R[i]) * 0.5 : L[i]), track.frames, 1024);
+      return { track, tok, envelope, name: track.name, frames: track.frames, durationSec: track.frames / eng().sampleRate, bytes: track.frames * track.channels.length * 4 };
     },
     async prepareNext(h) { engineGate.check(h.tok); await eng().prepareNext(h.track.channels, h.track.frames); h.track.channels = null; }, // the engine copied the PCM
     joinNext: (fadeSec) => eng().joinNext({ fadeSec }),

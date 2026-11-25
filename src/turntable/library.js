@@ -169,7 +169,8 @@ export function mountTurntableLibrary(container, deps = {}) {
       r.num.textContent = pad2(i + 1);
       r.t.textContent = clipText(t.title);
       r.d.textContent = formatDuration(t.durationSec);
-      r.li.setAttribute('aria-label', `${i + 1}. ${clipText(t.title, 80)}`);
+      r.li.setAttribute('aria-label', `${i + 1}. ${clipText(t.title, 80)}${t.unsupported ? ' (unsupported format)' : ''}`);
+      r.unsup = !!t.unsupported; if (r.unsup) r.d.textContent = 'unsupported'; r.li.className = (r.on ? 'tl-trk on' : 'tl-trk') + (r.unsup ? ' unsup' : '');
     }
     setRowCount(count);
     markPlaying(true);
@@ -184,7 +185,7 @@ export function mountTurntableLibrary(container, deps = {}) {
     const idx = a && nowPlaying && nowPlaying.albumId === a.id && Number.isInteger(nowPlaying.trackIndex) ? nowPlaying.trackIndex : -1;
     for (let i = 0; i < list.children.length; i++) {
       const r = rows[i], on = i === idx;
-      if (force || r.on !== on) { r.on = on; r.li.className = on ? 'tl-trk on' : 'tl-trk'; r.li.setAttribute('aria-selected', String(on)); }
+      if (force || r.on !== on) { r.on = on; r.li.className = (on ? 'tl-trk on' : 'tl-trk') + (r.unsup ? ' unsup' : ''); r.li.setAttribute('aria-selected', String(on)); }
     }
   }
   function syncDisplay() { const k = clampIndex(Math.round(focusPos), n); if (k !== shownIdx) renderAlbum(k); }

@@ -77,12 +77,13 @@ export class FxController {
   // ── tempo ───────────────────────────────────────────────────────────────────────────────────────────────────────────
   ensureTempo() {
     const tr = this.host.getTrack();
-    if (!tr || !tr.channels) { this.tempo = null; this.tempoState = 'done'; return; }
+    const feed = tr && (tr.channels ? { channels: tr.channels, frames: tr.frames, sampleRate: this.host.sampleRate() } : tr.tempoFeed);   // the app keeps a 60 s excerpt instead of the whole PCM
+    if (!tr || !feed) { this.tempo = null; this.tempoState = 'done'; return; }
     if (this._tempoCache.has(tr)) { this.tempo = this._tempoCache.get(tr); this.tempoState = 'done'; this._emit(); return; }
     this.tempoState = 'analysing'; this._emit();
     const run = () => {
       if (this._disposed || this.host.getTrack() !== tr) return;
-      const t = estimateTempo(tr.channels, tr.frames, this.host.sampleRate());
+      const t = estimateTempo(feed.channels, feed.frames, feed.sampleRate || this.host.sampleRate());
       this._tempoCache.set(tr, t); this.tempo = t; this.tempoState = 'done'; this._push(true); this._emit();
     };
     (this.host.defer || ((f) => setTimeout(f, 30)))(run);

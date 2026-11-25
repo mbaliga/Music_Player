@@ -109,7 +109,7 @@ const atom = (type, ...kids) => { const b = cat(...kids); return cat(be32(8 + b.
 const dataAtom = (type, payload) => atom('data', be32(type), be32(0), payload);
 const utf8Item = (key, s) => atom(key, dataAtom(1, enc.encode(s)));
 /** moovFirst=false puts a big mdat before moov (atoms are skipped by size). */
-export function makeM4a(t, { durationSec = 0, timescale = 1000, moovFirst = true, cover = null } = {}) {
+export function makeM4a(t, { durationSec = 0, timescale = 1000, moovFirst = true, cover = null, codec = '' } = {}) {
   const items = [];
   if (t.title != null) items.push(utf8Item('©nam', t.title));
   if (t.artist != null) items.push(utf8Item('©ART', t.artist));
@@ -122,7 +122,8 @@ export function makeM4a(t, { durationSec = 0, timescale = 1000, moovFirst = true
   const mvhd = atom('mvhd', Uint8Array.of(0, 0, 0, 0), be32(0), be32(0), be32(timescale), be32(Math.round(durationSec * timescale)), new Uint8Array(80));
   const ilst = atom('ilst', ...items);
   const meta = atom('meta', Uint8Array.of(0, 0, 0, 0), atom('hdlr', new Uint8Array(24)), ilst);
-  const moov = atom('moov', mvhd, atom('trak', new Uint8Array(40)), atom('udta', meta));
+  const trak = codec ? atom('trak', atom('mdia', atom('minf', atom('stbl', atom('stsd', be32(0), be32(1), atom(codec, new Uint8Array(28))))))) : atom('trak', new Uint8Array(40));
+  const moov = atom('moov', mvhd, trak, atom('udta', meta));
   const ftyp = atom('ftyp', ascii('M4A '), be32(0), ascii('M4A mp42isom'));
   const mdat = atom('mdat', new Uint8Array(5000).fill(0x77));
   return moovFirst ? cat(ftyp, moov, mdat) : cat(ftyp, mdat, moov);

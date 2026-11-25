@@ -12,6 +12,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import { classifyAlbum, stripDiscLabel, KIND_CD, KIND_VINYL } from '../albums.js';
 import { hashSeed } from './covers.js';
+import { unsupportedReason } from '../formats.js';
 
 // ── tunables ─────────────────────────────────────────────────────────────────
 export const LIB_KNOBS = Object.freeze({
@@ -219,6 +220,7 @@ export function albumsToCoverflow(shelfItems) {
         title: trackTitleOf(t, k),
         durationSec: Number.isFinite(t?.durationSec) && t.durationSec > 0 ? t.durationSec : null,
         ...(t && t.id != null ? { id: t.id } : null),
+        ...(t && unsupportedReason(t) ? { unsupported: true } : null),   // the WebView cannot decode it (wma, ALAC, ...): the row is greyed and says so
       })),
     };
     if (coverUrl) a.coverUrl = coverUrl;

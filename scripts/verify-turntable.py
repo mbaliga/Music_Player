@@ -304,7 +304,8 @@ def run_library(b, w, h, tag):
     shot(page, 'library-scanned')
     cdt = page.evaluate(f'{APP}.albums.find(a => a.kind === "cd").tracks.map(t => t.title)')
     check(all('[' not in t for t in cdt), f'{tag}: [CD1] is stripped from CD track titles in the library ({cdt})')
-    check(page.evaluate(f'{APP}.state.view') == 'vinyl', f'{tag}: scanning does not disturb the platter')
+    # a scan puts the focused album on the platter silently (a CD too: paused, library still visible); it never plays and never leaves the demo behind
+    check(page.evaluate(f'{APP}.state.view') in ('vinyl', 'cd') and not page.evaluate(f'{APP}.stage.player.playing') and page.evaluate(f'{APP}.state.albumId') != 'builtin:test-pressing', f'{tag}: scanning does not disturb the platter')
     # tap a track of the focused vinyl album -> zoom back in and play that track
     vin = page.evaluate(f'{APP}.albums.findIndex(a => a.title === "Side One")')
     page.evaluate(f'{APP}.tlib.focus({vin}, {{animate: false}})'); page.wait_for_timeout(500)

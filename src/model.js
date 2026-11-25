@@ -107,6 +107,20 @@ export function rateFromOmega(omega, rpm) {
   return wn !== 0 ? omega / wn : 0;
 }
 
+/**
+ * The Booth's tempo estimate reads a 60 s window of the track starting 5 % in (src/fx/tempo.js onsetEnvelope). This copies exactly that window as one mono mixdown, so the
+ * whole decoded PCM (hundreds of MB for a long file) does not have to stay alive just for the Booth. Returns { channels: [mono], frames, sampleRate } or null.
+ */
+export function makeTempoFeed(channels, frames, sampleRate, seconds = 60) {
+  if (!channels || !channels[0] || !(frames > 0) || !(sampleRate > 0)) return null;
+  const span = Math.min(frames, Math.round(seconds * sampleRate));
+  const start = Math.max(0, Math.min(frames - span, Math.round(frames * 0.05)));
+  const L = channels[0], R = channels[1] || null;
+  const m = new Float32Array(span);
+  for (let i = 0; i < span; i++) m[i] = R ? (L[start + i] + R[start + i]) * 0.5 : L[start + i];
+  return { channels: [m], frames: span, sampleRate };
+}
+
 // ── Multi-resolution envelope (spec §9) ──────────────────────────────────────
 // The groove IS the waveform: windowed RMS drives the brightness/thickness
 // banding so the disc shows its own dynamics. Computed once per track. Pure DSP
@@ -117,16 +131,19 @@ export function rateFromOmega(omega, rpm) {
  * `getSample(i)` returns the mono sample at frame i; `frames` is the length.
  * Returns Float32Array of `bins` RMS values normalized to [0, 1].
  */
-export function computeEnvelope(getSample, frames, bins) {
+export function computeEnvelope(getSample, frames, bins, { maxPerBin = 512 } = {}) {
   const env = new Float32Array(bins);
   if (frames <= 0) return env;
   const win = Math.max(1, Math.floor(frames / bins));
+  // A long file must not freeze the main thread: look at <= maxPerBin evenly spaced samples of each window (the windowed RMS of a
+  // few hundred samples is the same picture; a 60-minute file is ~0.5 M reads instead of 160 M). Short windows are read in full.
+  const step = Math.max(1, Math.floor(win / maxPerBin));
   let peak = 1e-9;
   for (let b = 0; b < bins; b++) {
     const start = Math.floor((b / bins) * frames);
     let sum = 0;
     let n = 0;
-    for (let i = start; i < start + win && i < frames; i++) {
+    for (let i = start; i < start + win && i < frames; i += step) {
       const s = getSample(i);
       sum += s * s;
       n++;

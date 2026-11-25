@@ -141,3 +141,11 @@ test('CD by label: unlabelled track uses its disc tag; the label number wins ove
   assert.deepEqual(a.discs[0].tracks.map((x) => x.title), ['tagged1', 'c1', 'lab']); // label CD1 beats tag 2
   assert.deepEqual(a.discs[1].tracks.map((x) => x.title), ['c2', 'tagged2']);
 });
+
+import { orderForPlayAll } from '../src/albums.js';
+test('orderForPlayAll: album by album, disc then track number inside each, untagged last, stable', () => {
+  const t = (album, trackNo, title, discNo) => ({ album, trackNo, title, discNo });
+  const out = orderForPlayAll([t('B', 2, 'b2'), t('A', 3, 'a3'), t('B', 1, 'b1'), t('A', undefined, 'a-none'), t('A', 1, 'a1', 2), t('A', 1, 'a1', 1), t('', 5, 'x')]);
+  assert.deepEqual(out.map((x) => x.title), ['x', 'a1', 'a3', 'a-none', 'a1', 'b1', 'b2']);
+  assert.deepEqual(orderForPlayAll(null), []);
+});

@@ -104,7 +104,7 @@ async function processFile(file) {
   // a duration derived from MP3 frames is new information: keep it out of the id so libraries scanned before it existed keep their ids (and their mixtape links)
   const id = trackId({ title, artist, album, trackNo, discNo, size, durationSec: meta?.durationFromFrames ? undefined : durationSec });
 
-  return { id, file, title, artist, albumArtist, album, path, genre, trackNo, discNo, durationSec, size, coverUrl, hue, color, ...folderTrackFields(meta, file) };
+  return { id, file, title, artist, albumArtist, album, path, genre, trackNo, discNo, durationSec, size, coverUrl, hue, color, ...(meta?.codec ? { codec: meta.codec } : null), ...folderTrackFields(meta, file) };
 }
 
 // ── Library manager ──────────────────────────────────────────────────────────

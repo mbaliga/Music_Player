@@ -142,7 +142,7 @@ Measured in the tour (desktop Chromium on a CPU renderer, **not** phone numbers;
 * The always-on display's Albums outline is faint by design (`--dm-line` is very dark); whether it is readable on the AMOLED is an on-device check.
 * Locking while the library is zoomed out leaves the coverflow visible but frozen (the pinch back is frozen too); unlock to return. Locking first while on the turntable is the supported flow.
 * `src/tonearm.js` keeps the old radius-based helpers and `classifyFlick` (used by the CD tests, unused by the app).
-* Albums: Blend scratch in the Booth needs the shell to forward platter events (`hasPlatter: true`); gapless album pre-fetch at a track boundary is a cold load with a short gap.
+* Albums: Blend scratch in the Booth needs the shell to forward platter events (`hasPlatter: true`); the album queue is gapless through `queue.js` + `prepareNext / joinNext` (docs/TURNTABLE.md "Playback integrity"); a boundary falls back to a cold load only over the memory budget, and the CD view still re-reads cold.
 * Folder scans in a browser cannot keep `File` handles across a restart (tracks show "needs re-link" until the folder is scanned again).
 * Not built: the atmosphere bus, Hyle shaders, crate-flip browsing, desktop packaging (`PORTING_PLAN.md` is a plan only), native Oboe engine (only if the gate fails), two-hand multitouch, `Atomics` hardening of the seek handshake (a rare mis-seek, self-corrects).
 

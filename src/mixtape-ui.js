@@ -505,9 +505,11 @@ export class MixtapeUI {
     this._windCancel();
     clearTimeout(this._msgTimer);
     const p = this.play;
-    if (p && p.paused) { p.paused = false; this.d.setPaused?.(false); }   // closing resumes the record, like before
+    // Closing the player leaves a paused tape paused (the mini bar can resume it); it used to restart the record behind the user's back.
     if (this.pl) { this.pl.destroy(); this.pl = null; }
   }
+  /** Is the cassette player on screen? (a paused tape with the player closed stays on the mini bar) */
+  get playerOpen() { return !!this.pl && !this.root.classList.contains('hidden'); }
 
   async startPlayback(m, startIndex = 0) {
     closeBack();
@@ -691,7 +693,9 @@ export class MixtapeUI {
   releaseEngine() {
     const p = this.play; if (!p || p.ended || p.released) return;
     this._windCancel(); clearTimeout(this._msgTimer);
+    const wasPaused = p.paused;
     p.ended = true; p.released = true; p.tok++; p.nextTrack = null; p.paused = false;   // `released`: tick() leaves the engine alone from now on
+    if (wasPaused) this.d.setPaused?.(false);   // the pause braked the platter: lift it, or the album that replaces the tape starts silent and stuck
     this.d.dropNext?.();
     if (this.pl) { this.pl.destroy(); this.pl = null; }
     this.root.classList.add('hidden');
@@ -802,9 +806,12 @@ export class MixtapeUI {
     return tapeProgress(index, this._nSide(side), frac, p.sideDurs[side]);
   }
 
-  async _goto(i, frac = 0) {
+  /** Start song `i` (flat index). If it cannot be decoded the next playable song in the direction of travel is tried; with none left a natural advance ends the
+   *  side and a manual jump falls back to the song that is still loaded, so the index shown is always the one that is audible. */
+  async _goto(i, frac = 0, opts = {}) {
     const p = this.play;
     if (!p || !p.files[i]) return;
+    const prev = p.idx, dir = opts.dir || (i >= prev ? 1 : -1);
     p.idx = i; p.loading = true; p.ended = false;
     this._fillList();
     // Tell the queue first: jumping to the track it already decoded joins it
@@ -817,11 +824,26 @@ export class MixtapeUI {
       return;
     }
     p.tok++; p.nextTrack = null; this.d.dropNext?.();
-    try {
-      const tr = await this.d.playFile(p.files[i]);
-      if (tr && tr.frames) p.q = { ...p.q, curBytes: tr.frames * (tr.channels ? tr.channels.length : 2) * 4 };
-      if (frac > 0) this.d.seekFrac?.(frac);
-    } catch (e) { this.msg.textContent = 'Could not play “' + p.mix.tracks[i].title + '”.'; this.msg.classList.remove('hidden'); }
+    const gtok = p.gtok = (p.gtok || 0) + 1;
+    const stale = () => this.play !== p || p.released || p.gtok !== gtok;
+    let k = i;
+    for (;;) {
+      try {
+        const tr = await this.d.playFile(p.files[k]);
+        if (stale()) return;
+        if (tr && tr.frames) p.q = { ...p.q, curBytes: tr.frames * (tr.nch || (tr.channels ? tr.channels.length : 2)) * 4 };
+        if (frac > 0 && k === i) this.d.seekFrac?.(frac);
+        break;
+      } catch (e) {
+        if (stale() || (e && e.message === 'superseded')) return;
+        this.msg.textContent = 'Could not play “' + (p.mix.tracks[k] ? p.mix.tracks[k].title : 'that song') + '”.'; this.msg.classList.remove('hidden');
+        p.files[k] = null; p.q = { ...p.q, playable: p.q.playable.map((v, j) => (j === k ? false : v)) };   // never offered again this session
+        const nxt = this._playable(k + dir, dir);
+        if (nxt >= 0) { k = nxt; p.idx = k; this._fillList(); continue; }
+        if (opts.natural) { p.loading = false; p.ended = true; this._dispatch({ type: 'sideEnd' }); return; }   // the run is over: nothing is audible, nothing claims to play
+        p.idx = prev; p.loading = false; this._fillList(); return;                                                // a manual jump: stay on the song that is still loaded
+      }
+    }
     p.loading = false;
   }
 
@@ -838,7 +860,7 @@ export class MixtapeUI {
       if (ev.type === 'start') continue; // _goto handles start's actions itself
       if (a.type === 'preload') this._preload(a.index);
       else if (a.type === 'join') this._applyJoin(a.index, a.fadeSec);
-      else if (a.type === 'cold') this._goto(a.index);
+      else if (a.type === 'cold') this._goto(a.index, 0, { natural: true, dir: 1 });
       else if (a.type === 'end') { p.ended = true; this._dispatch({ type: 'sideEnd' }); }
       else if (a.type === 'drop-next') { p.tok++; p.nextTrack = null; this.d.dropNext?.(); }
     }
@@ -926,7 +948,7 @@ export class MixtapeUI {
       } else if (!p.ended && T > 0.5 && t >= T - 0.05) {
         // No engine hooks: plain load-at-the-runout (a short gap).
         const next = this._playable(p.idx + 1, 1);
-        if (next >= 0) this._goto(next); else { p.ended = true; this._dispatch({ type: 'sideEnd' }); }
+        if (next >= 0) this._goto(next, 0, { natural: true, dir: 1 }); else { p.ended = true; this._dispatch({ type: 'sideEnd' }); }
       }
       if (p.tp.phase === 'playing') {
         const nowMs = performance.now();

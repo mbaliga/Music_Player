@@ -76,6 +76,8 @@
 .tl-trk .t { flex: 1; min-width: 0; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tl-trk .d { font-variant-numeric: tabular-nums; color: #5d5d66; font-size: var(--f2); }
 .tl-trk.on { color: #fff; }
+.tl-trk.unsup { opacity: .45; }   /* the WebView cannot decode this file (wma, ALAC, ...): greyed, the right-hand text says why */
+.tl-trk.unsup .d { font-size: .8em; letter-spacing: .04em; }
 .tl-trk.on .n { color: #fff; }
 .tl-trk.on .n::before {
   content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #e6e6ec;

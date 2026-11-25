@@ -105,6 +105,15 @@ The stage's gesture entry points ask `allowsGesture` (`platter-scrub`, `platter-
 `ZOOM` (`camera.js`): `PINCH_GAIN 2.2`, `SNAP_OUT .35`, `SNAP_IN .65`, `K1 .56`, `EASE_RATE`. `ARM_KNOBS` (`tonearm.js`): `gapGrab`, flick thresholds. `AMP` (`spiral.js`).
 `TRIM` (`main.js`). `DEPLOY_S`, `RETRACT_RATE`, `FINISHED` (`state.js`). `TONEARM_KNOBS`, `NEEDLE_FX` as before.
 
+## Playback integrity (the playback review)
+
+* **One intent token** (`intent` in `main.js`): every user-initiated play action (a library pick, Play all, a track jump, a loose file, a tape song, a station) takes a fresh one, and every async path re-checks it after each await *before* it commits a decoded track. A stale decode drops its result. Jumps are last-tap-wins (`jumpTo`: a newer jump supersedes the one still decoding; the arm follows the newest target).
+* **`loadTrack` is transactional**: the engine takes the audio first, only then does the app state (track, queue, album id / meta, envelope, view) switch, so a failed load leaves the old record exactly as it was. The brake from a paused tape is lifted when an album track takes the engine.
+* **A track that cannot be decoded** is marked (`queue.items[i].bad`) and skipped: a natural end or Next goes to the next playable index; with none left a natural end finishes the record (frozen at the runout, nothing claims to play) and a manual jump stays on the loaded track. Formats the WebView cannot decode (`src/formats.js`: wma, amr, midi, ape, dsd, ALAC `.m4a` by its sample entry) are greyed in the library and say "unsupported format".
+* **Album gapless**: while a vinyl album track plays, `queue.js` decides when to decode the next playable track into the engine's parked second deck (`prepareNext`); at the end `joinNext` swaps decks at the current platter rate (scratch / brake / speed keep acting on the active deck). Over the memory budget (current + next deck <= 240 MB estimated) or after a failed decode-ahead the boundary is the old cold load. A joined track's spiral is drawn from the RMS envelope (the engine owns the PCM). Measured silence at a boundary: ~0 - 20 ms (the 50 ms equal-power join), was 130 - 440 ms.
+* **Memory**: `track.channels` is dropped after `engine.load` (peaks, envelope and a 60 s mono tempo excerpt for the Booth are kept; a mono file stays one channel, the worklet plays it on both ears); decodes use `copy: false` everywhere; the encoded bytes are released right after `decodeAudioData`; `DECODE_LIMITS` (`track.js`) refuses a file whose decoded size (duration x rate x channels x 4) is over 250 MB with "too long to load" (checked before decoding when the duration is known) and skips decode-ahead above the smaller preload cap. The envelope reads at most 512 samples per window, so a 60-minute file no longer stalls the main thread; the worklet outputs silence at the runout instead of holding the last sample as DC.
+* **Demo record**: only for an empty library. The decision (`platterIsDemo`, the empty-library card) uses the *whole* library, never the filtered shelf, and waits for the persisted library to restore. A CD adopts the platter too (paused). Tapping the centre cover or settling the carousel never replaces a tape / station that is playing.
+
 ## Test hooks
 
 `window.__rt` = the prototype's (`show(s,on)`, `park()`, `pose(s,d,a)`, `setZ(v)`, `focus(i)`, `tip(s)`) plus `setName`, `setScroll(ms)`, `live()`,
@@ -133,5 +142,5 @@ disc rotation.
 
 ## Open items
 
-Blend scratch (Booth) wiring on the platter events; gapless album pre-fetch (`queue.js` + `prepareNext/joinNext` on a track boundary); optional finger-following disc
+Blend scratch (Booth) wiring on the platter events; optional finger-following disc
 (visual offset that decays on release).

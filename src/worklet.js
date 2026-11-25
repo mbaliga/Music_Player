@@ -75,7 +75,7 @@ class RunoutProcessor extends AudioWorkletProcessor {
       this.fxGate = msg.gate ?? 1; this.fxAmount = msg.amount || 0; this.fxResume = msg.resume ? 1 : 0;
     }
     else if (msg.type === 'free') { // gapless hook: drop the PCM so it can be collected
-      this.pcm = new Float32Array(0); this.frames = 0; this.playing = 0; this.control = null;
+      this.pcm = new Float32Array(0); this.frames = 0; this.playing = 0; this.control = null; this.dead = true;   // process() returns false from now on: a processor that keeps returning true keeps its node (and the PCM it was built from) alive
     } else if (msg.type === 'pcm') {
       this.pcm = new Float32Array(msg.pcm);
       this.frames = msg.frames;
@@ -236,6 +236,7 @@ class RunoutProcessor extends AudioWorkletProcessor {
   // AudioWorklet calls process(inputs, outputs, parameters) — inputs FIRST.
   // We have no inputs (numberOfInputs: 0); the audio sink is outputs[0].
   process(inputs, outputs) {
+    if (this.dead) return false;
     const out = outputs[0];
     if (!out || out.length === 0) return true; // no output sink this quantum
     const blockLen = out[0].length;

@@ -99,7 +99,7 @@ function adaptDeps(d) {
     goto: d.goto || null, haptic: d.haptic || null,
     resume: d.resume || (() => e.resume()),
     host: {
-      getTrack: () => { const t = rawTrack(); return t && t.channels ? t : null; },
+      getTrack: () => { const t = rawTrack(); return t && (t.channels || t.tempoFeed) ? t : null; },
       hasRecord: h.hasRecord || (() => !!rawTrack()),
       nowPlaying: h.nowPlaying || (() => { const t = rawTrack(); return t ? { title: t.name || 'Untitled', sub: '', kind: 'vinyl', rpm: 33.33, playing: true } : null; }),
       envelope: h.envelope || (() => {

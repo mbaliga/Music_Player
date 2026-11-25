@@ -124,3 +124,9 @@ test('ogg vorbis and opus durationSec come from the last page granule (rate from
   const none = await readBytesTags(makeOgg([['TITLE', 'N']]));
   assert.equal(none.durationSec, undefined);
 });
+
+test('m4a codec: mp4a is aac, alac is flagged (the WebView cannot decode ALAC), no stsd = unknown', async () => {
+  assert.equal((await readBytesTags(makeM4a({ title: 'A' }, { durationSec: 5, codec: 'mp4a' }))).codec, 'aac');
+  assert.equal((await readBytesTags(makeM4a({ title: 'L' }, { durationSec: 5, codec: 'alac' }))).codec, 'alac');
+  assert.equal((await readBytesTags(makeM4a({ title: 'N' }, { durationSec: 5 }))).codec, undefined);
+});

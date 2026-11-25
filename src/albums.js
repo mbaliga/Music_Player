@@ -184,3 +184,13 @@ export function shelfItems(albums) {
   }
   return items;
 }
+
+// ── "Play all" order ─────────────────────────────────────────────────────────
+const cmpNum = (a, b) => (a || 0) - (b || 0);
+/** An artist's songs (search order) as one queue: album by album (A to Z), disc then track number inside each album, untagged numbers last, then title; stable. */
+export function orderForPlayAll(list) {
+  return (Array.isArray(list) ? list : []).map((t, i) => [t, i]).sort((x, y) => {
+    const a = x[0], b = y[0];
+    return String(a.album || '').localeCompare(String(b.album || '')) || cmpNum(a.discNo || 1, b.discNo || 1) || cmpNum(a.trackNo || 1e6, b.trackNo || 1e6) || String(a.title || '').localeCompare(String(b.title || '')) || x[1] - y[1];
+  }).map((x) => x[0]);
+}

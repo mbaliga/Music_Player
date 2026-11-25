@@ -88,17 +88,29 @@ export function synthesizeTrack(sampleRate, seconds = 24) {
   return { channels: [L, R], frames, name: 'Demo record' };
 }
 
-/** Decode a user-picked File into channel Float32Arrays at the ctx rate. */
-export async function loadFile(file, audioContext, { copy = true } = {}) {
-  const arr = await file.arrayBuffer();
+// ── decoded-size guard ──────────────────────────────────────────────────────────────────────────────────────────────────
+// The engine decodes a WHOLE file to Float32 (a 100 MB FLAC is ~500 MB of PCM, plus the engine's packed copy while loading), which on a phone is an
+// out-of-memory kill, not an error. The guard estimates the decoded size from the duration BEFORE decoding and refuses with a plain message.
+export const DECODE_LIMITS = { maxBytes: 250e6, preloadBytes: 120e6 };   // load limit / "do not decode-ahead above this" (tunable; docs/TURNTABLE.md memory)
+export class TooLongError extends Error { constructor(m) { super(m || 'too long to load'); this.name = 'TooLongError'; this.tooLong = true; } }
+/** estimated decoded Float32 bytes of a file of `durationSec` at `sampleRate`, `channels` wide (mono stays mono in memory) */
+export const decodedBytes = (durationSec, sampleRate, channels = 2) => Math.max(0, durationSec) * sampleRate * channels * 4;
+
+/** Decode a user-picked File into channel Float32Arrays at the ctx rate.
+ *  copy:false returns views into the decoded AudioBuffer (no second copy; only for callers that hand the PCM straight to the engine).
+ *  durationSec (when the caller knows it) lets the size guard refuse BEFORE the decode. A mono file stays ONE channel (the worklet plays it on both ears). */
+export async function loadFile(file, audioContext, { copy = true, durationSec = 0, maxBytes = DECODE_LIMITS.maxBytes } = {}) {
+  let dur = Number(durationSec) > 0 ? Number(durationSec) : 0;
+  if (!dur) { try { dur = (await (await import('./tags.js')).readFileTags(file)).durationSec || 0; } catch { dur = 0; } }
+  if (dur && decodedBytes(dur, audioContext.sampleRate, 2) > maxBytes && decodedBytes(dur, audioContext.sampleRate, 1) > maxBytes / 2) throw new TooLongError();
+  let arr = await file.arrayBuffer();
   const buf = await audioContext.decodeAudioData(arr);
+  arr = null;   // the encoded bytes are free as soon as the decode returned (decodeAudioData detaches them); do not keep a reference
+  if (!dur && decodedBytes(buf.duration, buf.sampleRate, buf.numberOfChannels) > maxBytes) throw new TooLongError();
   const channels = [];
-  // copy:false returns views into the decoded AudioBuffer (no second 85 MB
-  // copy); only for callers that hand the PCM straight to the engine (gapless preload).
   for (let c = 0; c < buf.numberOfChannels; c++) {
     channels.push(copy ? buf.getChannelData(c).slice() : buf.getChannelData(c));
   }
-  if (channels.length === 1) channels.push(copy ? channels[0].slice() : channels[0]); // mono → stereo
   return {
     channels,
     frames: buf.length,

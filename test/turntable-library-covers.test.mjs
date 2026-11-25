@@ -189,3 +189,9 @@ test('createCoverCache: embedded artwork is drawn over the painted cover once lo
   await Promise.resolve(); await Promise.resolve();
   assert.equal(draws.length, before);
 });
+
+import { albumsToCoverflow as _a2c } from '../src/turntable/library-layout.js';
+test('albumsToCoverflow flags tracks the WebView cannot decode (wma, ALAC) so the library can grey them', () => {
+  const out = _a2c([{ id: 'a', kind: 'vinyl', album: 'X', artist: 'Y', tracks: [{ title: 'ok', path: 'M/x/01 ok.mp3' }, { title: 'w', path: 'M/x/02 w.wma' }, { title: 'l', path: 'M/x/03 l.m4a', codec: 'alac' }] }]);
+  assert.deepEqual(out[0].tracks.map((t) => !!t.unsupported), [false, true, true]);
+});

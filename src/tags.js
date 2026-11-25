@@ -450,6 +450,17 @@ function parseIlst(d, s, e, out) {
   });
 }
 
+/** The audio codec of an MP4 / M4A: the first audio sample entry in trak > mdia > minf > stbl > stsd ('aac' for mp4a, 'alac', ...). ALAC (lossless iTunes m4a) is not decodable by the WebView. */
+const MP4_AUDIO = { mp4a: 'aac', alac: 'alac', 'ac-3': 'ac3', 'ec-3': 'eac3', fLaC: 'flac', Opus: 'opus', samr: 'amr', sawb: 'amr' };
+function findCodec(m, start, end, out) {
+  if (out.codec) return;
+  walkAtoms(m, start, end, (t, bs, be) => {
+    if (t === 'mdia' || t === 'minf' || t === 'stbl') findCodec(m, bs, be, out);
+    else if (t === 'stsd' && be - bs >= 16 && !out.codec) { const c = MP4_AUDIO[fourcc(m, bs + 12)]; if (c) out.codec = c; }
+    return true;
+  });
+}
+
 async function parseMp4(reader) {
   const head = await reader.read(0, 12);
   if (head.length < 12 || fourcc(head, 4) !== 'ftyp') return null;
@@ -468,7 +479,8 @@ async function parseMp4(reader) {
       if (size > 32 * 1024 * 1024) break;
       const m = await reader.read(pos + hdr, size - hdr);
       walkAtoms(m, 0, m.length, (t, bs, be) => {
-        if (t === 'mvhd') {
+        if (t === 'trak') findCodec(m, bs, be, out);
+        else if (t === 'mvhd') {
           const v = m[bs];
           const ts = v === 1 ? u32be(m, bs + 20) : u32be(m, bs + 12);
           const dur = v === 1 ? u32be(m, bs + 24) * 0x100000000 + u32be(m, bs + 28) : u32be(m, bs + 16);

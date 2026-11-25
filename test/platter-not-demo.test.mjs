@@ -10,9 +10,11 @@ const src = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
 const body = (name) => { const i = src.indexOf(name); assert.ok(i >= 0, name + ' exists'); return src.slice(i, i + 2500); };
 
 test('Play never plays the demo while the library has albums', () => {
-  assert.match(src, /const platterIsDemo = \(\) => state\.albumId === TEST_PRESSING_ID && shelf\.length > 0/);
+  // the decision uses the WHOLE library, never the filtered shelf (a filter that hides every album must not unlock the demo)
+  assert.match(src, /const platterIsDemo = \(\) => state\.albumId === TEST_PRESSING_ID && libHasAlbums\(\)/);
+  assert.match(src, /const libHasAlbums = \(\) => unfiltered\(\)\.length > 0/);
   const t = body('async function onToggle()');
-  assert.ok(t.indexOf('platterIsDemo()') > 0 && t.indexOf('adoptFocusedAlbum()') > 0, 'onToggle adopts the focused album first');
+  assert.ok(t.indexOf('platterIsDemo()') > 0 && t.indexOf('adoptFocusedAlbum(') > 0, 'onToggle adopts the focused album first');
   assert.ok(t.indexOf('platterIsDemo()') < t.indexOf("stage.dispatch({ type: 'toggle' })"), 'before the plain toggle');
 });
 
