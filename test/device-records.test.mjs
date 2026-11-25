@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mapRow, applyTags, deviceTrackId, trackAndDisc, relativeFromData, folderOf, isAudioRow, isUnknown, toStored, fromStored, UNKNOWN_ARTIST } from '../src/device/records.js';
+import { mapRow, applyTags, deviceTrackId, mediaIdOfDeviceId, trackAndDisc, relativeFromData, folderOf, isAudioRow, isUnknown, toStored, fromStored, UNKNOWN_ARTIST } from '../src/device/records.js';
 import { groupTracks, shelfItems } from '../src/albums.js';
 import { makeRow } from './support/fake-device-native.mjs';
 
@@ -14,13 +14,26 @@ test('a fully tagged row maps to the library track shape', () => {
   assert.equal(t.needsTags, false); assert.equal(t.file, null); assert.match(t.color, /^#[0-9a-f]{6}$/);
 });
 
-test('stable id: from _id + size + date_modified, and it moves when the file changes', () => {
+test('stable id: from the MediaStore _id alone; size / date_modified (a re-tag) do not move it', () => {
   const a = deviceTrackId({ id: 5, size: 100, modified: 7 });
   assert.equal(a, deviceTrackId({ id: 5, size: 100, modified: 7 }));
-  assert.notEqual(a, deviceTrackId({ id: 5, size: 101, modified: 7 }));
-  assert.notEqual(a, deviceTrackId({ id: 5, size: 100, modified: 8 }));
+  assert.equal(a, deviceTrackId({ id: 5, size: 101, modified: 7 }));
+  assert.equal(a, deviceTrackId({ id: 5, size: 100, modified: 8 }));
   assert.notEqual(a, deviceTrackId({ id: 6, size: 100, modified: 7 }));
-  assert.ok(a.length <= 64 && a.startsWith('d1-'));
+  assert.ok(a.length <= 64 && a.startsWith('d2-'));
+  // the change signature stays on the track
+  const t = mapRow(makeRow(3, { size: 111, modified: 22 })); assert.equal(t.size, 111); assert.equal(t.modified, 22);
+});
+
+test('old d1-<id>-<size>-<mtime> ids: the media id is readable from both formats and stored rows migrate', () => {
+  assert.equal(mediaIdOfDeviceId('d1-' + (1234).toString(36) + '-abc-def'), 1234);
+  assert.equal(mediaIdOfDeviceId(deviceTrackId({ id: 77 })), 77);
+  assert.equal(mediaIdOfDeviceId('f1-xyz'), null); assert.equal(mediaIdOfDeviceId(''), null);
+  const t = mapRow(makeRow(4, {}));
+  const old = { ...toStored(t), id: 'd1-' + (t.mediaId).toString(36) + '-5-9' };
+  const back = fromStored(old);
+  assert.equal(back.id, deviceTrackId({ id: t.mediaId })); assert.equal(back.mediaId, t.mediaId);
+  assert.equal(fromStored(toStored(t)).id, t.id, 'a current id is left alone');
 });
 
 test('MediaStore blanks: "<unknown>" artist/album, file-name title, folder grouping, needsTags', () => {

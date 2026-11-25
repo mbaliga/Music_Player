@@ -5,7 +5,7 @@ import {
   cassetteStyles, PEN_IDS, FONT_COLOURS, createMixtape, cleanName, makeTrackRef, trackKey,
   resolveTracks, addTrack, removeTrack, moveTrack, withName, withStyle, withPen, withInk,
   reelRadii, tapeProgress, serializeMixtape, parseMixtape, serializeCollection, parseCollection,
-  newMixtapeId, MAX_NAME,
+  newMixtapeId, MAX_NAME, withDurations,
 } from '../src/mixtape.js';
 import { validateHexColor } from '../src/theme.js';
 
@@ -183,4 +183,23 @@ test('future / corrupt collections never throw; future is detectable', () => {
   assert.equal(isFutureCollection('{nope'), false);
   assert.equal(isFutureCollection(null), false);
   for (const junk of ['', 'null', '[]', '"s"', '{"version":"2"}', '{"version":2}', undefined]) assert.deepEqual(parseCollection(junk), []);
+});
+
+test('resolveTracks: a ref made under an old phone id (d1-<id>-<size>-<mtime>) still finds its song after a re-tag changed every field AND the id', () => {
+  const song = { id: 'd2-' + (4242).toString(36), source: 'device', mediaId: 4242, title: 'Renamed', artist: 'New Artist', album: 'New Album', path: 'Music/Old Artist/Old Album/01 Intro.mp3', durationSec: 200.2 };
+  const other = { id: 'd2-zz', source: 'device', mediaId: 9, title: 'Other', artist: 'B', album: 'C', path: 'Music/B/C/01 Other.mp3', durationSec: 100 };
+  const lib = [other, song];
+  // 1. by the media id inside the old id
+  const byMedia = createMixtape({ id: 'a', tracks: [{ title: 'Intro', artist: 'Old Artist', album: 'Old Album', id: 'd1-' + (4242).toString(36) + '-5kf-1ab' }] });
+  assert.equal(resolveTracks(byMedia, lib)[0], song);
+  // 2. no usable id, tags all changed: folder + file name (and a duration within 2 s)
+  const byPath = createMixtape({ id: 'b', tracks: [{ title: 'Intro', artist: 'Old Artist', album: 'Old Album', path: 'Music/Old Artist/Old Album/01 Intro.mp3', dur: 201 }] });
+  assert.equal(resolveTracks(byPath, lib)[0], song);
+  const wrongLen = createMixtape({ id: 'c', tracks: [{ title: 'Intro', artist: 'Old Artist', album: 'Old Album', path: 'Music/Old Artist/Old Album/01 Intro.mp3', dur: 90 }] });
+  assert.equal(resolveTracks(wrongLen, lib)[0], null, 'a different length is not the same song');
+  // makeTrackRef keeps the path; withDurations heals the id / path of a ref that matched by fallback
+  assert.equal(makeTrackRef(song).path, song.path);
+  const healed = withDurations(byMedia, resolveTracks(byMedia, lib));
+  assert.equal(healed.tracks[0].id, song.id); assert.equal(healed.tracks[0].path, song.path);
+  assert.equal(withDurations(healed, resolveTracks(healed, lib)), healed, 'nothing to heal the second time');
 });

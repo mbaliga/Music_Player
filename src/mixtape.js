@@ -122,6 +122,8 @@ export function makeTrackRef(t) {
     album: String(t.album || '').trim(),
   };
   if (typeof t.id === 'string' && t.id && t.id.length <= 64) ref.id = t.id;
+  const rp = String(t.path || '').replace(/\\/g, '/').trim().slice(0, 300);   // folder + file name: survives a re-tag (the last-resort match below)
+  if (rp) ref.path = rp;
   const d = cleanDur(t.dur != null ? t.dur : t.durationSec);
   if (d) ref.dur = d;
   return ref;
@@ -148,6 +150,8 @@ export function resolveTracks(mixtape, libraryTracks) {
   const byId = new Map();
   const exact = new Map();
   const loose = new Map();
+  const byMedia = new Map();   // phone tracks by MediaStore _id: a ref made under the old `d1-<id>-<size>-<mtime>` ids (which moved on every re-tag) still finds its song
+  const byPath = new Map();    // folder + file name: the last resort when a re-tag changed title / artist / album AND the id format changed
   // A track that needs re-link (no File yet) loses to a live one with the same key.
   const put = (m, k, t) => {
     const cur = m.get(k);
@@ -157,9 +161,24 @@ export function resolveTracks(mixtape, libraryTracks) {
     if (typeof t.id === 'string' && t.id) put(byId, t.id, t);
     put(exact, trackKey(t), t);
     put(loose, `${norm(t.artist)}\0${norm(t.title)}`, t);
+    if (t.source === 'device' && Number.isFinite(t.mediaId)) put(byMedia, t.mediaId, t);
+    if (t.path) put(byPath, norm(t.path), t);
   }
-  return mixtape.tracks.map((r) =>
-    (r.id && byId.get(r.id)) || exact.get(trackKey(r)) || loose.get(`${norm(r.artist)}\0${norm(r.title)}`) || null);
+  const near = (r, t) => !(r.dur > 0 && t.durationSec > 0) || Math.abs(Math.ceil(t.durationSec - 1e-9) - r.dur) <= 2;   // same song within a couple of seconds, when both know
+  return mixtape.tracks.map((r) => {
+    let hit = (r.id && byId.get(r.id)) || null;
+    if (!hit && r.id) { const mid = mediaIdOfRefId(r.id); if (mid != null) hit = byMedia.get(mid) || null; }
+    hit = hit || exact.get(trackKey(r)) || loose.get(`${norm(r.artist)}\0${norm(r.title)}`) || null;
+    if (!hit && r.path) { const c = byPath.get(norm(r.path)); if (c && near(r, c)) hit = c; }
+    return hit;
+  });
+}
+/** the MediaStore id inside a phone track id (`d1-<id>-...` / `d2-<id>`), or null (kept local so mixtape.js stays free of the device modules) */
+function mediaIdOfRefId(id) {
+  const m = /^d[12]-([0-9a-z]+)(?:-|$)/.exec(String(id || ''));
+  if (!m) return null;
+  const n = parseInt(m[1], 36);
+  return Number.isFinite(n) ? n : null;
 }
 
 // ── Construction + pure edits (all return NEW mixtapes) ──────────────────────
@@ -372,8 +391,12 @@ export function withDurations(m, resolved) {
   let changed = false;
   const fix = (refs, off) => refs.map((r, i) => {
     const t = resolved[off + i], d = t ? cleanDur(t.durationSec) : 0;
-    if (d && d !== r.dur) { changed = true; return { ...r, dur: d }; }
-    return r;
+    let n = r;
+    if (d && d !== r.dur) n = { ...n, dur: d };
+    if (t && typeof t.id === 'string' && t.id && t.id.length <= 64 && t.id !== r.id) n = { ...n, id: t.id };   // heal a ref that only matched by fallback: it points at the song's current id now
+    if (t && t.path && !r.path) n = { ...n, path: String(t.path).replace(/\\/g, '/').slice(0, 300) };
+    if (n !== r) changed = true;
+    return n;
   });
   const A = fix(m.sides.A, 0), B = fix(m.sides.B, m.sides.A.length);
   return changed ? withSides(m, A, B) : m;

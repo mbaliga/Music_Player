@@ -120,7 +120,7 @@ test('incremental rescan: add, update, remove; unchanged rows are not re-fetched
   assert.equal(r.added, 1); assert.equal(r.removed, 1); assert.equal(r.updated, 1);
   assert.deepEqual(fetched.sort(), [1005, 1100]);
   const now = new Map(src.tracks().map((t) => [t.mediaId, t]));
-  assert.equal(now.has(1003), false); assert.equal(now.get(1005).title, 'Retitled'); assert.notEqual(now.get(1005).id, idsBefore.get(1005));
+  assert.equal(now.has(1003), false); assert.equal(now.get(1005).title, 'Retitled'); assert.equal(now.get(1005).id, idsBefore.get(1005), 'a re-tag (size / mtime moved) keeps the track id: mixtape links survive'); assert.equal(now.get(1005).size, mod.size);
   assert.equal(now.get(1000).id, idsBefore.get(1000), 'untouched tracks keep their ids');
   assert.equal(src.tracks().length, 30);
 });

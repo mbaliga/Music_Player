@@ -59,10 +59,21 @@ export function trackAndDisc(row) {
   return { trackNo: trackNo || undefined, discNo: discNo || undefined };
 }
 
-/** Stable id from MediaStore _id + size + date_modified. A re-tag/re-encode changes size or mtime and so the id. */
+/**
+ * Stable id from the MediaStore _id ALONE: a re-tag or re-encode changes size / date_modified but it is the same song, so mixtape links, play counts
+ * and the rest keep pointing at it. size + date_modified stay on the track as the CHANGE SIGNATURE (source.js re-reads a row when they move).
+ * The first format, `d1-<id>-<size>-<mtime>`, moved on every re-tag: mediaIdOfDeviceId() reads the _id back out of either format, and fromStored()
+ * migrates stored rows, so existing references survive.
+ */
 export function deviceTrackId(row) {
-  const b = (n) => Math.max(0, Math.trunc(Number(n) || 0)).toString(36);
-  return `d1-${b(row.id)}-${b(row.size)}-${b(row.modified)}`;
+  return `d2-${Math.max(0, Math.trunc(Number(row.id) || 0)).toString(36)}`;
+}
+/** The MediaStore _id inside a device track id (old `d1-` or current `d2-` format), or null for any other id. */
+export function mediaIdOfDeviceId(id) {
+  const m = /^d[12]-([0-9a-z]+)(?:-|$)/.exec(String(id || ''));
+  if (!m) return null;
+  const n = parseInt(m[1], 36);
+  return Number.isFinite(n) ? n : null;
 }
 
 export function deviceUri(id) { return `content://media/external/audio/media/${id}`; }
@@ -138,6 +149,7 @@ export function toStored(t) {
 export function fromStored(rec, { makeFile } = {}) {
   if (!rec || typeof rec !== 'object' || typeof rec.id !== 'string' || !Number.isFinite(rec.mediaId) || typeof rec.title !== 'string') return null;
   const t = { ...rec, coverUrl: null, file: null };
+  if (!t.id.startsWith('d2-')) t.id = deviceTrackId({ id: t.mediaId });   // d1-<id>-<size>-<mtime> -> d2-<id> (mixtape refs still find it: resolveTracks reads the media id)
   if (!(t.added > 0) && t.modified > 0) t.added = addedMs(t.modified, 's');   // rows stored before `added` existed
   if (makeFile) t.file = makeFile(t);
   return t;

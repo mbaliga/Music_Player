@@ -64,7 +64,7 @@ files access, which Play restricts to a short list of app types) and no `READ_ME
   shared by every DeviceFile (scan tag reads + preload + decode cannot pile up). A failed chunk is retried once, then the read
   rejects with `DeviceReadError` and starts no more chunks; a short read (file changed) is an error, never silent truncation.
   The slice semantics match `Blob.slice` (negatives, NaN, clamping).
-* `records.js`: MediaStore row -> library track. `id = d1-<_id>-<size>-<date_modified>` (base 36), `source:'device'`, `mediaId`,
+* `records.js`: MediaStore row -> library track. `id = d2-<_id>` (base 36; the MediaStore `_id` alone, so a re-tag keeps it; `size` / `modified` stay on the track as the change signature that makes a rescan re-read the row; the old `d1-<_id>-<size>-<mtime>` ids are migrated on load and still resolve in mixtape refs through the media id), `source:'device'`, `mediaId`,
   `uri` (`content://media/external/audio/media/<id>`), `folder`, `path = folder + file name` (so `albums.js` reads CD1 / Disc N
   from real folder names), title / artist / albumArtist / album / trackNo / discNo / year / genre / durationSec. `"<unknown>"`
   becomes empty (artist -> `Unknown Artist`, the bucket name the folder scan already uses; album -> '' so albums.js groups by folder).
@@ -221,4 +221,4 @@ Also unverified: the Capacitor bridge's tolerance of ~1.4 MB result strings on v
   If it proves slow, the next step is a `WebViewLocalServer` / intercept route serving `content://` ranges (no base64).
 * `READ_EXTERNAL_STORAGE` on API <= 32 shows the broad "photos, media and files" wording; that is Android's wording.
 * A cross-source duplicate that the content key cannot match (retagged copy) shows twice; harmless.
-* Device track ids change when the file is modified (by design: `_id + size + date_modified`); mixtape refs then fall back to tag matching, as for folder tracks.
+* Device track ids are `d2-<_id>` and survive a re-tag; stored `d1-` rows are migrated by `fromStored`, and `resolveTracks` reads the media id out of an old `d1-` ref id. A ref that still misses (the file was moved and re-numbered) falls back to artist / album / title, artist / title, then folder + file name + duration (within 2 s); a ref that matched by a fallback is healed to the current id and path the next time the tape starts.
