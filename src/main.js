@@ -35,6 +35,8 @@ import { onAodOutlineMode } from './devicemode/aodhooks.js';   // Device mode: l
 let deviceMode = null;
 import { mountBooth } from './shell/booth.js';
 import { createEngineGate } from './engine-gate.js';
+import { startBackground } from './background.js';        // background playback: timer-driven loop while hidden, native media service, media buttons (docs/DEVICE_LIBRARY.md)
+import { installBackButton } from './backbutton.js';      // hardware Back: close the topmost layer, else minimise
 import { LibraryManager } from './library.js';
 import { deviceLibrary, installDeviceLibrary, describeStatus } from './device/index.js';   // the phone's own audio library (Android app only; docs/DEVICE_LIBRARY.md)
 import { createStage } from './turntable/stage.js';
@@ -134,7 +136,8 @@ async function boot() {
   installToolbar();     // the drawer footer: walkthrough, mode, theme
   installCustomTheme();
   installSettingsAndSearch();
-  requestAnimationFrame(loop);
+  bg = startBackground({ step: loop, engine: state.engine, actions: miniActions, getMeta: mediaMeta });   // starts the frame loop (rAF visible / timer hidden)
+  installBackButton({ deviceMode, getSearch: () => search, getShell: () => shell, library: { isOpen: () => !!stage && stage.zoom > 0.5, close: closeLibrary } });
   updateLatencyReadout();
   showBuildId();
 }
@@ -429,7 +432,8 @@ function currentS(t) {
 // ── the frame loop ─────────────────────────────────────────────────────────
 // Physics + the engine's rate run every frame as before (mixtapes, radio and the Booth ride the same loop); DRAWING is demand-driven
 // inside stage.update (it redraws only while something moves or changed).
-function loop(now) {
+let bg = null;             // src/background.js: { sync, poke, driver }
+function loop(now, hidden = false) {   // hidden: the page is not visible, so no drawing (rate, position, end of track and the queue ticks still run)
   // Floor dt as well as cap it: on a 120 Hz panel (or when two rAF timestamps
   // land sub-millisecond apart) an un-floored dt makes angleDelta/dt explode —
   // and at dt≈0 it's Infinity/NaN, which would become the kinematic ω and
@@ -485,7 +489,7 @@ function loop(now) {
   if (t < state.T - 0.2) state.reachedEnd = false;
 
   // 5. Draw (vinyl) / CD view
-  if (state.view === 'cd') {
+  if (state.view === 'cd' && !hidden) {
     state.cd.draw({ t, T: state.T, playing: state.cdPlaying, dt, loading: state.jumping });
   }
   const e = state.envelope;
@@ -496,8 +500,7 @@ function loop(now) {
   });
 
   state.mixtapes?.tick(t, state.T, rate, dt);
-  updateHud(rate, t);
-  requestAnimationFrame(loop);
+  if (!hidden) updateHud(rate, t);
 }
 
 // The record ran out: the next track of the side (the needle crosses the gap and goes on), or the end of the album (frozen at the runout).
@@ -1488,6 +1491,13 @@ const miniActions = {
     } catch (err) { console.warn('mini bar toggle failed', err); }
     refreshNowPlaying();
   },
+  async prev(source) {   // media-button / notification Previous
+    try {
+      if (source === 'album') { await state.engine.resume(); stepTrack(-1); }
+      else if (source === 'mixtape' && state.mixtapes && state.mixtapes.play) state.mixtapes.prevSong();
+    } catch (err) { console.warn('previous failed', err); }
+    refreshNowPlaying();
+  },
   async next(source) {
     try {
       if (source === 'album') { await state.engine.resume(); stepTrack(1); }
@@ -1496,6 +1506,12 @@ const miniActions = {
     refreshNowPlaying();
   },
 };
+// artist / album for the notification and the lock screen (the mini bar's own text stays as is)
+function mediaMeta(source) {
+  if (source === 'album') { const q = state.queue, it = q && q.items[q.index], m = state.albumMeta; return { artist: (it && it.artist) || (m && m.artist) || '', album: (m && m.title) || '' }; }
+  if (source === 'mixtape') { const p = state.mixtapes && state.mixtapes.play; return { artist: 'Mixtape', album: (p && p.mix && p.mix.name) || '' }; }
+  return { artist: 'Radio', album: '' };
+}
 function refreshNowPlaying() {
   if (!shell) return;
   const src = {};
@@ -1514,6 +1530,7 @@ function refreshNowPlaying() {
   else if (miniHold === 'album' && q && !src.album) src.album = { title: q.items[q.index].title || (state.track && state.track.name) || 'Album', sub: `${q.kind === 'cd' ? 'CD' : 'Vinyl'} · paused · track ${q.index + 1} of ${q.items.length}`, playing: false, canNext: false };
   else if (miniHold && !src[miniHold]) miniHold = null;
   shell.setNowPlaying(src, miniActions);
+  bg && bg.sync(src);     // the notification / lock screen / mediaSession follow the same picture
   if (deviceMode) { const n = src.radio || (src.mixtape && src.mixtape.playing ? src.mixtape : null) || (src.album && src.album.playing ? src.album : null); deviceMode.setNowPlaying({ title: n ? n.title : '', playing: !!n }); }
 }
 

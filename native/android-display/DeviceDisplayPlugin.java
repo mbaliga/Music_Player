@@ -124,7 +124,20 @@ public class DeviceDisplayPlugin extends Plugin {
         lp.screenBrightness = brightness == null ? WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE : brightness;
         lp.preferredRefreshRate = hz == null ? 0f : hz;
         if (Build.VERSION.SDK_INT >= 23) lp.preferredDisplayModeId = hz == null ? 0 : closestModeId(hz);
+        if (Build.VERSION.SDK_INT >= 30) setMinMaxRate(lp, hz == null ? 0f : hz);
         w.setAttributes(lp);
+    }
+
+    /**
+     * API 30+: LayoutParams.preferredMin/MaxDisplayRefreshRate are the pair the frame-rate arbiter honours, but the fields are not in the public
+     * SDK stubs, so they are set by reflection and any failure (field absent / hidden-API policy) is ignored: preferredRefreshRate and
+     * preferredDisplayModeId above remain the supported route.
+     */
+    private static void setMinMaxRate(WindowManager.LayoutParams lp, float hz) {
+        try {
+            WindowManager.LayoutParams.class.getField("preferredMinDisplayRefreshRate").setFloat(lp, hz);
+            WindowManager.LayoutParams.class.getField("preferredMaxDisplayRefreshRate").setFloat(lp, hz);
+        } catch (Throwable ignored) { /* hint only */ }
     }
 
     /** The id of the supported mode with the current resolution whose refresh rate is closest to hz, or 0 (no preference). */

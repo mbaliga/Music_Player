@@ -83,3 +83,37 @@ test('the runout: at the last frame the output is exactly 0 (no held last sample
     assert.ok(last[0].every((v) => v === 0) && last[1].every((v) => v === 0), 'every sample past the end is 0 (fx ' + fx + ')');
   }
 });
+
+test('posts near / ended once each as the track runs out, and re-arms after a seek back', () => {
+  const frames = Math.round(3 * sampleRate);
+  const p = makeProcessor(frames);
+  const sent = [];
+  p.port = { postMessage: (m) => { if (m.type !== 'pos') sent.push(m.type); } };
+  p.targetRate = 1; p.currentRate = 1; p.playing = 1;
+  p.readPosition = frames - 2 * sampleRate - 4000;                      // just outside the 2 s window
+  for (let i = 0; i < 20; i++) p.process([], [block()], {});
+  assert.deepEqual(sent, [], 'nothing before the window');
+  p.readPosition = frames - 2 * sampleRate + 200;                       // inside: 'near' once, however many blocks pass
+  for (let i = 0; i < 20; i++) p.process([], [block()], {});
+  assert.deepEqual(sent, ['near']);
+  p.readPosition = frames - 600;
+  for (let i = 0; i < 20; i++) p.process([], [block()], {});            // runs into the end and parks there
+  assert.deepEqual(sent, ['near', 'ended']);
+  for (let i = 0; i < 20; i++) p.process([], [block()], {});
+  assert.deepEqual(sent, ['near', 'ended'], 'parked at the end: no repeats');
+  p.readPosition = 1000; p.currentRate = 1;                              // a seek back re-arms
+  p.process([], [block()], {});
+  p.readPosition = frames - 600;
+  for (let i = 0; i < 20; i++) p.process([], [block()], {});
+  assert.deepEqual(sent, ['near', 'ended', 'near', 'ended']);
+});
+
+test('a parked / silent deck never posts edge messages', () => {
+  const frames = 4000;
+  const p = makeProcessor(frames);
+  const sent = [];
+  p.port = { postMessage: (m) => { if (m.type !== 'pos') sent.push(m.type); } };
+  p.playing = 0; p.targetRate = 1; p.readPosition = frames - 10;
+  for (let i = 0; i < 5; i++) p.process([], [block()], {});
+  assert.deepEqual(sent, []);
+});

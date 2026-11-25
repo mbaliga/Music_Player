@@ -37,6 +37,7 @@ export class AudioEngine {
     this._deck = null;       // active deck (node + control + PCM); see _makeDeck
     this._next = null;       // queued next deck (gapless hook), or null
     this._rate = 0;          // last rate set (carried across a gapless join)
+    this.onPlaybackEdge = null; // optional (type: 'near' | 'ended') — the active deck is about to end / has ended
   }
 
   get isSharedMemory() {
@@ -112,12 +113,18 @@ export class AudioEngine {
     gain.connect(this.musicBus);
 
     const deck = { node, gain, control, usingSAB, frames, channels: nch, fallbackPos: 0 };
+    // The worklet tells the main thread when it is about to run out / has run out ('near' / 'ended'), so a hidden page whose timers are
+    // throttled still advances the queue promptly (src/background.js pokes the transport loop from onPlaybackEdge).
+    node.port.onmessage = (e) => {
+      const d = e.data || {};
+      if (d.type === 'pos') deck.fallbackPos = d.value;
+      else if ((d.type === 'near' || d.type === 'ended') && deck === this._deck && typeof this.onPlaybackEdge === 'function') {
+        try { this.onPlaybackEdge(d.type); } catch { /* a listener must never break the audio path */ }
+      }
+    };
     if (!usingSAB) {
       // Fallback: hand the PCM over by transfer, drive control by message.
       node.port.postMessage({ type: 'pcm', pcm: pcmBuf, frames, channels: nch }, [pcmBuf]);
-      node.port.onmessage = (e) => {
-        if (e.data.type === 'pos') deck.fallbackPos = e.data.value;
-      };
       if (!active) node.port.postMessage({ type: 'playing', value: false });
     }
     return deck;

@@ -75,6 +75,7 @@ export function createDeviceSource({
   let generation = '';
   let permission = 'unknown';
   let scanning = null;              // in-flight scan promise
+  let dirty = false;                // a libraryChanged arrived while scanning: rescan once afterwards
   let askInFlight = null;
   let lastScanAt = 0;
   let observerOn = false;
@@ -157,7 +158,11 @@ export function createDeviceSource({
       if (!native || observerOn) return () => {};
       let handle = null;
       try {
-        handle = await native.addListener('libraryChanged', () => { try { onChange ? onChange() : api.scan().catch(() => {}); } catch { /* ignore */ } });
+        handle = await native.addListener('libraryChanged', () => {
+          // A change that lands while a scan runs may not be in that scan's signatures: remember it, rescan once when the scan ends.
+          if (scanning) { dirty = true; return; }
+          try { onChange ? onChange() : api.scan().catch(() => {}); } catch { /* ignore */ }
+        });
         await native.startObserving();
         observerOn = true;
       } catch { return () => {}; }
@@ -184,7 +189,10 @@ export function createDeviceSource({
     // ── scan ──────────────────────────────────────────────────────────────
     scan(opts = {}) {
       if (scanning) return scanning;
-      scanning = runScan(opts).finally(() => { scanning = null; });
+      scanning = runScan(opts).finally(() => {
+        scanning = null;
+        if (dirty) { dirty = false; Promise.resolve().then(() => api.scan().catch(() => {})); }   // one trailing rescan for changes seen mid-scan
+      });
       return scanning;
     },
     get scanning() { return !!scanning; },

@@ -295,3 +295,24 @@ test('describeStatus: copy for every phase', () => {
   assert.equal(d({ phase: 'unavailable' }).show, false);
   assert.equal(d({ phase: 'error', error: 'boom' }).body, 'boom');
 });
+
+test('a libraryChanged that arrives during a scan marks dirty and rescans once afterwards', async () => {
+  const { src, fake } = rig({ n: 12 });
+  await src.scan();
+  await src.startWatching();
+  const fire = () => { for (const fn of fake.listeners.get('libraryChanged') || []) fn(); };
+  const sigBefore = fake.calls.signatures;
+  fake.bump();
+  const p = src.scan();
+  assert.equal(src.scanning, true);
+  fire(); fire(); fire();                     // a burst lands in the running scan: remembered, not dropped, not tripled
+  fake.rows.push(makeRow(500, { album: 'New', relativePath: 'Music/New/' }));
+  fake.bump();
+  await p;
+  for (let i = 0; i < 100; i++) { await new Promise((r) => setTimeout(r, 5)); if (!src.scanning && src.tracks().length === 13) break; }
+  assert.equal(src.tracks().length, 13, 'the trailing rescan picked up the row added during the first scan');
+  assert.equal(fake.calls.signatures - sigBefore, 2, 'exactly one extra scan');
+  fire();                                     // idle now: an event does its normal rescan (no stale dirty flag left behind)
+  await new Promise((r) => setTimeout(r, 30));
+  assert.equal(src.scanning, false);
+});

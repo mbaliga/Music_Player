@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "Runout — tactile vinyl listening instrument (v0)",
+  "description": "Runout \u2014 tactile vinyl listening instrument (v0)",
   "scripts": {
     "build:web": "node scripts/build-web.mjs",
     "test": "node --test",
@@ -12,6 +12,7 @@
   "dependencies": {
     "@capacitor-community/text-to-speech": "^5.1.0",
     "@capacitor/android": "^6.2.0",
+    "@capacitor/app": "^6.0.0",
     "@capacitor/core": "^6.2.0"
   },
   "devDependencies": {

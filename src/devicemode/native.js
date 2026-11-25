@@ -1,12 +1,16 @@
 // native.js — the optional bridge to the DeviceDisplay Capacitor plugin (native/android-display/DeviceDisplayPlugin.java).
 // Absent on the web / desktop / tests: everything here degrades to a no-op and reports `available: false`.
+const regCache = new WeakMap();   // Capacitor object -> its registered DeviceDisplay proxy (registerPlugin warns when called twice)
 export function getDisplayPlugin(win = typeof window !== 'undefined' ? window : null) {
   try {
     const cap = win && win.Capacitor;
     if (!cap) return null;
     if (typeof cap.isNativePlatform === 'function' && !cap.isNativePlatform()) return null;
     if (typeof cap.isPluginAvailable === 'function' && !cap.isPluginAvailable('DeviceDisplay')) return null;
-    if (typeof cap.registerPlugin === 'function') return cap.registerPlugin('DeviceDisplay');
+    if (typeof cap.registerPlugin === 'function') {
+      if (!regCache.has(cap)) regCache.set(cap, cap.registerPlugin('DeviceDisplay'));
+      return regCache.get(cap);
+    }
     return (cap.Plugins && cap.Plugins.DeviceDisplay) || null;
   } catch { return null; }
 }

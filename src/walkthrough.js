@@ -12,7 +12,7 @@ export const STEPS = [
   },
   {
     title: 'Find your way around',
-    body: `Drag from the left edge of the screen, or tap the menu button, to open the menu: Albums, Mixtapes, Radio, ${BOOTH_LABEL} and Settings. Your music keeps playing while you look around.`,
+    body: `Tap the menu button to open the menu: Albums, Mixtapes, Radio, ${BOOTH_LABEL} and Settings. You can also drag in from the left edge, in the middle of the screen. Your music keeps playing while you look around.`,
     highlight: 'hamburger',
   },
   {

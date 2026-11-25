@@ -65,6 +65,11 @@ jobs:
       - name: Install Runout display plugin (Device mode)
         run: node scripts/apply-android-display.mjs android
 
+      # Background playback (foreground MediaPlaybackService + DevicePlayback plugin), the hardware-Back fallback, the edge-gesture exclusion,
+      # and the app-level manifest / theme settings (black system bars, allowBackup=false, adjustResize). Fails the build if an anchor moved.
+      - name: Install Runout playback service, Back / gesture glue and black theme
+        run: node scripts/apply-android-playback.mjs android
+
       - name: Sync web assets into the Android project
         run: npx --no-install cap sync android
 

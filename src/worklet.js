@@ -62,6 +62,7 @@ class RunoutProcessor extends AudioWorkletProcessor {
 
     this.port.onmessage = (e) => this.onMessage(e.data);
     this._posReportCounter = 0;
+    this.nearSent = false; this.endSent = false;
   }
 
   onMessage(msg) {
@@ -126,7 +127,20 @@ class RunoutProcessor extends AudioWorkletProcessor {
     }
   }
 
+  // 'near' (under 2 s left) and 'ended' (parked at the last frame) are posted ONCE per approach to the end, whatever the page is doing,
+  // so the main thread can advance the queue without depending on animation frames. Re-armed when the position moves back.
+  checkEdges() {
+    const n = this.frames;
+    if (n <= 0 || !this.playing) return;
+    const remain = n - 1 - this.readPosition;
+    const nearAt = 2 * sampleRate;
+    if (remain > nearAt * 1.25) { this.nearSent = false; this.endSent = false; return; }
+    if (!this.nearSent && remain <= nearAt && this.currentRate > 0.05) { this.nearSent = true; this.port.postMessage({ type: 'near' }); }
+    if (!this.endSent && remain <= 1) { this.endSent = true; this.nearSent = true; this.port.postMessage({ type: 'ended' }); }
+  }
+
   publishPosition() {
+    this.checkEdges();
     if (this.control) {
       this.control[C_READ_POS] = this.readPosition;
     } else {

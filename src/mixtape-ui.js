@@ -703,6 +703,9 @@ export class MixtapeUI {
   /** Public: the mini bar's Next. Skips to the following song (flipping to side B when needed); no-op past the last. */
   nextSong() { const p = this.play; if (p) this._jumpTo(p.idx + 1); }
 
+  /** Public: the media-button / notification Previous. Skips to the song before; no-op before the first. */
+  prevSong() { const p = this.play; if (p) this._jumpTo(p.idx - 1); }
+
   /** Jump to a song by flat index, flipping to its side first when it is on the other one. */
   _jumpTo(flat) {
     const p = this.play; if (!p || p.loading || !p.files[flat]) return;

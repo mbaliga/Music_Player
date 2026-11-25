@@ -67,7 +67,9 @@ public class DeviceLibraryPlugin extends Plugin {
     private ExecutorService pool;
     private ContentObserver observer;
     private final Handler main = new Handler(Looper.getMainLooper());
-    private long lastNotify = 0;
+    private final Runnable notifyRunnable = new Runnable() {
+        @Override public void run() { notifyListeners("libraryChanged", new JSObject()); }
+    };
 
     @Override
     public void load() {
@@ -210,17 +212,17 @@ public class DeviceLibraryPlugin extends Plugin {
         });
     }
 
-    /** Start (or no-op if started) a MediaStore ContentObserver that emits "libraryChanged" (debounced). */
+    /** Start (or no-op if started) a MediaStore ContentObserver that emits "libraryChanged" (trailing-edge debounced, 1.5 s). */
     @PluginMethod
     public void startObserving(PluginCall call) {
         if (observer == null) {
             observer = new ContentObserver(main) {
                 @Override
                 public void onChange(boolean selfChange) {
-                    long now = System.currentTimeMillis();
-                    if (now - lastNotify < 2000) return;
-                    lastNotify = now;
-                    notifyListeners("libraryChanged", new JSObject());
+                    // Trailing-edge debounce: every change pushes the notification out, so a burst (a sync, a download folder)
+                    // ends in ONE event after it has settled instead of dropping the changes that arrive after the first.
+                    main.removeCallbacks(notifyRunnable);
+                    main.postDelayed(notifyRunnable, 1500);
                 }
             };
             try {
@@ -241,6 +243,7 @@ public class DeviceLibraryPlugin extends Plugin {
     }
 
     private void stopObserving() {
+        main.removeCallbacks(notifyRunnable);
         if (observer != null) {
             try { resolver().unregisterContentObserver(observer); } catch (Exception ignored) { }
             observer = null;
