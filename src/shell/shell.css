@@ -139,3 +139,5 @@
 
 /* Landscape phones: a 560 px column left two thirds of the screen empty and the mini bar covered the lower half of Booth and Radio, so the frame uses the width (capped for tablets). */
 @media (orientation: landscape) and (min-width: 700px) { .shell { width: min(100%, 1100px); } }
+/* landscape phones with a notch / cut-out: the header keeps clear of the side insets */
+.page-head { padding-left: max(6px, env(safe-area-inset-left, 0px)); padding-right: max(12px, env(safe-area-inset-right, 0px)); }

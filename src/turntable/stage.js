@@ -95,6 +95,14 @@ export function createStage(host, hooks = {}) {
   // landscape. Play is the big one and says Play / Stop.
   const CTL_DIM = { land: { s: [104, 76, 92, 62], p: [124, 74, 116, 68] }, port: { s: [74, 104, 64, 92], p: [78, 116, 72, 108] } };
   const PLAY_X = 1329;
+  // SVG text cannot wrap: when the user's text size is larger (CSS px scale with the WebView's text zoom) shrink the label until it fits its key
+  function fitKeyText(t, keyW) {
+    if (!t) return;
+    t.style.fontSize = '';
+    let w = 0; try { w = t.getBBox().width; } catch { return; }
+    const max = keyW * 0.86;
+    if (w > max && w > 0) t.style.fontSize = (parseFloat(getComputedStyle(t).fontSize) * max / w).toFixed(1) + 'px';
+  }
   function layoutControls() {
     const D = portrait ? CTL_DIM.port : CTL_DIM.land;
     for (const [id, b] of Object.entries(BTN)) {
@@ -106,7 +114,9 @@ export function createStage(host, hooks = {}) {
       set(hit, d[0], d[1]); set(bg, d[2], d[3], Math.round(Math.min(d[2], d[3]) * (id === 'play' ? 0.3 : 0.26)));
       const tx = el.querySelector('text:not(.lbl)'); if (tx) { tx.setAttribute('x', cx); tx.setAttribute('y', cy + 11); }
       if (portrait) el.setAttribute('transform', `rotate(-90 ${cx} ${cy})`); else el.removeAttribute('transform');
+      fitKeyText(el.querySelector('text:not(.lbl)'), d[2]);
     }
+    fitKeyText(playLbl, D.p[2]);
     playFace.setAttribute('transform', `translate(${PLAY_X} ${BTN.play.y})`);
     playIcon.setAttribute('transform', `translate(0 ${portrait ? -22 : -13})`);
     playLbl.setAttribute('y', portrait ? 30 : 22);

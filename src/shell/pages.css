@@ -5,7 +5,7 @@
    The page is the vinyl player (src/turntable/stage.js): the stage fills the card. Its CSS is src/turntable/turntable.css. */
 
 /* ── Mixtapes ───────────────────────────────────────────────────────────────────────────────────────────────────────── */
-.mt-bar { flex: none; display: flex; align-items: center; gap: 6px; padding: 0 14px 6px; overflow-x: auto; scrollbar-width: none; }
+.mt-bar { flex: none; display: flex; align-items: center; gap: 6px; padding: 0 14px 6px; flex-wrap: wrap; row-gap: 6px; }
 .mt-bar > * { flex: 0 0 auto; }
 .mt-bar .lib-scan { padding: 0 16px; min-height: 44px; font-size: 12px; }
 .mt-bar .sort-chip { min-height: 44px; min-width: 44px; }

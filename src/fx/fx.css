@@ -1,7 +1,7 @@
 /* fx.css — the Booth instrument (loaded lazily the first time the section is opened). Theme tokens only (--surface, --surface2, --border, --ink,
    --ink2, --violet, --card-bg): it follows Dark soft / OLED black / Light and any custom theme. The screens (deck strip, touch plate, meter) are
    always dark glass, like a real unit's displays; the faceplate around them is the theme's surface. Effect colours come from the light ring's hues. */
-.fx-root { --fx-hot: #ff6b5e; --fx-glass: #07070c; --fx-glass-ink: #e8e8f0; --fx-glass-ink2: rgba(232,232,240,.55); display: flex; flex-direction: column; min-height: 0; }
+.fx-root { --fx-hot: #ff6b5e; --fx-glass: #07070c; --fx-glass-ink: #e8e8f0; --fx-glass-ink2: rgba(232,232,240,.68); display: flex; flex-direction: column; min-height: 0; }
 [data-theme="light"] .fx-root { --fx-hot: #e0412f; }
 
 /* ── layout: one grid, portrait first ───────────────────────────────────────────────────────────────────────────────────── */
@@ -13,7 +13,7 @@
   grid-template-columns: var(--plate) minmax(0, 1fr);
   grid-template-areas: "deck deck" "rack rack" "plate side" "sw sw" "knobs knobs" "pads pads";
   grid-template-rows: repeat(5, max-content) minmax(max-content, 1fr);
-  overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; position: relative;
+  overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; position: relative;
 }
 .fx-deck { grid-area: deck; } .fx-rack { grid-area: rack; } .fx-plate { grid-area: plate; } .fx-side { grid-area: side; }
 .fx-switches { grid-area: sw; } .fx-knobs { grid-area: knobs; } .fx-pads { grid-area: pads; }
@@ -25,7 +25,7 @@
   box-shadow: inset 0 1px 0 rgba(255,255,255,.07), 0 4px 14px rgba(0,0,0,.28);
 }
 [data-theme="light"] .fx-panel { background: linear-gradient(180deg, #ffffff, #eceef3); box-shadow: inset 0 1px 0 #fff, 0 3px 10px rgba(30,32,40,.12); }
-.fx-cap { font-size: 9px; font-weight: 800; letter-spacing: .16em; color: var(--ink2); }
+.fx-cap { font-size: 10px; font-weight: 800; letter-spacing: .16em; color: var(--ink2); }
 .fx-lcd { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-variant-numeric: tabular-nums; background: var(--fx-glass); color: var(--c, var(--violet)); border-radius: 6px; padding: 2px 7px; box-shadow: inset 0 1px 3px rgba(0,0,0,.7); }
 
 /* LEDs */
@@ -38,7 +38,7 @@
 .fx-deck-t { font-size: 14px; font-weight: 700; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.25; }
 .fx-deck-s { font-size: 11px; color: var(--ink2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: .02em; }
 .fx-bpm { position: relative; flex: none; min-width: 58px; padding: 6px 8px 14px; text-align: center; font-size: 20px; font-weight: 700; color: var(--violet); line-height: 1; }
-.fx-bpm::after { content: attr(data-u); position: absolute; left: 0; right: 0; bottom: 3px; font-size: 7.5px; letter-spacing: .12em; color: var(--fx-glass-ink2); font-weight: 700; }
+.fx-bpm::after { content: attr(data-u); position: absolute; left: 0; right: 0; bottom: 3px; font-size: 9px; letter-spacing: .12em; color: var(--fx-glass-ink2); font-weight: 700; }
 .fx-wave { width: 100%; height: 24px; display: block; border-radius: 9px; background: var(--fx-glass); box-shadow: inset 0 1px 3px rgba(0,0,0,.7); }
 .fx-disc { flex: none; width: 36px; height: 36px; border-radius: 50%; position: relative; background: repeating-radial-gradient(circle at 50% 50%, #15151c 0 1.5px, #0a0a0f 1.5px 3px); box-shadow: 0 0 0 1px rgba(255,255,255,.1), 0 2px 6px rgba(0,0,0,.5); }
 .fx-disc i { position: absolute; inset: 11px; border-radius: 50%; background: radial-gradient(circle at 50% 50%, #0a0a0f 0 2px, var(--violet) 2.5px); }
@@ -50,12 +50,12 @@
 @keyframes fxSpin { to { transform: rotate(360deg); } }
 
 /* ── rack ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────── */
-.fx-rack { display: grid; grid-template-columns: repeat(6, 1fr); gap: 3px; padding: 4px; }
+.fx-rack { display: grid; grid-template-columns: repeat(auto-fit, minmax(46px, 1fr)); gap: 3px; padding: 4px; }
 .fx-row {
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-height: 44px; padding: 5px 2px 4px; border-radius: 11px; width: auto;
   border: 1px solid transparent; background: transparent; color: var(--ink2); font: inherit; cursor: pointer; text-align: center; transition: background .12s, color .12s, transform .08s;
 }
-.fx-row .fx-row-t { font-size: 8.5px; font-weight: 800; letter-spacing: .06em; line-height: 1.15; max-width: 100%; }
+.fx-row .fx-row-t { font-size: 10px; font-weight: 800; letter-spacing: .06em; line-height: 1.15; max-width: 100%; }
 .fx-row:active { transform: scale(.95); }
 .fx-row[aria-selected="true"] { color: var(--ink); background: var(--surface); border-color: var(--border); box-shadow: inset 0 2px 5px rgba(0,0,0,.4); }
 [data-theme="light"] .fx-row[aria-selected="true"] { background: #e3e5ec; box-shadow: inset 0 2px 4px rgba(30,32,40,.18); }
@@ -71,15 +71,15 @@
 [data-theme="light"] .fx-plate { box-shadow: 0 0 0 3px #e3e5ec, 0 0 0 4px rgba(0,0,0,.12), 0 6px 14px rgba(30,32,40,.2); }
 .fx-plate.live { box-shadow: 0 0 0 3px var(--surface2), 0 0 0 4px var(--c), 0 0 28px -4px var(--c); }
 .fx-pad { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; cursor: grab; background: transparent; border-radius: 18px; }
-.fx-plate-top { position: absolute; left: 12px; right: 10px; top: 9px; display: flex; align-items: flex-start; gap: 8px; pointer-events: none; }
+.fx-plate-top { position: absolute; left: 12px; right: 10px; top: 9px; display: flex; flex-wrap: wrap; align-items: flex-start; gap: 4px 8px; pointer-events: none; }
 .fx-readout { flex: 1; min-width: 0; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; font-variant-numeric: tabular-nums; }
 .fx-div { font-size: 30px; font-weight: 800; letter-spacing: -.02em; line-height: 1; color: #fff; text-shadow: 0 0 14px var(--c); }
 .fx-div.sm { font-size: 14px; letter-spacing: .04em; font-weight: 700; text-transform: uppercase; text-shadow: none; color: var(--fx-glass-ink); }
 .fx-pct { font-size: 17px; font-weight: 700; color: var(--c); }
-.fx-live { flex: none; font-size: 9px; font-weight: 800; letter-spacing: .14em; color: #fff; background: var(--c); border-radius: 999px; padding: 3px 8px; }
+.fx-live { flex: none; font-size: 10px; font-weight: 800; letter-spacing: .14em; color: #fff; background: var(--c); border-radius: 999px; padding: 3px 8px; }
 .fx-live.off { background: rgba(255,255,255,.12); color: var(--fx-glass-ink2); }
 .fx-psub { position: absolute; left: 12px; top: 46px; font-size: 10.5px; color: var(--fx-glass-ink2); pointer-events: none; font-variant-numeric: tabular-nums; }
-.fx-ax { position: absolute; font-size: 8.5px; font-weight: 800; letter-spacing: .14em; color: var(--fx-glass-ink2); pointer-events: none; white-space: nowrap; }
+.fx-ax { position: absolute; font-size: 10px; font-weight: 800; letter-spacing: .14em; color: var(--fx-glass-ink2); pointer-events: none; white-space: nowrap; }
 .fx-ax-x { left: 0; right: 0; bottom: 8px; text-align: center; white-space: normal; padding: 0 12px; line-height: 1.5; }
 .fx-plate:not(.xy) .fx-ax-x { letter-spacing: .04em; font-weight: 600; font-size: 10px; }
 .fx-ax-y { left: 6px; top: 50%; writing-mode: vertical-rl; transform: rotate(180deg) translateY(50%); }
@@ -91,14 +91,14 @@
 .fx-idle-t { font-size: 16px; font-weight: 800; color: #fff; }
 .fx-idle-s { font-size: 12px; line-height: 1.5; color: var(--fx-glass-ink2); max-width: 24ch; }
 .fx-btn { min-height: 44px; min-width: 44px; padding: 0 18px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface2); color: var(--ink); font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
-.fx-go { background: var(--violet); border-color: var(--violet); color: #fff; box-shadow: 0 4px 16px var(--violet-glow, rgba(142,123,255,.35)); margin-top: 4px; }
+.fx-go { background: var(--violet); border-color: var(--violet); color: var(--on-accent, #111); box-shadow: 0 4px 16px var(--violet-glow, rgba(142,123,255,.35)); margin-top: 4px; }
 .fx-screen.is-idle .fx-pads, .fx-screen.is-idle .fx-pad { pointer-events: none; }
 .fx-screen.is-idle .fx-ax, .fx-screen.is-idle .fx-plate-top, .fx-screen.is-idle .fx-psub { opacity: 0; }
 .fx-screen.is-idle .fx-pads, .fx-screen.is-idle .fx-knobs, .fx-screen.is-idle .fx-side, .fx-screen.is-idle .fx-switches, .fx-screen.is-idle .fx-rack { opacity: .5; }
 
 /* ── side: blend fader + level meter ──────────────────────────────────────────────────────────────────────────────────────── */
 .fx-side { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; padding: 8px 4px; align-self: stretch; min-height: 0; }
-.fx-f-name { font-size: 7.5px; font-weight: 800; letter-spacing: .06em; color: var(--ink2); text-align: center; }
+.fx-f-name { font-size: 9.5px; font-weight: 800; letter-spacing: .06em; color: var(--ink2); text-align: center; }
 .fx-fader { display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 0; touch-action: none; cursor: ns-resize; border-radius: 10px; }
 .fx-f-track { position: relative; flex: 1; width: 8px; min-height: 60px; border-radius: 4px; background: var(--fx-glass); box-shadow: inset 0 1px 3px rgba(0,0,0,.8), 0 0 0 1px var(--border); }
 .fx-f-fill { position: absolute; left: 0; right: 0; bottom: 0; height: calc(var(--f, .5) * 100%); border-radius: 4px; background: var(--c); opacity: .7; }
@@ -106,14 +106,14 @@
 [data-theme="light"] .fx-f-cap { background: linear-gradient(180deg, #ffffff, #cfd2dc 50%, #b9bdca); box-shadow: 0 3px 8px rgba(30,32,40,.35), inset 0 1px 0 #fff; }
 .fx-f-cap i { position: absolute; left: 4px; right: 4px; top: 50%; height: 2px; margin-top: -1px; background: var(--c); border-radius: 1px; box-shadow: 0 0 6px var(--c); }
 .fx-fader.drag .fx-f-cap { filter: brightness(1.25); }
-.fx-f-out { font-size: 9px; padding: 1px 3px; }
+.fx-f-out { font-size: 10px; padding: 1px 3px; }
 .fx-m-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 0; }
 .fx-meter { flex: 1; width: 12px; min-height: 60px; display: block; border-radius: 3px; }
 .fx-fader.dim, .fx-knob.dim { opacity: .55; }
 
 /* ── switches ─────────────────────────────────────────────────────────────────────────────────────────────────────────────── */
-.fx-switches { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; padding: 4px; }
-.fx-tog { display: flex; align-items: center; justify-content: center; gap: 5px; min-height: 44px; padding: 0 2px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); color: var(--ink2); font: inherit; font-size: 8.5px; font-weight: 800; letter-spacing: .05em; cursor: pointer; white-space: nowrap; }
+.fx-switches { display: grid; grid-template-columns: repeat(auto-fit, minmax(56px, 1fr)); gap: 3px; padding: 4px; }
+.fx-tog { display: flex; align-items: center; justify-content: center; gap: 5px; min-height: 44px; padding: 0 2px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); color: var(--ink2); font: inherit; font-size: 10px; font-weight: 800; letter-spacing: .05em; cursor: pointer; white-space: normal; min-width: 0; overflow-wrap: break-word; line-height: 1.1; text-align: center; }
 .fx-tog[aria-pressed="true"] { color: var(--ink); background: var(--surface2); box-shadow: inset 0 2px 4px rgba(0,0,0,.35); }
 .fx-tog.dim { opacity: .5; }
 .fx-tog .s { display: none; }
@@ -132,7 +132,7 @@
 .fx-k-ptr { stroke: #fff; stroke-width: 3; stroke-linecap: round; }
 [data-theme="light"] .fx-k-ptr { stroke: #111; }
 .fx-k-tick { stroke: rgba(120,120,140,.5); stroke-width: 1; }
-.fx-k-name { font-size: 9px; font-weight: 800; letter-spacing: .1em; color: var(--ink); }
+.fx-k-name { font-size: 10px; font-weight: 800; letter-spacing: .1em; color: var(--ink); }
 .fx-k-out { font-size: 11px; font-weight: 700; min-width: 48px; text-align: center; }
 .fx-knob.drag .fx-k-cap { stroke: var(--c); }
 
@@ -150,7 +150,7 @@
 .fx-perf.down, .fx-perf.live { transform: translateY(3px); box-shadow: 0 0 0 rgba(0,0,0,0), 0 0 22px -2px var(--c), inset 0 0 0 2px var(--c); }
 .fx-perf.down::before, .fx-perf.live::before { opacity: .88; }
 .fx-perf > * { position: relative; }
-.fx-perf-l { font-size: 8.5px; font-weight: 800; letter-spacing: .12em; color: var(--ink2); }
+.fx-perf-l { font-size: 10px; font-weight: 800; letter-spacing: .12em; color: var(--ink2); }
 .fx-perf-v { font-size: 17px; font-weight: 800; letter-spacing: -.01em; font-variant-numeric: tabular-nums; }
 .fx-perf .fx-led { position: absolute; top: 6px; right: 7px; width: 6px; height: 6px; }
 .fx-perf.down .fx-perf-l, .fx-perf.live .fx-perf-l, .fx-perf.down .fx-perf-v, .fx-perf.live .fx-perf-v { color: #fff; text-shadow: 0 1px 4px rgba(0,0,0,.5); }
@@ -177,17 +177,17 @@
   .fx-wave { height: 16px; }
   .fx-disc { width: 28px; height: 28px; } .fx-disc i { inset: 9px; }
   .fx-deck-t { font-size: 12px; } .fx-deck-s { font-size: 10px; } .fx-bpm { min-width: 48px; font-size: 16px; padding: 4px 6px 12px; }
-  .fx-rack { padding: 3px; gap: 2px; grid-template-columns: repeat(6, minmax(44px, 1fr)); }
+  .fx-rack { padding: 3px; gap: 2px; grid-template-columns: repeat(auto-fit, minmax(48px, 1fr)); }
   .fx-row { min-width: 44px; }
   /* the Booth sits under the mini bar: keep the last row of pads clear of it when it is showing */
   .card[data-mini="true"] .fx-screen { padding-bottom: calc(8px + var(--safe-bottom, 0px) + 6px); }
-  .fx-row { min-height: 44px; padding: 4px 0; gap: 3px; } .fx-row .fx-row-t { font-size: 7px; letter-spacing: .02em; }
-  .fx-tog { min-height: 44px; font-size: 7.5px; gap: 3px; letter-spacing: .02em; } .fx-tog .l { display: none; } .fx-tog .s { display: inline; } .fx-switches { padding: 3px; gap: 3px; }
-  .fx-knobs { padding: 3px 2px 3px; } .fx-k-svg { width: 38px; height: 38px; } .fx-k-owner { display: none; } .fx-k-name { font-size: 7.5px; } .fx-k-out { font-size: 9px; min-width: 40px; padding: 1px 3px; }
+  .fx-row { min-height: 44px; padding: 4px 0; gap: 3px; } .fx-row .fx-row-t { font-size: 9px; letter-spacing: 0; }
+  .fx-tog { min-height: 44px; font-size: 9.5px; gap: 3px; letter-spacing: .02em; } .fx-tog .l { display: none; } .fx-tog .s { display: inline; } .fx-switches { padding: 3px; gap: 3px; }
+  .fx-knobs { padding: 3px 2px 3px; } .fx-k-svg { width: 38px; height: 38px; } .fx-k-owner { display: none; } .fx-k-name { font-size: 9px; } .fx-k-out { font-size: 9px; min-width: 40px; padding: 1px 3px; }
   .fx-perf .fx-led { display: none; }
   .fx-switches { align-self: start; }
   .fx-pads { max-height: none; padding: 5px; gap: 5px; grid-auto-rows: minmax(44px, 1fr); }
-  .fx-perf { min-height: 44px; border-radius: 9px; } .fx-perf-v { font-size: 14px; } .fx-perf-l { font-size: 7px; letter-spacing: .06em; }
+  .fx-perf { min-height: 44px; border-radius: 9px; } .fx-perf-v { font-size: 14px; } .fx-perf-l { font-size: 9px; letter-spacing: .04em; }
   .fx-div { font-size: 24px; } .fx-psub { top: 38px; }
   .fx-idle { gap: 5px; padding: 10px; } .fx-idle-ic { display: none; } .fx-idle-t { font-size: 14px; } .fx-idle-s { font-size: 11px; }
 }

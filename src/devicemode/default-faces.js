@@ -11,7 +11,7 @@ export const DEFAULT_FACES = Object.freeze({
     // chips (search, Turntable settings), the dot-display toggle, the drawer / hamburger, Space (brake) and Esc (zoom in).
     buttons: ['#tt-playBtn', '#tt-b78', '#tt-b33', '#tt-b45', '#tt-bm', '#tt-bp', '#btnPrevTrk', '#btnNextTrk', '#cdPrev', '#cdPlay', '#cdNext', '#rpmSlider'],
     aodText: ['#cdTitle'],
-    notes: 'Play, Stop and speed keys work. The rest is locked.',
+    notes: 'Play, Stop and speed keys work.',
   },
   mixtapes: {
     // Cassette player: transport keys (SVG role=button), wind keys (hold), the labelled Flip and Auto-flip buttons (.tp-flip, .tp-auto), eject stay live. Frozen: the shelf / stack, the editor and

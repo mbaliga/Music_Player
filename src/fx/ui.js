@@ -454,7 +454,7 @@ export function mountFxSection(root, deps) {
         g.beginPath(); g.arc(R, R, r1, 0, Math.PI * 2); if (r0 > 1) g.arc(R, R, r0, 0, Math.PI * 2, true);
         g.fillStyle = dv === div ? `hsl(${hue(m)} 88% 64% / ${eng ? 0.26 : 0.14})` : 'rgba(255,255,255,0)'; g.fill();
         g.strokeStyle = dv === div ? colSoft : 'rgba(255,255,255,.13)'; g.lineWidth = dv === div ? 1.6 : 1; g.beginPath(); g.arc(R, R, r1, 0, Math.PI * 2); g.stroke();
-        g.fillStyle = dv === div ? '#fff' : 'rgba(232,232,240,.5)'; g.font = `700 ${clamp(s * 0.034, 8, 11)}px system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
+        g.fillStyle = dv === div ? '#fff' : 'rgba(232,232,240,.66)'; g.font = `700 ${clamp(s * 0.034, 8, 11)}px system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
         g.fillText(dv, R + (r0 + r1) / 2, R + 1);
       }
     } else if (m === 'bandpass') {
@@ -489,7 +489,7 @@ export function mountFxSection(root, deps) {
         g.fillStyle = '#fff'; g.beginPath(); g.arc(px, py, pr * 0.32, 0, Math.PI * 2); g.fill();
       } else {
         g.setLineDash([4, 5]); g.strokeStyle = colSoft; g.lineWidth = 1.5; g.beginPath(); g.arc(px, py, pr, 0, Math.PI * 2); g.stroke(); g.setLineDash([]);
-        g.fillStyle = 'rgba(232,232,240,.55)'; g.font = '700 10px system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(ctl.state.latch ? 'TAP' : 'HOLD', px, py);
+        g.fillStyle = 'rgba(232,232,240,.68)'; g.font = '700 10px system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(ctl.state.latch ? 'TAP' : 'HOLD', px, py);
       }
     }
     g.restore();

@@ -1118,7 +1118,7 @@ function installDetails() {
   const btn = document.createElement('button');
   btn.type = 'button'; btn.className = 'tt-details-btn'; btn.id = 'btnDeck'; btn.setAttribute('aria-label', 'Turntable settings'); btn.setAttribute('aria-expanded', 'false');
   btn.innerHTML = ICON('<path d="M4 8h9M17 8h3M4 16h3M11 16h9" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="15" cy="8" r="2" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="9" cy="16" r="2" fill="none" stroke="currentColor" stroke-width="1.7"/>');
-  actions.append(btn);
+  { const dk = actions.querySelector('.dm-key'); if (dk) actions.insertBefore(btn, dk); else actions.append(btn); }   // DOM order = visual order: Library, Search, Turntable settings, then the lock key
   let releaseSheet = null;
   const set = (open) => {
     sheet.hidden = !open; btn.setAttribute('aria-expanded', String(open));
@@ -1131,6 +1131,8 @@ function installDetails() {
   const rows = el('ttAlbumTracks');
   rows.addEventListener('click', (e) => { const li = e.target.closest && e.target.closest('li'); if (li) pickSheetTrack(Number(li.dataset.i)); });
   rows.addEventListener('keydown', (e) => { if (e.key !== 'Enter' && e.key !== ' ') return; const li = e.target.closest && e.target.closest('li'); if (li) { e.preventDefault(); pickSheetTrack(Number(li.dataset.i)); } });
+  const fb = sheet.querySelector('.tt-filebtn');   // the real <input type=file> is hidden from AT and Tab: this label is the keyboard / screen-reader control
+  if (fb) fb.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); el('fileInput').click(); } });
   syncSheetAlbum();
 }
 
@@ -1558,6 +1560,7 @@ function installCustomTheme() {
   // null. Apply only ever commits this — never re-parses on click — so
   // there's no window where a malformed paste could sneak through.
   let pendingParsed = null;
+  let releaseTrap = () => {};   // the focus trap of the open overlay (Tab stays inside, Escape closes, focus returns to the opener)
 
   function refreshStatus() { settings.customThemeChanged(); }   // re-applies the palette and repaints the Settings page
 
@@ -1600,10 +1603,13 @@ function installCustomTheme() {
     pendingParsed = null;
     showEdit();
     overlay.classList.remove('hidden');
+    releaseTrap();
+    releaseTrap = trapFocus(overlay.querySelector('.theme-card'), { initial: input, onEscape: closeOverlay });
   }
 
   function closeOverlay() {
     overlay.classList.add('hidden');
+    releaseTrap(); releaseTrap = () => {};
   }
 
   customThemeApi.open = openOverlay;   // the Settings page's "Import JSON..." button

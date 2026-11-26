@@ -4,16 +4,16 @@
    --bg etc. inline and always wins over these. */
 :root[data-theme="dark"][data-tone="soft"] {
   --bg: #14141a; --surface: #1d1d26; --surface2: #282833; --border: rgba(255,255,255,.09);
-  --ink: #ececf4; --ink2: rgba(236,236,244,.55);
+  --ink: #ececf4; --ink2: rgba(236,236,244,.66);
 }
 
 /* accent follow-ups: the few places that hard-coded the violet gradient follow --violet now (default look unchanged) */
 .rpms button.active, .rpms button:hover, .brake.active {
   background: linear-gradient(180deg, color-mix(in srgb, var(--violet) 78%, #fff) 0%, var(--violet) 100%);
-  color: var(--on-accent, #fff);
+  color: var(--on-accent, #111);
 }
-.tb-btn.active, .cd-ctl button.cd-play, .wt-next { color: var(--on-accent, #fff) !important; }
-.sort-chip.active, .lib-scan { color: var(--on-accent, #fff); }
+.tb-btn.active, .cd-ctl button.cd-play, .wt-next { color: var(--on-accent, #111) !important; }
+.sort-chip.active, .lib-scan { color: var(--on-secondary, var(--on-accent, #111)); }
 
 /* text size: layout-safe zoom on the text-heavy surfaces only (the turntable, cassettes and Booth are fixed-geometry instruments) */
 :root[data-text="small"] { --st-zoom: .92; }
@@ -47,17 +47,17 @@
 .st-seg { display: flex; gap: 6px; flex-wrap: wrap; }
 .st-seg button { flex: 1 1 64px; min-width: 0; white-space: nowrap; min-height: 44px; padding: 8px 10px; font: inherit; font-size: 13px; font-weight: 600; color: var(--ink2); background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; cursor: pointer; text-align: center; }
 .st-seg.dense button { flex-basis: 0; padding: 8px 2px; font-size: 12.5px; }
-.st-seg button small { display: block; font-size: 10.5px; font-weight: 400; opacity: .8; margin-top: 1px; }
-.st-seg button[aria-checked="true"] { color: var(--on-accent, #fff); background: var(--violet); border-color: var(--violet); box-shadow: 0 2px 12px var(--violet-glow); }
+.st-seg button small { display: block; font-size: 11px; font-weight: 500; opacity: 1; margin-top: 1px; }
+.st-seg button[aria-checked="true"] { color: var(--on-accent, #111); background: var(--violet); border-color: var(--violet); box-shadow: 0 2px 12px var(--violet-glow); }
 .st-seg button:focus-visible, .st-btn:focus-visible, .st-switch:focus-visible, .st-sw:focus-visible, .st-hex:focus-visible { outline: 2px solid var(--violet); outline-offset: 2px; }
 
 .st-switch { display: flex; flex-direction: row-reverse; justify-content: space-between; align-items: center; gap: 16px; min-height: 48px; width: 100%; background: none; border: 0; padding: 0; font: inherit; color: var(--ink); text-align: left; cursor: pointer; border-radius: 12px; }
 .st-switch .st-track { flex: none; width: 48px; height: 28px; border-radius: 14px; background: var(--surface2); border: 1px solid var(--border); position: relative; transition: background .2s var(--ease); }
 .st-switch .st-track::after { content: ''; position: absolute; top: 2px; left: 2px; width: 22px; height: 22px; border-radius: 50%; background: var(--ink2); transition: transform .2s var(--ease), background .2s; }
 .st-switch[aria-checked="true"] .st-track { background: var(--violet); border-color: var(--violet); }
-.st-switch[aria-checked="true"] .st-track::after { transform: translateX(20px); background: var(--on-accent, #fff); }
+.st-switch[aria-checked="true"] .st-track::after { transform: translateX(20px); background: var(--on-accent, #111); }
 
-.st-swatches { display: flex; flex-wrap: wrap; gap: 8px; }
+.st-swatches { display: grid; grid-template-columns: repeat(auto-fit, minmax(48px, 1fr)); justify-items: center; gap: 8px; }
 .st-sw { width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--border); background: var(--sw); cursor: pointer; padding: 0; position: relative; }
 .st-sw[aria-checked="true"] { border-color: var(--ink); box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--sw); }
 .st-sw[aria-checked="true"]::after { content: ''; position: absolute; left: 14px; top: 8px; width: 9px; height: 17px; border-right: 3px solid var(--sw-ink); border-bottom: 3px solid var(--sw-ink); transform: rotate(40deg); }
@@ -66,8 +66,8 @@
 .st-hex[aria-invalid="true"] { border-color: #e5484d; }
 
 .st-btn { min-height: 44px; padding: 0 16px; font: inherit; font-size: 13px; font-weight: 600; color: var(--ink); background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; cursor: pointer; }
-.st-btn.primary { background: var(--violet); border-color: var(--violet); color: var(--on-accent, #fff); }
-.st-btn.danger[data-armed="true"] { background: #e5484d; border-color: #e5484d; color: #fff; }
+.st-btn.primary { background: var(--violet); border-color: var(--violet); color: var(--on-accent, #111); }
+.st-btn.danger[data-armed="true"] { background: #c5282d; border-color: #c5282d; color: #fff; }
 .st-btn:disabled { opacity: .5; cursor: default; }
 .st-btns { display: flex; gap: 8px; flex-wrap: wrap; }
 
@@ -75,7 +75,7 @@
 .st-pv-title { font-size: 15px; font-weight: 600; color: var(--ink); }
 .st-pv-sub { font-size: 12px; color: var(--ink2); }
 .st-pv-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-.st-pv-chip { padding: 6px 12px; border-radius: 16px; font-size: 12px; font-weight: 600; color: var(--on-accent, #fff); background: var(--violet); }
+.st-pv-chip { padding: 6px 12px; border-radius: 16px; font-size: 12px; font-weight: 600; color: var(--on-accent, #111); background: var(--violet); }
 .st-pv-chip.off { color: var(--ink2); background: var(--surface2); border: 1px solid var(--border); }
 .st-pv-bar { flex: 1; min-width: 80px; height: 6px; border-radius: 3px; background: var(--surface2); position: relative; overflow: hidden; }
 .st-pv-bar::after { content: ''; position: absolute; inset: 0 55% 0 0; background: var(--violet); }

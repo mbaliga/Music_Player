@@ -141,8 +141,8 @@
 .tl-foot { padding: 4px var(--pad) 36px; font-size: var(--f2); color: #8b8b95; letter-spacing: .04em; text-align: center; }
 .tl-foot[hidden], .tl-pick[hidden] { display: none; }
 /* first-run nudge: pinned to the bottom of the view, never in the way of a swipe */
-.tl-pick { position: absolute; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 18px); transform: translateX(-50%); z-index: 310; max-width: calc(100% - 32px); padding: 10px 18px; border-radius: 22px;
-  background: #e6e6ec; color: #0b0b0e; font: 700 14px system-ui, sans-serif; letter-spacing: .01em; pointer-events: none; box-shadow: 0 6px 24px rgba(0, 0, 0, .55); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tl-pick { position: absolute; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 18px); transform: translateX(-50%); z-index: 310; max-width: calc(100% - 32px); padding: 8px 12px;
+  background: none; color: #b4b4be; font: 500 13px system-ui, sans-serif; letter-spacing: .02em; pointer-events: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; }
 
 @media (prefers-reduced-motion: reduce) {
   .tl-pill { transition: none; }

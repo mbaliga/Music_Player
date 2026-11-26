@@ -79,6 +79,7 @@ export function initDeviceMode(opts = {}) {
   function onState(st, prev) {
     try {
       syncSection(); paintVars();
+      markFrozen(!!st.locked);
       writeAttr();   // 'aod' is only ever added/removed by setAod (after its fade)
       _setGuard({ locked: st.locked, aod: aodApplied, fxPadWhileLocked: S().fxPadWhileLocked });
       for (const k of keys) k.setLocked();
@@ -93,6 +94,18 @@ export function initDeviceMode(opts = {}) {
   function writeAttr() {
     const toks = []; if (machine.state.locked) toks.push('locked'); if (aodApplied) toks.push('aod');
     if (toks.length) body.dataset.devicemode = toks.join(' '); else delete body.dataset.devicemode;
+  }
+  // While locked the frozen controls are inert to touch (CSS); tell assistive tech too: aria-disabled on everything outside the allowlist.
+  const FROZEN_MARK = 'data-dm-disabled', INTERACTIVE = 'button, [role=button], [role=switch], [role=tab], [role=slider], a[href], input, select, textarea';
+  function markFrozen(on) {
+    try {
+      for (const e of doc.querySelectorAll('[' + FROZEN_MARK + ']')) { e.removeAttribute(FROZEN_MARK); if (e.getAttribute('aria-disabled') === 'true') e.removeAttribute('aria-disabled'); }
+      if (!on) return;
+      for (const e of doc.querySelectorAll('#shell ' + INTERACTIVE.split(', ').join(', #shell '))) {
+        if (isAllowed(e) || e.hasAttribute('aria-disabled') || e.disabled) continue;
+        e.setAttribute('aria-disabled', 'true'); e.setAttribute(FROZEN_MARK, '');
+      }
+    } catch { /* never breaks locking */ }
   }
   function blurFrozen(on) { try { if (on && doc.activeElement && doc.activeElement !== body && !isAllowed(doc.activeElement)) doc.activeElement.blur(); } catch { /* */ } }
   function persist() { try { if (S().persistLock && storage) storage.setItem(LOCK_KEY, JSON.stringify(machine.snapshot())); else storage && storage.removeItem(LOCK_KEY); } catch { /* */ } }
@@ -157,7 +170,8 @@ export function initDeviceMode(opts = {}) {
     noticeEl.hidden = false; setTimeout(() => { machine.dismissNotice(); noticeEl.hidden = true; }, 6000);
   }
   const unlockHint = () => { const m = S().unlockMethod; return m === 'hold' ? 'Hold the lock key to unlock' : m === 'double' ? 'Double-tap the lock key to unlock' : 'Slide the lock key to unlock'; };
-  const faceHint = () => { const f = getLockFace(section); return (f && f.notes) || ''; };
+  const unlockWords = () => { const m = S().unlockMethod; return m === 'hold' ? 'Hold the lock to unlock.' : m === 'double' ? 'Double-tap the lock to unlock.' : 'Slide the lock to unlock.'; };
+  const faceHint = () => { const f = getLockFace(section); return ((f && f.notes) ? f.notes + ' ' : '') + unlockWords(); };
 
   // ── Android back: never unlock silently ──────────────────────────────────────────────────────────────────────────────
   function trapBack() { try { if (!popTrapped) { win.history.pushState({ dm: 1 }, ''); popTrapped = true; } } catch { /* */ } }
@@ -244,6 +258,7 @@ export function initDeviceMode(opts = {}) {
     for (const actions of doc.querySelectorAll('.page-head .page-actions')) {
       if (actions.querySelector('.dm-key')) continue;
       keys.push(createLockKey(keyDeps(actions, false)));
+      { const k = actions.querySelector('.dm-key'); if (k && k !== actions.lastElementChild) actions.append(k); }   // the key is drawn last (CSS order), so it is tabbed last
     }
     if (!doc.querySelector('.dm-key-float')) keys.push(createLockKey(keyDeps(body, true)));
     syncSection(); paintVars();

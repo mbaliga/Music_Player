@@ -58,9 +58,11 @@ export function faceCss(sectionId, settings = {}) {
     `${L} :is(${liveJ}), ${L} :is(${liveJ}) * { pointer-events: auto; touch-action: manipulation; }`,
     `${L} :is(${frozenJ}) { pointer-events: none !important; }`,
     `${L}[data-dm-dim="1"] #shell :is(:not(:has(*)), svg):not(:is(${liveJ}, ${liveJ.split(', ').map((s) => s + ' *').join(', ')})):not(:has(${liveJ})) { opacity: .84; }`,
-    `${A} :is(${join(aod)}) { color: var(--dm-accent) !important; -webkit-text-fill-color: var(--dm-accent) !important; border-color: var(--dm-accent) !important; outline: 1px solid var(--dm-accent) !important; outline-offset: -1px; box-shadow: 0 0 10px var(--dm-glow), inset 0 0 6px var(--dm-glow) !important; }`,
+    `${A} :is(${join(aod)}) { color: var(--dm-label) !important; -webkit-text-fill-color: var(--dm-label) !important; border-color: var(--dm-accent) !important; outline: 1px solid var(--dm-accent) !important; outline-offset: -1px; box-shadow: 0 0 10px var(--dm-glow), inset 0 0 6px var(--dm-glow) !important; }`,
     `${A} :is(${join(aod)}) :is(path, rect, circle, line, polyline, polygon, ellipse, g) { stroke: var(--dm-accent) !important; stroke-width: 1.4px !important; }`,
-    `${A} :is(${join(aod)}) text { fill: var(--dm-accent) !important; stroke: none !important; }`,
+    `${A} :is(${join(aod)}) text { fill: var(--dm-label) !important; stroke: none !important; }`,
+    `${A} svg :is(${join(aod)}) rect.hit-area { stroke: none !important; }`,   // the transparent hit-area rect is not drawn (it was a square box offset from the key's rounded outline)
+    `${A} svg :is(${join(aod)}) { outline: none !important; box-shadow: none !important; }`,   // an SVG key is outlined by its own rect, not by its (larger, square) hit-area box
     `${A} :is(${join(txt)}) { color: var(--dm-ink) !important; -webkit-text-fill-color: var(--dm-ink) !important; }`,
   ].join('\n');
 }

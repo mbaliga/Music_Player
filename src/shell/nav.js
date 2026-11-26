@@ -119,6 +119,7 @@ export function createShell(opts = {}) {
     if (b) { drawer.style.visibility = ''; drawer.inert = false; }
     shell.dataset.open = String(b);
     inner.inert = b;
+    for (const mb of card.querySelectorAll('.minibar')) mb.inert = b;   // the rest of the page behind the drawer (the mini bar sits outside the inner box; the cover must stay tappable, so #card itself cannot be inert)
     cover.setAttribute('aria-hidden', String(!b));
     for (const h of hamburgers) { h.setAttribute('aria-expanded', String(b)); }
     if (b) { lastFocus = document.activeElement; }

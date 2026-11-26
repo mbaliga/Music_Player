@@ -18,7 +18,7 @@
   -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 36px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 36px), transparent); }
 .radio-chips::-webkit-scrollbar { display: none; }
 .radio-chips .sort-chip { flex: 0 0 auto; min-height: 44px; padding: 0 16px; font-size: 14px; display: inline-flex; align-items: center; }
-.radio-chips .sort-chip.active { background: var(--violet); color: var(--on-accent, #fff); border-color: var(--violet); }
+.radio-chips .sort-chip.active { background: var(--violet); color: var(--on-accent, #111); border-color: var(--violet); }
 .radio-chips .sort-chip.active::before { content: "✓"; margin-right: 6px; font-weight: 800; }
 .radio-search button:focus-visible, .radio-chips .sort-chip:focus-visible, .radio-clear:focus-visible, .radio-back:focus-visible, .rr-play:focus-visible, .radio-star:focus-visible, .radio-status .sort-chip:focus-visible { outline: 2px solid var(--violet); outline-offset: 2px; }
 
@@ -60,7 +60,7 @@
 .rr-now[data-phase="playing"] { color: #5ad18a; }
 .rr-now[data-phase="reconnecting"] { color: #f5c542; }
 .rr-now[data-phase="error"] { color: #ff8a8a; }
-.rr-play, .dial-card .dial-play[data-play] { flex: none; min-width: 80px; min-height: 44px; padding: 0 12px; border-radius: 22px; border: 1px solid var(--violet); background: var(--violet); color: var(--on-accent, #fff); font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+.rr-play, .dial-card .dial-play[data-play] { flex: none; min-width: 80px; min-height: 44px; padding: 0 12px; border-radius: 22px; border: 1px solid var(--violet); background: var(--violet); color: var(--on-accent, #111); font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; white-space: nowrap; }
 .rr-play.stop, .dial-card .dial-play[data-play].stop { background: none; color: var(--violet); }
 .radio-saved { display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px; }
 .radio-saved:empty { display: none; }
@@ -160,3 +160,4 @@ body:has(.ai-panel:not(.hidden) .ai-card) :is(.radio-row.on .rr-play.stop, .dial
 /* the last row ("Cast and voices") was cut by the screen edge */
 .ai-panel:not(.hidden) { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 12px); scroll-padding-bottom: 24px; }
 .ai-panel .ai-card:last-child { margin-bottom: 14px; }
+.dial-card .dial-play:focus-visible, .rr-play:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; box-shadow: 0 0 0 5px var(--violet); }

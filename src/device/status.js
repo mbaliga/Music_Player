@@ -72,7 +72,7 @@ const CSS = `
 .dv-card{margin:12px auto;max-width:420px;padding:16px 18px;border-radius:var(--rx,12px);background:var(--surface,#0d0d12);border:1px solid var(--border,rgba(255,255,255,.07));color:var(--ink,#e8e8f0);text-align:center;font-size:13px;line-height:1.5}
 .dv-card[hidden]{display:none}
 .dv-title{font-size:15px;font-weight:700;margin-bottom:4px}
-.dv-body{color:var(--ink2,rgba(232,232,240,.5));margin-bottom:12px}
+.dv-body{color:var(--ink2,rgba(232,232,240,.64));margin-bottom:12px}
 .dv-body:last-child{margin-bottom:0}
 .dv-bar{height:4px;border-radius:2px;background:var(--surface2,#16161e);overflow:hidden;margin:6px 0 2px}
 .dv-bar>i{display:block;height:100%;width:0;background:var(--secondary,#8E7BFF);transition:width .2s}

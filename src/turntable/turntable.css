@@ -114,11 +114,11 @@
 .tt-album-tracks li:focus-visible { outline: 2px solid var(--shell-accent, #8E7BFF); outline-offset: -2px; }
 .tt-sheet .trk-nav button { min-width: 56px; min-height: 48px; }
 .tt-sheet .tt-sheet-close { color: var(--ink); border-color: rgba(255,255,255,.25); }
-.tt-filebtn { display: inline-flex; align-items: center; justify-content: center; align-self: flex-start; min-height: 48px; padding: 0 22px; border-radius: 24px; background: var(--violet); color: #fff;
+.tt-filebtn { display: inline-flex; align-items: center; justify-content: center; align-self: flex-start; min-height: 48px; padding: 0 22px; border-radius: 24px; background: var(--violet); color: var(--on-accent, #111);
   font: 700 15px system-ui, sans-serif; cursor: pointer; }
 .tt-filebtn:active { transform: scale(.97); }
 .tt-fileinput { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; clip-path: inset(50%); }
-.tt-fileinput:focus-visible + .tt-filebtn { outline: 2px solid var(--shell-accent, #8E7BFF); outline-offset: 2px; }
+.tt-filebtn:focus-visible { outline: 2px solid var(--shell-accent, #8E7BFF); outline-offset: 2px; }
 .tt-adv > summary { display: flex; align-items: center; min-height: 48px; cursor: pointer; font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--ink2); list-style: none; }
 .tt-adv > summary::-webkit-details-marker { display: none; }
 .tt-adv > summary::after { content: '▾'; margin-left: 8px; transition: transform .15s; }
@@ -137,3 +137,11 @@
   #pageAlbums .cd-view .cd-meta { justify-content: flex-start; }
   #pageAlbums .cd-view .cd-list { max-height: none; min-height: 0; }
 }
+/* a visible keyboard focus ring on the speed keys / Play that cannot be mistaken for "selected" (selected = filled light key) */
+.tt-top .ctl:focus-visible .bg, .tt-top .pbtn:focus-visible .bg { stroke: #8E7BFF; stroke-width: 6; paint-order: stroke; filter: drop-shadow(0 0 5px #8E7BFF) drop-shadow(0 0 1px #fff); }
+/* the stage stops above the system gesture bar so the now-playing caption never sits on it */
+#pageAlbums .tt-wrap { bottom: var(--safe-bottom, 0px); }
+/* larger text: the Library chip gives way (label ellipsis) so Search, Turntable settings and the lock key are never pushed off the header */
+#pageAlbums .page-head .page-actions { min-width: 0; flex: 1 1 auto; justify-content: flex-end; }
+#pageAlbums .page-head .tt-lib-btn { flex: 0 1 auto; min-width: 44px; overflow: hidden; }
+.tt-lib-lbl { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

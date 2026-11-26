@@ -198,12 +198,12 @@ export const CSS_VAR_MAP = {
 };
 
 const GLOW_ALPHA = { dark: 0.28, light: 0.18 };
-const INK2_ALPHA = { dark: 0.48, light: 0.5 };
+const INK2_ALPHA = { dark: 0.64, light: 0.68 };
 
 /** Every CSS custom property a custom theme may set — used to clear them all cleanly. */
 export const THEME_CSS_VARS = [
   ...Object.values(CSS_VAR_MAP),
-  '--violet-glow', '--ink2',
+  '--violet-glow', '--ink2', '--on-accent', '--on-secondary',
 ];
 
 export const STORAGE_KEY = 'runout.customTheme';
@@ -217,6 +217,8 @@ export function setThemeVars(theme, mode) {
   }
   style.setProperty('--violet-glow', withAlpha(c.primary, GLOW_ALPHA[mode]));
   style.setProperty('--ink2', withAlpha(c.onSurface, INK2_ALPHA[mode]));
+  style.setProperty('--on-accent', onAccent(c.primary));
+  style.setProperty('--on-secondary', onAccent(c.secondary));
 }
 
 /** Remove every inline var a custom theme set, reverting to the built-in stylesheet defaults. */

@@ -17,6 +17,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { Cassette } from './index.js';
+import { trapFocus } from '../ui/focus-trap.js';
 import { h, icon, ICONS, reducedMotion } from './dom.js';
 import {
   createMixtape, withName, withAuthor, withStyle, withPen, withInk, withWear, withGloss, withText, inkHex, withTape, withAutoReverse,
@@ -81,7 +82,7 @@ export function openBack({ mixtape: m, onPlay, onEdit }) {
 }
 
 // ── editor ───────────────────────────────────────────────────────────────────
-let edEl = null;
+let edEl = null, edCloser = null;
 
 /**
  * ctx = {
@@ -101,7 +102,7 @@ let edEl = null;
  */
 export function openEditor(ctx) {
   closeBack();
-  if (edEl) edEl.remove();
+  if (edCloser) edCloser(); else if (edEl) edEl.remove();
   const isNewInit = !ctx.mixtape || !!ctx.draft;
   let isNew = isNewInit;
   let m = ctx.mixtape || createMixtape({ id: newMixtapeId(Date.now(), Math.random(), ctx.existing || []), name: '', autoReverse: ctx.defaultAuto !== false });
@@ -121,7 +122,7 @@ export function openEditor(ctx) {
   const backBtn = h('button', { type: 'button', id: 'ed-back', class: 'bk', 'aria-label': 'Back', onclick: () => askLeave() }, icon(ICONS.back, { size: 20, stroke: 2.6 }), h('span', {}, 'Back'));
   // the tape's name on every tab (it lived only on the Tape tab while the editor opens on Add): tap to rename
   const nameChip = h('button', { type: 'button', class: 'ed-namechip', onclick: () => { goTab('tape'); try { fName.focus(); fName.select(); } catch { /* */ } } });
-  const paintName = () => { const n = (m.name || '').trim(); nameChip.replaceChildren(h('b', {}, n || 'Name your mixtape'), h('span', { 'aria-hidden': 'true' }, ' ✎')); nameChip.classList.toggle('unnamed', !n); nameChip.setAttribute('aria-label', n ? `Tape name: ${n}. Tap to rename` : 'Name your mixtape'); };
+  const paintName = () => { const n = (m.name || '').trim(); nameChip.replaceChildren(h('b', {}, n || 'Name it'), h('span', { 'aria-hidden': 'true' }, ' ✎')); nameChip.classList.toggle('unnamed', !n); nameChip.setAttribute('aria-label', n ? `Tape name: ${n}. Tap to rename` : 'Name your mixtape'); };
   const bar = h('div', { class: 'ed-bar' }, backBtn, title, nameChip, playBtn, saveBtn);
 
   const prev = h('button', { type: 'button', class: 'ed-tape', onclick: () => api.setSide(side === 'A' ? 'B' : 'A') });
@@ -134,9 +135,14 @@ export function openEditor(ctx) {
   const tabs = h('div', { class: 'ed-tabs', role: 'tablist' }, ...TABS.map(([id, label]) => (tabBtns[id] = h('button', { type: 'button', role: 'tab', id: 'edtab-' + id, onclick: () => api.goTab(id) }, label))));
   const panels = {};
   const panel = h('div', { class: 'ed-panel' });
-  const ed = h('div', { class: 'ed', role: 'dialog', 'aria-label': isNew ? 'New mixtape' : 'Edit mixtape' }, bar, top, tabs, panel, toastEl, live);
+  const ed = h('div', { class: 'ed', role: 'dialog', 'aria-modal': 'true', 'aria-label': isNew ? 'New mixtape' : 'Edit mixtape' }, bar, top, tabs, panel, toastEl, live);
   const ov = h('div', { class: 'ed-ov' }, ed);
   document.body.appendChild(ov); edEl = ov;
+  // modal: the app shell behind is inert (screen readers + Tab can't reach it) and focus is trapped in the editor until it closes
+  const shellEl = document.getElementById('shell'); const shellWasInert = !!(shellEl && shellEl.inert);
+  if (shellEl) shellEl.inert = true;
+  let releaseTrap = () => {};
+  edCloser = closeEd;
 
   // ── shared state / services for the tabs
   let picker = null, pickerSig = '', toastT = 0, ut = null, tapeH = null;
@@ -312,7 +318,7 @@ export function openEditor(ctx) {
     orig = JSON.stringify(m); isNew = false;
     return m;
   }
-  function closeEd() { document.removeEventListener('keydown', edKey); clearTimeout(ut); clearTimeout(toastT); ov.remove(); if (edEl === ov) edEl = null; }
+  function closeEd() { if (edCloser === closeEd) edCloser = null; if (shellEl && !shellWasInert) shellEl.inert = false; releaseTrap(); releaseTrap = () => {}; document.removeEventListener('keydown', edKey); clearTimeout(ut); clearTimeout(toastT); ov.remove(); if (edEl === ov) edEl = null; }
   function askLeave() {
     if (!dirty()) { closeEd(); return; }
     if (ed.querySelector('.ed-warn')) return;
@@ -332,6 +338,7 @@ export function openEditor(ctx) {
     askLeave();
   }
   document.addEventListener('keydown', edKey);
+  releaseTrap = trapFocus(ed, { onEscape: () => edKey({ key: 'Escape' }) });
 
   mountTape();
   paintPlay(); paintName(); paintTop();

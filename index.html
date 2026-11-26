@@ -32,7 +32,9 @@
     --surface2: #16161e;     /* input / button base */
     --border: rgba(255,255,255,0.07);
     --ink: #e8e8f0;
-    --ink2: rgba(232,232,240,0.48);
+    --ink2: rgba(232,232,240,0.64);
+    --on-secondary: var(--on-accent);
+    --on-accent: #111111;      /* text on an accent-coloured fill: 5.8:1 on the default violet (white was 3.3:1) */
     /* Secondary/tertiary accents — default to the primary so the built-in
        theme is unchanged; a custom theme (src/theme.js) overrides these. */
     --secondary: var(--violet);
@@ -48,7 +50,7 @@
     --border: rgba(0,0,0,0.09);
     --violet-glow: rgba(142,123,255,0.18);
     --ink: #0e0e1a;
-    --ink2: rgba(14,14,26,0.5);
+    --ink2: rgba(14,14,26,0.68);
   }
 
   /* ── Reset ─────────────────────────────────────────────────────────────────── */
@@ -85,7 +87,7 @@
   .tb-btn:active { transform: scale(0.92); }
   .tb-btn.active {
     background: var(--violet);
-    color: #fff;
+    color: var(--on-accent, #111);
     border-color: var(--violet);
     box-shadow: 0 2px 12px var(--violet-glow);
   }
@@ -105,7 +107,7 @@
   .cd-ctl { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; }
   .cd-ctl-main { display: flex; justify-content: center; gap: 12px; }
   .cd-ctl-main button { background: var(--surface2); color: var(--ink); border: 1px solid var(--border); border-radius: 50%; width: 48px; height: 48px; font-size: 16px; cursor: pointer; }
-  .cd-ctl-main button.cd-play { background: var(--violet); color: #fff; border-color: transparent; }
+  .cd-ctl-main button.cd-play { background: var(--violet); color: var(--on-accent, #111); border-color: transparent; }
   .cd-list { list-style: none; margin: 0; padding: 0; max-height: 18svh; overflow-y: auto; font-size: 13px; }
   .cd-list li { padding: 7px 10px; border-radius: 6px; color: var(--ink2); cursor: pointer; counter-increment: cdt; }
   .cd-list li::before { content: counter(cdt, decimal-leading-zero) "  "; font-variant-numeric: tabular-nums; opacity: .6; }
@@ -232,7 +234,7 @@
   .wt-nav .wt-skip { border-color: transparent; background: none; color: var(--ink2); padding: 0 12px; }
   .wt-next {
     background: var(--violet) !important;
-    color: var(--on-accent, #fff) !important;
+    color: var(--on-accent, #111) !important;
     border-color: var(--violet) !important;
     box-shadow: 0 2px 8px rgba(142,123,255,0.4);
   }
@@ -253,7 +255,7 @@
   .lib-scan {
     padding: 8px 16px; border-radius: 20px;
     font-weight: 700; font-size: 13px;
-    background: var(--secondary); color: #fff;
+    background: var(--secondary); color: var(--on-secondary, var(--on-accent, #111));
     border: none; cursor: pointer; flex-shrink: 0;
     box-shadow: 0 2px 10px rgba(142,123,255,0.45);
     transition: opacity .15s;
@@ -266,7 +268,7 @@
     border: 1px solid var(--border); background: var(--surface2); color: var(--ink2);
     cursor: pointer; transition: all .15s;
   }
-  .sort-chip.active { background: var(--secondary); color: #fff; border-color: var(--secondary); }
+  .sort-chip.active { background: var(--secondary); color: var(--on-secondary, var(--on-accent, #111)); border-color: var(--secondary); }
 
   /* Empty state */
 
@@ -442,11 +444,21 @@
     .theme-head .theme-title { font-size: 17px; }
     .theme-step:not(.hidden), .theme-card > .theme-step:not(.hidden) { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 10px; }
     .theme-card > .theme-title { display: none; }
-    #themeInput, .mt-textarea { flex: 1; min-height: 160px; resize: none; font-size: 14px; }
+    /* soft keyboard up (a ~330 px tall viewport): the card scrolls, the textarea shrinks to ~120 px and the action bar stays reachable */
+    .theme-card { overflow-y: auto; }
+    .theme-step:not(.hidden), .theme-card > .theme-step:not(.hidden) { flex: 1 0 auto; min-height: min-content; }
+    #themeInput, .mt-textarea { flex: 1 1 auto; min-height: 120px; resize: none; font-size: 14px; }
     .theme-preview { flex: 1; min-height: 120px; max-height: none; font-size: 13px; }
-    .theme-foot { flex: none; margin-top: auto; padding-top: 8px; border-top: 1px solid var(--border); }
+    .theme-foot { flex: none; margin-top: auto; padding-top: 8px; border-top: 1px solid var(--border); position: sticky; bottom: 0; z-index: 2; background: var(--surface); padding-bottom: max(4px, env(safe-area-inset-bottom, 0px)); }
     .theme-foot-left, .theme-foot-right { flex-wrap: wrap; }
     .theme-btn { min-height: 48px; padding: 0 18px; font-size: 15px; border-radius: 12px; }
+  }
+  /* soft keyboard up: tighter action bar on one row, the explanatory hint steps aside */
+  @media (max-height: 420px) {
+    .theme-foot { flex-wrap: nowrap; gap: 6px; }
+    .theme-foot-left, .theme-foot-right { flex-wrap: nowrap; gap: 4px; }
+    .theme-btn { min-height: 44px; padding: 0 12px; }
+    .theme-card .theme-hint { display: none; }
   }
   .theme-btn.primary:disabled {
     opacity: 0.4; cursor: default;
@@ -506,7 +518,7 @@
                 <ol class="cd-list" id="cdList"></ol>
               </div>
           <!-- Turntable settings (was "Deck details"): the album on the platter, track and speed, adding a file; the numbers live behind Advanced -->
-          <div class="tt-sheet" id="deckSheet" role="dialog" aria-label="Turntable settings" hidden>
+          <div class="tt-sheet" id="deckSheet" role="dialog" aria-modal="true" aria-label="Turntable settings" hidden>
             <div class="tt-sheet-head"><h2>Turntable settings</h2><button class="sort-chip tt-sheet-close" type="button">Close</button></div>
             <aside class="panel">
               <div class="section tt-album" id="ttAlbumInfo">
@@ -528,8 +540,8 @@
               </div>
               <div class="section">
                 <div class="section-title">Add music</div>
-                <input id="fileInput" class="tt-fileinput" type="file" accept="audio/*" />
-                <label class="tt-filebtn" for="fileInput">Add music file</label>
+                <input id="fileInput" class="tt-fileinput" type="file" accept="audio/*" aria-hidden="true" tabindex="-1" />
+                <label class="tt-filebtn" for="fileInput" role="button" tabindex="0">Add music file</label>
                 <p class="hint">Plays one file from this device, or drop a file anywhere. Local only, no streaming.</p>
               </div>
               <div class="section">

@@ -4,6 +4,7 @@
   --dm-accent: color-mix(in srgb, var(--violet, #8E7BFF) var(--dm-glow-pct, 30%), #000);
   --dm-glow: color-mix(in srgb, var(--violet, #8E7BFF) calc(var(--dm-glow-pct, 30%) * .6), transparent);
   --dm-ink: #3b3b3b;
+  --dm-label: color-mix(in srgb, var(--violet, #8E7BFF) 74%, #000);   /* live-key text in AOD: >= 3:1 on black (was the 30% glow tint, 1.5:1), still dim */
   --dm-text: #8c8c94;
   --dm-line: #1b1b1b;
   --dm-sx: 0px; --dm-sy: 0px;
@@ -52,7 +53,7 @@ body[data-devicemode~="locked"] .tp-hint { display: none; }
 .dm-sheet-lead { margin: 0; }
 .dm-group { background: var(--surface, #111); border: 1px solid var(--border); border-radius: 18px; padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 16px; }
 .dm-group h3 { font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--ink2); }
-.dm-done { min-height: 44px; min-width: 88px; padding: 0 20px; border: 0; border-radius: 12px; background: var(--violet, #8E7BFF); color: var(--on-accent, #fff); font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }
+.dm-done { min-height: 44px; min-width: 88px; padding: 0 20px; border: 0; border-radius: 12px; background: var(--violet, #8E7BFF); color: var(--on-accent, #111); font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }
 .dm-done:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 @media (min-width: 641px) and (min-height: 501px) {
   .dm-sheet { align-items: center; background: rgba(0,0,0,.55); }
@@ -106,7 +107,7 @@ body[data-devicemode~="aod"] .dm-hint, body[data-devicemode~="aod"] .dm-notice {
 /* ── locked-screen layout (UX review): the library pill is not a locked control and covered the title / time; the hint card is a small tag
    under the lock key instead of a slab over the record; a tap on the key pulses its ring with a label ("Hold to unlock"). Never in AOD. ── */
 body[data-devicemode~="locked"] .tt-sr, body[data-devicemode~="aod"] .tt-sr { display: none !important; }
-.dm-hint { left: auto; right: 10px; transform: none; top: calc(env(safe-area-inset-top) + 58px); max-width: min(62vw, 230px); padding: 8px 12px; font-size: 12.5px; line-height: 1.35; text-align: left; }
+.dm-hint { left: auto; right: 10px; transform: none; top: calc(env(safe-area-inset-top) + var(--head-h, 56px) + 8px); max-width: min(62vw, 230px); padding: 8px 12px; font-size: 12.5px; line-height: 1.35; text-align: left; }
 .dm-key.dm-nudge .dm-ring { opacity: 1; animation: dm-nudge 1.6s ease-out 1; }
 .dm-key.dm-nudge .dm-ring-fg { stroke: var(--violet, #8E7BFF); stroke-dasharray: 100; stroke-dashoffset: 75; }
 .dm-key.dm-nudge::after { content: 'Hold to unlock'; position: absolute; right: 2px; top: 44px; white-space: nowrap; font: 600 11px/1 system-ui, sans-serif; color: var(--ink, #eee); background: rgba(20,20,26,.94); border-radius: 8px; padding: 5px 8px; pointer-events: none; }
@@ -114,3 +115,7 @@ body[data-devicemode~="locked"] .tt-sr, body[data-devicemode~="aod"] .tt-sr { di
 body[data-devicemode~="aod"] .dm-key.dm-nudge::after { display: none; }
 @media (prefers-reduced-motion: reduce) { .dm-key.dm-nudge .dm-ring { animation: none; } }
 body:has(.dm-key.dm-nudge) .dm-hint { display: none; }   /* the tag under the key says it; two overlapping cards do not */
+
+/* AOD tidy-up: decoration that only collides when everything is drawn as an outline — the empty-state card (an empty rounded rect + a pill),
+   the "TONEARM REST" label and the BALIGA engraving that sat under the arm's pivot ring. Nothing here is information. */
+body[data-devicemode~="aod"] :is(.tt-empty, .tt-empty *, #tt-parkLbl, #tt-arm text) { display: none !important; }
