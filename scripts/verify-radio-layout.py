@@ -40,7 +40,7 @@ with sync_playwright() as p:
     b = launch(p)
     for (w, h) in VIEWS:
         tag = f'{w}x{h}'
-        ctx = b.new_context(viewport={'width': w, 'height': h})
+        ctx = b.new_context(bypass_csp=True, viewport={'width': w, 'height': h})
         ctx.add_init_script('window.showDirectoryPicker = undefined; try { localStorage.setItem("runout.wtDone", "1"); localStorage.setItem("runout.flag.radio.ai", "1"); } catch(e) {}')
         ctx.add_init_script(FAKE_SPEECH)
         page = ctx.new_page(); errs = []
@@ -117,7 +117,7 @@ with sync_playwright() as p:
     b = launch(p)
     for (w, h) in [(360, 780), (412, 915), (915, 412)]:
         tag = f'{w}x{h} search'
-        ctx = b.new_context(viewport={'width': w, 'height': h}, has_touch=True, is_mobile=True)
+        ctx = b.new_context(bypass_csp=True, viewport={'width': w, 'height': h}, has_touch=True, is_mobile=True)
         ctx.add_init_script('window.showDirectoryPicker = undefined; try { localStorage.setItem("runout.wtDone", "1"); localStorage.setItem("runout.flag.radio.ai", "1"); } catch(e) {}')
         ctx.add_init_script(FAKE_SPEECH)
         mode = {'v': 'ok'}; held = []; streams = []

@@ -96,7 +96,7 @@ def watch(page, tag):
     page.on('response', lambda r: NETFAIL.append((tag, r.url, f'HTTP {r.status}')) if r.status >= 400 else None)
 
 def boot(b, w, h, tag, wt_done=True, init='', dsf=2, library=False):
-    ctx = b.new_context(viewport={'width': w, 'height': h}, device_scale_factor=dsf, has_touch=True, is_mobile=True)
+    ctx = b.new_context(bypass_csp=True, viewport={'width': w, 'height': h}, device_scale_factor=dsf, has_touch=True, is_mobile=True)
     i = 'window.showDirectoryPicker = undefined; try { ' + ('localStorage.setItem("runout.wtDone", "1");' if wt_done else '') + ' } catch (e) {}'
     ctx.add_init_script(i + init); ctx.add_init_script(BUS_HOOK); ctx.add_init_script(FAKE_SPEECH)
     page = ctx.new_page(); watch(page, tag)
@@ -602,7 +602,7 @@ def phase_native(b):
     ctx.close()
 
 def measure_ttI(b):
-    ctx = b.new_context(viewport={'width': 412, 'height': 915}, device_scale_factor=2, has_touch=True, is_mobile=True)
+    ctx = b.new_context(bypass_csp=True, viewport={'width': 412, 'height': 915}, device_scale_factor=2, has_touch=True, is_mobile=True)
     ctx.add_init_script('window.showDirectoryPicker = undefined; try { localStorage.setItem("runout.wtDone", "1"); } catch (e) {}'); ctx.add_init_script(BUS_HOOK)
     page = ctx.new_page(); watch(page, 'tti'); T = Touch(page)
     t0 = time.time(); page.goto(URL, wait_until='commit')

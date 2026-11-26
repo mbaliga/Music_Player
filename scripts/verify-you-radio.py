@@ -102,7 +102,7 @@ def run():
     out = {}
     with sync_playwright() as p:
         b = p.chromium.launch(**({'executable_path': os.environ['CHROME']} if os.environ.get('CHROME') else {}), args=['--autoplay-policy=no-user-gesture-required', '--no-sandbox'])
-        ctx = b.new_context(viewport={'width': 412, 'height': 860}, device_scale_factor=2)
+        ctx = b.new_context(bypass_csp=True, viewport={'width': 412, 'height': 860}, device_scale_factor=2)
         ctx.add_init_script('window.showDirectoryPicker = undefined; try { localStorage.setItem("runout.wtDone", "1"); } catch(e) {}')
         ctx.add_init_script(BUS_HOOK)
         if MODE == 'fake':

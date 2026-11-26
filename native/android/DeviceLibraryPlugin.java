@@ -36,11 +36,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 
 /**
  * Runout "DeviceLibrary": the phone's audio library (MediaStore.Audio) for the web layer.
  *
- * The web app never sees file paths. It sees MediaStore row ids and asks for
+ * The web app never sees file paths on API 29+ (records carry the volume-relative folder, RELATIVE_PATH); below API 29, where that column
+ * does not exist, records also carry the absolute `data` path so the JS can derive the folder. It sees MediaStore row ids and asks for
  *   - signatures()           every audio row as [id, size, dateModified] triples (cheap; drives incremental rescans)
  *   - records({ids})         full metadata rows for those ids
  *   - read({id,offset,len})  a byte range of the file as base64 (the JS DeviceFile is built on this)
@@ -74,6 +76,16 @@ public class DeviceLibraryPlugin extends Plugin {
     @Override
     public void load() {
         pool = Executors.newFixedThreadPool(3);
+    }
+
+    /** Run on the pool; after handleOnDestroy() the pool is shut down, so reject the call instead of throwing RejectedExecutionException. */
+    private void exec(PluginCall call, Runnable r) {
+        try {
+            if (pool == null) throw new RejectedExecutionException("not loaded");
+            pool.execute(r);
+        } catch (RejectedExecutionException e) {
+            call.reject("library plugin is shutting down");
+        }
     }
 
     @Override
@@ -173,7 +185,7 @@ public class DeviceLibraryPlugin extends Plugin {
     @PluginMethod
     public void generation(final PluginCall call) {
         if (!granted()) { call.reject("permission", "denied"); return; }
-        pool.execute(new Runnable() {
+        exec(call, new Runnable() {
             @Override
             public void run() {
                 try {
@@ -256,7 +268,7 @@ public class DeviceLibraryPlugin extends Plugin {
     @PluginMethod
     public void signatures(final PluginCall call) {
         if (!granted()) { call.reject("permission", "denied"); return; }
-        pool.execute(new Runnable() {
+        exec(call, new Runnable() {
             @Override
             public void run() {
                 Cursor c = null;
@@ -325,7 +337,7 @@ public class DeviceLibraryPlugin extends Plugin {
         if (!granted()) { call.reject("permission", "denied"); return; }
         final JSArray idArr = call.getArray("ids");
         if (idArr == null) { call.reject("ids required"); return; }
-        pool.execute(new Runnable() {
+        exec(call, new Runnable() {
             @Override
             public void run() {
                 Cursor c = null;
@@ -388,7 +400,8 @@ public class DeviceLibraryPlugin extends Plugin {
                             o.put("size", lng(c, iSize));
                             o.put("mime", str(c, iMime));
                             o.put("modified", lng(c, iMod));
-                            o.put("data", str(c, iData));
+                            // API 29+: the folder comes from RELATIVE_PATH below; the absolute path is only a < 29 fallback (records.js relativeFromData).
+                            if (Build.VERSION.SDK_INT < 29) o.put("data", str(c, iData));
                             o.put("relativePath", str(c, iRel));
                             o.put("volume", str(c, iVol));
                             o.put("isMusic", lng(c, iMusic) != 0);
@@ -424,7 +437,7 @@ public class DeviceLibraryPlugin extends Plugin {
             call.reject("id, offset, length required");
             return;
         }
-        pool.execute(new Runnable() {
+        exec(call, new Runnable() {
             @Override
             public void run() {
                 ParcelFileDescriptor pfd = null;
@@ -468,7 +481,7 @@ public class DeviceLibraryPlugin extends Plugin {
         final Long id = call.getLong("id");
         final Integer size = call.getInt("size", 256);
         if (id == null || size == null) { call.reject("id required"); return; }
-        pool.execute(new Runnable() {
+        exec(call, new Runnable() {
             @Override
             public void run() {
                 Bitmap bmp = null;
@@ -476,7 +489,7 @@ public class DeviceLibraryPlugin extends Plugin {
                     int px = Math.max(48, Math.min(size, 1024));
                     if (Build.VERSION.SDK_INT >= 29) {
                         try { bmp = resolver().loadThumbnail(uriFor(id), new Size(px, px), null); }
-                        catch (Exception ignored) { bmp = null; }
+                        catch (Exception | OutOfMemoryError ignored) { bmp = null; }
                     }
                     if (bmp == null) bmp = embeddedArt(id, px);
                     JSObject ret = new JSObject();
@@ -489,7 +502,7 @@ public class DeviceLibraryPlugin extends Plugin {
                         ret.put("mime", "image/jpeg");
                     }
                     call.resolve(ret);
-                } catch (Exception e) {
+                } catch (Exception | OutOfMemoryError e) {
                     call.reject("art failed: " + e.getMessage());
                 } finally {
                     if (bmp != null) bmp.recycle();
@@ -516,7 +529,7 @@ public class DeviceLibraryPlugin extends Plugin {
             BitmapFactory.Options opts = new BitmapFactory.Options();
             opts.inSampleSize = sample;
             return BitmapFactory.decodeByteArray(pic, 0, pic.length, opts);
-        } catch (Exception e) {
+        } catch (Exception | OutOfMemoryError e) {
             return null;
         } finally {
             try { mmr.release(); } catch (Exception ignored) { }

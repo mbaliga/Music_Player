@@ -46,7 +46,7 @@ def launch(p):
     return p.chromium.launch(**kw, args=['--autoplay-policy=no-user-gesture-required', '--no-sandbox'])
 
 def boot(b, w, h, seed=True, extra_init=''):
-    ctx = b.new_context(viewport={'width': w, 'height': h}, device_scale_factor=2, has_touch=True, is_mobile=True)
+    ctx = b.new_context(bypass_csp=True, viewport={'width': w, 'height': h}, device_scale_factor=2, has_touch=True, is_mobile=True)
     init = 'window.showDirectoryPicker = undefined; if (!sessionStorage.getItem("seeded")) { sessionStorage.setItem("seeded", "1"); try { localStorage.setItem("runout.wtDone", "1");'
     if seed: init += f' localStorage.setItem("runout.mixtapes", {json.dumps(MIX)}); localStorage.setItem("runout.radio.v1", {json.dumps(RADIO)});'
     init += ' } catch (e) {} }' + extra_init

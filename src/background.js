@@ -126,9 +126,10 @@ export function getPlaybackPlugin(win = typeof window !== 'undefined' ? window :
  * actions       { toggle(source), next(source), prev(source), stop() }   the app's own transport (main.js miniActions)
  * getMeta(src)  -> { artist?, album? } for the playing source (main.js knows the library; this module does not)
  * duck(on)      music-bus ducking for AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK
+ * notice(text)  a short plain-words message for the user (toast)
  * env           { doc, nav, now, setTimeout, clearTimeout, MediaMetadata } for tests
  */
-export function createMediaBridge({ plugin = null, actions = {}, getMeta = () => ({}), duck = () => {}, env = {} } = {}) {
+export function createMediaBridge({ plugin = null, actions = {}, getMeta = () => ({}), duck = () => {}, notice = () => {}, env = {} } = {}) {
   const doc = env.doc !== undefined ? env.doc : (typeof document !== 'undefined' ? document : null);
   const nav = env.nav !== undefined ? env.nav : (typeof navigator !== 'undefined' ? navigator : null);
   const now = env.now || (() => Date.now());
@@ -148,7 +149,9 @@ export function createMediaBridge({ plugin = null, actions = {}, getMeta = () =>
     const s = np || last;
     if (!s) return;
     if (np && np.playing) return;                               // already playing: nothing to do
-    if (s.source === 'radio') return;                           // a stopped station cannot be resumed from a key; tapping the dial can
+    // Radio is deliberately NOT resumed (key, notification or after a call): a live stream has moved on while paused, and stop() tore the
+    // connection down. Tapping the dial reconnects. (The native side may still send 'play' on focus gain; it lands here and is ignored.)
+    if (s.source === 'radio') return;
     Promise.resolve(actions.toggle && actions.toggle(s.source)).catch(() => {});
   }
   function onPause() {
@@ -166,6 +169,12 @@ export function createMediaBridge({ plugin = null, actions = {}, getMeta = () =>
     }
     // the service went away (notification swiped while paused, task removed): the next play starts it again
     safe(async () => { const h = await plugin.addListener('stopped', () => { started = false; lastSent = ''; key = ''; startTries = 0; }); handles.push(h); });
+    // Android refused to promote the service (Play pressed from the background): audio continues but may be stopped by the OS.
+    // Say so once and let the next sync while visible start the service again.
+    safe(async () => { const h = await plugin.addListener('fgs-denied', () => {
+      started = false; lastSent = ''; startTries = 0;
+      try { notice('Background playback could not start. Open Runout and press Play to keep it going with the screen off.'); } catch { /* */ }
+    }); handles.push(h); });
     safe(async () => { const h = await plugin.addListener('duck', (e) => { try { duck(!!(e && e.on)); } catch { /* */ } }); handles.push(h); });
   } else if (ms) {
     const set = (a, fn) => { try { ms.setActionHandler(a, fn); } catch { /* unsupported action */ } };
@@ -228,7 +237,7 @@ export function createMediaBridge({ plugin = null, actions = {}, getMeta = () =>
 }
 
 // ── everything, for main.js ────────────────────────────────────────────────────────────────────────────────────────────────
-export function startBackground({ step, engine, actions, getMeta, win = typeof window !== 'undefined' ? window : null, doc = typeof document !== 'undefined' ? document : null } = {}) {
+export function startBackground({ step, engine, actions, getMeta, notice, win = typeof window !== 'undefined' ? window : null, doc = typeof document !== 'undefined' ? document : null } = {}) {
   const driver = createLoopDriver(step, { doc });
   installAudioResume({ getCtx: () => engine && engine.ctx, doc });
   if (engine) {
@@ -241,7 +250,7 @@ export function startBackground({ step, engine, actions, getMeta, win = typeof w
       g.setTargetAtTime(on ? 0.25 : 1, t, 0.08);
     } catch { /* no engine yet */ }
   };
-  const bridge = createMediaBridge({ plugin: getPlaybackPlugin(win), actions, getMeta, duck });
+  const bridge = createMediaBridge({ plugin: getPlaybackPlugin(win), actions, getMeta, duck, notice });
   driver.start();
   return { driver, bridge, sync: (sources) => bridge.sync(sources), poke: () => driver.poke() };
 }

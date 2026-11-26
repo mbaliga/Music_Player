@@ -2,6 +2,11 @@
 <html lang="en" data-theme="dark" data-mode="casual">
 <head>
 <meta charset="utf-8" />
+<!-- CSP: everything the app runs is same-origin (module scripts, the audio worklet, wasm if any); data comes from https (radio-browser directory, station
+     streams, covers); blob:/data: carry decoded art and media; inline <style> + style attributes are used by the shell. No inline script, no eval.
+     Caveat: Capacitor's native bridge reaches the page via addDocumentStartJavaScript, which a page CSP does not apply to; only a WebView too old for
+     that feature falls back to an inline <script>, which this policy would block. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; media-src 'self' blob: data: https: http:; connect-src 'self' blob: data: https: http:; font-src 'self' data:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
 <meta name="theme-color" content="#000000" />
 <meta name="build-id" content="__BUILD_ID__" />

@@ -38,6 +38,8 @@ public class DevicePlaybackPlugin extends Plugin implements MediaPlaybackService
     @Override
     protected void handleOnDestroy() {
         if (MediaPlaybackService.listener == this) MediaPlaybackService.listener = null;
+        // The web layer is gone: nothing can drive the notification buttons, so do not leave a "playing" notification + wake lock behind.
+        try { MediaPlaybackService.stop(getContext()); } catch (Exception ignored) { }
         super.handleOnDestroy();
     }
 

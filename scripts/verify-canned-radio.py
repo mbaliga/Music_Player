@@ -132,7 +132,7 @@ def run():
     for s in idx['stations']: pack_names[s['id']] = (s['name'], s['dial'])
     with sync_playwright() as p:
         b = launch(p)
-        ctx = b.new_context(viewport={'width': 412, 'height': 860}, device_scale_factor=2)
+        ctx = b.new_context(bypass_csp=True, viewport={'width': 412, 'height': 860}, device_scale_factor=2)
         ctx.add_init_script('window.showDirectoryPicker = undefined; try { localStorage.setItem("runout.wtDone", "1"); } catch(e) {}')
         ctx.add_init_script(BUS_HOOK); ctx.add_init_script(FAKE_SPEECH)
         page = ctx.new_page()
@@ -321,7 +321,7 @@ def run():
         idx2 = json.loads(json.dumps(idx))
         for s in idx2['stations']:
             if s['id'] == 'tape-hiss-fm': s['audio'] = True
-        ctx2 = b.new_context(viewport={'width': 412, 'height': 860}, device_scale_factor=2)
+        ctx2 = b.new_context(bypass_csp=True, viewport={'width': 412, 'height': 860}, device_scale_factor=2)
         ctx2.add_init_script('window.showDirectoryPicker = undefined; try { localStorage.setItem("runout.wtDone", "1"); } catch(e) {}')
         ctx2.add_init_script(BUS_HOOK); ctx2.add_init_script(FAKE_SPEECH)
         audio_reqs = []

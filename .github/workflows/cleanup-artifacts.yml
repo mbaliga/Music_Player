@@ -23,12 +23,11 @@ jobs:
     steps:
       - name: Delete artifacts older than the most recent N per name
         uses: actions/github-script@v7
+        env:
+          KEEP_INPUT: ${{ github.event.inputs.keep }}
         with:
           script: |
-            const keep = parseInt(
-              '${{ github.event.inputs.keep }}' || '3',
-              10
-            ) || 3;
+            const keep = Math.max(1, parseInt(process.env.KEEP_INPUT || '3', 10) || 3);
             const { owner, repo } = context.repo;
 
             const artifacts = await github.paginate(

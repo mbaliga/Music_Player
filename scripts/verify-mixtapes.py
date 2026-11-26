@@ -63,7 +63,7 @@ def launch(p):
     return p.chromium.launch(**kw, args=['--autoplay-policy=no-user-gesture-required', '--no-sandbox'])
 
 def boot(b, w, h, blob=None, reduced=False):
-    ctx = b.new_context(viewport={'width': w, 'height': h}, device_scale_factor=2, has_touch=True, is_mobile=True, reduced_motion='reduce' if reduced else 'no-preference')
+    ctx = b.new_context(bypass_csp=True, viewport={'width': w, 'height': h}, device_scale_factor=2, has_touch=True, is_mobile=True, reduced_motion='reduce' if reduced else 'no-preference')
     init = 'window.showDirectoryPicker = undefined; try { localStorage.setItem("runout.wtDone", "1");'
     if blob: init += f' if (!localStorage.getItem("runout.mixtapes")) localStorage.setItem("runout.mixtapes", {json.dumps(json.dumps(blob))});'
     init += ' } catch (e) {}'

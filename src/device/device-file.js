@@ -20,6 +20,8 @@
 
 export const MAX_CHUNK = 4 * 1024 * 1024;
 export const DEFAULT_CHUNK = 1024 * 1024;
+/** Largest single arrayBuffer() / bytes() read. Whole-file reads allocate the file in memory (and decode needs more); beyond this fail clearly. */
+export const MAX_WHOLE_READ = 512 * 1024 * 1024;
 
 export class DeviceReadError extends Error {
   constructor(message, { cause, id, offset } = {}) {
@@ -135,6 +137,7 @@ export class DeviceFile {
   async _readRange(start, end) {
     const total = end - start;
     if (total <= 0) return new ArrayBuffer(0);
+    if (total > MAX_WHOLE_READ) throw new DeviceReadError(`${this.name || this._id} is too large to load at once (${Math.round(total / 1048576)} MB; limit ${MAX_WHOLE_READ / 1048576} MB)`, { id: this._id, offset: start });
     const out = new Uint8Array(total);
     const chunks = [];
     for (let o = 0; o < total; o += this._chunk) chunks.push([o, Math.min(this._chunk, total - o)]);

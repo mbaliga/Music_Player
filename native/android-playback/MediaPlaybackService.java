@@ -51,7 +51,9 @@ public class MediaPlaybackService extends Service {
 
     private static final String CHANNEL_ID = "runout_playback";
     private static final int NOTIF_ID = 4711;
-    private static final long WAKE_LOCK_MAX_MS = 6L * 60L * 60L * 1000L;
+    // A short lease renewed while playing (a crashed process / lost release cannot pin the CPU for hours).
+    private static final long WAKE_LOCK_LEASE_MS = 10L * 60L * 1000L;
+    private static final long WAKE_LOCK_RENEW_MS = 5L * 60L * 1000L;
 
     static volatile Listener listener;
     private static volatile MediaPlaybackService instance;
@@ -70,6 +72,7 @@ public class MediaPlaybackService extends Service {
     private boolean foreground = false;
     private boolean haveFocus = false;
     private boolean resumeOnFocusGain = false;
+    private boolean focusPausePending = false;   // we asked JS to pause because of a transient focus loss; its setPlaying(false) is ours
     private boolean noisyRegistered = false;
 
     // ── entry points used by the plugin (any thread) ────────────────────────────────────────────────────────────────
@@ -95,7 +98,16 @@ public class MediaPlaybackService extends Service {
 
     static void setPlaying(boolean p) {
         playing = p;
-        poke();
+        final MediaPlaybackService s = instance;
+        if (s != null) s.main.post(new Runnable() { @Override public void run() { s.onJsPlaying(p); } });
+    }
+
+    /** JS reported its play state. A pause that the focus handler did not cause is the user's: never auto-resume over it. */
+    private void onJsPlaying(boolean p) {
+        if (p) { focusPausePending = false; resumeOnFocusGain = false; }
+        else if (focusPausePending) focusPausePending = false;
+        else resumeOnFocusGain = false;
+        refresh();
     }
 
     private static void poke() {
@@ -136,11 +148,17 @@ public class MediaPlaybackService extends Service {
             // startForegroundService() obliges a startForeground() within seconds, whatever state the web layer reports next.
             promote(buildNotification(playing));
             refresh();
-        } else if (ACTION_PLAY.equals(a)) { emit("play", false); }
+        } else if (ACTION_STOP.equals(a)) { playing = false; stopSelf(); }
+        else if (listener == null) {
+            // Orphan: a stale notification button after the web layer died. Nothing to drive, so remove it and go.
+            playing = false;
+            if (nm != null) { try { nm.cancel(NOTIF_ID); } catch (Exception ignored) { } }
+            stopSelf();
+        }
+        else if (ACTION_PLAY.equals(a)) { emit("play", false); }
         else if (ACTION_PAUSE.equals(a)) { emit("pause", false); }
         else if (ACTION_NEXT.equals(a)) { emit("next", false); }
         else if (ACTION_PREV.equals(a)) { emit("previous", false); }
-        else if (ACTION_STOP.equals(a)) { playing = false; stopSelf(); }
         return START_NOT_STICKY;
     }
 
@@ -161,6 +179,8 @@ public class MediaPlaybackService extends Service {
         abandonFocus();
         try { stopForeground(true); } catch (Exception ignored) { }
         foreground = false;
+        // stopForeground(true) does not remove a notification that notify() posted while we were not foreground (the paused one).
+        if (nm != null) { try { nm.cancel(NOTIF_ID); } catch (Exception ignored) { } }
         if (session != null) { try { session.setActive(false); session.release(); } catch (Exception ignored) { } session = null; }
         super.onDestroy();
     }
@@ -219,6 +239,8 @@ public class MediaPlaybackService extends Service {
             // e.g. ForegroundServiceStartNotAllowedException when re-promoting from the background: show the notification and carry on.
             foreground = false;
             if (nm != null) { try { nm.notify(NOTIF_ID, n); } catch (Exception ignored) { } }
+            // Playback goes on, but the process is no longer protected: tell the web layer so it can say so and retry once visible.
+            if (playing) emit("fgs-denied", false);
         }
     }
 
@@ -276,11 +298,18 @@ public class MediaPlaybackService extends Service {
                 wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "runout:playback");
                 wakeLock.setReferenceCounted(false);
             }
-            if (!wakeLock.isHeld()) wakeLock.acquire(WAKE_LOCK_MAX_MS);
+            wakeLock.acquire(WAKE_LOCK_LEASE_MS);       // non-reference-counted: re-acquiring simply extends the lease
         } catch (Exception ignored) { }
+        main.removeCallbacks(renewWakeLock);
+        main.postDelayed(renewWakeLock, WAKE_LOCK_RENEW_MS);
     }
 
+    private final Runnable renewWakeLock = new Runnable() {
+        @Override public void run() { if (playing && instance == MediaPlaybackService.this) acquireWakeLock(); }
+    };
+
     private void releaseWakeLock() {
+        main.removeCallbacks(renewWakeLock);
         try { if (wakeLock != null && wakeLock.isHeld()) wakeLock.release(); } catch (Exception ignored) { }
     }
 
@@ -292,15 +321,17 @@ public class MediaPlaybackService extends Service {
                 case AudioManager.AUDIOFOCUS_GAIN:
                     haveFocus = true;
                     emit("duck", false);
+                    focusPausePending = false;
                     if (resumeOnFocusGain) { resumeOnFocusGain = false; if (!playing) emit("play", false); }
                     break;
                 case AudioManager.AUDIOFOCUS_LOSS:            // another app took over for good: pause and let go
                     haveFocus = false;
                     resumeOnFocusGain = false;
+                    focusPausePending = false;
                     emit("pause", false);
                     break;
                 case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:  // a call, a navigation prompt: pause, resume when it hands the focus back
-                    if (playing) { resumeOnFocusGain = true; emit("pause", false); }
+                    if (playing) { resumeOnFocusGain = true; focusPausePending = true; emit("pause", false); }
                     break;
                 case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
                     emit("duck", true);
@@ -346,7 +377,7 @@ public class MediaPlaybackService extends Service {
 
     private final BroadcastReceiver noisyReceiver = new BroadcastReceiver() {
         @Override public void onReceive(Context c, Intent i) {
-            if (AudioManager.ACTION_AUDIO_BECOMING_NOISY.equals(i.getAction())) { resumeOnFocusGain = false; emit("pause", false); }
+            if (AudioManager.ACTION_AUDIO_BECOMING_NOISY.equals(i.getAction())) { resumeOnFocusGain = false; focusPausePending = false; emit("pause", false); }
         }
     };
 

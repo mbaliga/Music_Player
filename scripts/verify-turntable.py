@@ -142,7 +142,7 @@ def ux_now_playing(page, tag, w, h, title, artist, album):
     check(ink >= 4.5 and sub >= 4.5, f'{tag}: now-playing text contrast {ink:.1f}:1 / {sub:.1f}:1')
 
 def boot(b, w, h, tag, dsf=1, reduced=False):
-    ctx = b.new_context(viewport={'width': w, 'height': h}, device_scale_factor=dsf, has_touch=True, is_mobile=True, reduced_motion='reduce' if reduced else 'no-preference')
+    ctx = b.new_context(bypass_csp=True, viewport={'width': w, 'height': h}, device_scale_factor=dsf, has_touch=True, is_mobile=True, reduced_motion='reduce' if reduced else 'no-preference')
     ctx.add_init_script('window.showDirectoryPicker = undefined; try { localStorage.setItem("runout.wtDone", "1"); } catch (e) {}')
     ctx.add_init_script(BUS_HOOK)
     page = ctx.new_page(); errs = []

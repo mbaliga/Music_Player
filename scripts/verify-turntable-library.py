@@ -35,7 +35,7 @@ time.sleep(1.0)
 BASE = f'http://localhost:{PORT}/test/support/turntable-library.html'
 
 def open_page(b, w, h, qs, touch=False, reduced=False, scale=2):
-    ctx = b.new_context(viewport={'width': w, 'height': h}, device_scale_factor=scale, has_touch=touch, is_mobile=touch,
+    ctx = b.new_context(bypass_csp=True, viewport={'width': w, 'height': h}, device_scale_factor=scale, has_touch=touch, is_mobile=touch,
                         reduced_motion='reduce' if reduced else 'no-preference')
     pg = ctx.new_page()
     pg.on('console', lambda m: errs.append(m.text) if m.type == 'error' else None)
@@ -251,7 +251,7 @@ try:
             from PIL import Image
             report = []
             for (w, h) in [(1241, 561), (561, 1241), (582, 1162)]:
-                c1 = b.new_context(viewport={'width': w, 'height': h}); po = c1.new_page(); po.goto('file://' + PROTO); po.wait_for_timeout(700)
+                c1 = b.new_context(bypass_csp=True, viewport={'width': w, 'height': h}); po = c1.new_page(); po.goto('file://' + PROTO); po.wait_for_timeout(700)
                 po.evaluate('window.__rt.setZ(1); window.__rt.focus(2)'); po.wait_for_timeout(500)
                 po.screenshot(path=os.path.join(OUT, f'proto-{w}x{h}.png'))
                 geo_o = po.evaluate('''(()=>{const R=e=>{const r=e.getBoundingClientRect();return [r.x,r.y,r.width,r.height]};
@@ -260,7 +260,7 @@ try:
                   return {cv,title:R(document.getElementById("mTitle")),sub:R(document.getElementById("mSub")),rows:lis,slot:R(document.getElementById("slot")),
                   vars:["--cs","--ct","--fh","--mh","--f1","--f2","--pad","--rh"].map(k=>cs.getPropertyValue(k).trim()),
                   tf:[...document.querySelectorAll(".cv")].map(e=>e.style.transform)}})()''')
-                c2 = b.new_context(viewport={'width': w, 'height': h}); pm = c2.new_page(); pm.goto(f'{BASE}?set=5'); pm.wait_for_function('window.__ready===true'); pm.wait_for_timeout(600)
+                c2 = b.new_context(bypass_csp=True, viewport={'width': w, 'height': h}); pm = c2.new_page(); pm.goto(f'{BASE}?set=5'); pm.wait_for_function('window.__ready===true'); pm.wait_for_timeout(600)
                 pm.screenshot(path=os.path.join(OUT, f'mine-{w}x{h}.png'))
                 geo_m = pm.evaluate('''(()=>{const R=e=>{const r=e.getBoundingClientRect();return [r.x,r.y,r.width,r.height]};
                   const cv=[...document.querySelectorAll(".tl-cv")].filter(e=>e.style.visibility==="visible").sort((a,b)=>a.getAttribute("aria-posinset")-b.getAttribute("aria-posinset")).map(R);

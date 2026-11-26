@@ -143,7 +143,7 @@ async function boot() {
   installToolbar();     // the drawer footer: walkthrough, mode, theme
   installCustomTheme();
   installSettingsAndSearch();
-  bg = startBackground({ step: loop, engine: state.engine, actions: miniActions, getMeta: mediaMeta });   // starts the frame loop (rAF visible / timer hidden)
+  bg = startBackground({ step: loop, engine: state.engine, actions: miniActions, getMeta: mediaMeta, notice: (t) => toast(t) });   // starts the frame loop (rAF visible / timer hidden)
   installBackButton({ deviceMode, getSearch: () => search, getShell: () => shell, library: { isOpen: () => !!stage && stage.zoom > 0.5, close: closeLibrary } });
   updateLatencyReadout();
   showBuildId();

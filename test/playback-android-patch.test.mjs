@@ -102,8 +102,8 @@ test('Java sources: the plugin name the JS bridge uses, the service type, the ev
 
 test('the CI workflow runs the patch scripts before cap sync, the app plugin is a dependency and the web background colour is black', async () => {
   const wf = await readFile(new URL('../.github/workflows/android.yml', import.meta.url), 'utf8');
-  const iPlay = wf.indexOf('apply-android-playback.mjs'), iSync = wf.indexOf('cap sync android'), iInstall = wf.indexOf('npm install');
-  assert.ok(iInstall > 0 && iInstall < wf.indexOf('cap add android'), 'npm install (@capacitor/app) comes before the platform is added');
+  const iPlay = wf.indexOf('apply-android-playback.mjs'), iSync = wf.indexOf('cap sync android'), iInstall = wf.indexOf('npm ci');
+  assert.ok(iInstall > 0 && iInstall < wf.indexOf('cap add android'), 'npm ci (@capacitor/app) comes before the platform is added');
   assert.ok(iPlay > 0 && iPlay < iSync);
   const pkg = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
   assert.match(pkg.dependencies['@capacitor/app'], /^\^6/);

@@ -60,7 +60,7 @@ SPY = """
 """
 
 def boot(b, w, h, seed=True, extra_init=''):
-    ctx = b.new_context(viewport={'width': w, 'height': h}, device_scale_factor=2, has_touch=True, is_mobile=True)
+    ctx = b.new_context(bypass_csp=True, viewport={'width': w, 'height': h}, device_scale_factor=2, has_touch=True, is_mobile=True)
     init = 'window.showDirectoryPicker = undefined; try { localStorage.setItem("runout.wtDone", "1");'
     if seed:
         ts = [{'title': t, 'artist': a, 'album': al} for (t, a, al, f, g) in SPECS[:3]]

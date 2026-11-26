@@ -218,7 +218,7 @@ def _run():
     R = REPORT
     with sync_playwright() as p:
         b = p.chromium.launch(executable_path=CH, args=['--autoplay-policy=no-user-gesture-required', '--no-sandbox'])
-        ctx = b.new_context(viewport={'width': 360, 'height': 780}, device_scale_factor=2)
+        ctx = b.new_context(bypass_csp=True, viewport={'width': 360, 'height': 780}, device_scale_factor=2)
         ctx.add_init_script(INIT)
         pg = ctx.new_page()
         logs, reqs = [], []

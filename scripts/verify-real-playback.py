@@ -115,7 +115,7 @@ DEVICE = fake_src + r"""
 """ % (json.dumps(TONES), json.dumps(TONES_B))
 
 def open_app(b, source, sab=True, fail=False):
-    ctx = b.new_context(viewport={'width': 412, 'height': 860}, device_scale_factor=1)
+    ctx = b.new_context(bypass_csp=True, viewport={'width': 412, 'height': 860}, device_scale_factor=1)
     ctx.add_init_script(TAP)
     if not sab: ctx.add_init_script("Object.defineProperty(window, 'crossOriginIsolated', { value: false });")
     ctx.add_init_script('try { delete window.showDirectoryPicker; } catch (e) {}')

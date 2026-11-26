@@ -179,3 +179,17 @@ test('startBackground wires the engine edge to a poke and starts the driver; no-
     s.driver.stop();
   } finally { globalThis.requestAnimationFrame = raf; globalThis.document = saved.document; }
 });
+
+test('media bridge: fgs-denied tells the user once and lets the next sync start the service again', async () => {
+  const plugin = fakePlugin();
+  const notes = [];
+  const b = createMediaBridge({ plugin, notice: (t) => notes.push(t), actions: {}, env: { doc: { hidden: false } } });
+  await flush();
+  b.sync(album()); await flush();
+  const starts = () => plugin.calls.filter((c) => c[0] === 'start').length;
+  assert.equal(starts(), 1);
+  plugin.ls['fgs-denied'](); await flush();
+  assert.equal(notes.length, 1);
+  b.sync(album()); await flush();
+  assert.equal(starts(), 2, 'retried on the next sync');
+});

@@ -66,7 +66,7 @@ INIT = fake_src + r"""
 """
 
 def open_app(b, w=412, h=860, after='granted'):
-    ctx = b.new_context(viewport={'width': w, 'height': h}, device_scale_factor=2)
+    ctx = b.new_context(bypass_csp=True, viewport={'width': w, 'height': h}, device_scale_factor=2)
     ctx.add_init_script(f'window.__afterRequest = {json.dumps(after)};')
     ctx.add_init_script(INIT)
     pg = ctx.new_page(); errs = []

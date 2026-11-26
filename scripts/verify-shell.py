@@ -65,7 +65,7 @@ def disc(page):
     return {'cx': r[0], 'cy': r[1], 'R': 644 * r[2], 'rOut': 640 * r[2]}
 
 def boot(b, w, h, tag, seed_mix=True, speech=False, light=False):
-    ctx = b.new_context(viewport={'width': w, 'height': h}, device_scale_factor=2, has_touch=True, is_mobile=True)
+    ctx = b.new_context(bypass_csp=True, viewport={'width': w, 'height': h}, device_scale_factor=2, has_touch=True, is_mobile=True)
     init = 'window.showDirectoryPicker = undefined; try { localStorage.setItem("runout.wtDone", "1");'
     if seed_mix: init += f' localStorage.setItem("runout.mixtapes", {json.dumps(mixtape_blob())});'
     if light: init += ' localStorage.setItem("runout.theme", "light");'
