@@ -15,6 +15,7 @@
 import { AudioEngine } from './audio-engine.js';
 import { synthesizeTrack, loadFile, DECODE_LIMITS, decodedBytes } from './track.js';
 import { createQueue, reduce as queueReduce } from './queue.js';
+import { queueMatchesRow } from './rowqueue.js';
 import { unsupportedReason, UNSUPPORTED_TEXT } from './formats.js';
 import {
   createPlatter, stepPlatter, rateFromOmega, omegaNominal,
@@ -533,7 +534,8 @@ function loop(now, hidden = false) {   // hidden: the page is not visible, so no
     // A CD runs on to the next track by itself; so does a record side with more tracks on it (the needle crosses the gap).
     if (state.view === 'cd' && state.queue && nextGood(state.queue, state.queue.index, 1) >= 0) {
       goTo({ index: nextGood(state.queue, state.queue.index, 1), time: 0 }, false, { natural: true });
-    } else if (state.view === 'vinyl' && state.vinylOwned && pl.playing) onVinylTrackEnd();
+    } else if (state.view === 'cd') state.cdPlaying = false;   // the disc ran out: paused at the end, so the mini bar / media session stop claiming it plays and Play can restart it
+    else if (state.view === 'vinyl' && state.vinylOwned && pl.playing) onVinylTrackEnd();
   }
   if (t < state.T - 0.2) state.reachedEnd = false;
 
@@ -655,7 +657,7 @@ function installTurntable() {
   stage.setSpeedUI(state.speedBase);
   // rt test hooks (the prototype's window.__rt, plus the app handle for scripts/verify-turntable.py)
   window.__rt = Object.assign(stage.rt, {
-    app: () => ({ state, stage, tlib, albums, shelf, limits: DECODE_LIMITS, aiHost: () => makeAiHost(library), actions: () => searchActionsImpl(), library, intent: () => intent }),
+    app: () => ({ state, stage, tlib, albums, shelf, limits: DECODE_LIMITS, aiHost: () => makeAiHost(library), actions: () => searchActionsImpl(), library, intent: () => intent, radio: () => radio }),
     goTo: (t, n) => goTo(t, n),
   });
 }
@@ -986,6 +988,9 @@ function pickSheetTrack(i) {
 }
 
 function stepTrack(dir) {
+  const own = engineOwner();
+  if (own === 'mixtape' && state.mixtapes) { if (dir > 0) state.mixtapes.nextSong(); else state.mixtapes.prevSong(); return; }   // a tape owns the engine: Next / Prev act on the tape, not on a queue that is not playing
+  if (own === 'radio') { flash('RADIO ON'); return; }
   const q = state.queue;
   if (!q) return;
   const base = state.jumping && state.jumpTarget ? state.jumpTarget.index : q.index;   // taps in a row step from where the last one is going
@@ -1011,7 +1016,7 @@ function installAlbumNav() {
     onSeekFrac: (f) => { if (!state.jumping) goTo({ index: state.queue?.index ?? 0, time: f * state.T }, false); },
     onPrev: () => stepTrack(-1),
     onNext: () => stepTrack(1),
-    onToggle: async () => { await state.engine.resume(); state.cdPlaying = !state.cdPlaying; },
+    onToggle: async () => { await state.engine.resume(); cdToggle(); },
   });
   // from the CD view the library is one tap away (the stage is hidden behind the CD player; zoom is a vinyl-side gesture)
   el('cdLibBtn').addEventListener('click', () => { el('pageAlbums').dataset.lib = '1'; stage.dispatch({ type: 'setZ', z: 1 }); onLibraryOpen(true); });
@@ -1294,13 +1299,13 @@ async function loadAlbum(index, trackIndex = 0, my = newIntent()) {
 // An album the carousel settled on (a swipe, or tlib.focus() from search's "Open album") goes onto the platter, silently. A tape / station that is playing is
 // left alone; CD cases stay shelved until a track is picked.
 let focusAdoptTimer = 0;
-function adoptFocus(index) {
+function adoptFocus(index, my = intent) {
   const a = albums[index];
-  if (!a || a.id === state.albumId || a.kind === 'cd' || foreignPlaying()) return;
+  if (my !== intent || !a || a.id === state.albumId || a.kind === 'cd' || foreignPlaying()) return;   // a user action since the swipe settled wins over this silent adopt
   stage.dispatch({ type: 'stop', s: 0 });
-  return loadAlbum(index, 0);
+  return loadAlbum(index, 0, my);
 }
-function adoptFocusSoon(index) { clearTimeout(focusAdoptTimer); focusAdoptTimer = setTimeout(() => adoptFocus(index), 420); }
+function adoptFocusSoon(index) { clearTimeout(focusAdoptTimer); const my = intent; focusAdoptTimer = setTimeout(() => adoptFocus(index, my), 420); }
 
 function wireLibrary() {
   // tap a track in the library: zoom back in and play that track
@@ -1317,8 +1322,8 @@ function wireLibrary() {
       if (await loadAlbum(idx, trackIndex, my) && my === intent) { state.cdPlaying = true; }
       return;
     }
-    if (state.albumId === a.id && state.queue && state.view === 'vinyl') {   // already on the platter: just move the needle
-      playTarget({ index: Math.min(trackIndex, state.queue.items.length - 1), time: 0 }, { needle: true });
+    if (state.albumId === a.id && state.view === 'vinyl' && queueMatchesRow(state.queue, shelf[idx], trackIndex)) {   // already on the platter (and the queue still IS this row): just move the needle
+      playTarget({ index: trackIndex, time: 0 }, { needle: true });
       return;
     }
     stage.dispatch({ type: 'stop', s: 0 });
@@ -1343,7 +1348,8 @@ function wireLibrary() {
   let focusTimer = 0;
   tlib.on('focus', (index) => {
     clearTimeout(focusTimer);
-    focusTimer = setTimeout(() => adoptFocus(index), 420);
+    const my = intent;                         // captured now: a row tap inside the debounce window bumps intent and must not be overridden
+    focusTimer = setTimeout(() => adoptFocus(index, my), 420);
   });
   tlib.on('filter', (kind) => { view.kind = kind; rebuildAlbums(); });
   tlib.on('sort', (sort) => { view.sort = sort; rebuildAlbums(); });
@@ -1450,10 +1456,12 @@ function installLibrary() {
           const { RadioUI } = await import('./radio-player.js');
           radio = new RadioUI({
             onActive: (on) => { state.radioOn = on; state.engine.setPlaying(!on); if (on) { newIntent(); try { state.mixtapes && state.mixtapes.releaseEngine(); } catch { /* */ } } },   // a station and a tape never share the engine
+            libraryEmpty: () => !!libLoaded && !libHasAlbums(),   // offline shows need songs: say so on the card instead of starting an empty session
+            openAlbums: () => { try { shell.go('albums', { close: true }); } catch { /* */ } },
             aiHost: makeAiHost(library), // You Radio (src/radio/offline) plays your library through this engine
           });
           radio.mount(host.querySelector('#paneRadio'));
-          foreignPlaybackHook = () => radio.foreignPlayback();
+          foreignPlaybackHook = () => { radio.foreignPlayback(); if (state.radioOn) radio.stop(); };   // a streamed station has its own <audio> and mutes the bus: the user's own track ends it (else the record plays silently under a live station)
           return { onShow: () => radio.activate() };
         },
       },
@@ -1677,6 +1685,12 @@ function engineOwner() {
 
 // The now-playing mini bar: whatever plays from any source, on every section but its own. Radio gets Stop; albums and mixtapes get
 // play / pause and next. A source paused FROM the bar stays on it (miniHold) so it can be resumed from there.
+// CD Play / Pause. Play on a disc that already ran out starts it again from track 1 (like Play on a finished vinyl record).
+function cdToggle() {
+  if (state.cdPlaying) { state.cdPlaying = false; return; }
+  if (state.reachedEnd) { state.reachedEnd = false; state.cdPlaying = true; goTo({ index: 0, time: 0 }, false); return; }
+  state.cdPlaying = true;
+}
 let miniHold = null;
 const miniActions = {
   stop: () => radio && radio.stop(),
@@ -1686,7 +1700,7 @@ const miniActions = {
         await state.engine.resume();
         const playing = state.view === 'cd' ? state.cdPlaying : (stage.player.playing || stage.player.starting);
         miniHold = playing ? 'album' : null;
-        if (state.view === 'cd') state.cdPlaying = !state.cdPlaying;
+        if (state.view === 'cd') cdToggle();
         else stage.dispatch(playing ? { type: 'toggle', s: currentS(state.engine.position / state.engine.sampleRate) } : { type: 'toggle' });   // Pause freezes at the playhead (s), like the Stop key
       } else if (source === 'mixtape' && state.mixtapes) {
         const p = state.mixtapes.play;
@@ -1722,7 +1736,7 @@ function refreshNowPlaying() {
   const src = {};
   if (radio && radio.station) {
     const ph = radio.session?.state?.phase;
-    src.radio = { title: radio.station.name, sub: ph === 'playing' ? 'Radio · on air' : ph === 'error' ? 'Radio · error' : 'Radio · connecting' };
+    src.radio = { title: radio.station.name, sub: ph === 'playing' ? 'Radio · on air' : ph === 'error' ? 'Radio · error' : 'Radio · connecting', playing: ph !== 'error' };   // an error is not "on air": the bar's dot goes grey
   }
   const p = state.mixtapes && state.mixtapes.play;
   if (p && !p.ended && !p.paused) src.mixtape = { title: p.mix.name || 'Mixtape', sub: `Mixtape · track ${Math.max(1, p.idx + 1)} of ${p.files.length}`, playing: true, canNext: p.idx + 1 < p.files.length };

@@ -131,6 +131,17 @@ export function mergeScanned(existing, scanned) {
   return out;
 }
 
+/**
+ * Picking the same folder again must not double its tracks: drop scanned tracks that are already live in `existing` as the very same file
+ * (same folder path, size and modified time). Only for a folder RE-scan: files without a path (loose adds) are never treated as the same.
+ */
+export function dropRescanned(existing, scanned) {
+  const key = (t) => (t && t.path && t.file && !t.relink ? [t.path, t.size | 0, t.file.lastModified || 0].join('\u0001') : null);
+  const seen = new Set();
+  for (const t of existing) { const k = key(t); if (k) seen.add(k); }
+  return scanned.filter((t) => { const k = key(t); return !(k && seen.has(k)); });
+}
+
 /** { linked, needsRelink } counts, for status text. */
 export function linkSummary(tracks) {
   let needsRelink = 0;

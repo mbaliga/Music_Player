@@ -117,7 +117,7 @@ export function openEditor(ctx) {
   const toastEl = h('div', { class: 'ed-toast hidden', role: 'status' });
   const title = h('h2', {}, isNew ? 'New mixtape' : 'Edit mixtape');
   const saveBtn = h('button', { type: 'button', class: 'sv', onclick: () => { commit(); closeEd(); } }, 'Save');
-  const playBtn = h('button', { type: 'button', class: 'pl', 'aria-label': 'Save and play', onclick: () => { const saved = commit(); closeEd(); ctx.onPlay(saved, 0); } }, icon(ICONS.play, { size: 14, fill: 'currentColor', stroke: 0 }), ' Play');
+  const playBtn = h('button', { type: 'button', class: 'pl', 'aria-label': 'Save and play', onclick: () => { if (!m.tracks.length) { goTab('add'); toast('Add songs first'); return; } const saved = commit(); closeEd(); ctx.onPlay(saved, 0); } }, icon(ICONS.play, { size: 14, fill: 'currentColor', stroke: 0 }), ' Play');
   const backBtn = h('button', { type: 'button', id: 'ed-back', class: 'bk', 'aria-label': 'Back', onclick: () => askLeave() }, icon(ICONS.back, { size: 20, stroke: 2.6 }), h('span', {}, 'Back'));
   // the tape's name on every tab (it lived only on the Tape tab while the editor opens on Add): tap to rename
   const nameChip = h('button', { type: 'button', class: 'ed-namechip', onclick: () => { goTab('tape'); try { fName.focus(); fName.select(); } catch { /* */ } } });
@@ -205,7 +205,9 @@ export function openEditor(ctx) {
     prevWrap.querySelector('.ed-sidelabel').textContent = `Side ${side}`;
   }
 
-  function changed() { paintName(); paintTop(); retape(); addTab.refresh(); tracksTab.refresh(); paintTape(); }
+  // Play needs a song: an empty tape would save as "Untitled mix" and open a player with nothing in it
+  function paintPlay() { const none = !m.tracks.length; playBtn.setAttribute('aria-disabled', String(none)); playBtn.classList.toggle('off', none); playBtn.style.opacity = none ? '.55' : ''; playBtn.title = none ? 'Add songs first' : ''; }
+  function changed() { paintPlay(); paintName(); paintTop(); retape(); addTab.refresh(); tracksTab.refresh(); paintTape(); }
 
   // ── tabs
   function goTab(id) {
@@ -332,7 +334,7 @@ export function openEditor(ctx) {
   document.addEventListener('keydown', edKey);
 
   mountTape();
-  paintName(); paintTop();
+  paintPlay(); paintName(); paintTop();
   goTab(tab);
   if (ctx.notice) toast(ctx.notice);
   setTimeout(() => { if (isNewInit && !ctx.mixtape) fName.focus(); }, 80);

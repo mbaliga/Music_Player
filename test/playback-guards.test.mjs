@@ -123,3 +123,27 @@ test('a song that cannot be decoded: the next playable song is tried; with none 
   await ui._goto(1, 0, { natural: true });
   assert.equal(ui.play.ended, true); assert.ok(c.some((x) => x[0] === 'dispatch' && x[1] === 'sideEnd'));
 });
+
+// ── review 6f15b2c: a tape with nothing playable must not hold the engine; a new tape ends the old one ───────────────────
+test('startPlayback with no playable track leaves the tape ENDED + released (engineOwner would otherwise say "mixtape" forever)', async () => {
+  const { ui, calls } = tapeUI({ getLibraryTracks: () => [], closeLibrary() {}, relink: null });
+  ui.listPanel = { classList: { add() {}, remove() {} } }; ui.root.classList = { add() {}, remove() {}, contains: () => false };
+  ui._mountSkin = () => {}; ui._applyRunMode = () => {}; ui._sideDurations = function () { const p = this.play; p.sideDurs = { A: [], B: [] }; };
+  ui._dropQueued = () => {}; ui._showMsg = () => {};
+  ui.play = null;
+  const m = { id: 'm1', autoReverse: true, sides: { A: [0], B: [] }, tracks: [{ title: 'Gone', artist: 'X', dur: 100 }] };
+  await ui.startPlayback(m, 0);
+  assert.equal(ui.play.ended, true); assert.equal(ui.play.released, true);
+  assert.ok(!calls.some((c) => c[0] === 'dispatch' && c[1] === 'play'), 'never starts');
+});
+test('startPlayback releases a tape that was already in the deck first', async () => {
+  const { ui, calls } = tapeUI({ getLibraryTracks: () => [], closeLibrary() {} });
+  ui.listPanel = { classList: { add() {}, remove() {} } };
+  ui._mountSkin = () => {}; ui._applyRunMode = () => {}; ui._sideDurations = function () { const p = this.play; p.sideDurs = { A: [], B: [] }; };
+  ui._dropQueued = () => {}; ui._showMsg = () => {};
+  const old = { paused: false, ended: false, tok: 0 };
+  ui.play = old;
+  await ui.startPlayback({ id: 'm2', autoReverse: true, sides: { A: [0], B: [] }, tracks: [{ title: 'Gone', artist: 'X', dur: 100 }] }, 0);
+  assert.equal(old.released, true); assert.equal(old.ended, true);
+  assert.ok(calls.some((c) => c[0] === 'dropNext'));
+});

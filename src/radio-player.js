@@ -328,8 +328,26 @@ export class RadioUI {
     for (const s of r.stations) this.listEl.append(this._row(s));
   }
 
+  /** Offline shows and You Radio play the user's own songs between the talk: with none in the library there is nothing to start. */
+  _needsSongs(s) { return !!s && (s.type === 'canned' || String(s.type || '').startsWith('ai-')) && !!this.d.libraryEmpty && this.d.libraryEmpty(); }
+
+  /** Say so on the card (no session, no engine, no error state): a button to Albums, no Retry. */
+  _showNeedsSongs(station) {
+    this.now.className = 'radio-now info';
+    this.now.replaceChildren(
+      h('div', { class: 'radio-now-main' },
+        h('div', { class: 'alb-name' }, station.name),
+        h('div', { class: 'alb-artist' }, 'This show plays your own songs between the talk. Scan your music first, then tune in.')),
+      this.d.openAlbums ? h('button', { class: 'sort-chip', type: 'button', onclick: () => { this._hideNeeds(); this.d.openAlbums(); } }, 'Open Albums') : null,
+      h('button', { class: 'theme-btn', type: 'button', onclick: () => this._hideNeeds() }, 'Close'));
+    this.pane?.toggleAttribute('data-playing', true);
+  }
+  _hideNeeds() { if (!this.session) { this.now.classList.add('hidden'); this.pane?.removeAttribute('data-playing'); } }
+
   play(station) {
+    if (this._needsSongs(station)) { if (this.session) this.stop(); this._showNeedsSongs(station); return; }
     if (this._missing(station)) { // a renamed / removed pack: say what happened instead of a generic start failure
+      if (this.session) this.stop();   // the card must not name a station that is not the one still playing underneath it
       this._showNow(station, { phase: 'error', error: { kind: 'missing', message: NO_LONGER } }); return;
     }
     const prevEngine = !!(this.session && this.session.usesEngine);
@@ -391,6 +409,7 @@ export class RadioUI {
       (() => { const f = isFavourite(this.store, station);
         return h('button', { class: 'radio-star' + (f ? ' on' : ''), type: 'button', 'aria-pressed': String(f), 'aria-label': f ? 'Remove from favourites' : 'Add to favourites', onclick: () => this.toggleFav(station) }, f ? '★' : '☆'); })(),
       st.phase === 'error' && st.error.kind === 'missing' ? h('button', { class: 'sort-chip', type: 'button', onclick: () => { this._removeSaved(station); this.stop(); } }, 'Remove')
+        : st.phase === 'error' && st.error.kind === 'empty_library' ? (this.d.openAlbums ? h('button', { class: 'sort-chip', type: 'button', onclick: () => { this.stop(); this.d.openAlbums(); } }, 'Open Albums') : null)   // retrying cannot help: there are no songs
         : st.phase === 'error' ? h('button', { class: 'sort-chip', type: 'button', onclick: () => this.play(station) }, 'Retry') : null,
       h('button', { class: 'theme-btn', type: 'button', onclick: () => this.stop() }, 'Stop'),
     ].filter(Boolean));

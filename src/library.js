@@ -14,7 +14,7 @@
 
 import { groupTracks, shelfItems } from './albums.js';
 import { readFileTags } from './tags.js';
-import { trackId, serializeIndex, parseIndex, mergeScanned, linkSummary } from './libindex.js';
+import { trackId, serializeIndex, parseIndex, mergeScanned, dropRescanned, linkSummary } from './libindex.js';
 import { saveIndex, loadIndex, saveHandle, loadHandles } from './library-store.js';
 import { libraryPrefs } from './library-prefs.js';
 import { trackSource, filterDeviceTracks, mergeSources, deriveArtists, deriveGenres, folderTrackFields, countShortHidden } from './library-model.js';
@@ -185,7 +185,7 @@ export class LibraryManager {
     }
 
     if (!files?.length) return;
-    await this._ingest(files.filter(f => AUDIO_RE.test(f.name)), onProgress);
+    await this._ingest(files.filter(f => AUDIO_RE.test(f.name)), onProgress, true);   // a folder scan: the same folder again adds nothing twice
   }
 
   // Add files directly (drag-drop or file input).
@@ -193,13 +193,13 @@ export class LibraryManager {
     await this._ingest(Array.from(fileList).filter(f => AUDIO_RE.test(f.name)), onProgress);
   }
 
-  async _ingest(audioFiles, onProgress) {
+  async _ingest(audioFiles, onProgress, rescan = false) {
     let done = 0;
     let batch = [];
     const flush = () => {
       if (!batch.length) return;
       // A scanned file REPLACES the persisted needs-re-link entry with its id.
-      this.tracks = mergeScanned(this._folder, batch);
+      this.tracks = mergeScanned(this._folder, rescan ? dropRescanned(this._folder, batch) : batch);
       batch = [];
       this._shelf = null;
     };

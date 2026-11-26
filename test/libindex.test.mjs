@@ -64,3 +64,13 @@ test('mergeScanned: a scan replaces the needs-re-link entry with the same id; ot
   assert.equal(mergeScanned(merged, [{ ...scannedSame }]).length, 4);
   assert.equal(persisted.length, 2); // input untouched
 });
+
+test('dropRescanned: scanning the same folder again adds nothing; a changed or new file still comes in; loose files (no path) never match', async () => {
+  const { dropRescanned } = await import('../src/libindex.js');
+  const mk = (path, size, lm) => ({ path, size, file: { lastModified: lm }, title: path });
+  const live = [mk('Music/a.mp3', 10, 1), mk('Music/b.mp3', 20, 2)];
+  const again = [mk('Music/a.mp3', 10, 1), mk('Music/b.mp3', 20, 2), mk('Music/c.mp3', 30, 3), mk('Music/a.mp3', 10, 99)];
+  assert.deepEqual(dropRescanned(live, again).map((t) => t.title + t.file.lastModified), ['Music/c.mp3' + 3, 'Music/a.mp3' + 99]);
+  assert.equal(dropRescanned([{ path: '', size: 1, file: { lastModified: 1 } }], [{ path: '', size: 1, file: { lastModified: 1 } }]).length, 1);
+  assert.equal(dropRescanned([{ ...mk('Music/a.mp3', 10, 1), relink: true }], [mk('Music/a.mp3', 10, 1)]).length, 1, 'a needs-re-link entry is replaced by mergeScanned, not dropped');
+});

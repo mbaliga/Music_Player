@@ -513,6 +513,7 @@ export class MixtapeUI {
 
   async startPlayback(m, startIndex = 0) {
     closeBack();
+    this.releaseEngine();   // a tape already in the deck is ended cleanly (mini bar, engine owner) before the new one is mounted
     const resolved = resolveTracks(m, this.d.getLibraryTracks());
     const files = resolved.map((t) => (t && t.file ? t.file : null));
     const relink = resolved.map((t) => !!(t && !t.file));   // known to the library, file not linked yet
@@ -524,7 +525,7 @@ export class MixtapeUI {
     if (this.play && this.play.paused) this.d.setPaused?.(false);
     const nA = m.sides.A.length;
     const start = Math.max(0, Math.min(m.tracks.length - 1, startIndex | 0));
-    const startSide = start >= nA ? 'B' : 'A';
+    const startSide = m.tracks.length && start >= nA ? 'B' : 'A';   // an empty tape stays on Side A (nA = 0 would otherwise read as "past side A")
     const playableIn = (lo, hi) => files.slice(lo, hi).filter(Boolean).length;
     let tp = createTransport({ side: startSide, auto: m.autoReverse, nA: playableIn(0, nA), nB: playableIn(nA, files.length) });
     tp = { ...tp, pos: { ...tp.pos, [startSide]: { index: startSide === 'B' ? start - nA : start, frac: 0 } } };
@@ -541,10 +542,14 @@ export class MixtapeUI {
     this._fillList();
     this._applyRunMode(runMode(tp));
     if (!tp.n.A && !tp.n.B) {
-      this._showMsg(relink.some(Boolean)
+      this._showMsg(!m.tracks.length
+        ? 'This tape has no songs yet. Add some in the editor, then play it.'
+        : relink.some(Boolean)
         ? 'This tape’s tracks are remembered but need re-linking to your music folder.'
         : 'None of this tape’s tracks are in the library right now. Scan your music (Scan phone on Android), then play again.',
       relink.some(Boolean));
+      // nothing to play: this tape must not hold the engine (engineOwner() would say 'mixtape' forever: album audio stopped, Play dead, mini bar "playing")
+      this.play.ended = true; this.play.released = true;
       return;
     }
     this.msg.classList.add('hidden');
