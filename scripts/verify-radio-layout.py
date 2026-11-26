@@ -157,12 +157,15 @@ with sync_playwright() as p:
         check(r0.evaluate('e => getComputedStyle(e).whiteSpace') != 'nowrap' and r0.evaluate('e => e.scrollWidth <= e.clientWidth + 1'), f'{tag}: internet row metadata wraps (no one-line ellipsis)')
         ai = page.locator('.radio-ai-sec .rr-meta').first
         check(ai.evaluate('e => e.scrollHeight <= e.clientHeight + 1'), f'{tag}: You Radio text is not cut off')
-        # whole card plays: tap the tagline, not the button
+        # whole card plays: tap the tagline, not the button (offline shows play your own songs, so scan the fixture library first; with none the card says so instead)
+        scan(page)
         page.locator('.dial-card[data-station] .dial-tag').first.scroll_into_view_if_needed(); bx = page.locator('.dial-card[data-station] .dial-tag').first.bounding_box(); page.mouse.click(bx['x'] + bx['width'] / 2, bx['y'] + bx['height'] / 2)
         page.wait_for_function('document.querySelector(".dial-card.on")', timeout=5000)
         lab = page.locator('.dial-card.on .dial-play[data-play]').inner_text()
         check('Stop' in lab and page.locator('.dial-card.on .rr-now').inner_text() != '', f'{tag}: tapping the card plays it; button reads "{lab}" with a now-playing line')
-        page.locator('.radio-now .theme-btn, .ai-panel [data-act="stop"]').first.click(); time.sleep(0.6)   # (no library here, so the card shows its "scan first" note and a Retry button)
+
+        page.locator('.ai-panel:not(.hidden) button:has-text("Stop"), .radio-now:not(.hidden) .theme-btn').first.click(); time.sleep(0.6)   # a playing show's Stop lives in the on-air panel (the card's own button is hidden while it plays)
+        if page.locator('.ai-panel button:has-text("Stop now")').count(): page.locator('.ai-panel button:has-text("Stop now")').first.click(); time.sleep(0.6)   # the first Stop starts a graceful sign-off
         check(page.locator('.dial-card.on').count() == 0, f'{tag}: Stop stops it')
         # internet row: whole row plays, row button stops
         page.locator('.lib-grid-wrap > .radio-list .radio-row .rr-name').first.click(); time.sleep(0.3)

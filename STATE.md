@@ -12,7 +12,7 @@ All of it has been integrated and exercised together by `scripts/verify-tour.py`
 
 ## Verified (desktop Chromium, node)
 
-`npm test`: all pass (1,099, 1 skipped). `python3 scripts/verify-all.py`: every browser verifier plus the end-to-end tour (see `HANDOFF.md` §1 for what each proves).
+`npm test`: all pass (1,106, 1 skipped). `python3 scripts/verify-all.py`: every browser verifier plus the end-to-end tour (see `HANDOFF.md` §1 for what each proves).
 CI builds the debug APK on every push, compiling both custom Java plugins (device library, device display). Tour measurements (headless CPU renderer, not a phone)
 are in the table below (run B of `verify-all.py`; the screenshots of the tour are in `docs/screenshots/tour/`, 1x, 412x915 portrait + landscape + the native and 5k phases).
 
@@ -38,6 +38,13 @@ Seven parallel UX fixes were merged and proven together: `verify-tour.py` has a 
 Text on an accent fill now uses `--on-accent` (`#111` on the default violet, 5.8:1; `onAccent()` picks `#fff`/`#111` per accent, custom themes set `--on-accent` / `--on-secondary` from their own primary / secondary), and `--ink2` is .64 (OLED / dark), .66 (soft dark) and .68 (light) so secondary text is >= 4.5:1 on every surface in all three themes (audited numerically across 6 accents x 3 themes x 5 sections). Booth labels are >= 9-10 px and its rack / switches wrap instead of clipping; the turntable key labels shrink to fit their key; sheets, the mixtape editor and the custom-theme overlay are modal (focus trap, Escape, `#shell` inert behind the editor). Locked, frozen controls carry `aria-disabled`. AOD: live-key labels use `--dm-label` (>= 3:1 on black), the empty-state card, the arm engraving and "TONEARM REST" are hidden, key hit-area boxes are not stroked.
 
 Known and deliberate: Android `textZoom` is NOT honoured by the WebView right now (owner decision pending, so the layouts are made robust to larger text but the system font scale does not reach them); the viewport meta keeps `user-scalable=no` because pinch is an app gesture (library zoom). Turntable speed keys are ~36-43 px wide on screen (their hit areas are >= 44 px); widening the drawn shapes means moving the key columns and was left alone. Not verified on a device.
+
+## Final integration pass (hardening, playback review, accessibility)
+
+Merged on main: playback review fixes (row-vs-queue guard, adopt-focus intent, tape / CD / radio ownership, empty-library radio and mixtape copy), hardening (service lifecycle, CSP meta, CI split into `build-apk` + `publish` jobs with a lockfile and pinned actions), and the accessibility / contrast / layout pass. Proven together on the merged tree, serially on a quiet machine: `npm ci`, `npm test` (1,106, 1 skipped), `npm run build:web`, `verify-all.py` twice (14 scripts each), then every verifier run on its own again (turntable twice) and `verify-playback-review.py`; plus a Playwright drive WITHOUT `bypass_csp` over Search, theme import, the mixtape editor, radio, Booth and lock / AOD at 360x780 and 915x412: zero CSP violations (the only console error is the known dev-server `stations/` 404).
+Found and fixed: `verify-radio-layout.py` failed on both `verify-all` runs. Not a flake: it was a real, deterministic consequence of the playback fix "offline shows need songs" (an empty library now shows a "scan your music first" card instead of starting a show), and it reproduced on 7ffd0a1 and not on 50f9652. The verifier now scans the fixture library before tapping a card and ends a show with the panel's Stop / Stop now. No app change.
+`verify-turntable.py` did not flake (4 of 4 clean runs: twice inside `verify-all`, twice alone). Screenshots in `docs/screenshots/tour/` were regenerated from this run.
+Seen but not changed: with the Radio mini bar up at 915x412 (landscape) the Albums stage's second caption line ("Radio playing - tap Stop to end it") is half hidden behind the bar; `index.html` has no `inert` on `#shell` (modal surfaces rely on `trapFocus`).
 
 ## Not verified
 
