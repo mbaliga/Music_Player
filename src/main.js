@@ -56,6 +56,8 @@ import { initSettings } from './settings/wire.js';
 import { createSearchLauncher } from './search/wire.js';
 import { bindSearchActions } from './search/actions.js';
 import { libraryPrefs, clearLibraryCache } from './library-prefs.js';
+import { load as loadResume, save as saveResume, resolve as resolveResume, isMeaningful, createSaver } from './resume.js';   // resume the last record, paused
+import { mountResumeChip } from './resume-ui.js';
 
 // The track is mastered for one fixed reference speed. The needle plays it
 // correctly at this RPM (rate = 1). Moving the speed dial above/below it shifts
@@ -456,6 +458,7 @@ function scheduleAdopt() {   // after the library settles (a device scan rebuild
     const a = albums[i];
     if (!a || a.builtin) return;
     const my = intent;                                                    // not a user action: any later intent wins over this silent load
+    if (await resumeFirst(my)) return;                                    // the record from the last run goes back first, paused at its position
     if (await loadAlbum(i, 0, my) && a.kind === 'cd') {
       state.cdPlaying = false;
       if (stage.zoom > 0.5) el('pageAlbums').dataset.lib = '1';   // adopted while the library is open: the library must stay visible (.tt-wrap is hidden for a CD without data-lib)
@@ -464,11 +467,68 @@ function scheduleAdopt() {   // after the library settles (a device scan rebuild
 }
 // Play with the demo on the platter and real albums on the shelf: load the focused album's first track (loud on failure) and report whether it is there.
 async function adoptFocusedAlbum(my = intent) {
+  if (await resumeFirst(my)) return true;
   let i = tlib.getFocus();
   if (!albums[i] || albums[i].builtin) i = albums.findIndex((a) => !a.builtin);
   if (i < 0) { flash('PICK AN ALBUM'); return false; }   // a filter hides every album: never fall back to the demo
   return loadAlbum(i, 0, my);
 }
+
+// ── resume the last record (src/resume.js) ─────────────────────────────────────────────────────────────────────────────────────
+// What was on the platter (album id, stable track id, position, view) is written while it plays, on pause and when the app is hidden. On the next launch it goes
+// back on the platter PAUSED (never started) with a small Resume chip; if the album, the track or its file is gone nothing happens and the normal first-run
+// adoption of the focused album carries on. While the stored record is still waiting, nothing silent (the focused album's track 1) may overwrite it.
+const resumeStore = lsOk();
+let resumePending = loadResume(resumeStore);   // the previous run's record until it is applied, or the user plays something else
+let resumeIntent0 = intent;                     // `intent` at launch: while it is unchanged nothing silent may overwrite the waiting record
+let resumeStart = null;                         // { index, time } of a record just restored (a Play pressed before the adopt finished starts here)
+let resumeChip = null;
+const takeResumeStart = () => { const r = resumeStart; resumeStart = null; return r; };
+function resumeSnapshot() {
+  const q = state.queue;
+  if (!q || !state.albumId || state.albumId === TEST_PRESSING_ID || !state.vinylOwned || state.radioOn || engineOwner() || state.jumping) return null;
+  if (resumePending && intent === resumeIntent0) return null;     // a silent adopt must not overwrite the record that is waiting to be restored
+  const it = q.items[q.index];
+  if (!it || !it.id) return null;
+  const playing = state.view === 'cd' ? state.cdPlaying : stage.player.playing;
+  const t = state.engine.position / state.engine.sampleRate;
+  if (!playing && t < 1 && q.index === 0) return null;            // an untouched first track is the normal state, not something to resume
+  return { albumId: state.albumId, trackId: it.id, index: q.index, t, view: state.view };
+}
+const resumeSaver = createSaver({ snapshot: resumeSnapshot, write: (r) => saveResume(resumeStore, r) });
+let resumeWasPlaying = false;
+function resumeTick() {   // from the frame loop (also while hidden): throttled write, and a forced one the moment playback stops
+  const playing = state.view === 'cd' ? !!state.cdPlaying : !!(stage && stage.player.playing);
+  if (resumeWasPlaying && !playing) resumeSaver.flush(); else if (playing) resumeSaver.tick();
+  resumeWasPlaying = playing;
+  if (resumeChip && resumeChip.shown && (playing || intent !== resumeChipIntent)) resumeChip.hide();
+}
+let resumeChipIntent = 0;
+async function resumeFirst(my = intent) {
+  if (!resumePending || my !== intent || !platterIsDemo() || foreignPlaying() || state.jumping || !stage) return false;
+  const tg = resolveResume(resumePending, shelf, (t) => !!t.file && !unsupportedReason(t));
+  if (!tg) return false;                                              // gone (or its file is): quietly the normal first-run state
+  const rec = resumePending; resumePending = null;
+  const a = albums[tg.shelfIndex];
+  stage.dispatch({ type: 'stop', s: 0 });
+  if (!(await loadAlbum(tg.shelfIndex, tg.trackIndex, my)) || my !== intent) return false;   // (a failure is loud inside loadAlbum, as for any pick)
+  const sr = state.engine.sampleRate;
+  if (tg.t > 0) state.engine.seek(tg.t * sr);
+  if (state.view === 'cd') { state.cdPlaying = false; if (stage.zoom > 0.5) el('pageAlbums').dataset.lib = '1'; }
+  else { stage.dispatch({ type: 'play', s: sFor(state.layout, tg.trackIndex, tg.t) }); stage.dispatch({ type: 'stop' }); }   // 'play' then 'stop': the arm rests (frozen) at the saved spot, silent
+  tlib.focus(tg.shelfIndex, { animate: false });
+  resumeStart = { index: tg.trackIndex, time: tg.t };
+  void rec; void a;
+  if (isMeaningful(tg)) {
+    if (!resumeChip) resumeChip = mountResumeChip(el('pageAlbums'), { onTap: () => { resumeChip.hide(); miniActions.toggle('album'); } });
+    resumeChipIntent = intent;
+    const it = state.queue.items[state.queue.index];
+    resumeChip.show({ title: it && it.title, time: tg.t >= 2 ? formatTime(tg.t) : '' });
+  }
+  return true;
+}
+document.addEventListener('visibilitychange', () => { if (document.hidden) resumeSaver.flush(); });
+window.addEventListener('pagehide', () => resumeSaver.flush());
 
 // arm position s (0..1 along the album chord) for the audio time t
 function currentS(t) {
@@ -551,6 +611,7 @@ function loop(now, hidden = false) {   // hidden: the page is not visible, so no
   });
 
   state.mixtapes?.tick(t, state.T, rate, dt);
+  resumeTick();
   if (!hidden) updateHud(rate, t);
 }
 
@@ -707,8 +768,8 @@ async function onToggle() {
     const a0 = albums[tlib.getFocus()];
     stage.setDisplay({ lit: true });
     if (!(await adoptFocusedAlbum(my)) || my !== intent) return;
-    if (a0 && a0.kind === 'cd') { state.cdPlaying = true; return; }
-    playTarget({ index: 0, time: 0 }, { needle: false });
+    if ((a0 && a0.kind === 'cd') || state.view === 'cd') { state.cdPlaying = true; return; }
+    playTarget(takeResumeStart() || { index: 0, time: 0 }, { needle: false });
     return;
   }
   stage.setDisplay({ lit: true });
@@ -877,7 +938,7 @@ function queueFor(item, index) {
     kind: item.kind,
     index,
     albumId: item.id,
-    items: item.tracks.map((t) => { const un = !!unsupportedReason(t); return { file: t.file, title: cleanTrackTitle(t.title), artist: t.artist || '', dur: Number.isFinite(t.durationSec) && t.durationSec > 0 ? t.durationSec : null, ...(un ? { bad: true, unsupported: true } : null) }; }),
+    items: item.tracks.map((t) => { const un = !!unsupportedReason(t); return { id: t.id, file: t.file, title: cleanTrackTitle(t.title), artist: t.artist || '', dur: Number.isFinite(t.durationSec) && t.durationSec > 0 ? t.durationSec : null, ...(un ? { bad: true, unsupported: true } : null) }; }),
   };
 }
 

@@ -1,0 +1,7 @@
+/* basics.css — the small additions of the "player basics" round: Resume chip, shuffle / repeat, sleep timer, notification rationale. */
+.rs-chip { position: absolute; z-index: 5; left: 50%; transform: translateX(-50%); top: calc(var(--head-h, 56px) + 8px); display: inline-flex; align-items: center; gap: 8px;
+  min-height: 44px; padding: 0 16px; border: 0; border-radius: 22px; background: var(--accent, #8e7bff); color: var(--on-accent, #111); font: 600 14px/1 system-ui, sans-serif; cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0,0,0,.45); }
+.rs-chip[hidden] { display: none; }
+.rs-chip:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.rs-ic { font-size: 12px; }
