@@ -33,6 +33,8 @@
 //        | { type:'cold', index } | { type:'end' } | { type:'drop-next' }
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { stepSlot } from './playorder.js';
+
 export const DEFAULTS = Object.freeze({
   preloadLeadSec: 40,          // start decoding the next track this long before the end
   fadeSec: 0.05,               // join overlap: a click-free "gapless" (raise for a crossfade)
@@ -67,13 +69,19 @@ export function createQueue({ playable, durations = [], opts = {} } = {}) {
     cold: false,            // cold fallback already requested for this boundary
     ended: false,
     failed: [],             // slots that failed to preload/decode (skipped from now on)
+    order: null,            // shuffle: a permutation of the slots (null = slot order); the host sets it (src/playorder.js)
+    repeat: 'off',          // 'off' | 'all' | 'one'
   };
 }
 
-/** First playable, non-failed slot after `i`, or -1. */
+/**
+ * The slot to join after `i` when the track ends by itself, or -1. Follows the shuffle order and Repeat all (wraps); Repeat one and a queue
+ * whose only candidate is `i` itself answer -1: the host replays the track (a cold restart), nothing is decoded ahead.
+ */
 export function nextPlayable(state, i) {
-  for (let j = i + 1; j < state.n; j++) if (state.playable[j] && !state.failed.includes(j)) return j;
-  return -1;
+  if (state.repeat === 'one') return -1;
+  const j = stepSlot({ n: state.n, order: state.order, from: i, dir: 1, repeat: state.repeat, playable: (k) => !!state.playable[k] && !state.failed.includes(k) });
+  return j === i ? -1 : j;
 }
 
 const out = (state, ...actions) => ({ state, actions });

@@ -58,6 +58,8 @@ import { bindSearchActions } from './search/actions.js';
 import { libraryPrefs, clearLibraryCache } from './library-prefs.js';
 import { load as loadResume, save as saveResume, resolve as resolveResume, isMeaningful, createSaver } from './resume.js';   // resume the last record, paused
 import { mountResumeChip } from './resume-ui.js';
+import { makeOrder, validOrder, stepSlot } from './playorder.js';   // shuffle / repeat: the order slots are visited in
+import { mountPlayMode } from './playmode-ui.js';
 
 // The track is mastered for one fixed reference speed. The needle plays it
 // correctly at this RPM (rate = 1). Moving the speed dial above/below it shifts
@@ -179,6 +181,7 @@ function installSettingsAndSearch() {
     if (path === 'playback.audiophile' || path === '*') applyMode();
     if (path === 'playback.defaultRpm') setSpeed(RPM_ID(all.playback.defaultRpm));
     if (path === 'radio.aiStations' && radio && radio._aiOn() !== all.radio.aiStations) radio._setAi(all.radio.aiStations);
+    if (path === 'playback.shuffle' || path === 'playback.repeat' || path === '*') onPlayModeChange();
   });
   el('btnTheme').addEventListener('click', () => settings.cycleTheme());
 
@@ -373,6 +376,7 @@ async function loadTrack(track, q = null, fromRadio = false, foreign = false, al
   state.reachedEnd = false;
   preTok++; state.pre = null; state.aq = q && q.kind === 'vinyl' && q.items.length > 1 ? createQueue({ playable: q.items.map((it) => !!it.file && !it.bad), durations: q.items.map((it) => it.dur), opts: { maxResidentBytes: DECODE_LIMITS.preloadBytes * 2, bytesPerSec: state.engine.sampleRate * 8 } }) : null;   // current + next deck within the memory budget, else the boundary is a cold load
   if (state.aq) state.aq = queueReduce(state.aq, { type: 'start', index: q.index }).state;
+  syncQueueMode();   // shuffle order / repeat onto the new queue
   refreshRecord();
   track.channels = null;     // the engine packed its own copy and the peaks / envelope / tempo feed are made: do not keep the decoded PCM alive (a 100 MB FLAC is ~500 MB)
   syncAlbumUI();
@@ -592,8 +596,8 @@ function loop(now, hidden = false) {   // hidden: the page is not visible, so no
     state.playCount += 1;
     localStorage.setItem('runout.playCount', String(state.playCount));
     // A CD runs on to the next track by itself; so does a record side with more tracks on it (the needle crosses the gap).
-    if (state.view === 'cd' && state.queue && nextGood(state.queue, state.queue.index, 1) >= 0) {
-      goTo({ index: nextGood(state.queue, state.queue.index, 1), time: 0 }, false, { natural: true });
+    if (state.view === 'cd' && state.queue && nextGood(state.queue, state.queue.index, 1, true) >= 0) {
+      goTo({ index: nextGood(state.queue, state.queue.index, 1, true), time: 0 }, false, { natural: true });
     } else if (state.view === 'cd') state.cdPlaying = false;   // the disc ran out: paused at the end, so the mini bar / media session stop claiming it plays and Play can restart it
     else if (state.view === 'vinyl' && state.vinylOwned && pl.playing) onVinylTrackEnd();
   }
@@ -616,16 +620,43 @@ function loop(now, hidden = false) {   // hidden: the page is not visible, so no
 }
 
 // The next / previous track of the album that can actually play (has its file, did not fail to decode), or -1.
-function nextGood(q, from, dir) {
-  for (let j = from + dir; j >= 0 && j < q.items.length; j += dir) { const it = q.items[j]; if (it && it.file && !it.bad) return j; }
-  return -1;
+// Follows the shuffle order and Repeat (src/playorder.js); `natural` = the track ran out by itself (Repeat one replays it, a pressed Next still advances).
+function nextGood(q, from, dir, natural = false) {
+  return stepSlot({ n: q.items.length, order: q.order, from, dir, repeat: playMode().repeat, natural, playable: (j) => { const it = q.items[j]; return !!(it && it.file && !it.bad); } });
 }
 // The record ran out: the next playable track of the side (the needle crosses the gap and goes on), or the end of the album (frozen at the runout).
 function onVinylTrackEnd() {
   const q = state.queue;
-  const nx = q ? nextGood(q, q.index, 1) : -1;
+  const nx = q ? nextGood(q, q.index, 1, true) : -1;
   if (nx >= 0) playTarget({ index: nx, time: 0 }, { needle: false, natural: true });
   else stage.dispatch({ type: 'finished' });
+}
+
+// ── shuffle / repeat for albums and the Play-all queue (src/playorder.js; Settings > Playback and the stage sheet) ──────────────────────────────
+// The track SLOTS stay put (titles, files, ids, the record's bands); only the order they are visited in changes, so a track id always maps to its own audio.
+const playMode = () => ({ shuffle: !!settings.store.get('playback.shuffle'), repeat: settings.store.get('playback.repeat') || 'off' });
+function prevInOrder(q) {   // "Previous" in shuffle: far into the track restarts it, else the track before it in the shuffle order
+  const t = state.engine.position / state.engine.sampleRate;
+  if (t > TONEARM_KNOBS.prevRestartSec) return { index: q.index, time: 0 };
+  const j = nextGood(q, q.index, -1);
+  return { index: j >= 0 ? j : q.index, time: 0 };
+}
+function syncQueueMode() {
+  const q = state.queue; if (!q) return;
+  const { shuffle, repeat } = playMode(), n = q.items.length;
+  if (!shuffle) { q.order = null; q.shuf = false; }
+  else if (!q.shuf || !validOrder(q.order, n)) { q.order = makeOrder(n, q.index, true); q.shuf = true; }   // the track on the platter leads, the rest are shuffled
+  if (state.aq) state.aq = { ...state.aq, order: q.order, repeat };
+}
+// a toggle while playing: what was decoded ahead followed the OLD order, so drop it; the next tick decodes the right successor
+function onPlayModeChange() {
+  syncQueueMode();
+  const aq = state.aq;
+  if (aq && (aq.phase === 'preloading' || aq.phase === 'ready' || aq.phase === 'skipped')) {
+    preTok++; state.pre = null; try { state.engine.dropNext(); } catch { /* */ }
+    state.aq = { ...aq, order: state.queue.order, repeat: playMode().repeat, next: -1, nextBytes: 0, phase: 'idle', cold: false };
+  }
+  syncAlbumUI(); refreshNowPlaying();
 }
 
 // ── album gapless (queue.js model, AudioEngine.prepareNext / joinNext) ──────────────────────────────────────────────────────
@@ -718,7 +749,7 @@ function installTurntable() {
   stage.setSpeedUI(state.speedBase);
   // rt test hooks (the prototype's window.__rt, plus the app handle for scripts/verify-turntable.py)
   window.__rt = Object.assign(stage.rt, {
-    app: () => ({ state, stage, tlib, albums, shelf, limits: DECODE_LIMITS, aiHost: () => makeAiHost(library), actions: () => searchActionsImpl(), library, intent: () => intent, radio: () => radio }),
+    app: () => ({ shell: () => shell, settingsStore: settings.store, state, stage, tlib, albums, shelf, limits: DECODE_LIMITS, aiHost: () => makeAiHost(library), actions: () => searchActionsImpl(), library, intent: () => intent, radio: () => radio }),
     goTo: (t, n) => goTo(t, n),
   });
 }
@@ -827,7 +858,7 @@ function onArmRelease(s, flickDir) {
   if (flickDir && q) {
     target = flickDir === 'next'
       ? (nextGood(q, q.index, 1) >= 0 ? { index: nextGood(q, q.index, 1), time: 0 } : null)
-      : previousTarget(q.index, state.engine.position / state.engine.sampleRate, q.items.length);
+      : (playMode().shuffle ? prevInOrder(q) : previousTarget(q.index, state.engine.position / state.engine.sampleRate, q.items.length));
   }
   if (!target) target = seekTargetS(state.layout, s);
   state.ghost = null; stage.setGhost(null); state._inGap = false;
@@ -877,7 +908,7 @@ async function jumpTo(target, needle, { natural = false } = {}) {
   try {
     await state.engine.resume();
     if (my !== intent) return;
-    for (let idx = target.index; idx >= 0 && idx < q.items.length; idx += dir) {
+    for (let idx = target.index; idx >= 0 && idx < q.items.length; idx = playMode().shuffle ? nextGood(q, idx, dir) : idx + dir) {   // after a failed track: the next one in the shuffle order, else the neighbour
       const it = q.items[idx];
       if (!it || !it.file) continue;
       if (it.bad) { if (idx === target.index && it.unsupported) toast(`Cannot play "${shortTitle(it.title) || 'that track'}": ${UNSUPPORTED_TEXT}`); continue; }   // known undecodable: skipped without a decode attempt
@@ -1165,6 +1196,7 @@ function updateHud(rate, t) {
 // ── Turntable settings (was Deck details): the old side panel, now a sheet opened from the small control on the Albums page ──────────────────────
 function installDetails() {
   const page = el('pageAlbums'), sheet = el('deckSheet');
+  { const ph = el('ttPlayModeHost'); if (ph) mountPlayMode(ph, settings.store); }   // shuffle / repeat in the sheet
   const actions = page.querySelector('.page-actions');
   const ICON = (d) => `<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">${d}</svg>`;
   // the Library button: always visible on the Albums header (the pinch stays as the gesture); labelled, >= 44 px
@@ -1798,6 +1830,7 @@ function mediaMeta(source) {
   if (source === 'mixtape') { const p = state.mixtapes && state.mixtapes.play; return { artist: 'Mixtape', album: (p && p.mix && p.mix.name) || '' }; }
   return { artist: 'Radio', album: '' };
 }
+const modeSuffix = () => { const m = playMode(); return (m.shuffle ? ' · shuffle' : '') + (m.repeat === 'all' ? ' · repeat all' : m.repeat === 'one' ? ' · repeat one' : ''); };   // surfaced on the mini bar's sub line
 function refreshNowPlaying() {
   if (!shell) return;
   const src = {};
@@ -1809,7 +1842,7 @@ function refreshNowPlaying() {
   if (p && !p.ended && !p.paused) src.mixtape = { title: p.mix.name || 'Mixtape', sub: `Mixtape · track ${Math.max(1, p.idx + 1)} of ${p.files.length}`, playing: true, canNext: p.idx + 1 < p.files.length };
   const q = state.queue;
   if (q && !state.radioOn && (state.view === 'cd' ? state.cdPlaying : (stage.player.playing && state.vinylOwned))) {
-    src.album = { title: q.items[q.index].title || (state.track && state.track.name) || 'Album', sub: `${q.kind === 'cd' ? 'CD' : 'Vinyl'} · track ${q.index + 1} of ${q.items.length}`, playing: true, canNext: q.index + 1 < q.items.length };
+    src.album = { title: q.items[q.index].title || (state.track && state.track.name) || 'Album', sub: `${q.kind === 'cd' ? 'CD' : 'Vinyl'} · track ${q.index + 1} of ${q.items.length}${modeSuffix()}`, playing: true, canNext: q.index + 1 < q.items.length || playMode().repeat !== 'off' || (playMode().shuffle && q.items.length > 1) };
   }
   if (p && !p.ended && p.paused && !state.mixtapes.playerOpen && !miniHold) miniHold = 'mixtape';   // a paused tape whose player was closed stays on the mini bar, resumable
   if (miniHold && (src.radio || src[miniHold])) miniHold = null;          // something is playing again: no hold needed

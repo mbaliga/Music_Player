@@ -29,6 +29,8 @@ export const FIELDS = Object.freeze({
   'haptics':               { type: 'bool', default: true },
   'playback.defaultRpm':   { type: 'rpm', values: RPMS, default: 33.333 },
   'playback.audiophile':   { type: 'bool', default: false },
+  'playback.shuffle':      { type: 'bool', default: false },
+  'playback.repeat':       { type: 'enum', values: ['off', 'all', 'one'], default: 'off' },
   'radio.aiStations':      { type: 'bool', default: false },
   'privacy.rememberSearches': { type: 'bool', default: true },
 });
