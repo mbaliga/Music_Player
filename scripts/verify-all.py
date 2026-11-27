@@ -13,7 +13,9 @@ SCRIPTS = [  # (name, file, timeout seconds)
     ('fx', 'verify-fx.py', 900), ('mixtapes', 'verify-mixtapes.py', 900), ('search-settings', 'verify-search-settings.py', 600),
     ('devicemode', 'verify-devicemode.py', 900), ('device-library', 'verify-device-library.py', 600), ('radio-layout', 'verify-radio-layout.py', 300), ('csp', 'verify-csp.py', 120),
     ('you-radio', 'verify-you-radio.py', 600), ('canned-radio', 'verify-canned-radio.py', 600), ('tour', 'verify-tour.py', 1200), ('real-playback', 'verify-real-playback.py', 900),
+    ('basics', 'verify-basics.py', 1500), ('station-handoff', 'verify-station-handoff.py', 900), ('hardening-review', 'verify-hardening-review.py', 900), ('playback-review', 'verify-playback-review.py', 900), ('seams', 'verify-seams.py', 900),
 ]
+NO_OUTDIR = {'seams', 'basics', 'station-handoff', 'hardening-review', 'playback-review'}   # their argv selects phases / scenarios, so they must not be handed an output directory
 args = sys.argv[1:]
 OUT = next((a for a in args if "/" in a), "/tmp/verify-all")
 only = [a for a in args if a != OUT]
@@ -31,12 +33,12 @@ try:
         od = os.path.join(OUT, name); os.makedirs(od, exist_ok=True)
         t0 = time.time(); log = os.path.join(OUT, name + '.log')
         try:
-            with open(log, 'w') as lf: r = subprocess.run([sys.executable, path, od], cwd=ROOT, env=env, stdout=lf, stderr=subprocess.STDOUT, timeout=tmo)
+            with open(log, 'w') as lf: r = subprocess.run([sys.executable, path] + ([] if name in NO_OUTDIR else [od]), cwd=ROOT, env=env, stdout=lf, stderr=subprocess.STDOUT, timeout=tmo)
             code = r.returncode
         except subprocess.TimeoutExpired: code = 'timeout'
         txt = open(log, errors='replace').read()
         fails = [l for l in txt.splitlines() if l.startswith('FAIL ') or l.startswith('FAIL:')]
-        oks = sum(1 for l in txt.splitlines() if l.startswith('ok '))
+        oks = sum(1 for l in txt.splitlines() if l.startswith('ok ') or l.startswith('PASS '))
         rows.append((name, 'PASS' if code == 0 else 'FAIL', time.time() - t0, f'{oks} ok, {len(fails)} FAIL lines, exit {code}' + (('  first: ' + fails[0][:90]) if fails else '')))
         print(f'{rows[-1][0]:18s} {rows[-1][1]}  {rows[-1][2]:6.1f}s  {rows[-1][3]}', flush=True)
 finally:

@@ -154,3 +154,5 @@
 #pageAlbums .page-head .page-actions { min-width: 0; flex: 1 1 auto; justify-content: flex-end; }
 #pageAlbums .page-head .tt-lib-btn { flex: 0 1 auto; min-width: 44px; overflow: hidden; }
 .tt-lib-lbl { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* 320 px phones: the pill would read "Lib…". The icon stays (48 px target), the word steps aside for screen readers. */
+@media (max-width: 339px) { #pageAlbums .page-head .tt-lib-btn { padding: 0 11px; } .tt-lib-lbl { position: absolute; width: 1px; height: 1px; clip: rect(0 0 0 0); } }

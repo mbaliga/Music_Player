@@ -1528,6 +1528,7 @@ function wireLibrary() {
       const same = state.albumId === a.id && state.queue;
       if (same && (state.view === 'cd' ? state.cdPlaying : (stage.player.playing || stage.player.starting))) { markPicked(); stage.dispatch({ type: 'zoomTo', z: 0 }); if (a.kind === 'cd') delete el('pageAlbums').dataset.lib; return; }   // already playing it: just back to the player
       if (same && state.view === 'vinyl' && a.kind !== 'cd' && !state.jumping) { markPicked(); stage.dispatch({ type: 'zoomTo', z: 0 }); await onToggle(); return; }   // paused mid-album: resume where it stopped
+      if (same && state.view === 'cd' && a.kind === 'cd' && !state.jumping) { markPicked(); stage.dispatch({ type: 'zoomTo', z: 0 }); delete el('pageAlbums').dataset.lib; await state.engine.resume(); cdToggle(); return; }   // a paused (or just resumed) CD: play on from where it is, not from 0:00
       return playAlbumTrack(albumId, same ? state.queue.index : 0);
     }
     markPicked();

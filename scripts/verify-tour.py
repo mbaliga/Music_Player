@@ -403,6 +403,12 @@ def tour(b, w, h, tag, landscape=False):
     # ── 9. lock, AOD, wake, unlock ────────────────────────────────────────────────────────────────────────────────────────────────────────
     def s_lock():
         drawer_to(page, 'albums'); page.wait_for_timeout(700)
+        # The Booth step's Play on a platter left holding a station's song loads the FOCUSED album (here the Cold Front CD set: by design, a stopped
+        # station's leftover is not a record), so the stage is the CD player and has no platter keys. This step locks the PLATTER: put a vinyl album on it.
+        if pstate(page)['view'] != 'vinyl':
+            page.click('.page:not([hidden]) .page-search'); page.wait_for_selector('.search-ov:not(.hidden)'); page.fill('.so-input', 'tide table 3'); page.wait_for_timeout(500)
+            page.locator('.so-row[data-type="song"]').first.click(); page.wait_for_timeout(2500)
+        check(pstate(page)['view'] == 'vinyl', f'{tag}: lock step starts on the vinyl platter (view {pstate(page)["view"]})')
         page.evaluate("() => { const real = Date.now.bind(Date); window.__off = 0; Date.now = () => real() + window.__off; }")
         kx, ky, _, _ = center(page, '.page:not([hidden]) .dm-key'); T.tap(kx, ky); time.sleep(0.4)
         check(page.evaluate('runoutDeviceMode.state.locked'), f'{tag}: the lock key locks')
