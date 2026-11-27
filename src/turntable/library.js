@@ -74,7 +74,7 @@ export function mountTurntableLibrary(container, deps = {}) {
   const meta = el('div', 'tl-meta', scroll);
   const titleEl = el('div', 'tl-title', meta), subEl = el('div', 'tl-sub', meta);
   const playAlb = el('button', 'tl-playalb', meta); playAlb.setAttribute('type', 'button');
-  playAlb.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg><span>Play album</span>';
+  playAlb.textContent = 'Play album';   // the play triangle is CSS (::before): no markup but text from this module
   const list = el('ol', 'tl-tracks', scroll);
   list.setAttribute('role', 'listbox'); list.setAttribute('aria-label', 'Tracks'); list.setAttribute('data-lock-surface', '');
   const foot = el('div', 'tl-foot', scroll);                         // "50 songs · last scan 3 min ago" (setScanInfo)

@@ -476,9 +476,10 @@ def new_ui_albums(p, w, h):
     check(not errs, f'{tag}: no page errors {errs[:3]}')
     b.close()
 
+# a gap (the page root) is not a stray point: the AOD pixel shift can slide a live chip under it (the Booth's 3 x 2 rack did)
 def stray_point(page, w, h):
     """a screen point that is not on any live control and not on a lock key (so a double-tap there is a stray touch that wakes the AOD)"""
-    return page.evaluate("""([w, h]) => { for (let y = h * 0.3; y < h * 0.9; y += 17) for (let x = w * 0.2; x < w * 0.8; x += 19) { const e = document.elementFromPoint(x, y); if (e && !runoutDeviceMode.isAllowed(e)) return [x, y]; } return [w / 2, h / 2]; }""", [w, h])
+    return page.evaluate("""([w, h]) => { for (let y = h * 0.3; y < h * 0.9; y += 17) for (let x = w * 0.2; x < w * 0.8; x += 19) { const e = document.elementFromPoint(x, y); if (e && e !== document.documentElement && e !== document.body && !runoutDeviceMode.isAllowed(e)) return [x, y]; } return [w / 2, h / 2]; }""", [w, h])
 
 def rms_now(page):
     return max([page.evaluate('window.__rms()') for _ in range(5) if time.sleep(0.05) is None])

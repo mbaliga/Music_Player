@@ -82,9 +82,16 @@ CD albums show as CD cases; a CD track opens the existing CD view (`cd.js`) over
 First run / empty library: the one album is the built-in synthesized **Demo record** (`builtinTestPressing`, title 'Demo record'; the word "test pressing" is never shown). Focusing another vinyl album loads it
 (debounced 420 ms; stops the current record); CD cases wait for a track pick.
 
-**Turntable settings** (was Deck details; element ids `#deckSheet` / `#btnDeck` unchanged): the sliders icon in the header opens a sheet: the album on the platter (title,
+**Tracks and options** (was Turntable settings, before that Deck details; element ids `#deckSheet` / `#btnDeck` unchanged): the sliders icon in the header opens a sheet: the album on the platter (title,
 artist, its track list: tap a row to play it), track nav (⏮ ⏭), the fine-speed dial, an **Add music file** button (the file input is visually hidden behind it) and the gestures
 note. Rate / position / wear, the feel knobs and the latency gate are behind the **Advanced** fold; the build id lives in Settings > Privacy & about.
+
+**Visible transport (UX round 2).** Beside Play / Stop the stage has **Previous / Next** keys (`#tt-prev`, `#tt-next`, the top row above 78 / Play; dimmed when there is nothing to step to, live while the device is locked)
+and, under the now-playing text, a thin visible **seek bar** (`src/ui/seekbar.js`, a 4 px line in a 48 px target, tap or drag, committed on release; frozen while locked like the tonearm): it drops the needle
+at that point of the loaded track and plays on. The CD view uses the same bar under its title / time. The tonearm dimple gesture is unchanged. Layout: the camera keeps a small strip free at the bottom
+(`camFor(..., reserve)`, 8 css px portrait / 4 landscape) so the band is tall enough; key hit areas are sized from the camera scale to >= 48 css px (capped at the key pitch: 80 stage units across rows; in portrait
+the key columns are spread to 86, `stage.js: COL_PITCH_PORT`). A tap on the centre cover in the library loads **and plays** the album (`COVER_TAP_PLAYS` in `main.js`, one switch to revert), and the library has a
+**Play album** button under the title. In landscape the page header is 48 px and its title is screen-reader only.
 
 **What the stage says (UX pass).** The header carries an always-visible **Library** button (>= 44 px, labelled; it becomes **Player** while the library is up; the pinch stays; on phones narrower than 400 px the "Albums" title steps aside, screen-reader only, so the lock key stays on screen). The
 stage has a readable layer (`.tt-hud`, DOM text, `stage.setNow / setNowTime / setEmpty`): a now-playing band (title, "Artist · Album", elapsed / total) placed in stage space *below*

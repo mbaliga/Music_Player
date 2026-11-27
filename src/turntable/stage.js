@@ -148,7 +148,8 @@ export function createStage(host, hooks = {}) {
     const r = mapRect(MX, ...(portrait ? HUD_BAND.port : HUD_BAND.land));
     const w = Math.max(0, r.right - r.left), h = Math.max(0, r.bottom - r.top) + reserveBottom();   // the band runs down into the strip the camera keeps free for the seek bar
     const st = nowEl.style;
-    st.left = r.left.toFixed(1) + 'px'; st.top = r.top.toFixed(1) + 'px'; st.width = w.toFixed(1) + 'px'; st.height = h.toFixed(1) + 'px';
+    // anchored by its BOTTOM edge with a minimum height: at a larger text size the band grows upward instead of laying the seek bar over the artist line
+    st.left = r.left.toFixed(1) + 'px'; st.width = w.toFixed(1) + 'px'; st.top = 'auto'; st.height = 'auto'; st.minHeight = h.toFixed(1) + 'px'; st.bottom = Math.max(0, H - (r.top + h)).toFixed(1) + 'px';
     nowEl.dataset.tight = h < 46 ? '1' : '';
   }
   function resize() {

@@ -181,7 +181,9 @@ try:
         check(J(pg, '__lib.getFocus()') == 2, 'ArrowLeft x2 -> two albums back (one settle)')
         log_since(pg); pg.keyboard.press('Enter'); l = log_since(pg); check(l == [['tapCover', ids[2]]], f'Enter on the flow -> tapCover ({l})')
         check(J(pg, 'document.querySelector(".tl-flow").getAttribute("role")') == 'listbox' and J(pg, 'document.querySelectorAll(".tl-cv[role=option]").length') >= 5, 'listbox / option roles')
-        pg.keyboard.press('Tab'); check(J(pg, 'document.activeElement.classList.contains("tl-trk")'), 'Tab from the flow reaches the track list')
+        pg.keyboard.press('Tab'); check(J(pg, 'document.activeElement.classList.contains("tl-playalb")'), 'Tab from the flow reaches the Play album button')
+        l = log_since(pg); pg.keyboard.press('Enter'); l = log_since(pg); check(l == [['tapCover', ids[2]]], f'Enter on Play album -> tapCover, the album plays ({l})')
+        pg.keyboard.press('Tab'); check(J(pg, 'document.activeElement.classList.contains("tl-trk")'), 'Tab again reaches the track list')
         pg.keyboard.press('ArrowDown'); pg.keyboard.press('Enter'); l = log_since(pg)
         check(l == [['selectTrack', ids[2], 1]], f'ArrowDown + Enter on a row -> selectTrack ({l})')
         # row targets
@@ -240,6 +242,7 @@ try:
         tsend('touchEnd', []); pg.wait_for_timeout(500)
         st = J(pg, 'document.querySelector(".tl-scroll").scrollTop'); l = log_since(pg)
         check(st > 20 and l == [], f'a vertical touch pan scrolls the list and does not change album (scrollTop {st}, events {l})')
+        J(pg, 'document.querySelector(".tl-scroll").scrollTop = 0'); pg.wait_for_timeout(200); cc = centre_cover(pg); x, y = cc['x'] + cc['w'] / 2, cc['y'] + cc['h'] / 2   # the pan scrolled the list (it is longer now: Play album); the cover is back where it was
         tsend('touchStart', [(x, y)])
         for i in range(1, 13): tsend('touchMove', [(x - 14 * i, y)]); time.sleep(0.016)
         tsend('touchEnd', []); wait_settle(pg, 1400)

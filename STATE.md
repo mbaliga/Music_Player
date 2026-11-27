@@ -25,6 +25,14 @@ are in the table below (run B of `verify-all.py`; the screenshots of the tour ar
 | search over 5,000 songs | about 96 ms to first results, 87 ms for a later query (including the debounce); the mixtape picker answers in 15 ms |
 | `www/` shipped | 2,830 KB in 190 files (JS 1,493 KB); largest `assets/mat.jpg` 216 KB, then the station packs at 120-146 KB each |
 
+## UX round 2 (heuristics evaluation)
+
+Cover tap plays (`COVER_TAP_PLAYS`) and the library has a Play album button; the stage has Previous / Next keys and a visible seek bar (CD view too); the mini bar has Previous; touch targets are >= 48 px
+where the layout allows (stage keys scale-aware, mini bar, header, search chips, Booth fader); text under 12 px raised across Albums, Booth, Mixtapes and the library; the AOD clock fits at 360 px and keeps a title line;
+deleting a mixtape (shelf menu or editor) has a snackbar Undo (`src/ui/snackbar.js`); empty Mixtapes and the editor's Add tab offer Scan music; the tour is 5 short cards with a fixed Next and a scan button; the first Light
+pick toasts that players stay dark; 'Pick an album' shows only while nothing is selected; the tape deck's eject key stops the tape (Back keeps it loaded); Booth has a first-visit coachmark, an 'Effects' drawer subtitle and clears the
+mini bar; untitled tapes are named after their first artist; the landscape Albums header drops its title. Still unproven on a phone (device checks: gesture-bar overlap of the seek bar, one-handed reach of the seek bar, large text).
+
 ## UX round (final integration)
 
 Seven parallel UX fixes were merged and proven together: `verify-tour.py` has a real-library journey that asserts the audio actually playing is the chosen real track (dominant frequency of the engine output, never the Demo record). Found and fixed while integrating: the stage measured its card while the shell scaled it (the now-playing line sat on the keys after visiting another section); a tape kept "owning" the engine after the user started an album track (Booth said a mixtape was playing); `verify-you-radio.py` crashed on an empty list (now fixed and a real gate); the Device mode sheet is full width on landscape phones; Booth landscape rows / switches / pads are 44 px tall. On-device checklist item 12 in `HANDOFF.md` §6 lists what only a phone can settle.

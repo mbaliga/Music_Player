@@ -435,6 +435,7 @@ def _run():
         # ── M. the instrument screen: pads, latch, knobs, fader, meter, empty states, lock seams, three viewports ───────────
         fresh(pg, 'click128.wav'); select_mode(pg, 'scratch')
         def box(sel, n=0):
+            pg.locator(sel).nth(n).scroll_into_view_if_needed()   # the first-visit tip and the 3 x 2 rack push the pads below the fold on a phone
             bb = pg.locator(sel).nth(n).bounding_box(); return bb['x'] + bb['width'] / 2, bb['y'] + bb['height'] / 2
         R['M_instrument'] = {'pads': pg.locator('.fx-perf').count(), 'rack_units': pg.locator('.fx-row').count(), 'knobs': pg.locator('.fx-knob').count(), 'faders': pg.locator('.fx-fader').count(),
                              'xy_plate': pg.locator('.fx-pad').count(), 'meter': pg.locator('.fx-meter').count(), 'deck_strip': pg.locator('.fx-deck').count(),

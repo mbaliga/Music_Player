@@ -164,6 +164,7 @@
 /* "Play album": a labelled button under the title (UX review: the cover tap was the only way to start an album from here, and it was not discoverable) */
 .tl-playalb { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; margin-top: 4px; padding: 0 22px; border: 0; border-radius: 24px; background: #8E7BFF; color: #0b0b0e;
   font: 700 14px system-ui, sans-serif; letter-spacing: .02em; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.tl-playalb::before { content: ''; flex: none; border-left: 12px solid currentColor; border-top: 7px solid transparent; border-bottom: 7px solid transparent; margin-right: 2px; }
 .tl-playalb:active { transform: scale(.97); }
 .tl-playalb:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 .tl-playalb[hidden] { display: none; }
