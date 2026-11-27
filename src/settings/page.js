@@ -135,7 +135,7 @@ export function mountSettings(host, deps) {
 
   // ── Playback ──
   const rpm = reg(seg('Default speed', [{ value: 33.333, label: '33⅓' }, { value: 45, label: '45' }, { value: 78, label: '78' }], S('playback.defaultRpm'), T('playback.defaultRpm')));
-  const audiophile = reg(sw('Audiophile mode', 'Adds fine-tuning dials for the record to Turntable settings.', S('playback.audiophile'), T('playback.audiophile')));
+  const audiophile = reg(sw('Audiophile mode', 'Adds fine-tuning dials for the record to Tracks and options.', S('playback.audiophile'), T('playback.audiophile')));
   const shuffleSw = reg(sw('Shuffle', 'Play an album, or Play all, in a random order.', S('playback.shuffle'), T('playback.shuffle')));
   const repeatSeg = reg(seg('Repeat', [{ value: 'off', label: 'Off' }, { value: 'all', label: 'All' }, { value: 'one', label: 'One' }], S('playback.repeat'), T('playback.repeat')));
   const sleepHost = h('div', { class: 'st-grow' });
@@ -143,7 +143,7 @@ export function mountSettings(host, deps) {
   const sleepRow = deps.sleep ? row('Sleep timer', 'Fades the music out over the last 10 seconds, then stops it. Works with the screen off.', sleepHost) : null;
   const playback = group('Playback', null, row('Default speed', 'The speed the turntable starts at.', rpm), audiophile, shuffleSw, row('Repeat', 'All plays the album again when it ends; One repeats the track.', repeatSeg), sleepRow,
     h('div', { class: 'st-row' }, h('div', { class: 'st-label' }, 'More controls'), h('div', { class: 'st-hint' }, 'Fine speed, position and extra record details.'),
-      h('div', { class: 'st-btns' }, h('button', { type: 'button', class: 'st-btn', onclick: () => deps.playback && deps.playback.openDeckDetails && deps.playback.openDeckDetails() }, 'Open Turntable settings'))));
+      h('div', { class: 'st-btns' }, h('button', { type: 'button', class: 'st-btn', onclick: () => deps.playback && deps.playback.openDeckDetails && deps.playback.openDeckDetails() }, 'Open Tracks and options'))));
 
   // ── Radio ──
   const rd = deps.radio || {};

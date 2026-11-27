@@ -44,6 +44,7 @@
 .drawer-search:focus-visible { outline: 2px solid var(--shell-accent); outline-offset: 3px; }
 .drawer-glyph { display: inline-flex; vertical-align: -2px; margin-left: 10px; opacity: .7; }
 .drawer-item.active .drawer-glyph { opacity: 1; }
+.drawer-sub { display: block; font-size: 13px; font-weight: 400; letter-spacing: .02em; color: var(--ink2); margin-top: -2px; }
 .drawer-name { font-size: 15px; font-weight: 700; letter-spacing: .06em; color: var(--ink-bg, var(--ink)); }
 .drawer-menu {
   list-style: none; flex: 1; display: flex; flex-direction: column; justify-content: center;
@@ -126,7 +127,7 @@
 .minibar-title { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .minibar-sub { font-size: 12px; color: var(--ink2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .minibar-sub::before { content: ''; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #5ad18a; margin-right: 6px; }
-.minibar-stop { width: 44px; height: 44px; border-radius: 50%; border: 0; background: var(--surface); color: var(--ink); cursor: pointer; font-size: 14px; }
+.minibar-stop { width: 48px; height: 48px; border-radius: 50%; border: 0; background: var(--surface); color: var(--ink); cursor: pointer; font-size: 14px; }
 .minibar-stop[hidden] { display: none; }
 .card[data-mini="true"] .page { padding-bottom: calc(72px + var(--safe-bottom)); }
 /* the radio's own floating pill is replaced by the mini bar */

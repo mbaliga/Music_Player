@@ -73,7 +73,7 @@ function deckSkin(X) {
   const title = sv('text', { transform: 'translate(335 520) rotate(90)', 'font-family': UI, 'font-weight': 700, fill: '#8d8e96', 'letter-spacing': 4 }, host);
   const sub = sv('text', { transform: 'translate(395 520) rotate(90)', 'font-family': UI, 'font-weight': 500, 'font-size': 38, fill: '#6c6d75', 'letter-spacing': 6 }, host);
   const keysG = $('keys'), keyEls = {};
-  const KEYS = [{ id: 'rew', x: 55, w: 275, label: 'Rewind (hold)' }, { id: 'play', x: 343, w: 287, label: 'Play or pause' }, { id: 'stop', x: 643, w: 287, label: 'Stop' }, { id: 'ff', x: 943, w: 285, label: 'Fast forward (hold)' }, { id: 'eject', x: 1240, w: 275, label: 'Close the player' }];
+  const KEYS = [{ id: 'rew', x: 55, w: 275, label: 'Rewind (hold)' }, { id: 'play', x: 343, w: 287, label: 'Play or pause' }, { id: 'stop', x: 643, w: 287, label: 'Stop' }, { id: 'ff', x: 943, w: 285, label: 'Fast forward (hold)' }, { id: 'eject', x: 1240, w: 275, label: 'Eject: stop the tape and go back to the shelf' }];
   const KY = 2006, KH = 316, CY = 2165;
   const tri = (pts, fill) => sv('polygon', { points: pts, fill, stroke: fill, 'stroke-width': 7, 'stroke-linejoin': 'round' });
   KEYS.forEach((k) => {
@@ -202,7 +202,7 @@ function playerSkin(X) {
     { id: 'flip', x: 1104, y: 2062, w: 190, h: 122, fill: X.url('key'), label: 'Flip the tape to the other side', k: 1, icon: (c, m) => '<g fill="none" stroke="#e8e8e4" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" transform="translate(' + c + ' ' + (m - 24) + ') scale(.72)"><path d="M-38 -4A38 38 0 0 1 22 -30M38 4A38 38 0 0 1 -22 30"/><path d="M12 -44L25 -29L8 -21M-12 44L-25 29L-8 21"/></g><text x="' + c + '" y="' + (m + 42) + '" text-anchor="middle" font-family="' + UI + '" font-weight="800" font-size="30" letter-spacing="3" fill="#e8e8e4">FLIP</text>' },
     { id: 'plus', x: 868, y: 2198, w: 190, h: 122, fill: X.url('key'), label: 'Skip forward 15 seconds', k: 1, icon: (c, m) => '<path d="M' + (c - 34) + ' ' + m + 'H' + (c + 34) + 'M' + c + ' ' + (m - 34) + 'V' + (m + 34) + '" stroke="#e8e8e4" stroke-width="10"/>' },
     { id: 'minus', x: 1104, y: 2198, w: 190, h: 122, fill: X.url('key'), label: 'Skip back 15 seconds', k: 1, icon: (c, m) => '<path d="M' + (c - 34) + ' ' + m + 'H' + (c + 34) + '" stroke="#e8e8e4" stroke-width="10"/>' },
-    { id: 'eject', x: 868, y: 2334, w: 190, h: 122, fill: X.url('key'), label: 'Close the player', k: 1, icon: (c, m) => tri(c + ',' + (m - 34) + ' ' + (c - 36) + ',' + (m + 6) + ' ' + (c + 36) + ',' + (m + 6), '#e8e8e4') + '<rect x="' + (c - 36) + '" y="' + (m + 18) + '" width="72" height="13" fill="#e8e8e4"/>' },
+    { id: 'eject', x: 868, y: 2334, w: 190, h: 122, fill: X.url('key'), label: 'Eject: stop the tape and go back to the shelf', k: 1, icon: (c, m) => tri(c + ',' + (m - 34) + ' ' + (c - 36) + ',' + (m + 6) + ' ' + (c + 36) + ',' + (m + 6), '#e8e8e4') + '<rect x="' + (c - 36) + '" y="' + (m + 18) + '" width="72" height="13" fill="#e8e8e4"/>' },
     { id: 'power', x: 1104, y: 2334, w: 190, h: 122, fill: X.url('key'), label: 'Power', k: 1, icon: (c, m) => '<path d="M' + (c - 26) + ' ' + (m - 30) + 'A40 40 0 1 0 ' + (c + 26) + ' ' + (m - 30) + '" fill="none" stroke="#e8e8e4" stroke-width="8" stroke-linecap="round"/><path d="M' + c + ' ' + (m - 50) + 'V' + (m - 8) + '" stroke="#e8e8e4" stroke-width="8" stroke-linecap="round"/>' },
   ];
   const bg = $('buttons'), btn = {};

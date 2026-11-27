@@ -24,16 +24,19 @@ export function sm(a, b, v) { v = clamp01((v - a) / (b - a)); return v * v * (3 
 export const ease = (d) => d * d * (3 - 2 * d);
 
 /**
- * Camera for scale k in a W x H viewport.
+ * Camera for scale k in a W x H viewport (optionally leaving `reserve` css px free at the bottom).
  * -> { s, s0, M:[a,b,c,d,e,f] (canvas matrix, CSS px), vcx, vcy (viewBox centre in stage units) }
  */
-export function camFor(portrait, W, H, k) {
+export function camFor(portrait, W, H, k, reserve = 0) {
+  // `reserve` (css px, default 0): a strip at the BOTTOM of the viewport the stage leaves free (the seek bar's extra height); the stage is fitted into H - reserve
+  // and centred there, so the SVG viewBox centre moves down by half of it (in stage units).
+  const Hs = Math.max(1, H - Math.max(0, reserve));
   if (portrait) {
-    const s0 = Math.min(W / 561, H / 1241), s = s0 * k;
-    return { s, s0, M: [0, s, -s, 0, W / 2 + s * 265.5, H / 2 - s * 843], vcx: 280.5, vcy: 620.5 };
+    const s0 = Math.min(W / 561, Hs / 1241), s = s0 * k;
+    return { s, s0, M: [0, s, -s, 0, W / 2 + s * 265.5, Hs / 2 - s * 843], vcx: 280.5, vcy: 620.5 + (H - Hs) / (2 * s) };
   }
-  const s0 = Math.min(W / VB.w, H / VB.h), s = s0 * k;
-  return { s, s0, M: [s, 0, 0, s, W / 2 - s * 843, H / 2 - s * 265.5], vcx: 843, vcy: 265.5 };
+  const s0 = Math.min(W / VB.w, Hs / VB.h), s = s0 * k;
+  return { s, s0, M: [s, 0, 0, s, W / 2 - s * 843, Hs / 2 - s * 265.5], vcx: 843, vcy: 265.5 + (H - Hs) / (2 * s) };
 }
 
 /** screen rect of the stage window under matrix M */

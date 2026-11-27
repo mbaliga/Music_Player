@@ -26,7 +26,7 @@
 .tl-cv .tl-sh { inset: 0; background: #000; opacity: 0; border-radius: inherit; }       /* neighbour darkening: the prototype's brightness(.5), as an overlay */
 .tl-cv .tl-sp, .tl-cv .tl-gl { display: none; }
 .tl-cv .tl-bd {
-  right: 5px; top: 5px; padding: 2px 5px 1px; font-size: 9px; font-weight: 700; letter-spacing: .16em; line-height: 1.3;
+  right: 5px; top: 5px; padding: 2px 6px 1px; font-size: 12px; font-weight: 700; letter-spacing: .12em; line-height: 1.3;
   color: rgba(255, 255, 255, .78); background: rgba(0, 0, 0, .42); border-radius: 2px;
 }
 .tl-cv.lp::after {                                                                     /* sleeve: a faint paper edge */
@@ -56,13 +56,13 @@
 }
 
 /* title / meta */
-.tl-meta { text-align: center; padding: 0 16px; height: var(--mh); box-sizing: border-box; }
+.tl-meta { text-align: center; padding: 0 16px; height: calc(var(--mh) + 58px); box-sizing: border-box; }
 .tl-title {
-  font-weight: 600; letter-spacing: .14em; font-size: var(--f1); text-transform: uppercase; margin-top: 2px;
+  font-weight: 600; letter-spacing: .14em; font-size: max(var(--f1), 14px); text-transform: uppercase; margin-top: 2px;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .tl-sub {
-  font-weight: 300; font-size: var(--f2); color: #7d7d86; letter-spacing: .06em; margin-top: 5px;
+  font-weight: 300; font-size: max(var(--f2), 12px); color: #8b8b95; letter-spacing: .06em; margin-top: 5px;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 
@@ -70,11 +70,11 @@
 .tl-tracks { list-style: none; margin: 0; padding: 0 var(--pad) 28px; }
 .tl-trk {
   display: flex; align-items: center; gap: 14px; height: var(--rh);
-  border-top: 1px solid rgba(255, 255, 255, .07); font-size: var(--f1); cursor: pointer; color: #a9a9b3; outline: none;
+  border-top: 1px solid rgba(255, 255, 255, .07); font-size: max(var(--f1), 14px); cursor: pointer; color: #a9a9b3; outline: none;
 }
-.tl-trk .n { white-space: nowrap; width: 3em; font-variant-numeric: tabular-nums; color: #5d5d66; font-size: var(--f2); }
+.tl-trk .n { white-space: nowrap; width: 3em; font-variant-numeric: tabular-nums; color: #8b8b95; font-size: max(var(--f2), 12px); }
 .tl-trk .t { flex: 1; min-width: 0; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.tl-trk .d { font-variant-numeric: tabular-nums; color: #5d5d66; font-size: var(--f2); }
+.tl-trk .d { font-variant-numeric: tabular-nums; color: #8b8b95; font-size: max(var(--f2), 12px); }
 .tl-trk.on { color: #fff; }
 .tl-trk.unsup { opacity: .45; }   /* the WebView cannot decode this file (wma, ALAC, ...): greyed, the right-hand text says why */
 .tl-trk.unsup .d { font-size: .8em; letter-spacing: .04em; }
@@ -104,14 +104,14 @@
 .tl-row::-webkit-scrollbar { display: none; }
 .tl-grp { display: flex; align-items: center; gap: 2px; flex: none; }
 .tl-lib:not(.tl-two) .tl-bar { flex-direction: row; }
-.tl-lbl { font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: #5d5d66; padding: 0 6px 0 2px; }
+.tl-lbl { font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: #5d5d66; padding: 0 6px 0 2px; }
 .tl-chip {
   flex: none; height: 44px; min-width: 44px; padding: 0 2px; margin: 0; border: 0; background: none; cursor: pointer;
   display: flex; align-items: center; justify-content: center; color: inherit; font: inherit;
 }
 .tl-pill {
   display: block; line-height: 26px; padding: 0 10px; border-radius: 14px; border: 1px solid rgba(255, 255, 255, .13);
-  font-size: 10.5px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; color: #9a9aa4; white-space: nowrap;
+  font-size: 12px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: #9a9aa4; white-space: nowrap;
   background: rgba(11, 11, 14, .55); transition: color .2s, background .2s, border-color .2s;
 }
 .tl-chip[aria-pressed="true"] .tl-pill { color: #fff; background: rgba(255, 255, 255, .13); border-color: rgba(255, 255, 255, .34); }
@@ -120,7 +120,7 @@
 @media (hover: hover) { .tl-chip:hover .tl-pill { color: #fff; border-color: rgba(255, 255, 255, .4); } }
 .tl-short { display: none; }
 .tl-tight .tl-long, .tl-tight .tl-lbl { display: none; }
-.tl-tight .tl-pill { padding: 0 8px; letter-spacing: .06em; }
+.tl-tight .tl-pill { padding: 0 8px; letter-spacing: .04em; }
 .tl-tight .tl-chip { min-width: 44px; }
 .tl-tight .tl-short { display: inline; }
 
@@ -128,7 +128,7 @@
 .tl-hint {
   display: none; position: absolute; left: 50%; transform: translateX(-50%); top: calc(env(safe-area-inset-top, 0px) + var(--tbh) + 2px); z-index: 290;
   max-width: calc(100% - 32px); padding: 0 14px; height: 36px; border: 0; background: none; cursor: pointer;
-  font: 300 var(--f2) "Helvetica Neue", Helvetica, Arial, sans-serif; letter-spacing: .06em; color: #9a9aa4; text-decoration: underline;
+  font: 300 max(var(--f2), 12px) "Helvetica Neue", Helvetica, Arial, sans-serif; letter-spacing: .06em; color: #9a9aa4; text-decoration: underline;
   text-decoration-color: rgba(255, 255, 255, .25); text-underline-offset: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .tl-empty .tl-hint { display: block; }
@@ -138,7 +138,7 @@
 .tl-empty .tl-scan .tl-pill { background: rgba(255, 255, 255, .13); border-color: rgba(255, 255, 255, .4); color: #fff; }
 
 /* under the track list: what the library holds and when it was last scanned */
-.tl-foot { padding: 4px var(--pad) 36px; font-size: var(--f2); color: #8b8b95; letter-spacing: .04em; text-align: center; }
+.tl-foot { padding: 4px var(--pad) 36px; font-size: max(var(--f2), 12px); color: #8b8b95; letter-spacing: .04em; text-align: center; }
 .tl-foot[hidden], .tl-pick[hidden] { display: none; }
 /* first-run nudge: pinned to the bottom of the view, never in the way of a swipe */
 .tl-pick { position: absolute; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 18px); transform: translateX(-50%); z-index: 310; max-width: calc(100% - 32px); padding: 8px 12px;
@@ -160,3 +160,11 @@
 .tl-lib.tl-landscape:not(.tl-empty) .tl-tracks::-webkit-scrollbar { display: none; }
 .tl-lib.tl-landscape:not(.tl-empty) .tl-foot { grid-column: 2; grid-row: 3; padding: 4px 8px 12px; text-align: left; }
 .tl-lib.tl-landscape.tl-has-pick .tl-pick { left: 22%; }
+
+/* "Play album": a labelled button under the title (UX review: the cover tap was the only way to start an album from here, and it was not discoverable) */
+.tl-playalb { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; margin-top: 4px; padding: 0 22px; border: 0; border-radius: 24px; background: #8E7BFF; color: #0b0b0e;
+  font: 700 14px system-ui, sans-serif; letter-spacing: .02em; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.tl-playalb:active { transform: scale(.97); }
+.tl-playalb:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.tl-playalb[hidden] { display: none; }
+.tl-lib.tl-landscape:not(.tl-empty) .tl-meta { height: auto; }

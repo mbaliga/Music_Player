@@ -10,7 +10,7 @@ export const SECTIONS = Object.freeze([
   Object.freeze({ id: 'albums', label: 'Albums' }),
   Object.freeze({ id: 'mixtapes', label: 'Mixtapes' }),
   Object.freeze({ id: 'radio', label: 'Radio' }),
-  Object.freeze({ id: 'booth', label: BOOTH_LABEL }),
+  Object.freeze({ id: 'booth', label: BOOTH_LABEL, sub: 'Effects' }),   // `sub`: a small line under the drawer entry (a working name needs a plain-word gloss)
   Object.freeze({ id: 'settings', label: 'Settings', icon: 'gear' }),   // last, and the only one with a glyph (a simple gear)
 ]);
 

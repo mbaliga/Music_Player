@@ -719,9 +719,9 @@ def phase_journey(b, w=412, h=915):
     def s_settings_sheet():
         page.tap('#btnDeck'); page.wait_for_timeout(500)
         r = page.evaluate("(() => { const r = document.getElementById('deckSheet').getBoundingClientRect(); return [r.x, r.y, r.width, r.height]; })()")
-        check(r[2] >= w - 2 and r[3] >= h - 4, f'{tag}: Turntable settings is a full page ({r})')
+        check(r[2] >= w - 2 and r[3] >= h - 4, f'{tag}: Tracks and options is a full page ({r})')
         t = page.inner_text('#deckSheet')
-        check('Turntable settings' in (page.get_attribute('#deckSheet', 'aria-label') or '') and 'tide table 3' in t.lower() and 'tidal' in t.lower(), f'{tag}: it shows the album on the platter and its tracks')
+        check('Tracks and options' in (page.get_attribute('#deckSheet', 'aria-label') or '') and 'tide table 3' in t.lower() and 'tidal' in t.lower(), f'{tag}: it shows the album on the platter and its tracks')
         check(not re.search(r'deck details|feel knob|latency', t.split('Advanced')[0], re.I), f'{tag}: no developer wording above the Advanced fold')
         shot(page, 'turntable-settings')
         page.tap('.tt-sheet-close'); page.wait_for_timeout(400)
@@ -788,7 +788,7 @@ def phase_journey(b, w=412, h=915):
     def s_settings():
         drawer_to(page, 'settings'); page.wait_for_selector('.st-page'); page.wait_for_timeout(400)
         t = page.evaluate("document.querySelector('.st-page').textContent")
-        check('Turntable settings' in t and not re.search(r'deck details', t, re.I), f'{tag}: Settings points at "Turntable settings" and never "Deck details" ({t[:60]!r})')
+        check('Tracks and options' in t and not re.search(r'deck details', t, re.I), f'{tag}: Settings points at "Tracks and options" and never "Deck details" ({t[:60]!r})')
         shot(page, 'settings')
     step('settings', s_settings)
 

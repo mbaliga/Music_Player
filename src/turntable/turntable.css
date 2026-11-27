@@ -11,6 +11,8 @@
    The selected speed is a filled light key; Play is the big light key with its Play / Stop label. */
 .tt-top .ctl .bg, .tt-top .pbtn .bg { fill: #17171b; stroke: #7d7d86; stroke-width: 2.4; transition: fill .2s, stroke .2s; }
 .tt-top .ctl text, .tt-top .pbtn .lbl { fill: #e6e6ec; font: 600 31px "Helvetica Neue", Helvetica, Arial, sans-serif; user-select: none; transition: fill .2s; }
+.tt-top .ctl .ico { fill: #e6e6ec; transition: fill .2s; }
+.tt-top .ctl[aria-disabled="true"] { opacity: .38; }
 .tt-top .ctl.on .bg { fill: #e6e6ec; stroke: #ffffff; }
 .tt-top .ctl.on text { fill: #0b0b0e; }
 @media (hover: hover) { .tt-top .ctl:hover .bg, .tt-top .pbtn:hover .bg { stroke: #ffffff; } }
@@ -28,7 +30,7 @@
 .tt-top [role="button"]:focus-visible, .tt-top #tt-grab:focus-visible { outline: none; }
 .tt-top .ctl:focus-visible .bg, .tt-top .pbtn:focus-visible .bg { stroke: #8E7BFF; stroke-width: 5; }
 /* a keyboard / screen-reader way into the library (pinch and Ctrl+wheel are the gestures) */
-.tt-sr { position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); z-index: 3; padding: 8px 14px; border-radius: 16px; border: 1px solid rgba(255,255,255,.3);
+.tt-sr { position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); z-index: 3; min-height: 48px; padding: 8px 18px; border-radius: 16px; border: 1px solid rgba(255,255,255,.3);
   background: rgba(20,20,26,.92); color: #eceaff; font: 600 13px system-ui, sans-serif; opacity: 0; pointer-events: none; }
 .tt-sr:focus-visible { opacity: 1; pointer-events: auto; outline: 2px solid var(--shell-accent, #8E7BFF); }
 /* the Albums page: the stage fills the card; the drawer hamburger + the small deck-details control float over its top corners */
@@ -37,7 +39,7 @@
 #pageAlbums .page-head > * { pointer-events: auto; }
 #pageAlbums .page-title { display: none; }
 #pageAlbums .hamburger { color: #e8e8f0; filter: drop-shadow(0 1px 3px rgba(0,0,0,.7)); }
-.tt-details-btn { width: 44px; height: 44px; border: 0; border-radius: 12px; background: none; color: #e8e8f0; cursor: pointer; display: flex; align-items: center; justify-content: center; filter: drop-shadow(0 1px 3px rgba(0,0,0,.7)); }
+.tt-details-btn { width: 48px; height: 48px; border: 0; border-radius: 12px; background: none; color: #e8e8f0; cursor: pointer; display: flex; align-items: center; justify-content: center; filter: drop-shadow(0 1px 3px rgba(0,0,0,.7)); }
 .tt-details-btn:active { transform: scale(.92); }
 .tt-details-btn:focus-visible { outline: 2px solid var(--shell-accent, #8E7BFF); outline-offset: 2px; }
 /* CD albums: the existing CD view (src/cd.js) sits above the stage instead of the platter */
@@ -72,15 +74,22 @@
 
 /* ── the readable layer: now playing (a band below the controls, clear of the disc and the arm) and the empty-state card ───────────────────────── */
 .tt-hud { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
-.tt-now { position: absolute; display: flex; flex-direction: column; justify-content: center; gap: 2px; min-width: 0; overflow: hidden; color: #f2f2f6;
+.tt-now { position: absolute; display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto auto minmax(0, 1fr); grid-template-areas: "title time" "sub sub" "seek seek"; column-gap: 10px; align-content: end; min-width: 0; color: #f2f2f6;
   font-family: system-ui, "Helvetica Neue", Arial, sans-serif; -webkit-user-select: none; user-select: none; }
 .tt-now[hidden], .tt-empty[hidden], .tt-empty-btn[hidden] { display: none; }
-.tt-now-row { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
-.tt-now-title { flex: 1 1 auto; min-width: 0; font-size: 15px; font-weight: 700; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #f4f4f8; }
-.tt-now-time { flex: none; font-size: 12px; font-variant-numeric: tabular-nums; color: #c9c9d2; }
-.tt-now-sub { font-size: 12px; line-height: 1.25; color: #b4b4be; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.tt-now[data-tight="1"] .tt-now-title { font-size: 13px; }
-.tt-now[data-tight="1"] .tt-now-time, .tt-now[data-tight="1"] .tt-now-sub { font-size: 11px; }
+.tt-now-title { grid-area: title; min-width: 0; font-size: 16px; font-weight: 700; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #f4f4f8; }
+.tt-now-time { grid-area: time; font-size: 12px; line-height: 1.6; font-variant-numeric: tabular-nums; color: #c9c9d2; white-space: nowrap; }
+.tt-now-sub { grid-area: sub; font-size: 12px; line-height: 1.25; color: #b4b4be; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+/* the seek bar: a 4 px line in a 48 px target; it reaches up over the text rows (they are not interactive) so the band stays short */
+.tt-seek { grid-area: seek; align-self: end; margin-top: -32px; pointer-events: none; }
+.tt-hud[data-live="1"] .tt-seek { pointer-events: auto; }
+.tt-now[data-seek="0"] .tt-seek { visibility: hidden; }
+.tt-seek .rt-seek-track { top: auto; bottom: 8px; margin-top: 0; }
+.tt-seek .rt-seek-thumb { top: auto; bottom: 8px; margin: 0 0 -5px -7px; }
+/* a short band (landscape): title, artist and time share one row, the seek bar sits under it */
+.tt-now[data-tight="1"] { grid-template-columns: minmax(0, max-content) minmax(0, 1fr) auto; grid-template-rows: auto minmax(0, 1fr); grid-template-areas: "title sub time" "seek seek seek"; }
+.tt-now[data-tight="1"] .tt-now-sub { padding-left: 2px; line-height: 1.6; }
+.tt-now[data-tight="1"] .tt-now-title { font-size: 14px; }
 .tt-now[data-mode="pick"] .tt-now-title { color: #d9d2ff; }
 .tt-empty { position: absolute; left: 50%; top: 32%; transform: translateX(-50%); width: min(88%, 360px); box-sizing: border-box; padding: 16px 18px 18px; border-radius: 16px; text-align: center;
   background: rgba(14, 14, 20, .94); border: 1px solid rgba(255, 255, 255, .16); box-shadow: 0 10px 34px rgba(0, 0, 0, .6); color: #f2f2f6; font-family: system-ui, "Helvetica Neue", Arial, sans-serif; }
@@ -92,7 +101,7 @@
 @media (orientation: landscape) { .tt-empty { top: 24%; left: 3.5%; transform: none; width: min(44%, 340px); } }   /* over the record, clear of the keys and the display */
 
 /* ── header: the always-visible Library button (the pinch is the gesture; this is the affordance) ───────────────────────────────────────────── */
-#pageAlbums .page-head .tt-lib-btn { height: 44px; min-width: 44px; padding: 0 14px 0 11px; border: 1px solid rgba(255, 255, 255, .28); border-radius: 22px; display: flex; align-items: center; gap: 7px;
+#pageAlbums .page-head .tt-lib-btn { height: 48px; min-width: 48px; padding: 0 14px 0 11px; border: 1px solid rgba(255, 255, 255, .28); border-radius: 22px; display: flex; align-items: center; gap: 7px;
   background: rgba(0, 0, 0, .55); color: #f2f2f6; font: 700 14px system-ui, sans-serif; letter-spacing: .01em; cursor: pointer; filter: none; }
 #pageAlbums .page-head .tt-lib-btn:active { transform: scale(.95); }
 #pageAlbums .page-head .tt-lib-btn:focus-visible { outline: 2px solid var(--shell-accent, #8E7BFF); outline-offset: 2px; }
@@ -130,7 +139,7 @@
 /* CD view on a landscape phone: the disc on the left (the whole height), title / album / transport / track list in a column on the right */
 @media (orientation: landscape) and (max-height: 520px) {
   #pageAlbums .cd-view { padding-top: calc(52px + var(--safe-top)); }
-  #pageAlbums:not([data-lib]) .cd-view:not(.hidden) { display: grid; grid-template-columns: minmax(0, 46%) minmax(0, 1fr); grid-template-rows: auto auto auto auto minmax(0, 1fr); column-gap: 16px; row-gap: 6px; align-content: stretch; }
+  #pageAlbums:not([data-lib]) .cd-view:not(.hidden) { display: grid; grid-template-columns: minmax(0, 46%) minmax(0, 1fr); grid-template-rows: auto auto auto auto auto minmax(0, 1fr); column-gap: 16px; row-gap: 6px; align-content: stretch; }
   #pageAlbums .cd-view canvas { grid-column: 1; grid-row: 1 / -1; }
   #pageAlbums .cd-view > :not(canvas) { grid-column: 2; min-width: 0; }
   #pageAlbums .cd-view .cd-title, #pageAlbums .cd-view .cd-sub { text-align: left; }

@@ -27,6 +27,7 @@ import { Cassette } from './cassette/index.js';
 import { openEditor, openBack, closeBack } from './cassette/editor.js';
 import { allowsGesture } from './devicemode/guard.js';
 import { trapFocus } from './ui/focus-trap.js';
+import { showSnackbar } from './ui/snackbar.js';
 import { onAodOutlineMode } from './devicemode/aodhooks.js';
 
 const h = (tag, props = {}, ...kids) => {
@@ -187,7 +188,11 @@ export class MixtapeUI {
     const sug = this._suggestRow();
     if (sug) el.append(sug);
     if (!this.list.length) {
-      el.append(h('div', { class: 'mt-empty' }, sug ? 'Start with a suggestion above, or tap “+ New”.' : 'No mixtapes yet. Tap “+ New” to make one from your library.'));
+      // no library yet: say so and put the Scan button right here (the same scan as Albums), instead of a "make one from your library" nobody has
+      let noLib = false; try { noLib = !this.d.getLibraryTracks().length; } catch { /* */ }
+      el.append(h('div', { class: 'mt-empty' },
+        h('p', {}, sug ? 'Start with a suggestion above, or tap “+ New”.' : noLib && this.d.scanMusic ? 'No mixtapes yet, and no music to put on one. Scan your music first.' : 'No mixtapes yet. Tap “+ New” to make one from your library.'),
+        noLib && this.d.scanMusic ? h('button', { class: 'lib-scan mt-scan', type: 'button', onclick: async () => { try { await this.d.scanMusic(); } catch { /* cancelled */ } this.refresh(); } }, 'Scan music') : null));
       return;
     }
     const items = this.list.map((m) => ({ id: m.id, cfg: cassetteCfg(m), meta: tapeMeta(m), caption: tapeCaption(m) }));
@@ -220,6 +225,7 @@ export class MixtapeUI {
       item('Songs and details', 'See the tracklist on the back of the case', () => this.back(m)),
       item('Edit tape', 'Change the songs, sides, title and look', () => this.edit(m)),
       item('Export', 'Copy this mixtape as text to back it up or share it', () => this.exportDialog(m)),
+      item('Delete', 'Remove this tape. You can undo it for a few seconds', () => this.deleteTape(m.id), 'mt-menu-danger'),
       item('Cancel', '', () => {}, 'mt-menu-cancel'));
     ov.append(sheet);
     ov.addEventListener('click', (e) => { if (e.target === ov) done(); });
@@ -300,12 +306,13 @@ export class MixtapeUI {
       existing: this.list,
       getLibraryTracks: () => this.d.getLibraryTracks(),
       relink: this.d.relink ? async () => { await this.d.relink(); this.refresh(); } : null,
+      scanMusic: this.d.scanMusic ? async () => { await this.d.scanMusic(); this.refresh(); } : null,
       onSave: (m) => {
         const i = this.list.findIndex((x) => x.id === m.id);
         if (i >= 0) this.list[i] = m; else this.list.push(m);
         this.sel = m.id; save(this.list); this.render();
       },
-      onDelete: (id) => { this.list = this.list.filter((x) => x.id !== id); if (this.sel === id) this.sel = null; save(this.list); this.render(); },
+      onDelete: (id) => this.deleteTape(id),
       onPlay: (m, i) => this.startPlayback(m, i),
       onExport: (m) => this.exportDialog(m),
       onDuplicate: (m) => {
@@ -314,6 +321,22 @@ export class MixtapeUI {
         return copy;
       },
       onAutoDefault: (on) => ls.set(KEY_AUTO_DEFAULT, on ? '1' : '0'),
+    });
+  }
+
+  /** Delete a tape from the shelf (the ⋯ menu and the editor share this) with a snackbar Undo, like removing a song. The tape is restored at its old place. */
+  deleteTape(id) {
+    const i = this.list.findIndex((x) => x.id === id);
+    if (i < 0) return;
+    const gone = this.list[i], wasSel = this.sel === id;
+    this.list = this.list.filter((x) => x.id !== id); if (wasSel) this.sel = null; save(this.list); this.render();
+    const name = gone.name || 'Untitled tape';
+    showSnackbar(`Deleted “${name.length > 28 ? name.slice(0, 27) + '…' : name}”.`, {
+      action: 'Undo', ms: 9000,
+      onAction: () => {
+        if (this.list.some((x) => x.id === gone.id)) return;
+        this.list.splice(Math.min(i, this.list.length), 0, gone); if (wasSel) this.sel = gone.id; save(this.list); this.render();
+      },
     });
   }
 
@@ -388,7 +411,7 @@ export class MixtapeUI {
     this.listPanel = h('div', { class: 'tp-list hidden' }, this.listHead, this.listBody);
     this.msg = h('div', { class: 'tp-msg hidden' });
     // top controls: every control says what it does, in words, with an icon (>=44px)
-    this.backBtn = h('button', { class: 'btn-close tp-back', type: 'button', 'aria-label': 'Back to the shelf', onclick: () => this._closePlayer() }, ico(IC.back), h('span', {}, 'Back'));
+    this.backBtn = h('button', { class: 'btn-close tp-back', type: 'button', 'aria-label': 'Back to the shelf. The tape stays loaded and keeps playing', title: 'Back to the shelf: the tape stays loaded (the mini bar controls it)', onclick: () => this._closePlayer() }, ico(IC.back), h('span', {}, 'Back'));
     this.skinBtn = h('button', { class: 'tp-chip tp-look', type: 'button', title: 'Change the look of the player', onclick: () => this._setSkin(SKIN_IDS[(SKIN_IDS.indexOf(this.skin) + 1) % SKIN_IDS.length]) });
     this.flipBtn = h('button', { class: 'tp-chip tp-flip', type: 'button', title: 'Turn the tape over to the other side', onclick: () => { if (allowsGesture('button')) this._flipKey(); } }, ico(IC.flip), h('span', {}, 'Flip side A/B'));
     this.autoBtn = h('button', { class: 'tp-chip tp-auto', type: 'button', 'aria-pressed': 'true', title: 'At the end of side A, turn over and play side B by itself', onclick: () => { const p = this.play; if (p && allowsGesture('button')) this._setAuto(!p.tp.auto); } }, ico(IC.auto), h('span', {}, 'Auto-flip: On'));
@@ -493,7 +516,7 @@ export class MixtapeUI {
     const sk = SKINS[this.skin];
     this.host.style.setProperty('--ar', String(sk.W / sk.H));
     const pl = this.pl = mountPlayer(this.host, { player: this.skin });
-    pl.on('toggle', () => this._toggle()).on('stop', () => this._stop()).on('eject', () => this._closePlayer())
+    pl.on('toggle', () => this._toggle()).on('stop', () => this._stop()).on('eject', () => this._eject())
       .on('next', () => this._step(1)).on('prev', () => this._step(-1)).on('skip', (s) => this._skip(s))
       .on('hold', (dir) => this._windStart(dir)).on('release', () => this._windEnd())
       .on('auto', (on) => this._setAuto(on)).on('flip', () => this._flipKey())
@@ -504,6 +527,13 @@ export class MixtapeUI {
       pl.update({ side: p.tp.side, auto: p.tp.auto, msg: deckMessage(p.tp) });
       pl.insert(cassetteCfg(p.mix, { side: p.tp.side }));
     }
+  }
+
+  /** The deck's eject key: stop the tape, then leave. (Back keeps the tape loaded and playing; the two used to do the same thing.) */
+  _eject() {
+    const p = this.play;
+    if (p && !p.ended && p.tp && (p.tp.phase === 'playing' || p.tp.phase === 'flip')) this._dispatch({ type: 'stop' });
+    this._closePlayer();
   }
 
   _closePlayer() {

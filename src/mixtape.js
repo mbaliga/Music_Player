@@ -464,6 +464,19 @@ export function createMixtape({ id, name, author, tracks, sides, tape, autoRever
   }, A, B);
 }
 
+/**
+ * A name for a tape the user never titled: "<first artist> mix" (a one-artist tape reads "Mara Quill mix", a mixed one "Mara Quill & more"),
+ * else "<first album> mix", else 'Untitled mix' (no songs). Plain text, at most MAX_NAME characters. Pure.
+ */
+export function suggestName(tracks) {
+  const list = Array.isArray(tracks) ? tracks.filter((t) => t && typeof t === 'object') : [];
+  const clip = (base, tail) => (base.length + tail.length > MAX_NAME ? base.slice(0, Math.max(1, MAX_NAME - tail.length - 1)).trimEnd() + '…' : base) + tail;
+  const artists = list.map((t) => String(t.artist || '').trim()).filter(Boolean);
+  if (artists.length) { const a = artists[0]; return clip(a, artists.some((x) => x.toLowerCase() !== a.toLowerCase()) ? ' & more' : ' mix'); }
+  const album = list.map((t) => String(t.album || '').trim()).find(Boolean);
+  return album ? clip(album, ' mix') : 'Untitled mix';
+}
+
 export const withName = (m, name) => ({ ...m, name: cleanName(name) });
 export const withAuthor = (m, a) => ({ ...m, author: str(a, MAX_AUTHOR) });
 export const withStyle = (m, styleId) => (hasStyle(styleId) ? { ...m, cfg: { ...m.cfg, style: styleId } } : m);

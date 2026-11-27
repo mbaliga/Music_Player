@@ -64,7 +64,7 @@
 .rr-play.stop, .dial-card .dial-play[data-play].stop { background: none; color: var(--violet); }
 .radio-saved { display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px; }
 .radio-saved:empty { display: none; }
-.radio-sec-head { display: flex; align-items: center; justify-content: space-between; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink2); padding: 0 2px 6px; }
+.radio-sec-head { display: flex; align-items: center; justify-content: space-between; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink2); padding: 0 2px 6px; }
 .radio-resume { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 48px; padding: 11px 14px; border-radius: 10px; cursor: pointer; text-align: left;
   background: var(--surface); color: var(--ink); border: 1px solid var(--secondary); font: inherit; font-size: 14px; }
 .radio-resume-go { color: var(--secondary); font-size: 12px; }

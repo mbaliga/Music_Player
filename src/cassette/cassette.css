@@ -205,7 +205,7 @@
 
 /* ── shelf: tape length + side counts, shown subtly on each strip ─────────── */
 .cs-card{position:absolute}
-.cs-meta{position:absolute;right:11%;top:5.5%;font:700 10px/1 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;letter-spacing:.1em;color:#fff;background:rgba(10,10,12,.46);padding:3px 7px;border-radius:999px;pointer-events:none;white-space:nowrap;backdrop-filter:blur(2px)}
+.cs-meta{position:absolute;right:11%;top:5.5%;font:700 12px/1 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;letter-spacing:.06em;color:#fff;background:rgba(10,10,12,.46);padding:3px 7px;border-radius:999px;pointer-events:none;white-space:nowrap;backdrop-filter:blur(2px)}
 
 /* ── suggested tapes row (Mixtapes page) ───────────────────────────────────── */
 .mt-sug{margin:6px 0 4px}
@@ -241,7 +241,7 @@
 .cs-more:focus-visible{outline:2px solid #8fb4ff;outline-offset:2px}
 .cs-stack .cs-more{right:-8px}
 .cs-stack .cs-meta{right:56px}
-.cs-cap{font-size:11.5px;color:var(--ink2,#9b9ba0);padding:3px 4px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+.cs-cap{font-size:12px;color:var(--ink2,#9b9ba0);padding:3px 4px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
 .cs-row{display:flex;align-items:center;gap:2px}
 .cs-rowmain{flex:1;min-width:0}.cs-rowmain .cs-cap{white-space:normal}
 .cs-row .cs-more{position:static;flex:none;background:none;color:var(--ink2,#9b9ba0)}
@@ -261,6 +261,7 @@
 .mt-menu-item b{font-size:15px}.mt-menu-item small{font-size:12px;color:#a8a8b2}
 .mt-menu-item:active,.mt-menu-item:focus-visible{background:rgba(255,255,255,.1);outline:none}
 .mt-menu-cancel{text-align:center}
+.mt-menu-danger b{color:#ff9a90}
 
 /* ── player: side tabs in the revealed tracklist ───────────────────────────── */
 .tp-sides{display:flex;border-bottom:1px solid rgba(255,255,255,.12);position:sticky;top:0;background:rgba(13,13,18,.97);z-index:1}
@@ -283,7 +284,7 @@
 .ed-top{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(0,1fr);gap:12px;padding:4px 14px 8px;align-items:center;flex:none}
 .ed-prevwrap{position:relative;min-width:0}
 .ed-top .ed-tape{display:block;width:100%;padding:0;margin:0}
-.ed-flipchip{position:absolute;left:6px;bottom:-4px;display:inline-flex;align-items:center;gap:5px;font:700 10.5px/1 system-ui,sans-serif;letter-spacing:.06em;color:#fff;background:rgba(10,10,12,.7);padding:5px 8px;border-radius:999px;pointer-events:none}
+.ed-flipchip{position:absolute;left:6px;bottom:-4px;display:inline-flex;align-items:center;gap:5px;font:700 12px/1 system-ui,sans-serif;letter-spacing:.04em;color:#fff;background:rgba(10,10,12,.7);padding:5px 8px;border-radius:999px;pointer-events:none}
 .ed-gauges{display:grid;gap:8px;min-width:0}
 .ed-gauge{display:grid;gap:5px;text-align:left;padding:8px 10px;min-height:56px;border-radius:12px;border:1.5px solid rgba(255,255,255,.14);background:rgba(0,0,0,.22);color:#fff;cursor:pointer;font:inherit;min-width:0}
 .ed-gauge.on{border-color:#ffb347;background:rgba(255,179,71,.1)}
@@ -364,6 +365,7 @@
 .pk-chev{display:flex;color:#a5a5aa;transition:transform .15s}.pk-chev.open{transform:rotate(90deg)}
 .pk-addall{flex:none;margin:0 10px 0 4px;min-width:84px;min-height:44px;padding:0 12px;border-radius:10px;border:1.5px solid #ffb347;background:none;color:#ffb347;font-weight:700;font-size:12.5px;cursor:pointer}
 .pk-addall:disabled{border-color:rgba(255,255,255,.18);color:#8a8a90;cursor:default}
+.pk-empty .pk-scan{display:block;margin:14px auto 0;min-height:48px;padding:0 26px;border:0;border-radius:24px;background:#8E7BFF;color:#0b0b0e;font:700 15px system-ui,sans-serif;cursor:pointer}
 .pk-empty{padding:28px 18px;text-align:center;color:#a2a2a7;font-size:14px;line-height:1.5}
 .pk-bar{display:flex;align-items:center;gap:8px;flex:none;padding:8px 2px calc(8px + env(safe-area-inset-bottom));font-size:13px}
 .pk-bar span{flex:1;color:#d0d0d4}

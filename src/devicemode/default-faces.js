@@ -5,11 +5,11 @@ import { registerLockFace } from './faces.js';
 
 export const DEFAULT_FACES = Object.freeze({
   albums: {
-    // Live: Play/Stop, 33/45/78 + -/+ speed, prev/next (Turntable settings / CD view keys) and the lock key.
+    // Live: Play/Stop, 33/45/78 + -/+ speed, the stage's Previous / Next keys, prev/next (Tracks and options / CD view keys) and the lock key.
     // Frozen (`data-lock-surface`, and every stage / library entry point asks allowsGesture): the disc scratch and the palm-brake hold on the label,
-    // the tonearm dimple drag / seek / flick, pinch and Ctrl+wheel zoom, the coverflow swipe, cover and track-row taps, the library chips, the header
-    // chips (search, Turntable settings), the dot-display toggle, the drawer / hamburger, Space (brake) and Esc (zoom in).
-    buttons: ['#tt-playBtn', '#tt-b78', '#tt-b33', '#tt-b45', '#tt-bm', '#tt-bp', '#btnPrevTrk', '#btnNextTrk', '#cdPrev', '#cdPlay', '#cdNext', '#rpmSlider'],
+    // the tonearm dimple drag / seek / flick and the seek bar, pinch and Ctrl+wheel zoom, the coverflow swipe, cover and track-row taps, the library chips, the header
+    // chips (search, Tracks and options), the dot-display toggle, the drawer / hamburger, Space (brake) and Esc (zoom in).
+    buttons: ['#tt-playBtn', '#tt-b78', '#tt-b33', '#tt-b45', '#tt-bm', '#tt-bp', '#tt-prev', '#tt-next', '#btnPrevTrk', '#btnNextTrk', '#cdPrev', '#cdPlay', '#cdNext', '#rpmSlider'],
     aodText: ['#cdTitle'],
     notes: 'Play, Stop and speed keys work.',
   },

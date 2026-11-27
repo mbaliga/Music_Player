@@ -111,7 +111,9 @@ export function createAddTab(E) {
   function paintRows() {
     const lib = E.lib();
     if (!lib.length) {
-      spacer.style.height = '0px'; spacer.replaceChildren(h('div', { class: 'pk-empty' }, (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform() ? 'Your library is empty. Open Albums and tap Scan phone first.' : 'Your library is empty. Scan your music folder in Albums first.')));
+      const native = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
+      const scan = E.ctx.scanMusic ? h('button', { class: 'pk-scan', type: 'button', onclick: async () => { try { await E.ctx.scanMusic(); } catch { /* cancelled */ } E.libraryChanged(); setTimeout(() => E.libraryChanged(), 2500); } }, native ? 'Scan phone' : 'Scan music') : null;
+      spacer.style.height = '0px'; spacer.replaceChildren(h('div', { class: 'pk-empty' }, E.ctx.scanMusic ? 'Your library is empty. Scan your music to add songs.' : (native ? 'Your library is empty. Open Albums and tap Scan phone first.' : 'Your library is empty. Scan your music folder in Albums first.'), scan));
       return;
     }
     if (!rows.length) { spacer.style.height = '0px'; spacer.replaceChildren(h('div', { class: 'pk-empty' }, q.trim() ? 'No songs match.' : 'Nothing to show.')); return; }

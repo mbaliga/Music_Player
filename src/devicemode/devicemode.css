@@ -99,8 +99,9 @@ body[data-devicemode~="aod"] .dm-ring circle { stroke-width: 2.4px !important; }
 body[data-devicemode~="aod"] .dm-ui { background: none !important; }
 body[data-devicemode~="aod"] :is(.dm-clock, .dm-np) { display: block; position: fixed; left: 50%; transform: translateX(-50%); max-width: 84vw; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none !important; translate: var(--dm-sx) var(--dm-sy); color: var(--dm-text) !important; -webkit-text-fill-color: var(--dm-text) !important; }
 /* readable but dim: a thin face, mid-grey, nothing bright; the whole face drifts with the pixel shift */
-body[data-devicemode~="aod"] .dm-clock { top: 24%; font-size: 64px; font-weight: 300; letter-spacing: .02em; line-height: 1.1; font-variant-numeric: tabular-nums; }
-body[data-devicemode~="aod"] .dm-np { top: calc(24% + 84px); font-size: 17px; font-weight: 500; }
+/* the clock shrinks to fit a narrow screen (64 px clipped to '11:37 …' at 360 px wide) and never ellipsises */
+body[data-devicemode~="aod"] .dm-clock { top: 24%; font-size: min(64px, 15.5vw); max-width: 96vw; text-overflow: clip; font-weight: 300; letter-spacing: .02em; line-height: 1.1; font-variant-numeric: tabular-nums; }
+body[data-devicemode~="aod"] .dm-np { top: calc(24% + min(84px, 19vw)); font-size: 17px; font-weight: 500; }
 body[data-devicemode~="aod"] .dm-np:empty { display: none; }
 body[data-devicemode~="aod"] .dm-hint, body[data-devicemode~="aod"] .dm-notice { background: #000 !important; border: 1px solid var(--dm-line) !important; color: var(--dm-ink) !important; -webkit-text-fill-color: var(--dm-ink) !important; }
 
@@ -110,7 +111,7 @@ body[data-devicemode~="locked"] .tt-sr, body[data-devicemode~="aod"] .tt-sr { di
 .dm-hint { left: auto; right: 10px; transform: none; top: calc(env(safe-area-inset-top) + var(--head-h, 56px) + 8px); max-width: min(62vw, 230px); padding: 8px 12px; font-size: 12.5px; line-height: 1.35; text-align: left; }
 .dm-key.dm-nudge .dm-ring { opacity: 1; animation: dm-nudge 1.6s ease-out 1; }
 .dm-key.dm-nudge .dm-ring-fg { stroke: var(--violet, #8E7BFF); stroke-dasharray: 100; stroke-dashoffset: 75; }
-.dm-key.dm-nudge::after { content: 'Hold to unlock'; position: absolute; right: 2px; top: 44px; white-space: nowrap; font: 600 11px/1 system-ui, sans-serif; color: var(--ink, #eee); background: rgba(20,20,26,.94); border-radius: 8px; padding: 5px 8px; pointer-events: none; }
+.dm-key.dm-nudge::after { content: 'Hold to unlock'; position: absolute; right: 2px; top: 44px; white-space: nowrap; font: 600 12px/1 system-ui, sans-serif; color: var(--ink, #eee); background: rgba(20,20,26,.94); border-radius: 8px; padding: 5px 8px; pointer-events: none; }
 @keyframes dm-nudge { 0% { opacity: 0; } 15% { opacity: 1; } 100% { opacity: 1; } }
 body[data-devicemode~="aod"] .dm-key.dm-nudge::after { display: none; }
 @media (prefers-reduced-motion: reduce) { .dm-key.dm-nudge .dm-ring { animation: none; } }

@@ -29,3 +29,8 @@ test('user-facing settings copy has no file names or docs-style phrases', () => 
   for (const bad of [/\.md\b/, /SHELL|SEARCH\.md|FX\.md/, /backend is ever/i, /folder picker scan/i, /stay in Deck details/i, /JSON;/]) assert.ok(!bad.test(src), 'docs wording: ' + bad);
   assert.ok(/Player surfaces stay dark/.test(src), 'Settings explains that player surfaces stay dark');
 });
+
+test('pickNowPlaying carries canPrev (the mini bar\'s Previous button)', () => {
+  assert.equal(pickNowPlaying({ album: { title: 'A', playing: true, canNext: true, canPrev: true } }).canPrev, true);
+  assert.equal(pickNowPlaying({ album: { title: 'A', playing: true } }).canPrev, false);
+});

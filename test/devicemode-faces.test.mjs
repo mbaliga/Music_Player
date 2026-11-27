@@ -44,7 +44,7 @@ import { GLOBAL_LIVE, GLOBAL_AOD } from '../src/devicemode/faces.js';
 const rd = (p) => readFileSync(new URL('../' + p, import.meta.url), 'utf8');
 
 test('the mini bar Pause / Next keys are live in every section while locked and lit in AOD; its title (navigation) is not', () => {
-  for (const sel of ['.minibar-stop', '.minibar-toggle', '.minibar-next']) { assert.ok(GLOBAL_LIVE.includes(sel), sel); assert.ok(GLOBAL_AOD.includes(sel), sel); }
+  for (const sel of ['.minibar-stop', '.minibar-toggle', '.minibar-prev', '.minibar-next']) { assert.ok(GLOBAL_LIVE.includes(sel), sel); assert.ok(GLOBAL_AOD.includes(sel), sel); }
   assert.ok(!GLOBAL_LIVE.includes('.minibar-main') && !GLOBAL_LIVE.includes('.minibar'));
   _clearFacesForTests(); registerDefaultFaces();
   for (const id of Object.keys(DEFAULT_FACES)) {

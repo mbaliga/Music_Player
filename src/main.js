@@ -22,6 +22,7 @@ import {
   computeEnvelope, makeTempoFeed, angleDelta, clamp, DEFAULT_PARAMS,
 } from './model.js';
 import { Walkthrough } from './walkthrough.js';
+import { createSeekBar } from './ui/seekbar.js';
 import {
   TONEARM_KNOBS, estimateDurations, buildArmLayout, locateS, seekTargetS, sFor,
   previousTarget, gapCentreS,
@@ -132,6 +133,7 @@ const view = { kind: 'all', sort: 'artist' };
 
 // ── settings: read before first paint (theme, accent, text size, motion), see src/settings/ and docs/SETTINGS.md ──────────────
 const settings = initSettings({ onWriteError: () => toast('Could not save that setting: this phone\u2019s storage is full or blocked. It works until you close the app, then it resets.') });
+settings.onFirstLight(() => toast('Light changes menus only; players stay dark', 6500));   // the players are dark objects in every theme (src/shell/chrome.css)
 const lsOk = () => { try { return window.localStorage; } catch { return null; } };
 // the radio-side reads (saved stations, the flag, the canned index) and fx/persist.js are fetched on demand: the boot path stays free of
 // radio and FX code (test/radio-core/boot-path, test/fx-ship). The bridge module is the single door for everything radio Search/Settings read.
@@ -786,6 +788,10 @@ function installTurntable() {
     armMove: (s) => updateGhost(s),
     armRelease: onArmRelease,
     armNudge: (dir) => nudgePlayhead(dir),
+    // the visible transport (UX review): Previous / Next keys and a seek bar on the stage, beside the tonearm gesture
+    prev: async () => { await state.engine.resume(); stepTrack(-1); },
+    next: async () => { await state.engine.resume(); stepTrack(1); },
+    seekFrac: (f) => seekBar(f),
     effect: onStageEffect,
     beginAudio: onBeginAudio,
     analyser: () => getAnalyser(),
@@ -919,6 +925,19 @@ function onArmRelease(s, flickDir) {
   stage.setDrop(ts);
   goTo(target, true);
 }
+// the stage's seek bar: a position inside the track that is on the platter (the tonearm dimple seeks along the whole record; this is the plain 0:00..T bar).
+// Like dropping the needle there: the arm goes to that point and the record plays on from it.
+function seekBar(f) {
+  if (state.jumping || !(state.T > 0) || engineOwner() || !state.vinylOwned || state.view !== 'vinyl') return;
+  const q = state.queue, idx = q ? q.index : 0;
+  const t = clamp(f * state.T, 0, Math.max(0, state.T - 0.5));
+  state.engine.resume().then(() => {
+    const s = q && state.layout ? sFor(state.layout, idx, t) : clamp(t / state.T, 0, 1);
+    stage.dispatch({ type: 'play', s });
+    state.jumpS = s; stage.setDrop(s);
+    goTo({ index: idx, time: t }, false);
+  });
+}
 // keyboard: nudge the playhead along the track with the dimple focused (left = toward the inner groove)
 function nudgePlayhead(dir) {
   const q = state.queue, t = state.engine.position / state.engine.sampleRate;
@@ -1035,6 +1054,7 @@ function setView(v) {
 }
 
 function syncAlbumUI() {
+  syncPickHint();   // an album got selected (adopted on the platter): 'Pick an album' would read as an instruction, not state
   const q = state.queue;
   const n = q ? q.items.length : 0;
   el('trkNav').classList.toggle('hidden', !(n > 1 && state.view === 'vinyl'));
@@ -1084,6 +1104,15 @@ function nowInfo() {
   if (!title) return null;
   return { mode: 'track', title, sub: albumLine() || (state.albumMeta ? '' : 'Single file'), time: true };
 }
+// the stage's Previous / Next keys: dim when there is nothing to step to (a station, the demo record, the last track)
+function syncTransport() {
+  if (!stage) return;
+  const own = engineOwner();
+  let prev = false, next = false;
+  if (own === 'mixtape') prev = next = true;
+  else if (!own && state.queue && state.view === 'vinyl') { const q = state.queue; prev = true; next = nextGood(q, q.index, 1) >= 0; }
+  stage.setTransport({ prev, next });
+}
 let nowTimeOn = false;
 function syncNow() {
   if (!stage) return;
@@ -1091,6 +1120,8 @@ function syncNow() {
   stage.setNow(n ? { mode: n.mode, title: n.title, sub: n.sub } : { show: false });
   nowTimeOn = !!(n && n.time);
   if (!nowTimeOn) stage.setNowTime('');
+  stage.setSeek({ enabled: nowTimeOn && !!state.vinylOwned && state.view === 'vinyl' });
+  syncTransport();
 }
 let labelKey = null;
 function syncLabel() {   // the record's label is the album's own art (or a generated label); the built-in swirl stays for the demo and loose files
@@ -1147,12 +1178,16 @@ function stepTrack(dir) {
 }
 
 function installAlbumNav() {
+  // the CD view's seek bar: the same component as the vinyl stage's (the ring on the disc still seeks too)
+  const cdSeek = createSeekBar({ label: 'Seek in this track', onSeek: (f) => { if (allowsGesture('tonearm-drag') && !state.jumping) goTo({ index: state.queue?.index ?? 0, time: f * state.T }, false); } });
+  cdSeek.el.classList.add('cd-seek'); cdSeek.el.setAttribute('data-lock-surface', '');
+  el('cdNum').parentNode.after(cdSeek.el);
   el('btnPrevTrk').addEventListener('click', async () => { await state.engine.resume(); stepTrack(-1); });
   el('btnNextTrk').addEventListener('click', async () => { await state.engine.resume(); stepTrack(1); });
   state.cd = new CdView({
     root: el('cdView'), canvas: el('cdCanvas'), list: el('cdList'),
     prev: el('cdPrev'), next: el('cdNext'), play: el('cdPlay'),
-    num: el('cdNum'), time: el('cdTime'), title: el('cdTitle'), sub: el('cdSub'),
+    num: el('cdNum'), time: el('cdTime'), title: el('cdTitle'), sub: el('cdSub'), seek: cdSeek,
   }, {
     onTrack: (i) => { if (state.queue) goTo({ index: i, time: 0 }, false); },
     onSeekFrac: (f) => { if (!state.jumping) goTo({ index: state.queue?.index ?? 0, time: f * state.T }, false); },
@@ -1240,10 +1275,10 @@ function updateHud(rate, t) {
   el('rate').textContent = rate.toFixed(2) + '×';
   el('pos').textContent = `${t.toFixed(1)} / ${state.T.toFixed(1)} s`;
   el('wear').textContent = `${state.playCount} plays`;
-  if (nowTimeOn && stage) stage.setNowTime(`${formatTime(t)} / ${formatTime(state.T)}`);
+  if (nowTimeOn && stage) { stage.setNowTime(`${formatTime(t)} / ${formatTime(state.T)}`); stage.setSeek({ t, T: state.T }); }
 }
 
-// ── Turntable settings (was Deck details): the old side panel, now a sheet opened from the small control on the Albums page ──────────────────────
+// ── Tracks and options (was Deck details): the old side panel, now a sheet opened from the small control on the Albums page ──────────────────────
 function installDetails() {
   const page = el('pageAlbums'), sheet = el('deckSheet');
   { const ph = el('ttPlayModeHost'); if (ph) mountPlayMode(ph, settings.store); }   // shuffle / repeat in the sheet
@@ -1258,9 +1293,9 @@ function installDetails() {
   actions.prepend(lb);
   lb.addEventListener('click', () => { if (!allowsGesture('library-chip')) return; toggleLibrary(); });
   libBtnSync = (open) => { lb.dataset.open = String(open); lbl.textContent = open ? 'Player' : 'Library'; };
-  // Turntable settings (was Deck details): the sheet behind the sliders icon
+  // Tracks and options (was Deck details): the sheet behind the sliders icon
   const btn = document.createElement('button');
-  btn.type = 'button'; btn.className = 'tt-details-btn'; btn.id = 'btnDeck'; btn.setAttribute('aria-label', 'Turntable settings'); btn.setAttribute('aria-expanded', 'false');
+  btn.type = 'button'; btn.className = 'tt-details-btn'; btn.id = 'btnDeck'; btn.setAttribute('aria-label', 'Tracks and options'); btn.title = 'Tracks and options'; btn.setAttribute('aria-expanded', 'false');
   btn.innerHTML = ICON('<path d="M4 8h9M17 8h3M4 16h3M11 16h9" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="15" cy="8" r="2" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="9" cy="16" r="2" fill="none" stroke="currentColor" stroke-width="1.7"/>');
   { const dk = actions.querySelector('.dm-key'); if (dk) actions.insertBefore(btn, dk); else actions.append(btn); }   // DOM order = visual order: Library, Search, Turntable settings, then the lock key
   let releaseSheet = null;
@@ -1281,10 +1316,13 @@ function installDetails() {
 }
 
 // ── the Library button, the first-run nudge and what a finished scan tells the user ───────────────────────────────────────────────────────
+const COVER_TAP_PLAYS = true;   // a tap on the centre cover loads AND plays the album (false = load only; see wireLibrary)
 let libBtnSync = () => {};
 let libShown = false;       // the library was opened for the user by a scan this session
 let userScan = false;       // a scan the user asked for (Scan chip, empty-state button, Allow)
-const markPicked = () => { try { lsSet(LS.picked, 1); } catch { /* */ } tlib && tlib.setPickHint && tlib.setPickHint(null); };
+let pickHintOn = false;     // the first-run 'Pick an album' nudge is armed; it shows only while nothing is selected (the demo is still on the platter)
+function syncPickHint() { if (tlib && tlib.setPickHint) tlib.setPickHint(pickHintOn && platterIsDemo() ? 'Pick an album' : null); }
+const markPicked = () => { pickHintOn = false; try { lsSet(LS.picked, 1); } catch { /* */ } tlib && tlib.setPickHint && tlib.setPickHint(null); };
 function openLibrary() {
   if (state.view === 'cd') el('pageAlbums').dataset.lib = '1';
   stage.dispatch({ type: 'zoomTo', z: 1 });
@@ -1297,7 +1335,7 @@ function toggleLibrary() { if (stage.zoom > 0.5) closeLibrary(); else openLibrar
 function onLibraryOpen(open) {
   libBtnSync(open);
   if (open) syncScanChip();     // 'last scan 3 min ago' is as old as now
-  if (!open) tlib && tlib.setPickHint && tlib.setPickHint(null);
+  if (!open) { pickHintOn = false; tlib && tlib.setPickHint && tlib.setPickHint(null); }
 }
 const plural = (n, one, many) => `${Number(n).toLocaleString('en-US')} ${n === 1 ? one : many}`;
 function agoText(ms) {
@@ -1319,7 +1357,7 @@ function announceLibrary(explicit) {
     libShown = true;
     tlib.focus(0, { animate: false });
     stage.dispatch({ type: 'zoomTo', z: 1 });
-    tlib.setPickHint('Pick an album');
+    pickHintOn = true; syncPickHint();
   }
 }
 // the Scan chip: "Scan phone" until the phone has been read, then "Rescan" with when it was last read
@@ -1455,7 +1493,7 @@ function adoptFocusSoon(index) { clearTimeout(focusAdoptTimer); const my = inten
 
 function wireLibrary() {
   // tap a track in the library: zoom back in and play that track
-  tlib.on('selectTrack', async (albumId, trackIndex) => {
+  const playAlbumTrack = async (albumId, trackIndex) => {
     markPicked();
     const idx = indexOfAlbum(albumId);
     if (idx < 0) return;
@@ -1479,12 +1517,20 @@ function wireLibrary() {
       if (a.builtin) stage.dispatch({ type: 'play', s: 0 });
       else playTarget({ index: trackIndex, time: 0 }, { needle: false });
     }
-  });
-  // tap the centre cover: back to the player (a CD goes back to its CD view)
+  };
+  tlib.on('selectTrack', (albumId, trackIndex) => playAlbumTrack(albumId, trackIndex));
+  // tap the centre cover: back to the player, and PLAY the album (UX review: a cover tap that only loaded read as broken, while row taps and search results play).
+  // COVER_TAP_PLAYS is the one switch: false restores "a cover tap only loads the album".
   tlib.on('tapCover', async (albumId) => {
-    markPicked();
     const ai = indexOfAlbum(albumId);
     const a = albums[ai];
+    if (COVER_TAP_PLAYS && a && !a.builtin && !foreignPlaying()) {
+      const same = state.albumId === a.id && state.queue;
+      if (same && (state.view === 'cd' ? state.cdPlaying : (stage.player.playing || stage.player.starting))) { markPicked(); stage.dispatch({ type: 'zoomTo', z: 0 }); if (a.kind === 'cd') delete el('pageAlbums').dataset.lib; return; }   // already playing it: just back to the player
+      if (same && state.view === 'vinyl' && a.kind !== 'cd' && !state.jumping) { markPicked(); stage.dispatch({ type: 'zoomTo', z: 0 }); await onToggle(); return; }   // paused mid-album: resume where it stopped
+      return playAlbumTrack(albumId, same ? state.queue.index : 0);
+    }
+    markPicked();
     stage.dispatch({ type: 'zoomTo', z: 0 });
     // The cover you tapped is the record you get, unless that would cut off a tape / station that is playing: leaving the library is then just a zoom back.
     if (a && !a.builtin && a.kind !== 'cd' && state.albumId !== a.id && !state.jumping && !foreignPlaying()) { stage.dispatch({ type: 'stop', s: 0 }); await loadAlbum(ai, 0); }
@@ -1493,6 +1539,7 @@ function wireLibrary() {
   // swipe sideways: when the carousel settles on another album, load it (debounced: a fling past covers decodes nothing)
   let focusTimer = 0;
   tlib.on('focus', (index) => {
+    pickHintOn = false; tlib.setPickHint(null);   // the user chose by swiping: the nudge has done its job
     clearTimeout(focusTimer);
     const my = intent;                         // captured now: a row tap inside the debounce window bumps intent and must not be overridden
     focusTimer = setTimeout(() => adoptFocus(index, my), 420);
@@ -1553,6 +1600,7 @@ function installLibrary() {
       return track;
     },
     relink: () => library.relink(),
+    scanMusic: async () => { await scanLibrary(); state.mixtapes?.refresh?.(); },   // the Mixtapes empty state and the editor's Add tab: the same scan as Albums (folder picker on the web, permission + scan on Android)
     // Cassette player hooks (src/mixtape-ui.js): real seek / pause / wind-mute / level meter.
     seekFrac: (frac) => {
       if (!(state.T > 0)) return;
@@ -1684,7 +1732,11 @@ function restoreLast() {
 // ── Drawer footer: walkthrough, mode, theme ────────────────────────────────────────
 let walkthrough = null;
 function installToolbar() {
-  walkthrough = new Walkthrough();
+  walkthrough = new Walkthrough({
+    scanLabel: deviceLibrary.isAvailable() ? 'Scan my music' : 'Choose music folder',
+    hasMusic: () => libHasAlbums(),
+    onScan: () => { try { shell.go('albums', { close: true }); } catch { /* */ } userScan = true; scanLibrary(); },   // inside the tap that pressed the button: the folder picker needs that gesture
+  });
 
   // Show walkthrough on first run.
   walkthrough.showIfFirstRun();
@@ -1917,10 +1969,10 @@ function refreshNowPlaying() {
     src.radio = { title: radio.station.name, sub: ph === 'playing' ? 'Radio · on air' : ph === 'error' ? 'Radio · error' : 'Radio · connecting', playing: ph !== 'error' };   // an error is not "on air": the bar's dot goes grey
   }
   const p = state.mixtapes && state.mixtapes.play;
-  if (p && !p.ended && !p.paused) src.mixtape = { title: p.mix.name || 'Mixtape', sub: `Mixtape · track ${Math.max(1, p.idx + 1)} of ${p.files.length}`, playing: true, canNext: p.idx + 1 < p.files.length };
+  if (p && !p.ended && !p.paused) src.mixtape = { title: p.mix.name || 'Mixtape', sub: `Mixtape · track ${Math.max(1, p.idx + 1)} of ${p.files.length}`, playing: true, canNext: p.idx + 1 < p.files.length, canPrev: true };
   const q = state.queue;
   if (q && !state.radioOn && (state.view === 'cd' ? state.cdPlaying : (stage.player.playing && state.vinylOwned))) {
-    src.album = { title: q.items[q.index].title || (state.track && state.track.name) || 'Album', sub: `${q.kind === 'cd' ? 'CD' : 'Vinyl'} · track ${q.index + 1} of ${q.items.length}${modeSuffix()}`, playing: true, canNext: q.index + 1 < q.items.length || playMode().repeat !== 'off' || (playMode().shuffle && q.items.length > 1) };
+    src.album = { title: q.items[q.index].title || (state.track && state.track.name) || 'Album', sub: `${q.kind === 'cd' ? 'CD' : 'Vinyl'} · track ${q.index + 1} of ${q.items.length}${modeSuffix()}`, playing: true, canNext: q.index + 1 < q.items.length || playMode().repeat !== 'off' || (playMode().shuffle && q.items.length > 1), canPrev: true };
   }
   if (p && !p.ended && p.paused && !state.mixtapes.playerOpen && !miniHold) miniHold = 'mixtape';   // a paused tape whose player was closed stays on the mini bar, resumable
   if (miniHold && (src.radio || src[miniHold])) miniHold = null;          // something is playing again: no hold needed

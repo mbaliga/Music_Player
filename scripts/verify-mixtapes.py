@@ -443,7 +443,7 @@ def run_layout(b, w, h):
     trap_check(page, tag, 'turntable settings sheet', '#btnDeck', lambda: page.keyboard.press('Enter'), '#deckSheet')
     page.tap('#btnDeck'); page.wait_for_timeout(300)
     dk = rect('#deckSheet')
-    check(dk[2] >= w - 2 and dk[3] >= h - 4, f'{tag}: Turntable settings is a full page ({dk})')
+    check(dk[2] >= w - 2 and dk[3] >= h - 4, f'{tag}: Tracks and options is a full page ({dk})')
     shot(page, 'deck')
     page.tap('.tt-sheet-close'); page.wait_for_timeout(200)
     page.evaluate("import('/src/devicemode/sheet.js').then((m) => m.openSheet({ settings: { get: () => ({}), set() {} } }))"); page.wait_for_selector('.dm-sheet-card'); page.wait_for_timeout(200)

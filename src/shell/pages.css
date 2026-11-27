@@ -13,6 +13,7 @@
 .mt-body { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; padding: 4px 12px 24px; }
 .mt-body .mt-shelf { max-width: 460px; margin: 0 auto; flex: none; overflow: visible; }
 .mt-body .cs-stack { margin: 8px 18px 28px 10px; }
+.mt-empty .mt-scan { min-height: 48px; margin-top: 16px; padding: 0 28px; font-size: 15px; }
 .mt-empty { padding: 56px 24px; text-align: center; color: var(--ink2); font-size: 14px; line-height: 1.7; }
 
 /* ── Radio / Booth: a full-height pane for the mounted component ───────────────────────────────────────────────────────── */

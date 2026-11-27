@@ -8,31 +8,34 @@ export const STEPS = [
   {
     logo: true,
     title: 'Welcome to Runout',
-    body: 'Your own music, played on a record player, a stack of cassettes and a radio dial. This takes a minute.',
+    body: 'Your own music on a record player, a stack of cassettes and a radio dial.',
   },
   {
     title: 'Find your way around',
-    body: `Tap the menu button to open the menu: Albums, Mixtapes, Radio, ${BOOTH_LABEL} and Settings. You can also drag in from the left edge, in the middle of the screen. Your music keeps playing while you look around.`,
+    body: `Tap the menu button for Albums, Mixtapes, Radio, ${BOOTH_LABEL} and Settings. Or drag in from the left edge.`,
     highlight: 'hamburger',
   },
   {
     title: 'Albums',
-    body: 'Your records and CDs on a turntable. Tap Library to see all your albums and pick one, then tap play. Drag the record to scratch it. Pinching two fingers together also opens the library.',
+    body: 'Tap Library, pick an album, press Play. Drag the record to scratch. Pinch two fingers together to open the library.',
   },
   {
     title: `Mixtapes, Radio and ${BOOTH_LABEL}`,
-    body: `Mixtapes are cassettes you fill with your own songs. Radio has live stations and shows that talk between songs. ${BOOTH_LABEL} adds effects to the record you are playing.`,
+    body: `Mixtapes are cassettes of your own songs. Radio plays live stations and shows. ${BOOTH_LABEL} adds effects to what is playing.`,
   },
   {
-    title: 'The lock key',
-    body: 'The padlock at the top right locks the screen, so a stray touch does nothing while the music plays. Hold it for a second to unlock. Help is always in the menu.',
+    title: 'Keep listening',
+    body: 'Your music keeps playing when the screen is off. Padlock = ignore touches: hold it a second to unlock.',
+    cta: true,   // the last card offers to scan the music (Walkthrough({ onScan, scanLabel }))
   },
 ];
 
 export class Walkthrough {
-  constructor() {
+  /** opts: { onScan(), scanLabel, hasMusic() } — the last card's button ('Choose music folder' on the web, 'Scan my music' on the phone); hidden once there is music. */
+  constructor(opts = {}) {
     this._step = 0;
     this._el = null;
+    this._o = opts;
   }
 
   showIfFirstRun() {
@@ -77,6 +80,7 @@ export class Walkthrough {
         <div class="wt-icon"></div>
         <h2 class="wt-title"></h2>
         <p class="wt-body"></p>
+        <div class="wt-cta" hidden><button class="wt-scan" type="button"></button></div>
         <footer class="wt-foot">
           <div class="wt-dots" aria-hidden="true"></div>
           <div class="wt-nav">
@@ -92,6 +96,7 @@ export class Walkthrough {
 
     el.querySelector('.wt-x').addEventListener('click', () => this.hide());
     el.querySelector('.wt-skip').addEventListener('click', () => this.hide());
+    el.querySelector('.wt-scan').addEventListener('click', () => { const f = this._o.onScan; this.hide(); if (f) { try { f(); } catch { /* the scan reports its own errors */ } } });
     el.addEventListener('click', (e) => { if (e.target === el) this.hide(); });
     el.querySelector('.wt-prev').addEventListener('click', () => {
       if (this._step > 0) { this._step--; this._render(); }
@@ -123,6 +128,9 @@ export class Walkthrough {
     this._ring(s.highlight === 'hamburger');
     card.querySelector('.wt-title').textContent = s.title;
     card.querySelector('.wt-body').textContent = s.body;
+    const cta = card.querySelector('.wt-cta'), want = !!(s.cta && this._o.onScan && !(this._o.hasMusic && this._o.hasMusic()));
+    cta.hidden = !want;
+    if (want) card.querySelector('.wt-scan').textContent = this._o.scanLabel || 'Choose music folder';
     card.setAttribute('aria-label', `Tour, step ${this._step + 1} of ${STEPS.length}`);
 
     const next = card.querySelector('.wt-next');

@@ -53,14 +53,16 @@ export function thS(s) { const t = Tp(s); return Math.atan2(t.y - C.y, t.x - C.x
 /** Disc rotation that keeps groove point s exactly under the stylus: phi(s) = thS(s) - thG(s). */
 export function phiOf(s) { return thS(s) - thG(s); }
 
-/** Control centres (stage units). Counter-rotated about these in portrait. */
+/** Control centres (stage units). Counter-rotated about these in portrait. In portrait the columns (stage y) are spread a little (stage.js) so each key keeps a >= 48 px hit area. */
 export const BTN = Object.freeze({
   play: { x: 1321, y: 298 },
   b78: { x: 1215, y: 298 },   // ADDED (the app's 78 rpm): the free cell left of Play
   b33: { x: 1215, y: 378 },
   b45: { x: 1322, y: 378 },
-  bm: { x: 1215, y: 454 },
-  bp: { x: 1322, y: 454 },
+  bm: { x: 1215, y: 458 },    // rows 80 apart (218 / 298 / 378 / 458): a >= 48 px hit area per key on a phone
+  bp: { x: 1322, y: 458 },
+  prev: { x: 1215, y: 218 },  // Previous / Next: the transport row above the speed keys (UX review: no visible prev / next on the stage)
+  next: { x: 1322, y: 218 },
 });
 export const DISP = Object.freeze({ x: 1050, y: 355, bezel: 108 });
 /** the slot (tonearm-shaped stadium) outer rect */

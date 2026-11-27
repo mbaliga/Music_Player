@@ -141,7 +141,9 @@ export function initDeviceMode(opts = {}) {
   const fmtClock = (d) => { try { return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); } catch { return `${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`; } };
   function paintClock() { if (clockEl) clockEl.textContent = fmtClock(new Date()); }
   function startClock(on) { clearInterval(clockT); clockT = 0; if (on) { paintClock(); clockT = setInterval(paintClock, 15000); } }
-  function showNpTitle() { if (npEl) npEl.textContent = np.title || ''; }
+  // the face always carries a title line: the playing title, else the last one that played (paused), so the line never blinks out at 360 / 412 px
+  let lastTitle = '';
+  function showNpTitle() { if (np.title) lastTitle = np.title; if (npEl) npEl.textContent = np.title || lastTitle || ''; }
 
   // ── scheduling ───────────────────────────────────────────────────────────────────────────────────────────────────────
   function schedule() {

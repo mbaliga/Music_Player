@@ -319,10 +319,10 @@ def run_library(b, w, h, tag):
     ux_now_playing(page, tag, w, h, 'Middle', 'Test Band', 'Side One')
     check(page.evaluate(f'{APP}.stage.hasLabelArt'), f'{tag}: the record wears the album\'s own (generated) label, not the stock swirl')
     check(page.text_content('#tt-playLbl').strip() == 'Stop', f'{tag}: the big key says Stop while playing')
-    # Turntable settings (was Deck details): a user-facing sheet, the numbers behind Advanced
+    # Tracks and options (was Deck details): a user-facing sheet, the numbers behind Advanced
     tap(page, '#btnDeck'); page.wait_for_timeout(500)
     sheet = page.inner_text('#deckSheet')
-    check(page.text_content('#deckSheet h2').strip() == 'Turntable settings' and page.get_attribute('#deckSheet', 'aria-label') == 'Turntable settings', f'{tag}: the sheet is "Turntable settings"')
+    check(page.text_content('#deckSheet h2').strip() == 'Tracks and options' and page.get_attribute('#deckSheet', 'aria-label') == 'Tracks and options', f'{tag}: the sheet is "Tracks and options"')
     check(not re.search(r'load track|build:|target rpm|\bwear\b|position|rate\b', sheet, re.I), f'{tag}: no debug numbers, build id or raw file input on the sheet face')
     check(not page.evaluate('document.getElementById("ttAdvanced").open'), f'{tag}: Advanced is folded')
     fb = rect(page, '.tt-filebtn')

@@ -243,6 +243,7 @@ export class CdView {
     // DOM readouts (for a11y / tests)
     this.e.num.textContent = `Track ${this.index + 1} of ${this.arcs.length}`;
     this.e.time.textContent = `${formatTime(frame.t)} / ${formatTime(frame.T)}`;
+    if (this.e.seek) this.e.seek.set(frame.t, frame.T);   // the same visible seek bar as the vinyl stage
     this.e.title.textContent = this.titles[this.index] || '';
     this.e.play.textContent = frame.playing ? '❚❚' : '▶';
   }

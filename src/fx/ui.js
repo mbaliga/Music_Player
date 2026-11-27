@@ -129,7 +129,15 @@ export function mountFxSection(root, deps) {
   const haptic = (ms) => { try { api.haptic && api.haptic(ms); } catch { /* no haptics */ } };
 
   const screen = h('div', { class: 'fx-screen' });
-  root.replaceChildren(screen);
+  // First visit: one line saying what the pads and the big pad do, dismissed for good by "Got it" (or by the first effect you play)
+  const TIP_KEY = 'runout.boothTip';
+  const tipStore = () => { try { return api.storage !== undefined ? api.storage : localStorage; } catch { return null; } };
+  const tipSeen = () => { try { const st = tipStore(); return !!st && st.getItem(TIP_KEY) === '1'; } catch { return false; } };
+  const tip = h('div', { class: 'fx-tip', role: 'note' },
+    h('span', {}, 'Hold a pad at the bottom to play an effect while the record spins. The big pad scratches the record: drag on it.'),
+    h('button', { class: 'fx-tip-ok', type: 'button', 'data-lock-ok': true, onclick: () => dismissTip() }, 'Got it'));
+  function dismissTip() { tip.remove(); try { const st = tipStore(); if (st) st.setItem(TIP_KEY, '1'); } catch { /* private window: it will show again */ } }
+  if (tipSeen()) root.replaceChildren(screen); else root.replaceChildren(tip, screen);
 
   // ── stage overlay: light ring + HUD (only when a shell passes a platter stage) ───────────────────────────────────────
   const stage = api.stage;
@@ -328,7 +336,7 @@ export function mountFxSection(root, deps) {
     ...PADS.map((p, i) => {
       const b = h('button', { class: 'fx-perf', type: 'button', 'aria-pressed': 'false', 'data-mode': p.mode, 'data-div': p.div || '', style: `--c:${colour(p.mode)}`, 'aria-label': `${p.top} ${p.div || p.big}` },
         h('span', { class: 'fx-perf-l' }, p.top), h('span', { class: 'fx-perf-v' }, p.div || p.big), h('span', { class: 'fx-led', 'aria-hidden': 'true' }));
-      b.addEventListener('pointerdown', (e) => { e.preventDefault(); try { b.setPointerCapture(e.pointerId); } catch { /* */ } padDown(i, e.pointerId); });
+      b.addEventListener('pointerdown', (e) => { e.preventDefault(); try { b.setPointerCapture(e.pointerId); } catch { /* */ } if (tip.isConnected) dismissTip(); padDown(i, e.pointerId); });
       for (const t of ['pointerup', 'pointercancel']) b.addEventListener(t, (e) => padUpFn(e.pointerId));
       b.addEventListener('keydown', (e) => { if ((e.key === ' ' || e.key === 'Enter') && !e.repeat) { e.preventDefault(); padDown(i, 'key'); } });
       b.addEventListener('keyup', (e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); padUpFn('key'); } });

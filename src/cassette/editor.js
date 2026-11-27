@@ -18,9 +18,10 @@
 
 import { Cassette } from './index.js';
 import { trapFocus } from '../ui/focus-trap.js';
+import { showSnackbar } from '../ui/snackbar.js';
 import { h, icon, ICONS, reducedMotion } from './dom.js';
 import {
-  createMixtape, withName, withAuthor, withStyle, withPen, withInk, withWear, withGloss, withText, inkHex, withTape, withAutoReverse,
+  createMixtape, suggestName, withName, withAuthor, withStyle, withPen, withInk, withWear, withGloss, withText, inkHex, withTape, withAutoReverse,
   canResize, withDurations, resolveTracks, cassetteCfg, newMixtapeId, FONT_COLOURS, cassetteStyles, sideInfo, sideCapacity, remaining, fmtDur,
   TAPES, TAPE_IDS, MAX_SONGS_PER_SIDE, MAX_NAME, MAX_TAGLINE, MAX_NOTE, MAX_AUTHOR,
 } from '../mixtape.js';
@@ -93,6 +94,7 @@ let edEl = null, edCloser = null;
  *   existing: mixtape[] (for collision-free ids),
  *   getLibraryTracks(): track[],
  *   relink?(): Promise,                 user-gesture re-link
+ *   scanMusic?(): Promise,              user-gesture scan (the Add tab's empty state: no library yet)
  *   onSave(m): void,                    persist (add or replace by id)
  *   onDelete(id): void,
  *   onPlay(m, flatIndex): void,         save already done
@@ -310,12 +312,14 @@ export function openEditor(ctx) {
   panel.append(panels.tape, panels.add, panels.tracks, panels.style);
 
   // ── save, play, leave
-  function finalizeName() { if (!m.name.trim()) { m = withName(m, 'Untitled mix'); fName.value = m.name; } else m = withName(m, m.name); }
+  let autoNamed = false;
+  function finalizeName() { if (!m.name.trim()) { m = withName(m, suggestName(m.tracks)); fName.value = m.name; autoNamed = true; } else m = withName(m, m.name); }
   function commit() {
     clearTimeout(ut);
     finalizeName();
     ctx.onSave(m);
     orig = JSON.stringify(m); isNew = false;
+    if (autoNamed) { autoNamed = false; showSnackbar(`Named “${m.name}”. Change it any time: ⋯ menu, Edit tape.`, { ms: 6000 }); }   // never a silent "Untitled": say what it got called
     return m;
   }
   function closeEd() { if (edCloser === closeEd) edCloser = null; if (shellEl && !shellWasInert) shellEl.inert = false; releaseTrap(); releaseTrap = () => {}; document.removeEventListener('keydown', edKey); clearTimeout(ut); clearTimeout(toastT); ov.remove(); if (edEl === ov) edEl = null; }

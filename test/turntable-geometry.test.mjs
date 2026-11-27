@@ -147,3 +147,16 @@ test('arm drag: pointer x <-> s, with the grab offset kept', () => {
   }
   assert.equal(A.sFromPointer(-5000, 0), 1); assert.equal(A.sFromPointer(5000, 0), 0);
 });
+
+test('camFor: a bottom reserve fits the stage above the strip and moves the viewBox centre down by half of it', () => {
+  const W = 360, H = 724, R = 8;
+  const a = K.camFor(true, W, H, 1), b = K.camFor(true, W, H, 1, R);
+  near(b.s0, Math.min(W / 561, (H - R) / 1241));
+  assert.ok(b.s0 < a.s0);
+  // the stage's centre lands at the middle of the area ABOVE the strip, and the SVG viewBox centre moves by the same amount
+  near(b.M[1] * 843 + b.M[3] * 265.5 + b.M[5], (H - R) / 2);
+  near(b.vcy, 620.5 + R / (2 * b.s));
+  const l0 = K.camFor(false, 915, 364, 1), l1 = K.camFor(false, 915, 364, 1, 4);
+  near(l1.M[1] * 843 + l1.M[3] * 265.5 + l1.M[5], (364 - 4) / 2);
+  assert.deepEqual(K.camFor(false, 915, 364, 1, 0).M, l0.M);
+});

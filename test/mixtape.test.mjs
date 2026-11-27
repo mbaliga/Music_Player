@@ -203,3 +203,14 @@ test('resolveTracks: a ref made under an old phone id (d1-<id>-<size>-<mtime>) s
   assert.equal(healed.tracks[0].id, song.id); assert.equal(healed.tracks[0].path, song.path);
   assert.equal(withDurations(healed, resolveTracks(healed, lib)), healed, 'nothing to heal the second time');
 });
+
+import { suggestName } from '../src/mixtape.js';
+test('suggestName: an untitled tape is named from its first artist (then album), never silently "Untitled"', () => {
+  assert.equal(suggestName([tr('a', 'Mara Quill', 'Night Shift'), tr('b', 'mara quill', 'Night Shift')]), 'Mara Quill mix');
+  assert.equal(suggestName([tr('a', 'Mara Quill'), tr('b', 'June Parlor')]), 'Mara Quill & more');
+  assert.equal(suggestName([{ title: 'x', artist: '', album: 'Tidal' }]), 'Tidal mix');
+  assert.equal(suggestName([]), 'Untitled mix');
+  assert.equal(suggestName(null), 'Untitled mix');
+  const long = suggestName([tr('a', 'X'.repeat(80))]);
+  assert.ok(long.length <= MAX_NAME && long.endsWith('… mix'), long);
+});

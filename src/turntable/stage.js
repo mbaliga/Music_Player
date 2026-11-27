@@ -15,7 +15,8 @@ import { fillSilence, fillPlaceholder, computePeaks, binRange } from './spiral.j
 import { eqFromBytes, eqFake, EQ_BARS } from './display.js';
 import { classifyArmFlick } from '../tonearm.js';
 import { paintLabel } from './label-art.js';
-import { allowsGesture } from '../devicemode/guard.js';   // device mode: frozen gestures while locked (docs/DEVICE_MODE.md)
+import { allowsGesture } from '../devicemode/guard.js';
+import { createSeekBar } from '../ui/seekbar.js';   // device mode: frozen gestures while locked (docs/DEVICE_MODE.md)
 
 const NS = 'http://www.w3.org/2000/svg';
 const BRAKE_R = 217;   // inside the label = palm brake (hold)
@@ -36,8 +37,11 @@ export function createStage(host, hooks = {}) {
   // the readable layer: what is playing, and the empty-state card (DOM text, never the SVG: it truncates with CSS and reads with a screen reader)
   const hud = mk('div', 'tt-hud');
   const nowEl = mk('div', 'tt-now', false); nowEl.setAttribute('role', 'group'); nowEl.setAttribute('aria-label', 'Now playing'); nowEl.hidden = true;
-  const nowRow = mk('div', 'tt-now-row', false), nowTitle = mk('span', 'tt-now-title', false), nowTime = mk('span', 'tt-now-time', false), nowSub = mk('div', 'tt-now-sub', false);
-  nowRow.append(nowTitle, nowTime); nowEl.append(nowRow, nowSub);
+  const nowTitle = mk('span', 'tt-now-title', false), nowTime = mk('span', 'tt-now-time', false), nowSub = mk('div', 'tt-now-sub', false);
+  // the seek bar (UX review: seek was only the 38 px tonearm dimple): a thin visible bar under the now-playing text, tap or drag; the tonearm gesture stays
+  const seek = createSeekBar({ label: 'Seek in this track', onSeek: (f) => { if (allowsGesture('tonearm-drag') && hooks.seekFrac) hooks.seekFrac(f); }, doc: document });
+  seek.el.classList.add('tt-seek'); seek.el.setAttribute('data-lock-surface', '');
+  nowEl.append(nowTitle, nowSub, nowTime, seek.el);
   const emptyEl = mk('div', 'tt-empty', false); emptyEl.hidden = true;
   const emptyT = mk('div', 'tt-empty-title', false), emptyB = mk('div', 'tt-empty-body', false), emptyBtn = mk('button', 'tt-empty-btn', false); emptyBtn.type = 'button';
   emptyEl.append(emptyT, emptyB, emptyBtn);
@@ -47,7 +51,7 @@ export function createStage(host, hooks = {}) {
   const $ = (id) => host.querySelector('#tt-' + id);
   const botRot = $('botRot'), topRot = $('topRot'), matG = $('matG'), phoneFrame = $('phoneFrame');
   const armG = $('arm'), grabG = $('grab'), playBtn = $('playBtn'), playIcon = $('playIcon'), dispHit = $('dispHit');
-  const ctl = { b78: $('b78'), b33: $('b33'), b45: $('b45'), bm: $('bm'), bp: $('bp') };
+  const ctl = { b78: $('b78'), b33: $('b33'), b45: $('b45'), bm: $('bm'), bp: $('bp'), prev: $('prev'), next: $('next') };
   const playFace = $('playFace'), playLbl = $('playLbl');
   const ctx = cv.getContext('2d');
   const painter = new DiscPainter();
@@ -72,7 +76,7 @@ export function createStage(host, hooks = {}) {
   // ── camera ────────────────────────────────────────────────────────────────────────────────────────────────────────────
   function applyCam() {
     if (!W) return;
-    const L = layers(P.z), cam = camFor(portrait, W, H, L.k), vb = viewBoxFor(cam, W, H);
+    const L = layers(P.z), cam = camFor(portrait, W, H, L.k, reserveBottom()), vb = viewBoxFor(cam, W, H);
     bot.setAttribute('viewBox', vb); top.setAttribute('viewBox', vb);
     MX = cam.M;
     host.style.background = `rgb(${L.bg[0]},${L.bg[1]},${L.bg[2]})`;
@@ -90,11 +94,16 @@ export function createStage(host, hooks = {}) {
     placeHud();
     lastZ = P.z; dirty = true;
   }
-  // Controls: every button is a visible shape (bg) inside a larger transparent hit area (>= 44 css px on a phone). The cells are 76-80 units apart
-  // across the screen's columns in portrait (stage y) and 107 apart down its rows (stage x), so the upright rect is 74 x 104 there and 104 x 76 in
-  // landscape. Play is the big one and says Play / Stop.
-  const CTL_DIM = { land: { s: [104, 76, 92, 62], p: [124, 74, 116, 68] }, port: { s: [74, 104, 64, 92], p: [78, 116, 72, 108] } };
+  // Controls: every button is a visible shape (bg) inside a larger transparent hit area, >= 48 css px wherever the layout allows it. The hit rect is sized from the
+  // camera scale so it is 48 px on a phone, capped at the pitch between neighbouring keys (80 stage units across the rows in landscape; in portrait the columns are
+  // spread to 86 so they can reach 48 px at 360 x 780) so two keys never share a touch. Play is the big one and says Play / Stop.
+  const COL_PITCH_PORT = 86, COL_PITCH = 80;             // stage units between key columns (portrait) / key rows (landscape)
+  const MIN_HIT = 48;
+  const CTL_DIM = { land: { s: [104, 80, 92, 62], p: [124, 80, 116, 68] }, port: { s: [COL_PITCH_PORT, 104, 64, 92], p: [COL_PITCH_PORT, 116, 72, 108] } };
   const PLAY_X = 1329;
+  // the strip under the stage that the seek bar needs (the stage is fitted above it): css px
+  const RESERVE = { port: 8, land: 4 };
+  const reserveBottom = () => (portrait ? RESERVE.port : RESERVE.land);
   // SVG text cannot wrap: when the user's text size is larger (CSS px scale with the WebView's text zoom) shrink the label until it fits its key
   function fitKeyText(t, keyW) {
     if (!t) return;
@@ -103,21 +112,27 @@ export function createStage(host, hooks = {}) {
     const max = keyW * 0.86;
     if (w > max && w > 0) t.style.fontSize = (parseFloat(getComputedStyle(t).fontSize) * max / w).toFixed(1) + 'px';
   }
+  const colY = (y) => (portrait ? 378 + (y - 378) * (COL_PITCH_PORT / COL_PITCH) : y);   // portrait: the key columns are spread
   function layoutControls() {
     const D = portrait ? CTL_DIM.port : CTL_DIM.land;
+    const s0 = portrait ? Math.min(W / 561, (H - reserveBottom()) / 1241) : Math.min(W / 1241, (H - reserveBottom()) / 561);
+    const cap = portrait ? COL_PITCH_PORT : COL_PITCH, grow = (n) => (s0 > 0 ? Math.min(cap, Math.max(n, Math.ceil(MIN_HIT / s0))) : n);   // never wider than the pitch
     for (const [id, b] of Object.entries(BTN)) {
       const el = id === 'play' ? playBtn : ctl[id];
       if (!el) continue;
-      const cx = id === 'play' ? PLAY_X : b.x, cy = b.y, d = id === 'play' ? D.p : D.s;
+      const cx = id === 'play' ? PLAY_X : b.x, cy = colY(b.y), d = id === 'play' ? D.p : D.s;
       const hit = el.querySelector('.hit-area'), bg = el.querySelector('.bg');
       const set = (r, w, h, rx) => { r.setAttribute('x', cx - w / 2); r.setAttribute('y', cy - h / 2); r.setAttribute('width', w); r.setAttribute('height', h); if (rx != null) r.setAttribute('rx', rx); };
-      set(hit, d[0], d[1]); set(bg, d[2], d[3], Math.round(Math.min(d[2], d[3]) * (id === 'play' ? 0.3 : 0.26)));
+      // the pitch-limited dimension is the one across the columns (portrait: width) / rows (landscape: height)
+      set(hit, portrait ? grow(d[0]) : d[0], portrait ? d[1] : grow(d[1]));
+      set(bg, d[2], d[3], Math.round(Math.min(d[2], d[3]) * (id === 'play' ? 0.3 : 0.26)));
       const tx = el.querySelector('text:not(.lbl)'); if (tx) { tx.setAttribute('x', cx); tx.setAttribute('y', cy + 11); }
+      const ico = el.querySelector('.ico'); if (ico) ico.setAttribute('transform', `translate(${cx} ${cy})`);
       if (portrait) el.setAttribute('transform', `rotate(-90 ${cx} ${cy})`); else el.removeAttribute('transform');
       fitKeyText(el.querySelector('text:not(.lbl)'), d[2]);
     }
     fitKeyText(playLbl, D.p[2]);
-    playFace.setAttribute('transform', `translate(${PLAY_X} ${BTN.play.y})`);
+    playFace.setAttribute('transform', `translate(${PLAY_X} ${colY(BTN.play.y)})`);
     playIcon.setAttribute('transform', `translate(0 ${portrait ? -22 : -13})`);
     playLbl.setAttribute('y', portrait ? 30 : 22);
   }
@@ -131,10 +146,10 @@ export function createStage(host, hooks = {}) {
   function placeHud() {
     if (!W) return;
     const r = mapRect(MX, ...(portrait ? HUD_BAND.port : HUD_BAND.land));
-    const w = Math.max(0, r.right - r.left), h = Math.max(0, r.bottom - r.top);
+    const w = Math.max(0, r.right - r.left), h = Math.max(0, r.bottom - r.top) + reserveBottom();   // the band runs down into the strip the camera keeps free for the seek bar
     const st = nowEl.style;
     st.left = r.left.toFixed(1) + 'px'; st.top = r.top.toFixed(1) + 'px'; st.width = w.toFixed(1) + 'px'; st.height = h.toFixed(1) + 'px';
-    nowEl.dataset.tight = h < 44 ? '1' : '';
+    nowEl.dataset.tight = h < 46 ? '1' : '';
   }
   function resize() {
     // layout size, not the transformed box: the shell card is scaled while the drawer opens / closes, and a measurement taken then left the
@@ -178,6 +193,8 @@ export function createStage(host, hooks = {}) {
   press(ctl.b45, () => hooks.speed && hooks.speed('45'));
   press(ctl.bm, () => hooks.nudge && hooks.nudge(-1));
   press(ctl.bp, () => hooks.nudge && hooks.nudge(1));
+  press(ctl.prev, () => { if (ctl.prev.getAttribute('aria-disabled') !== 'true' && hooks.prev) hooks.prev(); });
+  press(ctl.next, () => { if (ctl.next.getAttribute('aria-disabled') !== 'true' && hooks.next) hooks.next(); });
   press(dispHit, () => { view.dispMode = 1 - view.dispMode; painter.eqHold.fill(0); if (view.dispMode && hooks.analyser && !view.ana) view.ana = hooks.analyser(); dirty = true; });
   press(sr, () => { dispatch({ type: 'zoomTo', z: 1 }); kick(); });
   emptyBtn.addEventListener('click', (e) => { e.stopPropagation(); if (allowsGesture('library-chip') && hooks.emptyAction) hooks.emptyAction(); });
@@ -404,6 +421,15 @@ export function createStage(host, hooks = {}) {
     /** a tape / station owns the engine: true = it is playing (key says Stop), false = paused (Play), null = the platter's own state */
     setPlayOverride(v) { const n = v == null ? null : !!v; if (n === playOvr) return; playOvr = n; lastLive = null; setLiveUI(!!(P.playing || P.starting)); },
     setNowTime(text) { if (nowTime.textContent !== text) nowTime.textContent = text; },
+    /** the seek bar under the now-playing text: paint the playhead (seconds) or hide / dim it (a tape, a station or nothing loaded owns the engine) */
+    setSeek(o = {}) {
+      if (o.enabled !== undefined) { seek.setEnabled(!!o.enabled); nowEl.dataset.seek = o.enabled ? '1' : '0'; }
+      if (o.t !== undefined) seek.set(o.t, o.T);
+    },
+    /** the stage's Previous / Next keys: false dims and disarms one (nothing to step to) */
+    setTransport(o = {}) {
+      for (const k of ['prev', 'next']) if (o[k] !== undefined) { ctl[k].setAttribute('aria-disabled', String(!o[k])); }
+    },
     /** the empty-state card: { show, title, body, button } (button = label of the one action, '' for none) */
     setEmpty(o = {}) {
       const show = !!o.show;

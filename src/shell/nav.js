@@ -64,6 +64,7 @@ export function createShell(opts = {}) {
     const li = document.createElement('li');
     const b = document.createElement('button');
     b.type = 'button'; b.className = 'drawer-item'; b.dataset.section = s.id; b.textContent = s.label;
+    if (s.sub) { const t = document.createElement('span'); t.className = 'drawer-sub'; t.textContent = s.sub; b.append(' ', t); }
     if (s.icon === 'gear') { const g = document.createElement('span'); g.className = 'drawer-glyph'; g.setAttribute('aria-hidden', 'true'); g.innerHTML = GEAR; b.append(g); }
     b.addEventListener('click', () => go(s.id));
     li.append(b); menu.append(li);
@@ -261,14 +262,15 @@ export function createShell(opts = {}) {
   // ── now-playing mini bar (every section but the source's own) ──────────────────────────────────────────────────────
   let np = null, npActions = {};
   const miniMain = mini.querySelector('.minibar-main'), miniTitle = mini.querySelector('.minibar-title'), miniSub = mini.querySelector('.minibar-sub'), miniStop = mini.querySelector('.minibar-stop');
-  const miniToggle = mini.querySelector('.minibar-toggle'), miniNext = mini.querySelector('.minibar-next');
+  const miniToggle = mini.querySelector('.minibar-toggle'), miniNext = mini.querySelector('.minibar-next'), miniPrev = mini.querySelector('.minibar-prev');
   const ICON_PAUSE = '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M8 6v12M16 6v12" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>';
   const ICON_PLAY = '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M8 5.5v13l11-6.5z" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>';
   miniMain.addEventListener('click', () => { if (np) go(np.home); });
   miniStop.addEventListener('click', () => npActions.stop && npActions.stop());
   miniToggle.addEventListener('click', () => { if (np && npActions.toggle) npActions.toggle(np.source); });
+  miniPrev.addEventListener('click', () => { if (np && npActions.prev) npActions.prev(np.source); });
   miniNext.addEventListener('click', () => { if (np && npActions.next) npActions.next(np.source); });
-  /** sources = { radio, mixtape, album } each null | {title, sub, playing?, canNext?}; actions = { stop?(), toggle?(source), next?(source) }. */
+  /** sources = { radio, mixtape, album } each null | {title, sub, playing?, canNext?, canPrev?}; actions = { stop?(), toggle?(source), prev?(source), next?(source) }. */
   function setNowPlaying(sources, actions = {}) { np = pickNowPlaying(sources); npActions = actions; updateMini(); }
   function updateMini() {
     const vis = miniBarVisible(np, cur);
@@ -283,6 +285,7 @@ export function createShell(opts = {}) {
       miniToggle.hidden = !canToggle;
       if (canToggle) { miniToggle.innerHTML = np.playing ? ICON_PAUSE : ICON_PLAY; miniToggle.setAttribute('aria-label', np.playing ? 'Pause' : 'Play'); }
       miniNext.hidden = !(np.canNext && npActions.next);
+      miniPrev.hidden = !(np.canPrev && npActions.prev);
     }
   }
 

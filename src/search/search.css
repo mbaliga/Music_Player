@@ -14,22 +14,22 @@
 .so-input { flex: 1; min-width: 0; height: 100%; background: none; border: 0; outline: 0; color: var(--ink); font: inherit; font-size: 16px; -webkit-appearance: none; appearance: none; user-select: text; -webkit-user-select: text; }
 .so-input::-webkit-search-cancel-button { display: none; }
 .so-input::placeholder { color: var(--ink2); }
-.so-clear { width: 44px; height: 44px; flex: none; border: 0; border-radius: 50%; background: none; color: var(--ink2); font-size: 22px; line-height: 1; cursor: pointer; }
+.so-clear { width: 48px; height: 48px; flex: none; border: 0; border-radius: 50%; background: none; color: var(--ink2); font-size: 22px; line-height: 1; cursor: pointer; }
 .so-clear[hidden], .so-more[hidden] { display: none; }
 .so-back:focus-visible, .so-clear:focus-visible, .so-chip:focus-visible, .so-more:focus-visible, .so-act:focus-visible, .so-dirbtn:focus-visible, .so-rec-go:focus-visible, .so-rec-x:focus-visible { outline: 2px solid var(--violet); outline-offset: 2px; }
 
 .so-chips { flex: none; display: flex; flex-wrap: wrap; gap: 6px; padding: 4px 12px 8px; }
 .so-chips[hidden] { display: none; }
-.so-chip { flex: none; min-height: 44px; padding: 0 12px; display: inline-flex; align-items: center; gap: 6px; font: inherit; font-size: 13px; font-weight: 600; color: var(--ink2); background: var(--surface2); border: 1px solid var(--border); border-radius: 22px; cursor: pointer; }
+.so-chip { flex: none; min-height: 48px; min-width: 48px; justify-content: center; padding: 0 14px; display: inline-flex; align-items: center; gap: 6px; font: inherit; font-size: 13px; font-weight: 600; color: var(--ink2); background: var(--surface2); border: 1px solid var(--border); border-radius: 22px; cursor: pointer; }
 .so-chip.on { color: var(--on-accent, #111); background: var(--violet); border-color: var(--violet); }
-.so-n { font-size: 11px; font-weight: 700; opacity: .8; font-variant-numeric: tabular-nums; }
+.so-n { font-size: 12px; font-weight: 700; opacity: .8; font-variant-numeric: tabular-nums; }
 .so-n:empty { display: none; }
 .so-status { flex: none; padding: 0 16px 6px; font-size: 12px; color: var(--ink2); }
 .so-status[hidden] { display: none; }
 .so-live { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 .so-body { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; padding: 0 8px calc(24px + env(safe-area-inset-bottom, 0px)); }
-.so-sec { display: flex; align-items: center; gap: 8px; padding: 14px 10px 6px; font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--ink2); }
+.so-sec { display: flex; align-items: center; gap: 8px; padding: 14px 10px 6px; font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--ink2); }
 .so-sec-n { font-variant-numeric: tabular-nums; opacity: .8; }
 .so-more { margin-left: auto; min-height: 44px; padding: 0 10px; background: none; border: 0; font: inherit; font-size: 12px; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--violet); cursor: pointer; }
 .so-row { display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 6px 10px; border-radius: 14px; cursor: pointer; color: var(--ink); }
@@ -44,7 +44,7 @@
 .so-d { font-style: italic; }
 .so-t mark, .so-s mark, .so-d mark { background: var(--violet-glow); color: inherit; border-radius: 3px; padding: 0 1px; font-weight: 800; text-decoration: underline; text-decoration-color: var(--violet); text-underline-offset: 2px; }
 .so-tags { display: flex; gap: 4px; flex: none; }
-.so-tag { font-size: 10.5px; font-weight: 700; padding: 3px 8px; border-radius: 10px; background: var(--surface2); border: 1px solid var(--border); color: var(--ink2); }
+.so-tag { font-size: 12px; font-weight: 700; padding: 3px 8px; border-radius: 10px; background: var(--surface2); border: 1px solid var(--border); color: var(--ink2); }
 .so-tag.fav { color: var(--violet); }
 .so-empty { padding: 44px 24px; text-align: center; color: var(--ink2); font-size: 14px; line-height: 1.7; }
 .so-empty b { display: block; color: var(--ink); font-size: 17px; margin-bottom: 6px; }

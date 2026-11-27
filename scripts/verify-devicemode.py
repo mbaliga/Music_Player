@@ -466,7 +466,7 @@ def new_ui_albums(p, w, h):
     chip = page.evaluate("document.querySelector('.tl-f[aria-pressed=false], .tl-f') && document.querySelector('.tl-f:not([aria-pressed=true])') ? 1 : 0")
     page.evaluate('window.__rt.setZ(0)'); time.sleep(0.8)
     # header chips and the drawer are frozen
-    for sel, what in [('.page:not([hidden]) .page-actions button[aria-label*="earch"]', 'search chip'), ('#btnDeck', 'Turntable settings chip')]:
+    for sel, what in [('.page:not([hidden]) .page-actions button[aria-label*="earch"]', 'search chip'), ('#btnDeck', 'Tracks and options chip')]:
         if page.evaluate(f"!!document.querySelector('{sel}')"):
             sx, sy = center(page, sel); T.tap(sx, sy); time.sleep(0.5)
             check(not page.evaluate("!!document.querySelector('.srch-overlay:not([hidden]), .srch:not([hidden])')") and page.evaluate("document.getElementById('deckSheet') ? document.getElementById('deckSheet').hidden : true"), f'{tag}: LOCKED: the {what} is frozen')

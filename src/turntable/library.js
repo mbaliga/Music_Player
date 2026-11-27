@@ -73,6 +73,8 @@ export function mountTurntableLibrary(container, deps = {}) {
   hint.textContent = (deps.scanLabel && deps.scanLabel.hint) || 'Scan your music folder to play your own music'; hint.__tl = { kind: 'scan' };
   const meta = el('div', 'tl-meta', scroll);
   const titleEl = el('div', 'tl-title', meta), subEl = el('div', 'tl-sub', meta);
+  const playAlb = el('button', 'tl-playalb', meta); playAlb.setAttribute('type', 'button');
+  playAlb.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg><span>Play album</span>';
   const list = el('ol', 'tl-tracks', scroll);
   list.setAttribute('role', 'listbox'); list.setAttribute('aria-label', 'Tracks'); list.setAttribute('data-lock-surface', '');
   const foot = el('div', 'tl-foot', scroll);                         // "50 songs · last scan 3 min ago" (setScanInfo)
@@ -140,6 +142,7 @@ export function mountTurntableLibrary(container, deps = {}) {
   }
   bar.addEventListener('click', onBarClick);
   hint.addEventListener('click', () => { if (may('library-chip')) emit('scan'); });
+  playAlb.addEventListener('click', (e) => { e.stopPropagation(); const a = albums[shownIdx]; if (a && live_() && may('track-row')) emit('tapCover', a.id); });
 
   // ── album display (title / meta / tracks) ──────────────────────────────────
   function rowAt(i) {
@@ -155,7 +158,9 @@ export function mountTurntableLibrary(container, deps = {}) {
   function renderAlbum(k) {
     shownIdx = k;
     const a = albums[k];
-    if (!a) { titleEl.textContent = ''; subEl.textContent = ''; setRowCount(0); return; }
+    if (!a) { titleEl.textContent = ''; subEl.textContent = ''; playAlb.hidden = true; setRowCount(0); return; }
+    playAlb.hidden = isBuiltinAlbum(a);
+    playAlb.setAttribute('aria-label', `Play album ${clipText(a.title, 80)}`);
     titleEl.textContent = clipText(a.title);
     const tot = totalDuration(a.tracks), nt = a.tracks.length;
     const parts = [clipText(a.artist)];

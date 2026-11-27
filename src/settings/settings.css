@@ -47,7 +47,7 @@
 .st-seg { display: flex; gap: 6px; flex-wrap: wrap; }
 .st-seg button { flex: 1 1 64px; min-width: 0; white-space: nowrap; min-height: 44px; padding: 8px 10px; font: inherit; font-size: 13px; font-weight: 600; color: var(--ink2); background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; cursor: pointer; text-align: center; }
 .st-seg.dense button { flex-basis: 0; padding: 8px 2px; font-size: 12.5px; }
-.st-seg button small { display: block; font-size: 11px; font-weight: 500; opacity: 1; margin-top: 1px; }
+.st-seg button small { display: block; font-size: 12px; font-weight: 500; opacity: 1; margin-top: 1px; }
 .st-seg button[aria-checked="true"] { color: var(--on-accent, #111); background: var(--violet); border-color: var(--violet); box-shadow: 0 2px 12px var(--violet-glow); }
 .st-seg button:focus-visible, .st-btn:focus-visible, .st-switch:focus-visible, .st-sw:focus-visible, .st-hex:focus-visible { outline: 2px solid var(--violet); outline-offset: 2px; }
 
