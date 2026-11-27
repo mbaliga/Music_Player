@@ -193,3 +193,22 @@ test('media bridge: fgs-denied tells the user once and lets the next sync start 
   b.sync(album()); await flush();
   assert.equal(starts(), 2, 'retried on the next sync');
 });
+
+// ── the sleep timer's clock ──
+import { createSleepDriver } from '../src/background.js';
+import { createSleep as createSleepModel } from '../src/sleep.js';
+test('sleep driver: its own interval runs only while a timer exists, ticks on visibility, and expires with the page hidden', () => {
+  const ivs = new Map(); let nid = 0; const listeners = {};
+  const env = { doc: { hidden: true, addEventListener: (n, f) => { listeners[n] = f; }, removeEventListener: (n) => { delete listeners[n]; } }, setIv: (f) => { ivs.set(++nid, f); return nid; }, clearIv: (id) => ivs.delete(id) };
+  let t = 0, expired = 0;
+  const sleep = createSleepModel({ now: () => t, isPlaying: () => true, onExpire: () => { expired++; } });
+  const d = createSleepDriver(sleep, { env });
+  assert.equal(d.running, false); assert.equal(ivs.size, 0);
+  sleep.start(5);
+  assert.equal(d.running, true); assert.equal(ivs.size, 1); assert.ok(listeners.visibilitychange);
+  t = 299_000; [...ivs.values()][0]();                    // a timer tick while hidden: nothing yet
+  assert.equal(expired, 0);
+  t = 301_000; listeners.visibilitychange();             // coming back after a throttled sleep: expires at once
+  assert.equal(expired, 1); assert.equal(d.running, false); assert.equal(ivs.size, 0); assert.equal(listeners.visibilitychange, undefined);
+  d.destroy();
+});

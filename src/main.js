@@ -38,7 +38,7 @@ import { onAodOutlineMode } from './devicemode/aodhooks.js';   // Device mode: l
 let deviceMode = null;
 import { mountBooth } from './shell/booth.js';
 import { createEngineGate } from './engine-gate.js';
-import { startBackground } from './background.js';        // background playback: timer-driven loop while hidden, native media service, media buttons (docs/DEVICE_LIBRARY.md)
+import { startBackground, createSleepDriver } from './background.js';        // background playback: timer-driven loop while hidden, native media service, media buttons (docs/DEVICE_LIBRARY.md)
 import { installBackButton } from './backbutton.js';      // hardware Back: close the topmost layer, else minimise
 import { LibraryManager } from './library.js';
 import { orderForPlayAll } from './albums.js';
@@ -60,6 +60,9 @@ import { load as loadResume, save as saveResume, resolve as resolveResume, isMea
 import { mountResumeChip } from './resume-ui.js';
 import { makeOrder, validOrder, stepSlot } from './playorder.js';   // shuffle / repeat: the order slots are visited in
 import { mountPlayMode } from './playmode-ui.js';
+import { createSleep } from './sleep.js';                 // sleep timer: model (src/sleep.js), clock (background.js), volume (sleep-audio.js), controls (sleep-ui.js)
+import { createSleepFader, installMediaRegistry } from './sleep-audio.js';
+import { mountSleep, mountSleepChip } from './sleep-ui.js';
 
 // The track is mastered for one fixed reference speed. The needle plays it
 // correctly at this RPM (rate = 1). Moving the speed dial above/below it shifts
@@ -149,6 +152,7 @@ async function boot() {
   installToolbar();     // the drawer footer: walkthrough, mode, theme
   installCustomTheme();
   installSettingsAndSearch();
+  createSleepDriver(sleep);   // the sleep timer's own clock: ticks while the page is hidden too
   bg = startBackground({ step: loop, engine: state.engine, actions: miniActions, getMeta: mediaMeta, notice: (t) => toast(t) });   // starts the frame loop (rAF visible / timer hidden)
   installBackButton({ deviceMode, getSearch: () => search, getShell: () => shell, library: { isOpen: () => !!stage && stage.zoom > 0.5, close: closeLibrary } });
   updateLatencyReadout();
@@ -227,6 +231,7 @@ function settingsDeps(devLib) {
       scanNow: async () => { if (devLib && devLib.isAvailable() && libraryPrefs.get().sources.device) await devLib.allowAndScan(); else await scanLibrary(); },
       clearCache: async () => { await clearLibraryCache(); flash('CACHE CLEARED'); },
     },
+    sleep,
     playback: { openDeckDetails: () => { shell.go('albums'); const s = el('deckSheet'); if (s && s.hidden) el('btnDeck').click(); } },
     radio: {
       favouriteCount: () => model().favs.length, recentCount: () => model().recents.length,
@@ -633,6 +638,41 @@ function onVinylTrackEnd() {
   if (nx >= 0) playTarget({ index: nx, time: 0 }, { needle: false, natural: true });
   else stage.dispatch({ type: 'finished' });
 }
+
+// ── sleep timer (src/sleep.js): what is playing, how long the track has left, the fade, and the owner-aware stop ─────────────────────────────────
+installMediaRegistry();   // streamed radio's detached <audio> elements must be findable for the fade
+let sleepFader = null;
+function sleepIsPlaying() {
+  if (radio && radio.station) return true;
+  const p = state.mixtapes && state.mixtapes.play;
+  if (p && !p.ended) return !p.paused;
+  if (!state.vinylOwned || state.radioOn) return false;
+  return state.view === 'cd' ? !!state.cdPlaying : !!(stage.player.playing || stage.player.starting) || state.jumping;
+}
+function sleepTrackRemaining() {   // seconds to the end of the track that is playing (album or tape: both ride the one engine); radio has none
+  if (radio && radio.station) return null;
+  if (!sleepIsPlaying() || !(state.T > 0)) return null;
+  return Math.max(0, state.T - state.engine.position / state.engine.sampleRate);
+}
+async function sleepStop() {   // the same owner-aware stop as the Stop key: a station ends, a tape pauses, an album pauses (all stay resumable from the mini bar)
+  try {
+    const own = engineOwner();
+    if (own === 'radio') { radio.stop(); }
+    else if (own === 'mixtape') { if (!state.mixtapes.play.paused) await miniActions.toggle('mixtape'); }
+    else if (radio && radio.station) radio.stop();
+    else if (sleepIsPlaying()) await miniActions.toggle('album');
+  } catch (err) { console.warn('sleep stop failed', err); }
+  refreshNowPlaying(); syncOwner();
+  setTimeout(() => { try { sleepFader && sleepFader.set(1); } catch { /* */ } }, 400);   // volume back for the next time (the stop above is already silent)
+  toast('Sleep timer: stopped playback');
+}
+const sleep = createSleep({
+  getTrackRemaining: sleepTrackRemaining,
+  isPlaying: sleepIsPlaying,
+  applyGain: (g) => { if (g >= 1 && !sleepFader) return; sleepFader = sleepFader || createSleepFader(state.engine); sleepFader.set(g); },
+  onExpire: () => { sleepStop(); },
+});
+window.__sleep = sleep;   // test hook (scripts/verify-basics.py)
 
 // ── shuffle / repeat for albums and the Play-all queue (src/playorder.js; Settings > Playback and the stage sheet) ──────────────────────────────
 // The track SLOTS stay put (titles, files, ids, the record's bands); only the order they are visited in changes, so a track id always maps to its own audio.
@@ -1199,6 +1239,7 @@ function updateHud(rate, t) {
 function installDetails() {
   const page = el('pageAlbums'), sheet = el('deckSheet');
   { const ph = el('ttPlayModeHost'); if (ph) mountPlayMode(ph, settings.store); }   // shuffle / repeat in the sheet
+  { const sh = el('ttSleepHost'); if (sh) mountSleep(sh, sleep); mountSleepChip(el('pageAlbums'), sleep, { onTap: () => { const b = el('btnDeck'); if (b && el('deckSheet').hidden) b.click(); } }); }   // sleep timer: sheet + countdown chip
   const actions = page.querySelector('.page-actions');
   const ICON = (d) => `<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">${d}</svg>`;
   // the Library button: always visible on the Albums header (the pinch stays as the gesture); labelled, >= 44 px

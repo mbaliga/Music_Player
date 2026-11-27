@@ -236,6 +236,26 @@ export function createMediaBridge({ plugin = null, actions = {}, getMeta = () =>
   };
 }
 
+// ── the sleep timer's clock ─────────────────────────────────────────────────────────────────────────────────────────────────
+/**
+ * Drives src/sleep.js with a timer of its own (NOT requestAnimationFrame, which a hidden page never gets): setInterval keeps ticking with the
+ * screen off while the foreground service holds the app alive, and a visibility change ticks at once. The model works from a wall-clock deadline,
+ * so a throttled timer only delays the stop, never loses it. env: { doc, setIv, clearIv } for tests.
+ */
+export function createSleepDriver(sleep, { tickMs = 250, env = {} } = {}) {
+  const doc = env.doc !== undefined ? env.doc : (typeof document !== 'undefined' ? document : null);
+  const setIv = env.setIv || ((f, ms) => setInterval(f, ms));
+  const clearIv = env.clearIv || ((id) => clearInterval(id));
+  let id = 0;
+  const run = () => { try { sleep.tick(); } catch (e) { try { console.error('sleep tick failed', e); } catch { /* */ } } };
+  const onVis = () => run();
+  const arm = () => { if (sleep.active && !id) { id = setIv(run, tickMs); if (doc && doc.addEventListener) doc.addEventListener('visibilitychange', onVis); } else if (!sleep.active && id) disarm(); };
+  const disarm = () => { if (id) { clearIv(id); id = 0; } if (doc && doc.removeEventListener) doc.removeEventListener('visibilitychange', onVis); };
+  const off = sleep.subscribe(arm);      // armed while a timer exists, silent (no timer at all) otherwise
+  arm();
+  return { get running() { return !!id; }, tickNow: run, destroy() { off(); disarm(); } };
+}
+
 // ── everything, for main.js ────────────────────────────────────────────────────────────────────────────────────────────────
 export function startBackground({ step, engine, actions, getMeta, notice, win = typeof window !== 'undefined' ? window : null, doc = typeof document !== 'undefined' ? document : null } = {}) {
   const driver = createLoopDriver(step, { doc });

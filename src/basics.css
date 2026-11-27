@@ -5,3 +5,13 @@
 .rs-chip[hidden] { display: none; }
 .rs-chip:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 .rs-ic { font-size: 12px; }
+
+/* sleep timer */
+.st-seg.sl-seg { flex-wrap: wrap; }
+.st-seg.sl-seg button { flex: 1 1 28%; min-height: 44px; }
+.sl-line { margin-top: 6px; }
+.sl-chip { position: absolute; z-index: 5; left: 50%; transform: translateX(-50%); top: calc(var(--head-h, 56px) + 8px); min-height: 44px; padding: 0 16px; border-radius: 22px;
+  border: 1px solid rgba(255,255,255,.28); background: rgba(20,20,26,.92); color: #f2f2f6; font: 600 14px/1 system-ui, sans-serif; font-variant-numeric: tabular-nums; cursor: pointer; }
+.sl-chip[hidden] { display: none; }
+.rs-chip:not([hidden]) ~ .sl-chip { top: calc(var(--head-h, 56px) + 60px); }
+.sl-chip:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }

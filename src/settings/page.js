@@ -8,6 +8,7 @@
 //     layouts: [{ id, label, desc }],                  turntable layouts that exist right now ([] hides the row)
 //     library: { prefs: libraryPrefs (src/library-prefs.js), deviceAvailable?(), mountScanCard?(el), scanNow?(), clearCache?() },
 //     playback: { openDeckDetails?() },
+//     sleep: the sleep timer model (src/sleep.js: start, cancel, state, subscribe); omit to hide the row
 //     radio: { favouriteCount(), recentCount(), clearFavourites(), clearRecents(), resetVoices() },
 //     booth: { ringOn(): boolean | null },
 //     deviceMode: { open() },                          Device mode's own options sheet (src/devicemode/sheet.js); omit to hide the group
@@ -16,6 +17,7 @@
 //   }
 import { ACCENT_PRESETS, resolveAccent, onAccent } from '../theme.js';
 import { h, seg, sw } from './controls.js';
+import { mountSleep } from '../sleep-ui.js';
 
 function confirmBtn(label, armedLabel, run, { disabled = () => false } = {}) {
   let t = 0;
@@ -136,7 +138,10 @@ export function mountSettings(host, deps) {
   const audiophile = reg(sw('Audiophile mode', 'Adds fine-tuning dials for the record to Turntable settings.', S('playback.audiophile'), T('playback.audiophile')));
   const shuffleSw = reg(sw('Shuffle', 'Play an album, or Play all, in a random order.', S('playback.shuffle'), T('playback.shuffle')));
   const repeatSeg = reg(seg('Repeat', [{ value: 'off', label: 'Off' }, { value: 'all', label: 'All' }, { value: 'one', label: 'One' }], S('playback.repeat'), T('playback.repeat')));
-  const playback = group('Playback', null, row('Default speed', 'The speed the turntable starts at.', rpm), audiophile, shuffleSw, row('Repeat', 'All plays the album again when it ends; One repeats the track.', repeatSeg),
+  const sleepHost = h('div', { class: 'st-grow' });
+  if (deps.sleep) mountSleep(sleepHost, deps.sleep);
+  const sleepRow = deps.sleep ? row('Sleep timer', 'Fades the music out over the last 10 seconds, then stops it. Works with the screen off.', sleepHost) : null;
+  const playback = group('Playback', null, row('Default speed', 'The speed the turntable starts at.', rpm), audiophile, shuffleSw, row('Repeat', 'All plays the album again when it ends; One repeats the track.', repeatSeg), sleepRow,
     h('div', { class: 'st-row' }, h('div', { class: 'st-label' }, 'More controls'), h('div', { class: 'st-hint' }, 'Fine speed, position and extra record details.'),
       h('div', { class: 'st-btns' }, h('button', { type: 'button', class: 'st-btn', onclick: () => deps.playback && deps.playback.openDeckDetails && deps.playback.openDeckDetails() }, 'Open Turntable settings'))));
 
