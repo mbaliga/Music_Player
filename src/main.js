@@ -39,6 +39,7 @@ let deviceMode = null;
 import { mountBooth } from './shell/booth.js';
 import { createEngineGate } from './engine-gate.js';
 import { startBackground, createSleepDriver } from './background.js';
+import { createArtwork } from './artwork.js';                // album art as base64 for the notification / lock screen
 import { createRationale, showRationaleCard } from './notify-rationale.js';   // the one-line reason shown before the OS notification dialog        // background playback: timer-driven loop while hidden, native media service, media buttons (docs/DEVICE_LIBRARY.md)
 import { installBackButton } from './backbutton.js';      // hardware Back: close the topmost layer, else minimise
 import { LibraryManager } from './library.js';
@@ -154,7 +155,7 @@ async function boot() {
   installCustomTheme();
   installSettingsAndSearch();
   createSleepDriver(sleep);   // the sleep timer's own clock: ticks while the page is hidden too
-  bg = startBackground({ step: loop, engine: state.engine, actions: miniActions, getMeta: mediaMeta, notice: (t) => toast(t), rationale: createRationale({ storage: lsOk(), show: () => showRationaleCard({ host: el('shell') || document.body }) }) });   // starts the frame loop (rAF visible / timer hidden)
+  bg = startBackground({ step: loop, engine: state.engine, actions: miniActions, getMeta: mediaMeta, getPosition: mediaPosition, artwork: createArtwork(), notice: (t) => toast(t), rationale: createRationale({ storage: lsOk(), show: () => showRationaleCard({ host: el('shell') || document.body }) }) });   // starts the frame loop (rAF visible / timer hidden)
   installBackButton({ deviceMode, getSearch: () => search, getShell: () => shell, library: { isOpen: () => !!stage && stage.zoom > 0.5, close: closeLibrary } });
   updateLatencyReadout();
   showBuildId();
@@ -1880,6 +1881,14 @@ const miniActions = {
     } catch (err) { console.warn('previous failed', err); }
     refreshNowPlaying();
   },
+  async seek(source, sec) {   // the notification / lock-screen seek bar: an album seeks within the track that is on the platter
+    try {
+      if (source !== 'album' || !state.queue || !(state.T > 0)) return;
+      await state.engine.resume();
+      goTo({ index: state.queue.index, time: clamp(sec, 0, Math.max(0, state.T - 0.5)) }, false);
+    } catch (err) { console.warn('seek failed', err); }
+    refreshNowPlaying();
+  },
   async next(source) {
     try {
       if (source === 'album') { await state.engine.resume(); stepTrack(1); }
@@ -1890,11 +1899,16 @@ const miniActions = {
 };
 // artist / album for the notification and the lock screen (the mini bar's own text stays as is)
 function mediaMeta(source) {
-  if (source === 'album') { const q = state.queue, it = q && q.items[q.index], m = state.albumMeta; return { artist: (it && it.artist) || (m && m.artist) || '', album: (m && m.title) || '' }; }
+  if (source === 'album') { const q = state.queue, it = q && q.items[q.index], m = state.albumMeta; return { artist: (it && it.artist) || (m && m.artist) || '', album: (m && m.title) || '', artworkUrl: (m && !m.builtin && m.coverUrl) || '' }; }
   if (source === 'mixtape') { const p = state.mixtapes && state.mixtapes.play; return { artist: 'Mixtape', album: (p && p.mix && p.mix.name) || '' }; }
   return { artist: 'Radio', album: '' };
 }
 const modeSuffix = () => { const m = playMode(); return (m.shuffle ? ' · shuffle' : '') + (m.repeat === 'all' ? ' · repeat all' : m.repeat === 'one' ? ' · repeat one' : ''); };   // surfaced on the mini bar's sub line
+// playhead for the notification / lock-screen seek bar (an album can seek; a tape shows its position only; radio has none)
+function mediaPosition(source) {
+  if (source === 'radio' || !state.track || !(state.T > 0)) return null;
+  return { positionSec: state.engine.position / state.engine.sampleRate, durationSec: state.T, seekable: source === 'album' };
+}
 function refreshNowPlaying() {
   if (!shell) return;
   const src = {};

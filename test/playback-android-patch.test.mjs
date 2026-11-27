@@ -90,7 +90,9 @@ test('apply(): all three patch scripts on one fake project in either order give 
 test('Java sources: the plugin name the JS bridge uses, the service type, the events and the focus / noisy / wake-lock handling', async () => {
   const plugin = await src('DevicePlaybackPlugin.java'), svc = await src('MediaPlaybackService.java'), host = await src('RunoutHost.java');
   assert.match(plugin, /name = "DevicePlayback"/);
-  for (const m of ['start', 'stop', 'setMetadata', 'setState', 'requestNotificationPermission']) assert.match(plugin, new RegExp(`public void ${m}\\(`));
+  for (const m of ['start', 'stop', 'setMetadata', 'setState', 'requestNotificationPermission', 'setPosition']) assert.match(plugin, new RegExp(`public void ${m}\\(`));
+  assert.match(plugin, /notifyListeners\("seek"/); assert.match(plugin, /BitmapFactory\.decodeByteArray/);
+  assert.match(svc, /ACTION_SEEK_TO/); assert.match(svc, /onSeekTo\(long/); assert.match(svc, /METADATA_KEY_ALBUM_ART/); assert.match(svc, /METADATA_KEY_DURATION/); assert.match(svc, /setLargeIcon/);
   for (const ev of ['play', 'pause', 'next', 'previous', 'duck', 'stopped']) assert.ok(svc.includes(`"${ev}"`), `event ${ev}`);
   assert.match(svc, /FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK/);
   for (const k of ['AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK', 'AUDIOFOCUS_LOSS_TRANSIENT', 'AUDIOFOCUS_LOSS', 'ACTION_AUDIO_BECOMING_NOISY', 'PARTIAL_WAKE_LOCK', 'MediaSession', 'Notification.MediaStyle']) assert.ok(svc.includes(k), k);

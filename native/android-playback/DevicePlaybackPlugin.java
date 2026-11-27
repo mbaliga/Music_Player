@@ -1,6 +1,9 @@
 package com.runout.app;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Build;
+import android.util.Base64;
 
 import com.getcapacitor.JSObject;
 import com.getcapacitor.PermissionState;
@@ -19,9 +22,11 @@ import com.getcapacitor.annotation.PermissionCallback;
  *                                            service still runs (the OS just hides its notification).
  *   start()                                  start the foreground service. Call only on a play gesture, while the app is visible.
  *   stop()                                   stop the service and remove the notification
- *   setMetadata({title, artist, album})      what the notification / lock screen shows
+ *   setMetadata({title, artist, album, artwork?})  what the notification / lock screen shows; artwork = base64 JPEG / PNG (no data: prefix), optional
+ *   setPosition({positionMs, durationMs, seekable})  playhead of the playing track for the seek bar (positionMs < 0 = unknown); the session extrapolates
  *   setState({playing})                      play / pause as the web layer sees it (drives the notification and the wake lock)
  * Events (addListener): play, pause, next, previous (a transport key / notification button / focus change asked for it),
+ *                       seek {positionMs} (the seek bar was moved),
  *                       duck {on} (another app wants the audio to go quiet, on=false when it hands it back).
  */
 @CapacitorPlugin(
@@ -48,6 +53,13 @@ public class DevicePlaybackPlugin extends Plugin implements MediaPlaybackService
         JSObject o = new JSObject();
         o.put("on", flag);
         notifyListeners(name, o);
+    }
+
+    @Override
+    public void onSeek(long positionMs) {
+        JSObject o = new JSObject();
+        o.put("positionMs", positionMs);
+        notifyListeners("seek", o);
     }
 
     @PluginMethod
@@ -86,7 +98,22 @@ public class DevicePlaybackPlugin extends Plugin implements MediaPlaybackService
 
     @PluginMethod
     public void setMetadata(PluginCall call) {
-        MediaPlaybackService.setMetadata(call.getString("title", ""), call.getString("artist", ""), call.getString("album", ""));
+        Bitmap art = null;
+        try {
+            String b64 = call.getString("artwork", null);
+            if (b64 != null && b64.length() > 0 && b64.length() < 2000000) {      // ~1.5 MB of image at most; the web layer sends ~512 px JPEG (tens of KB)
+                byte[] bytes = Base64.decode(b64, Base64.DEFAULT);
+                art = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+            }
+        } catch (Exception ignored) { art = null; }        // bad art is no reason to lose the title
+        MediaPlaybackService.setMetadata(call.getString("title", ""), call.getString("artist", ""), call.getString("album", ""), art);
+        call.resolve();
+    }
+
+    @PluginMethod
+    public void setPosition(PluginCall call) {
+        Long pos = call.getLong("positionMs", -1L), dur = call.getLong("durationMs", 0L);
+        MediaPlaybackService.setPosition(pos == null ? -1L : pos, dur == null ? 0L : dur, Boolean.TRUE.equals(call.getBoolean("seekable", false)));
         call.resolve();
     }
 

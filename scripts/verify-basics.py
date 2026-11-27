@@ -270,7 +270,56 @@ def phase_notify(b, URL):
     check(not errs, f'no console / page errors {errs[:3]}')
     ctx.close()
 
-PHASES = {'resume': phase_resume, 'shuffle': phase_shuffle, 'sleep': phase_sleep, 'notify': phase_notify}
+
+def phase_media(b, URL):
+    print('\n=== 5. MediaSession / notification: seek + artwork ===', flush=True)
+    ctx, pg, errs = open_app_pb(b, URL, ALB, secs=60)
+    pg.evaluate("window.__pb.perm = 'granted'")
+    # a real (generated) cover: 800 x 600, so the 512 px downscale is visible
+    pg.evaluate("""async () => { const c = document.createElement('canvas'); c.width = 800; c.height = 600; const g = c.getContext('2d'); g.fillStyle = '#c33'; g.fillRect(0, 0, 800, 600); g.fillStyle = '#fff'; g.fillRect(100, 100, 300, 200);
+      const blob = await new Promise((r) => c.toBlob(r, 'image/png')); window.__cover = URL.createObjectURL(blob); window.__rt.app().state.albumMeta.coverUrl = window.__cover; }""")
+    pg.evaluate(PLAY); d = settle_dom(pg, TONES[0], 9000); check(near(d, TONES[0]), f'album plays ({d:.0f} Hz)')
+    pg.wait_for_timeout(2500)
+    metas = pb_calls(pg, 'setMetadata')
+    art = [m[1].get('artwork') for m in metas if m[1].get('artwork')]
+    check(len(art) >= 1, f'album artwork is handed to the notification (setMetadata calls: {len(metas)}, with art: {len(art)})')
+    if art:
+        dims = pg.evaluate("""(b64) => new Promise((res) => { const im = new Image(); im.onload = () => res([im.width, im.height]); im.onerror = () => res(null); im.src = 'data:image/jpeg;base64,' + b64; })""", art[-1])
+        check(dims == [512, 384], f'the art is a JPEG scaled to 512 px, aspect kept ({dims})')
+        check(len(art[-1]) < 300000, f'... and small ({len(art[-1])} base64 chars)')
+    first = metas[0][1]; check(first['title'] and first['album'] == 'Tone Album', f'title / album still come first ({first["title"]!r}, {first["album"]!r})')
+    # the seek bar
+    pos0 = pb_calls(pg, 'setPosition'); check(len(pos0) >= 1 and pos0[-1][1]['durationMs'] == 60000 and pos0[-1][1]['seekable'] is True, f'a seekable position + duration is sent ({pos0[-1:] })')
+    n0 = len(pos0); pg.wait_for_timeout(3500)
+    check(len(pb_calls(pg, 'setPosition')) == n0, 'while it just plays the position is NOT resent (the OS extrapolates)')
+    pg.evaluate("window.__pb.listeners.seek({ positionMs: 40000 })"); pg.wait_for_timeout(1500)
+    p1 = pos(pg); check(39.5 < p1 < 46, f'seek from the notification moves the playhead ({p1:.1f} s)')
+    check(near(settle_dom(pg, TONES[0], 4000), TONES[0]), 'and the music carries on from there')
+    last = pb_calls(pg, 'setPosition')[-1][1]; check(abs(last['positionMs'] / 1000 - p1) < 4, f"the new playhead is reported ({last['positionMs']} ms)")
+    # pause: the bar must freeze
+    pg.evaluate(PLAY); pg.wait_for_timeout(1500)
+    st = pb_calls(pg, 'setState')[-1][1]; lp = pb_calls(pg, 'setPosition')[-1][1]
+    check(st['playing'] is False and abs(lp['positionMs'] / 1000 - pos(pg)) < 3, f'pause freezes the reported playhead ({lp["positionMs"]} ms)')
+    # a seek on the paused record works too, and past the end is clamped
+    pg.evaluate("window.__pb.listeners.seek({ positionMs: 9999999 })"); pg.wait_for_timeout(800)
+    check(pos(pg) < 60.0, f'a seek past the end is clamped inside the track ({pos(pg):.1f} s)')
+    # the web MediaSession (no native plugin): position state + seekto
+    ctx.close()
+    ctx2 = b.new_context(bypass_csp=True, viewport={'width': 412, 'height': 860})
+    ctx2.add_init_script("""(() => { window.__ms = { states: [], handlers: {} };
+      let cap; Object.defineProperty(window, 'Capacitor', { configurable: true, get: () => cap, set: (v) => { v.isPluginAvailable = (n) => n !== 'DevicePlayback'; cap = v; } });   // the phone library mock stays, the notification plugin is absent: the web MediaSession path
+      Object.defineProperty(navigator, 'mediaSession', { configurable: true, value: { metadata: null, playbackState: 'none', setActionHandler: (a, f) => { window.__ms.handlers[a] = f; }, setPositionState: (s) => window.__ms.states.push(s) } }); })();""")
+    c3, pg, errs = open_app(b, URL, ALB, secs=60, ctx=ctx2)
+    pg.evaluate(PLAY); settle_dom(pg, TONES[0], 9000); pg.wait_for_timeout(2500)
+    st = pg.evaluate('window.__ms.states')
+    check(len(st) >= 1 and st[-1]['duration'] == 60, f'web: setPositionState is reported ({st[-1:]})')
+    check('seekto' in pg.evaluate('Object.keys(window.__ms.handlers)'), 'web: a seekto handler is installed')
+    pg.evaluate("window.__ms.handlers.seekto({ seekTime: 30 })"); pg.wait_for_timeout(1200)
+    p1 = pos(pg); check(29.5 < p1 < 36, f'web: seekto moves the playhead ({p1:.1f} s)')
+    check(not errs, f'no console / page errors {errs[:3]}')
+    ctx2.close()
+
+PHASES = {'resume': phase_resume, 'shuffle': phase_shuffle, 'sleep': phase_sleep, 'notify': phase_notify, 'media': phase_media}
 
 def main():
     want = sys.argv[1:] or list(PHASES)

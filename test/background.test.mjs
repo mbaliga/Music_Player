@@ -160,7 +160,7 @@ test('web: navigator.mediaSession carries metadata, state and the action handler
   assert.equal(ms.metadata.title, 'Song'); assert.equal(ms.metadata.artist, 'A'); assert.equal(ms.playbackState, 'playing');
   handlers.pause(); assert.deepEqual(acts, ['album']);
   b.sync({}); assert.equal(ms.playbackState, 'paused');
-  assert.deepEqual(Object.keys(handlers).sort(), ['nexttrack', 'pause', 'play', 'previoustrack']);
+  assert.deepEqual(Object.keys(handlers).sort(), ['nexttrack', 'pause', 'play', 'previoustrack', 'seekbackward', 'seekforward', 'seekto']);
 });
 
 test('startBackground wires the engine edge to a poke and starts the driver; no-ops without a native plugin', () => {
@@ -247,4 +247,78 @@ test('media bridge + rationale: a failing rationale or permission call is tolera
   b.sync(album()); await flush(); await flush();
   assert.ok(plugin.calls.some((c) => c[0] === 'start'));
   assert.ok(!plugin.calls.some((c) => c[0] === 'perm'));
+});
+
+// ── seek bar + artwork ──
+const pos = (over = {}) => ({ positionSec: 10, durationSec: 200, seekable: true, ...over });
+
+test('native: position is sent on track / state change and on drift only, never every tick; radio (no position) hides the bar', async () => {
+  const plugin = fakePlugin(); plugin.setPosition = async (p) => { plugin.calls.push(['pos', p]); };
+  let p = pos(); let radio = false;
+  const b = createMediaBridge({ plugin, actions: {}, getPosition: () => (radio ? null : p), env: { doc: { hidden: false }, now: () => 0 } });
+  const tick = async (src) => { b.sync(src); await flush(); };
+  await flush();
+  await tick(album());
+  assert.deepEqual(plugin.calls.filter((c) => c[0] === 'pos'), [['pos', { positionMs: 10000, durationMs: 200000, seekable: true }]]);
+  plugin.calls.length = 0;
+  for (let i = 0; i < 5; i++) await tick(album());
+  assert.equal(plugin.calls.filter((c) => c[0] === 'pos').length, 0, 'unchanged: nothing sent');
+  p = pos({ positionSec: 90 }); await tick(album());                       // a jump (scrub / seek) beyond the extrapolation
+  assert.equal(plugin.calls.filter((c) => c[0] === 'pos').length, 1);
+  plugin.calls.length = 0;
+  await tick(album({ playing: false }));                                    // pause: the OS must freeze the bar
+  assert.equal(plugin.calls.filter((c) => c[0] === 'pos').length, 1);
+  plugin.calls.length = 0;
+  radio = true; await tick(album()); await tick(album());
+  assert.deepEqual(plugin.calls.filter((c) => c[0] === 'pos'), [['pos', { positionMs: -1, durationMs: 0, seekable: false }]], 'once');
+});
+
+test('native: the seek event moves an ALBUM; radio / tapes ignore it; the playhead is resent afterwards', async () => {
+  const plugin = fakePlugin(); plugin.setPosition = async (p) => { plugin.calls.push(['pos', p]); };
+  const seeks = [];
+  const b = createMediaBridge({ plugin, actions: { seek: (s, t) => seeks.push([s, t]) }, getPosition: () => pos(), env: { doc: { hidden: false }, now: () => 0 } });
+  await flush(); b.sync(album()); await flush();
+  plugin.ls.seek({ positionMs: 61500 }); await flush();
+  assert.deepEqual(seeks, [['album', 61.5]]);
+  plugin.calls.length = 0; b.sync(album()); await flush();
+  assert.equal(plugin.calls.filter((c) => c[0] === 'pos').length, 1, 'resent after a seek');
+  plugin.ls.seek({ positionMs: NaN }); plugin.ls.seek({}); await flush(); assert.equal(seeks.length, 1, 'junk ignored');
+  const b2 = createMediaBridge({ plugin: fakePlugin(), actions: { seek: (s, t) => seeks.push([s, t]) }, env: { doc: { hidden: false } } });
+  b2.sync({ mixtape: { title: 'T', sub: 's', playing: true } }); b2.handlers.seek(5); assert.equal(seeks.length, 1, 'a tape has no seek');
+});
+
+test('web: mediaSession gets setPositionState and a seekto handler that seeks an album', () => {
+  const handlers = {}; const states = [];
+  const ms = { metadata: null, playbackState: 'none', setActionHandler: (a, f) => { handlers[a] = f; }, setPositionState: (s) => states.push(s) };
+  const seeks = [];
+  const b = createMediaBridge({ plugin: null, actions: { seek: (s, t) => seeks.push([s, t]) }, getPosition: () => pos({ positionSec: 30 }), env: { doc: { hidden: false }, nav: { mediaSession: ms }, now: () => 0, MediaMetadata: class { constructor(m) { Object.assign(this, m); } } } });
+  b.sync(album());
+  assert.deepEqual(states, [{ duration: 200, playbackRate: 1, position: 30 }]);
+  handlers.seekto({ seekTime: 75 }); assert.deepEqual(seeks, [['album', 75]]);
+  handlers.seekforward({ seekOffset: 15 }); assert.deepEqual(seeks.at(-1), ['album', 45]);
+  handlers.seekbackward({}); assert.deepEqual(seeks.at(-1), ['album', 20]);
+  handlers.seekto({}); assert.equal(seeks.length, 3);
+});
+
+test('artwork: native gets base64 once converted (resent on arrival, attached at once for the same album); the web mediaSession gets the url', async () => {
+  const plugin = fakePlugin(); let resolveArt;
+  const cache = new Map();
+  const artwork = { peek: (u) => cache.get(u), get: (u) => new Promise((r) => { resolveArt = () => { cache.set(u, 'QUJD'); r('QUJD'); }; }) };
+  let meta = { artist: 'A', album: 'B', artworkUrl: 'blob:cover1' };
+  const b = createMediaBridge({ plugin, actions: {}, getMeta: () => meta, artwork, env: { doc: { hidden: false } } });
+  await flush(); b.sync(album()); await flush();
+  const first = plugin.calls.find((c) => c[0] === 'meta')[1];
+  assert.equal(first.artwork, undefined, 'not converted yet: text first');
+  resolveArt(); await flush();
+  plugin.calls.length = 0; b.sync(album()); await flush();
+  assert.equal(plugin.calls.find((c) => c[0] === 'meta')[1].artwork, 'QUJD', 'resent with the art once it exists');
+  plugin.calls.length = 0; b.sync(album({ title: 'Next song' })); await flush();
+  assert.equal(plugin.calls.find((c) => c[0] === 'meta')[1].artwork, 'QUJD', 'the next track of the same album carries it straight away');
+  meta = { artist: 'A', album: 'B', artworkUrl: '' }; plugin.calls.length = 0; b.sync(album({ title: 'Third' })); await flush();
+  assert.equal(plugin.calls.find((c) => c[0] === 'meta')[1].artwork, undefined, 'no cover: no stale art');
+  // web
+  const ms = { metadata: null, playbackState: 'none', setActionHandler() {} };
+  const w = createMediaBridge({ plugin: null, actions: {}, getMeta: () => ({ artist: 'A', album: 'B', artworkUrl: 'blob:cover1' }), env: { doc: { hidden: false }, nav: { mediaSession: ms }, MediaMetadata: class { constructor(m) { Object.assign(this, m); } } } });
+  w.sync(album());
+  assert.deepEqual(ms.metadata.artwork, [{ src: 'blob:cover1', sizes: '512x512' }]);
 });

@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ServiceInfo;
+import android.graphics.Bitmap;
 import android.media.AudioAttributes;
 import android.media.AudioFocusRequest;
 import android.media.AudioManager;
@@ -40,7 +41,11 @@ import android.os.PowerManager;
 public class MediaPlaybackService extends Service {
 
     /** Implemented by the plugin: name is play | pause | next | previous | duck (flag = ducking on) | stopped. Called on the main thread. */
-    public interface Listener { void onAction(String name, boolean flag); }
+    public interface Listener {
+        void onAction(String name, boolean flag);
+        /** The lock-screen / notification / Bluetooth seek bar was moved to positionMs. */
+        void onSeek(long positionMs);
+    }
 
     static final String ACTION_START = "com.runout.app.playback.START";
     static final String ACTION_PLAY = "com.runout.app.playback.PLAY";
@@ -62,6 +67,10 @@ public class MediaPlaybackService extends Service {
     private static volatile String artist = "";
     private static volatile String album = "";
     private static volatile boolean playing = false;
+    private static volatile Bitmap artwork = null;          // album art for the lock screen / notification, or null
+    private static volatile long durationMs = 0;            // length of the playing track (0 = unknown)
+    private static volatile long positionMs = -1;           // playhead when last reported (-1 = unknown, e.g. radio)
+    private static volatile boolean seekable = false;       // the web layer can honour a seek
 
     private final Handler main = new Handler(Looper.getMainLooper());
     private MediaSession session;
@@ -89,10 +98,21 @@ public class MediaPlaybackService extends Service {
         ctx.stopService(new Intent(ctx, MediaPlaybackService.class));
     }
 
-    static void setMetadata(String t, String a, String al) {
+    static void setMetadata(String t, String a, String al) { setMetadata(t, a, al, null); }
+
+    static void setMetadata(String t, String a, String al, Bitmap art) {
         title = t == null || t.length() == 0 ? "Runout" : t;
         artist = a == null ? "" : a;
         album = al == null ? "" : al;
+        artwork = art;
+        poke();
+    }
+
+    /** Playhead of the playing track. positionMs < 0 = unknown (the seek bar is hidden). The session extrapolates from here at `speed`. */
+    static void setPosition(long pos, long dur, boolean canSeek) {
+        positionMs = pos < 0 ? -1 : pos;
+        durationMs = dur > 0 ? dur : 0;
+        seekable = canSeek && pos >= 0 && dur > 0;
         poke();
     }
 
@@ -137,6 +157,7 @@ public class MediaPlaybackService extends Service {
             @Override public void onSkipToNext() { emit("next", false); }
             @Override public void onSkipToPrevious() { emit("previous", false); }
             @Override public void onStop() { emit("pause", false); }
+            @Override public void onSeekTo(long pos) { Listener l = listener; if (l != null) { try { l.onSeek(pos); } catch (Exception ignored) { } } }
         }, main);
         session.setActive(true);
     }
@@ -203,12 +224,17 @@ public class MediaPlaybackService extends Service {
             .putString(MediaMetadata.METADATA_KEY_TITLE, title)
             .putString(MediaMetadata.METADATA_KEY_ARTIST, artist)
             .putString(MediaMetadata.METADATA_KEY_ALBUM, album);
+        if (durationMs > 0) md.putLong(MediaMetadata.METADATA_KEY_DURATION, durationMs);
+        final Bitmap art = artwork;
+        if (art != null) md.putBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART, art);
         session.setMetadata(md.build());
         long actions = PlaybackState.ACTION_PLAY | PlaybackState.ACTION_PAUSE | PlaybackState.ACTION_PLAY_PAUSE
             | PlaybackState.ACTION_SKIP_TO_NEXT | PlaybackState.ACTION_SKIP_TO_PREVIOUS;
+        if (seekable) actions |= PlaybackState.ACTION_SEEK_TO;
+        final long pos = positionMs >= 0 ? positionMs : PlaybackState.PLAYBACK_POSITION_UNKNOWN;
         session.setPlaybackState(new PlaybackState.Builder()
             .setActions(actions)
-            .setState(p ? PlaybackState.STATE_PLAYING : PlaybackState.STATE_PAUSED, PlaybackState.PLAYBACK_POSITION_UNKNOWN, p ? 1f : 0f)
+            .setState(p ? PlaybackState.STATE_PLAYING : PlaybackState.STATE_PAUSED, pos, p ? 1f : 0f)
             .build());
 
         Notification n = buildNotification(p);
@@ -259,6 +285,8 @@ public class MediaPlaybackService extends Service {
             .setOngoing(p)
             .setContentIntent(launchIntent())
             .setDeleteIntent(serviceIntent(ACTION_STOP));
+        final Bitmap art = artwork;
+        if (art != null) b.setLargeIcon(art);
         b.addAction(action(android.R.drawable.ic_media_previous, "Previous", ACTION_PREV));
         if (p) b.addAction(action(android.R.drawable.ic_media_pause, "Pause", ACTION_PAUSE));
         else b.addAction(action(android.R.drawable.ic_media_play, "Play", ACTION_PLAY));
