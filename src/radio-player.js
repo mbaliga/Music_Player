@@ -350,6 +350,7 @@ export class RadioUI {
       if (this.session) this.stop();   // the card must not name a station that is not the one still playing underneath it
       this._showNow(station, { phase: 'error', error: { kind: 'missing', message: NO_LONGER } }); return;
     }
+    try { this.d.onPlay?.(station); } catch { /* */ }   // the tap itself is the user's latest intent: a tape / album decode that began earlier is superseded, one that begins later wins
     const prevEngine = !!(this.session && this.session.usesEngine);
     this.session?.stop();
     const session = createSessionFor(station, { aiHost: this.d.aiHost });

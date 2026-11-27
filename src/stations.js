@@ -210,6 +210,8 @@ function createCannedProxySession(station, env = {}, loadCanned) {
       await inner.start();
     },
     stop() { gen++; try { inner && inner.stop(); } catch { /* */ } try { unmount && unmount(); } catch { /* */ } unmount = null; inner = null; set({ phase: 'idle', error: null }); },
+    /** The user started their own record / tape on the shared engine: end the show WITHOUT halting the deck (the new track already owns it). */
+    abandon() { gen++; try { inner && (typeof inner.abandon === 'function' ? inner.abandon() : inner.stop()); } catch { /* */ } try { unmount && unmount(); } catch { /* */ } unmount = null; inner = null; set({ phase: 'idle', error: null }); },
     skip() { try { inner && inner.skip(); } catch { /* */ } },
     signOff() { try { inner && inner.signOff(); } catch { /* */ } },
     attachPanel(el) { panelEl = el; mountPanel(); },

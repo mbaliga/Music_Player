@@ -104,6 +104,7 @@ const state = {
   albumMeta: null,           // the coverflow album object ({id, title, artist, coverUrl...}) for albumId; null for a loose track
   view: 'vinyl',             // 'vinyl' platter | 'cd' player
   vinylOwned: true,          // false while a mixtape / radio track is what the engine holds: the loop then keeps it at nominal speed as before
+  stationLeftover: false,    // true while the deck holds an engine-backed station's song (running, or parked after it stopped): not a user record
   cdPlaying: true,
   cdMute: false,             // brief CD "re-read" silence after a skip
   jumping: false,            // a track change is decoding (arm stays lifted)
@@ -362,6 +363,7 @@ async function loadTrack(track, q = null, fromRadio = false, foreign = false, al
   if (!foreign) { try { state.mixtapes && state.mixtapes.releaseEngine(); } catch { /* */ } }   // an album track / a station replaces a tape that was still playing
   if (!foreign) state.braking = false;                                                        // a released paused tape must not leave the platter braked
   state.vinylOwned = !(fromRadio || foreign);
+  state.stationLeftover = !!fromRadio;   // the deck holds an engine-backed station's song, not a record the user chose (see platterIsDemo / host.halt)
   state.track = track;
   track.nch = nch; track.tempoFeed = feed;
   state.frames = track.frames;
@@ -451,7 +453,7 @@ let libReady = Promise.resolve();
 const whenLibraryReady = () => Promise.race([libReady, new Promise((r) => setTimeout(r, 1500))]);
 // a station / a tape owns the engine right now (not merely left a loose track in it)
 const foreignPlaying = () => !!(engineOwner() || state.radioOn);
-const platterIsDemo = () => state.albumId === TEST_PRESSING_ID && libHasAlbums();
+const platterIsDemo = () => (state.albumId === TEST_PRESSING_ID || !!state.stationLeftover) && libHasAlbums();   // a stopped station's last song parked on the platter is not a user record either
 let adoptTimer = 0;
 function scheduleAdopt() {   // after the library settles (a device scan rebuilds the shelf every 400 ms): put the focused album on the platter, silently
   clearTimeout(adoptTimer);
@@ -1532,6 +1534,7 @@ function installLibrary() {
       state.T = track.frames / state.engine.sampleRate;
       state.envelope = track.envelope;
       state.reachedEnd = false;
+      state.stationLeftover = false;
       refreshRecord();
     },
   });
@@ -1550,7 +1553,8 @@ function installLibrary() {
         async mount(host) {
           const { RadioUI } = await import('./radio-player.js');
           radio = new RadioUI({
-            onActive: (on) => { state.radioOn = on; state.engine.setPlaying(!on); if (on) { newIntent(); try { state.mixtapes && state.mixtapes.releaseEngine(); } catch { /* */ } } },   // a station and a tape never share the engine
+            onPlay: () => { newIntent(); },   // the tap is the intent (not the show's first song load, which would also supersede a tape the user opened a moment after the tap)
+            onActive: (on) => { state.radioOn = on; state.engine.setPlaying(!on); if (on) { newIntent(); parkTapeUnderStation(); } },   // a station and a tape never share the engine
             libraryEmpty: () => !!libLoaded && !libHasAlbums(),   // offline shows need songs: say so on the card instead of starting an empty session
             openAlbums: () => { try { shell.go('albums', { close: true }); } catch { /* */ } },
             aiHost: makeAiHost(library), // You Radio (src/radio/offline) plays your library through this engine
@@ -1586,6 +1590,17 @@ function installLibrary() {
   deviceMode.mountKeys();   // the lock key goes into every section header the shell just built
   el('shell').dataset.section = shell.current;
   setInterval(refreshNowPlaying, 500);
+}
+
+// A streamed station takes the engine from a tape that was playing: release the tape's UI AND park its engine track in the runout groove.
+// Merely muting it left the song running silently, and the station's Stop (setPlaying(true)) then brought it back as ghost audio.
+function parkTapeUnderStation() {
+  const p = state.mixtapes && state.mixtapes.play;
+  const hadTape = !!(p && !p.ended);
+  try { state.mixtapes && state.mixtapes.releaseEngine(); } catch { /* */ }
+  if (!hadTape) return;
+  try { state.engine.dropNext(); state.engine.setRate(0); state.engine.seek(Math.max(0, state.frames - 2)); } catch { /* */ }
+  state.stationLeftover = true;
 }
 
 function boothShown() {
@@ -1866,7 +1881,6 @@ function makeAiHost(library) {
     owner: () => engineGate.token(),
     cancelPending: () => { engineGate.bump(); }, // halt(): a decode still in flight must not install its song afterwards
     async load(libTrack) {
-      newIntent();                                // a station starting supersedes an album decode still in flight
       const tok = engineGate.token();
       await eng().resume();
       const track = await loadFile(libTrack.file, eng().ctx, { copy: false, durationSec: libTrack.durationSec });
@@ -1893,10 +1907,12 @@ function makeAiHost(library) {
       state.envelope = h.envelope;
       state.reachedEnd = false;
       state.vinylOwned = false;
+      state.stationLeftover = true;
       refreshRecord();
     },
     position: () => ({ t: eng().position / eng().sampleRate, T: state.T }),
     async halt() { // stop = the needle rests in the runout groove; the vinyl bus stays alive for the next record
+      if (!state.stationLeftover) return;   // the deck now holds the user's record / tape (loadTrack already replaced the show's song): leave it alone
       eng().dropNext();
       eng().seek(Math.max(0, state.frames - 2));
     },

@@ -11,7 +11,7 @@ const body = (name) => { const i = src.indexOf(name); assert.ok(i >= 0, name + '
 
 test('Play never plays the demo while the library has albums', () => {
   // the decision uses the WHOLE library, never the filtered shelf (a filter that hides every album must not unlock the demo)
-  assert.match(src, /const platterIsDemo = \(\) => state\.albumId === TEST_PRESSING_ID && libHasAlbums\(\)/);
+  assert.match(src, /const platterIsDemo = \(\) => \(state\.albumId === TEST_PRESSING_ID \|\| !!state\.stationLeftover\) && libHasAlbums\(\)/);
   assert.match(src, /const libHasAlbums = \(\) => unfiltered\(\)\.length > 0/);
   const t = body('async function onToggle()');
   assert.ok(t.indexOf('platterIsDemo()') > 0 && t.indexOf('adoptFocusedAlbum(') > 0, 'onToggle adopts the focused album first');
