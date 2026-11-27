@@ -277,7 +277,8 @@ export class RadioUI {
     const kids = [];
     if (m.last) {
       const last = stationFromEntry(m.last);
-      const onAir = !!(this.session && this.station && stationKey(this.station) === stationKey(last));   // "Resume X" while X plays is noise
+      const ph = this.session && this.session.state && this.session.state.phase;
+      const onAir = !!(this.station && stationKey(this.station) === stationKey(last) && ph && ph !== 'idle' && ph !== 'error');   // "Resume X" while X plays is noise
       if (onAir) { /* nothing to resume */ }
       else if (this._missing(last)) kids.push(this._missingRow(last));
       else kids.push(h('button', { class: 'radio-resume', type: 'button', onclick: () => this.play(last) },
@@ -371,6 +372,7 @@ export class RadioUI {
         this._commit(recordPlayed(this.store, worked, Date.now(), this._cannedIndex)); this._renderSaved(); }
       if (st.phase === 'idle' && session.isCanned && this._recorded && !this._stopping) { this.stop(); return; } // a graceful sign-off finished
       this._showNow(station, st);
+      if (st.phase === 'idle' || st.phase === 'error') this._renderSaved();   // not on air any more: Resume may show again
     });
     this._recorded = false;
     this._showNow(station, { phase: 'connecting', error: null });

@@ -42,7 +42,7 @@ test('an unplayable next album track is skipped with a toast naming it', () => {
 
 test('the Resume banner is not drawn for the show that is on air', () => {
   const r = read('src/radio-player.js');
-  assert.match(r, /const onAir = !!\(this\.session && this\.station && stationKey\(this\.station\) === stationKey\(last\)\)/);
+  assert.match(r, /const onAir = !!\(this\.station && stationKey\(this\.station\) === stationKey\(last\) && ph && ph !== 'idle' && ph !== 'error'\)/);
 });
 
 test('claims audit: no "AI" wording for templated You Radio, no stale stub comment', () => {
