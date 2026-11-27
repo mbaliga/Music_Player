@@ -12,7 +12,7 @@ All of it has been integrated and exercised together by `scripts/verify-tour.py`
 
 ## Verified (desktop Chromium, node)
 
-`npm test`: all pass (1,106, 1 skipped). `python3 scripts/verify-all.py`: every browser verifier plus the end-to-end tour (see `HANDOFF.md` §1 for what each proves).
+`npm test`: all pass (1,170, 1 skipped). `python3 scripts/verify-all.py`: every browser verifier plus the end-to-end tour (see `HANDOFF.md` §1 for what each proves).
 CI builds the debug APK on every push, compiling both custom Java plugins (device library, device display). Tour measurements (headless CPU renderer, not a phone)
 are in the table below (run B of `verify-all.py`; the screenshots of the tour are in `docs/screenshots/tour/`, 1x, 412x915 portrait + landscape + the native and 5k phases).
 
@@ -49,10 +49,18 @@ Known and deliberate: Android `textZoom` is NOT honoured by the WebView right no
 
 ## Final integration pass (hardening, playback review, accessibility)
 
-Merged on main: playback review fixes (row-vs-queue guard, adopt-focus intent, tape / CD / radio ownership, empty-library radio and mixtape copy), hardening (service lifecycle, CSP meta, CI split into `build-apk` + `publish` jobs with a lockfile and pinned actions), and the accessibility / contrast / layout pass. Proven together on the merged tree, serially on a quiet machine: `npm ci`, `npm test` (1,106, 1 skipped), `npm run build:web`, `verify-all.py` twice (14 scripts each), then every verifier run on its own again (turntable twice) and `verify-playback-review.py`; plus a Playwright drive WITHOUT `bypass_csp` over Search, theme import, the mixtape editor, radio, Booth and lock / AOD at 360x780 and 915x412: zero CSP violations (the only console error is the known dev-server `stations/` 404).
+Merged on main: playback review fixes (row-vs-queue guard, adopt-focus intent, tape / CD / radio ownership, empty-library radio and mixtape copy), hardening (service lifecycle, CSP meta, CI split into `build-apk` + `publish` jobs with a lockfile and pinned actions), and the accessibility / contrast / layout pass. Proven together on the merged tree, serially on a quiet machine: `npm ci`, `npm test` (1,170, 1 skipped), `npm run build:web`, `verify-all.py` twice (14 scripts each), then every verifier run on its own again (turntable twice) and `verify-playback-review.py`; plus a Playwright drive WITHOUT `bypass_csp` over Search, theme import, the mixtape editor, radio, Booth and lock / AOD at 360x780 and 915x412: zero CSP violations (the only console error is the known dev-server `stations/` 404).
 Found and fixed: `verify-radio-layout.py` failed on both `verify-all` runs. Not a flake: it was a real, deterministic consequence of the playback fix "offline shows need songs" (an empty library now shows a "scan your music first" card instead of starting a show), and it reproduced on 7ffd0a1 and not on 50f9652. The verifier now scans the fixture library before tapping a card and ends a show with the panel's Stop / Stop now. No app change.
 `verify-turntable.py` did not flake (4 of 4 clean runs: twice inside `verify-all`, twice alone). Screenshots in `docs/screenshots/tour/` were regenerated from this run.
 Seen but not changed: with the Radio mini bar up at 915x412 (landscape) the Albums stage's second caption line ("Radio playing - tap Stop to end it") is half hidden behind the bar; the tape editor makes `#shell` inert while open, the other modal surfaces rely on `trapFocus` alone.
+
+## Playback round, integration (resume, shuffle / repeat, sleep timer, seek, stage keys, UX round)
+
+Four parallel rounds landed (playback basics, adversarial correctness, stage UX) and were proven together serially on a quiet machine (`npm test`, `build:web`, `verify-all.py` twice, every verifier alone).
+**The 6 red tour checks were a stale test, not an app regression.** The tour's Booth step taps Play on a platter that a canned station had left a song on; since the hand-off fix a stopped station's leftover is *not* a record the user chose (`platterIsDemo` / `stationLeftover`, by design and covered by `verify-station-handoff.py` scenario 2), so Play loads the focused album, which in the tour is the Cold Front CD set. The Albums stage then showed the CD player (no `#tt-playBtn` / speed keys), and the lock step tapped keys that were hidden. The lock step now puts a vinyl album on the platter first (and asserts it). Locked Play / Stop and the speed keys were never broken: the tour passes 0 failures at 360 and 412 again.
+**Real defect found by the seam checks and fixed:** a cover tap on a paused CD (for example the one just restored by Resume) restarted the track at 0:00; it now plays on from where it is (`tapCover` in `src/main.js`; vinyl already did). Also fixed: at 320 px the Albums "Library" pill read "Lib..." (icon only below 340 px now); the Booth LEVEL label and the switch row (RESTART, LATCH) ran past the right edge at 1.5x text (reproduced by scaling every font in the Booth, now they wrap in their cells).
+New or extended verifiers: `verify-csp.py` phase 2 (the new playback UI under the real CSP, no bypass), `verify-seams.py` (cross-feature checks, real tones, measured), and `verify-all.py` now also runs basics, station-handoff, hardening-review, playback-review and seams.
+Seen, not changed: at 320 px the stage key row is ~35 px pitch (7 keys), and at 915x412 the stage keys are 53x40; the Booth blend fader's drawn element is 41 px wide at portrait widths (its hit area is wider);. Nothing here has run on a phone: `HANDOFF.md` section 6 item 15 is the on-device list for this round.
 
 ## Not verified
 
