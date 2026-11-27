@@ -102,7 +102,7 @@ export function migrate(blob, readLegacy) {
   return { settings, changed };
 }
 
-export function createSettingsStore({ storage = null } = {}) {
+export function createSettingsStore({ storage = null, onWriteError = null } = {}) {
   const subs = new Set();
   const read = () => {
     const blob = parseBlob(safeGet(storage, SETTINGS_KEY));
@@ -110,11 +110,13 @@ export function createSettingsStore({ storage = null } = {}) {
     return { settings, had: !!blob };
   };
   let { settings, had } = read();
-  const persist = () => { safeSet(storage, SETTINGS_KEY, JSON.stringify(settings)); };
+  // a write that did not land (storage full / blocked): the change still applies for this session, but it must not look remembered
+  const failed = () => { try { onWriteError && onWriteError(); } catch { /* */ } };
+  const persist = (quiet = false) => { const ok = safeSet(storage, SETTINGS_KEY, JSON.stringify(settings)); if (!ok && storage && !quiet) failed(); return ok; };
   const mirror = (path) => { const l = LEGACY.find((x) => x.path === path); if (l) safeSet(storage, l.key, l.write(getPath(settings, path))); };
   const emit = (path) => { for (const f of [...subs]) { try { f(settings, path); } catch (e) { try { console.error('settings subscriber', e); } catch { /* */ } } } };
   // first run (or a blob from a newer/older version): write what we resolved so the next load is a plain read
-  if (!had) { persist(); for (const l of LEGACY) mirror(l.path); }
+  if (!had) { persist(true); for (const l of LEGACY) mirror(l.path); }
 
   const api = {
     /** The whole settings object (a copy), or one value by path. */

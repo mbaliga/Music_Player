@@ -81,10 +81,8 @@ test('seam: with loadHost and an aiHost, You Radio is a lazy proxy that delegate
   assert.equal(stub.usesEngine, undefined);
   await stub.start();
   assert.equal(stub.state.phase, 'error');
-  // You City is still the stub
-  const city = createSessionFor(aiYouCityStation(), { aiHost: {} });
-  await city.start();
-  assert.equal(city.state.phase, 'error');
+  // You City is not registered at all (no screen offers it): a saved favourite from an older build has no player
+  assert.equal(createSessionFor(aiYouCityStation(), { aiHost: {} }), null);
   // a host that fails to load is the same clear error, not a hang
   _resetStationTypes();
   registerAiStationTypes({ isEnabled: () => true, loadCore: async () => ({}), loadHost: () => Promise.reject(new Error('404')) });
@@ -105,7 +103,7 @@ test('seam: the toggle can remove the AI types again without touching other stat
   const other = { id: 'radio-browser', label: 'Radio stations', createSession: () => ({}) };
   _resetStationTypes();
   registerAiStationTypes({ isEnabled: () => true, loadCore: async () => ({}), loadHost: async () => ({}) });
-  assert.ok(getStationType(AI_TYPE_YOU) && getStationType(AI_TYPE_YOU_CITY));
+  assert.ok(getStationType(AI_TYPE_YOU)); assert.equal(getStationType(AI_TYPE_YOU_CITY), null);
   unregisterAiStationTypes();
   assert.equal(getStationType(AI_TYPE_YOU), null); assert.equal(listStationTypes().length, 0);
   assert.equal(createSessionFor(aiYouStation(), { aiHost: {} }), null);

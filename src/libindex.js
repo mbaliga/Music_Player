@@ -142,6 +142,49 @@ export function dropRescanned(existing, scanned) {
   return scanned.filter((t) => { const k = key(t); return !(k && seen.has(k)); });
 }
 
+// ── Web folder re-pick (File System Access / webkitdirectory only; the Android MediaStore source never goes through here) ──
+const rootOf = (p) => { const x = String(p || ''), i = x.indexOf('/'); return i > 0 ? x.slice(0, i) : ''; };
+const pathHash = (p) => { let h = 5381; for (let i = 0; i < p.length; i++) h = (Math.imul(h, 33) ^ p.charCodeAt(i)) >>> 0; return h.toString(36); };
+
+/**
+ * The same song in two folders has one content id (tags + size + duration), but each row must have its own id (a mixtape / queue / list key
+ * must name ONE row). A scanned track whose id is already held by a live track at a DIFFERENT path gets `<id>~<hash of its path>`.
+ * Loose files (no path) keep the old rule: a duplicate stays a duplicate with the same id. Returns a new array (scanned tracks are copied when changed).
+ */
+export function uniqueTrackIds(existing, scanned) {
+  const owner = new Map();
+  for (const t of existing) if (t && t.id && t.path && !t.relink) owner.set(t.id, t.path);
+  return scanned.map((t) => {
+    if (!t || !t.id || !t.path) return t;
+    const o = owner.get(t.id);
+    if (o === undefined) { owner.set(t.id, t.path); return t; }
+    if (o === t.path) return t;
+    const id = `${t.id}~${pathHash(t.path)}`;
+    owner.set(id, t.path);
+    return { ...t, id };
+  });
+}
+
+/** Re-picking a folder: a scanned file REPLACES the row already holding that path (a modified file must not become a second row). Order is kept (rows are grouped by album anyway). */
+export function replaceByPath(existing, scanned) {
+  const at = new Map();
+  existing.forEach((t, i) => { if (t && t.path) at.set(t.path, i); });
+  const out = existing.slice(), rest = [];
+  for (const s of scanned) {
+    const i = s && s.path ? at.get(s.path) : undefined;
+    if (i !== undefined) out[i] = s; else rest.push(s);
+  }
+  return { out, rest };
+}
+
+/** After a COMPLETE folder re-pick: rows under a re-scanned root whose file is no longer in it are gone from disk, so they leave the library (no ghost rows). */
+export function pruneMissing(existing, scannedPaths) {
+  const paths = new Set(scannedPaths), roots = new Set();
+  for (const p of paths) { const r = rootOf(p); if (r) roots.add(r); }
+  if (!roots.size) return existing;
+  return existing.filter((t) => !(t && t.path && roots.has(rootOf(t.path)) && !paths.has(t.path)));
+}
+
 /** { linked, needsRelink } counts, for status text. */
 export function linkSummary(tracks) {
   let needsRelink = 0;

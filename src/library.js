@@ -14,7 +14,7 @@
 
 import { groupTracks, shelfItems } from './albums.js';
 import { readFileTags } from './tags.js';
-import { trackId, serializeIndex, parseIndex, mergeScanned, dropRescanned, linkSummary } from './libindex.js';
+import { trackId, serializeIndex, parseIndex, mergeScanned, uniqueTrackIds, replaceByPath, pruneMissing, linkSummary } from './libindex.js';
 import { saveIndex, loadIndex, saveHandle, loadHandles } from './library-store.js';
 import { libraryPrefs } from './library-prefs.js';
 import { trackSource, filterDeviceTracks, mergeSources, deriveArtists, deriveGenres, folderTrackFields, countShortHidden } from './library-model.js';
@@ -198,8 +198,15 @@ export class LibraryManager {
     let batch = [];
     const flush = () => {
       if (!batch.length) return;
-      // A scanned file REPLACES the persisted needs-re-link entry with its id.
-      this.tracks = mergeScanned(this._folder, rescan ? dropRescanned(this._folder, batch) : batch);
+      // A scanned file REPLACES the persisted needs-re-link entry with its id. A folder RE-scan also replaces the row that held the same path
+      // (a modified file is not a second row); the same song in two folders keeps one row each, with their own ids.
+      let base = this._folder, add;
+      if (rescan) {
+        const paths = new Set(batch.map((t) => t.path).filter(Boolean));
+        add = uniqueTrackIds(base.filter((t) => !(t.path && paths.has(t.path))), batch);   // ids are made unique against the rows that STAY
+        const r = replaceByPath(base, add); base = r.out; add = r.rest;
+      } else add = uniqueTrackIds(base, batch);
+      this.tracks = mergeScanned(base, add);
       batch = [];
       this._shelf = null;
     };
@@ -210,6 +217,8 @@ export class LibraryManager {
       onProgress?.(done, audioFiles.length);
     }
     flush();
+    // a finished folder re-pick: files that were deleted from it since the last pick leave the library
+    if (rescan && audioFiles.length) { const kept = pruneMissing(this._folder, audioFiles.map((f) => f.runoutPath || f.webkitRelativePath || '').filter(Boolean)); if (kept.length !== this._folder.length) { this.tracks = kept; this._shelf = null; } }
     this._persist();
   }
 

@@ -265,7 +265,7 @@ def run_viewport(b, w, h):
     check(not smallc, f'{tag}: every Settings control is at least 44x44 ({smallc})')
     for g in ('library', 'playback', 'radio', 'booth', 'device-mode', 'privacy-about'): sdet(g, False)
     sdet('radio'); page.click('.st-group[data-group="radio"] .st-switch'); page.wait_for_timeout(300)
-    check(page.evaluate('localStorage.getItem("runout.flag.radio.ai")') == '1', f'{tag}: AI stations toggle writes the existing radio.ai flag')
+    check(page.evaluate('localStorage.getItem("runout.flag.radio.ai")') == '1', f'{tag}: the You Radio toggle writes the existing radio.ai flag')
     page.click('.st-group[data-group="radio"] .st-switch')
     check(page.evaluate('localStorage.getItem("runout.flag.radio.ai")') is None, f'{tag}: ...and removes it again')
     sdet('privacy-about'); page.click('.st-group[data-group="privacy-about"] .st-switch'); page.wait_for_timeout(200)

@@ -713,7 +713,7 @@ I know of no first-party Anthropic STT/TTS product; the speech layers are third-
 
 ## 16. The offline host: a P2-precursor (built, Workstream H)
 
-`src/radio/offline/` is a complete, working "You" Radio that needs no model, no account and no network. It is the owner's chosen first step before any cloud AI: the same Director / Writer / Voice / Context seams as sections 3.2 to 3.4, implemented offline, so the cloud adapters can later replace the offline ones one for one. It sits behind the `radio.ai` flag (default OFF in code); the Radio tab has a labelled "AI stations (experimental)" setting that flips it. Nothing in it calls the network (a test booby-traps `fetch`, XHR, `WebSocket`, `EventSource` and beacons and runs a full show). Module map and limits: `HANDOFF.md` "You Radio (offline host)".
+`src/radio/offline/` is a complete, working "You" Radio that needs no model, no account and no network. It is the owner's chosen first step before any cloud AI: the same Director / Writer / Voice / Context seams as sections 3.2 to 3.4, implemented offline, so the cloud adapters can later replace the offline ones one for one. It sits behind the `radio.ai` flag (default OFF in code); the Radio tab has a labelled "You Radio: offline shows from your library" setting that flips it. Nothing in it calls the network (a test booby-traps `fetch`, XHR, `WebSocket`, `EventSource` and beacons and runs a full show). Module map and limits: `HANDOFF.md` "You Radio (offline host)".
 
 | Seam (core fake -> offline implementation) | Offline implementation |
 |---|---|

@@ -74,3 +74,32 @@ test('dropRescanned: scanning the same folder again adds nothing; a changed or n
   assert.equal(dropRescanned([{ path: '', size: 1, file: { lastModified: 1 } }], [{ path: '', size: 1, file: { lastModified: 1 } }]).length, 1);
   assert.equal(dropRescanned([{ ...mk('Music/a.mp3', 10, 1), relink: true }], [mk('Music/a.mp3', 10, 1)]).length, 1, 'a needs-re-link entry is replaced by mergeScanned, not dropped');
 });
+
+// ── web folder re-pick (adversarial review at 9d78a0f): ghost rows, modified duplicates, shared ids ──
+test('replaceByPath: a modified file replaces its row instead of becoming a second one; new files are appended', async () => {
+  const { replaceByPath } = await import('../src/libindex.js');
+  const old = [{ id: 'a', path: 'Music/a.mp3', size: 1 }, { id: 'b', path: 'Music/b.mp3', size: 2 }];
+  const r = replaceByPath(old, [{ id: 'a2', path: 'Music/a.mp3', size: 9 }, { id: 'c', path: 'Music/c.mp3', size: 3 }]);
+  assert.deepEqual(r.out.map((t) => t.id), ['a2', 'b']);
+  assert.deepEqual(r.rest.map((t) => t.id), ['c']);
+  assert.deepEqual(replaceByPath([{ id: 'x', path: '' }], [{ id: 'y', path: '' }]).rest.map((t) => t.id), ['y'], 'loose files (no path) never match');
+});
+
+test('pruneMissing: a re-picked folder drops the rows whose file is gone; other folders and loose files stay', async () => {
+  const { pruneMissing } = await import('../src/libindex.js');
+  const rows = [{ id: 1, path: 'Music/a.mp3' }, { id: 2, path: 'Music/gone.mp3' }, { id: 3, path: 'Music/sub/gone2.mp3', relink: true }, { id: 4, path: 'Other/z.mp3' }, { id: 5, path: '' }];
+  assert.deepEqual(pruneMissing(rows, ['Music/a.mp3', 'Music/new.mp3']).map((t) => t.id), [1, 4, 5]);
+  assert.equal(pruneMissing(rows, []), rows, 'an empty scan prunes nothing');
+});
+
+test('uniqueTrackIds: the same song in two folders gets two ids; a re-scan of the same path keeps its id; loose duplicates keep the old rule', async () => {
+  const { uniqueTrackIds } = await import('../src/libindex.js');
+  const live = [{ id: 'S', path: 'Music/A/s.mp3' }];
+  const [same, other] = uniqueTrackIds(live, [{ id: 'S', path: 'Music/A/s.mp3' }, { id: 'S', path: 'Music/B/s.mp3' }]);
+  assert.equal(same.id, 'S');
+  assert.notEqual(other.id, 'S'); assert.ok(other.id.startsWith('S~'));
+  assert.deepEqual(uniqueTrackIds([{ id: 'S', path: '' }], [{ id: 'S', path: '' }]).map((t) => t.id), ['S']);
+  const [x, y] = uniqueTrackIds([], [{ id: 'T', path: 'a/t.mp3' }, { id: 'T', path: 'b/t.mp3' }]);
+  assert.ok(x.id === 'T' && y.id !== 'T', 'also within one batch');
+  assert.equal(uniqueTrackIds([{ id: 'S', path: 'Music/A/s.mp3', relink: true }], [{ id: 'S', path: 'Music/B/s.mp3' }])[0].id, 'S', 'a needs-re-link entry does not own the id (it is replaced by the scan)');
+});

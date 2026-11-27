@@ -101,10 +101,11 @@ test('flag off (default): only the real-station and pre-written (canned) types e
   } finally { delete globalThis.window; }
 });
 
-test('flag on: both AI types register; a session lazy-loads the core and reports "unavailable" (stub)', async () => {
+test('flag on: You Radio registers (You City does not); the stub session lazy-loads the core and reports "unavailable"', async () => {
   const st = await freshBoot('1', 'on');
-  assert.deepEqual(st.listStationTypes().map((t) => t.id).sort(), ['ai-you', 'ai-you-city', 'canned', 'radio-browser']);
-  for (const station of [st.aiYouStation(), st.aiYouCityStation('Seattle WA')]) {
+  assert.deepEqual(st.listStationTypes().map((t) => t.id).sort(), ['ai-you', 'canned', 'radio-browser']);
+  assert.equal(st.createSessionFor(st.aiYouCityStation('Seattle WA'), {}), null);
+  for (const station of [st.aiYouStation()]) {
     const session = st.createSessionFor(station, {});
     const phases = [];
     session.onChange((s) => phases.push(s.phase));

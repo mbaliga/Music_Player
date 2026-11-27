@@ -54,8 +54,11 @@ function ico(d, size = 20) {
 
 const ls = {
   get(k) { try { return localStorage.getItem(k); } catch { return null; } },
-  set(k, v) { try { localStorage.setItem(k, v); } catch { /* private mode / quota */ } },
+  /** true when the value was really written (private mode / a full quota make setItem throw: the caller must not claim a save) */
+  set(k, v) { try { localStorage.setItem(k, v); return true; } catch { return false; } },
 };
+let saveFailed = () => {};   // MixtapeUI points this at the app's toast
+export const SAVE_FAIL_TEXT = 'Could not save: this phone\u2019s storage is full or blocked. The change works until you close the app, then it is lost. Free some space and save again.';
 
 // Settings keys (documented in docs/MIXTAPES.md for the Settings page)
 export const KEY_AUTO_DEFAULT = 'runout.cassette.auto';      // '1' | '0': AUTO default for NEW tapes (also written when the key is pressed)
@@ -91,7 +94,7 @@ function load() {
     return list;
   } catch { return []; }
 }
-function save(list) { ls.set(STORAGE_KEY, serializeCollection(list)); }
+function save(list) { const ok = ls.set(STORAGE_KEY, serializeCollection(list)); if (!ok) { try { saveFailed(SAVE_FAIL_TEXT); } catch { /* */ } } return ok; }
 
 /** Fill unknown durations with the mean of the known (else 4 min) so the tape is always time-weighted. */
 function fillDurations(durations) {
@@ -132,6 +135,7 @@ export class MixtapeUI {
    */
   constructor(deps) {
     this.d = deps;
+    if (typeof deps.toast === 'function') saveFailed = (t) => deps.toast(t);
     this._aodOutline = false;
     onAodOutlineMode((on) => { this._aodOutline = !!on; });   // device mode AOD: outline cassette (CSS hairlines), reels frozen
     this.list = load();
@@ -361,9 +365,11 @@ export class MixtapeUI {
   }
 
   _dialog(title, build) {
+    if (this._dlg && this._dlg.isConnected) return;   // one dialog at a time: three quick taps on Import / Export must not stack three
     const ov = h('div', { class: 'theme-overlay mt-dialog' });
     let release = () => {};
-    const done = () => { ov.remove(); release(); };
+    const done = () => { ov.remove(); release(); if (this._dlg === ov) this._dlg = null; };
+    this._dlg = ov;
     const card = h('div', { class: 'theme-card', role: 'dialog', 'aria-modal': 'true', 'aria-label': title },
       h('div', { class: 'theme-head' }, h('button', { class: 'theme-x', type: 'button', onclick: () => done() }, h('span', { 'aria-hidden': 'true' }, '\u2190'), ' Back'), h('div', { class: 'theme-title' }, title)),
       h('div', { class: 'theme-title theme-title-desk' }, title));

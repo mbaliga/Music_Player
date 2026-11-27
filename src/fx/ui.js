@@ -339,7 +339,7 @@ export function mountFxSection(root, deps) {
 
   // ── idle / blocked ──────────────────────────────────────────────────────────────────────────────────────────────────
   let idleKind = '', idleGo = null;
-  function goIdle() { if (idleGo && api.goto) api.goto(idleGo); else if (api.close) api.close(); }
+  function goIdle() { if (!allowsGesture('section-nav')) return; if (idleGo && api.goto) api.goto(idleGo); else if (api.close) api.close(); }   // a locked device has a fixed face: no navigation from the Booth
   function setIdle(kind) {
     if (kind === idleKind) return;
     idleKind = kind; screen.classList.toggle('is-idle', !!kind); idle.classList.toggle('hidden', !kind);

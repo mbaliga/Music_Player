@@ -6,8 +6,8 @@ import { loadStoredTheme, setThemeVars, clearThemeVars } from '../theme.js';
 
 const safeStorage = () => { try { return window.localStorage; } catch { return null; } };
 
-export function initSettings({ win = window, doc = document, storage = safeStorage() } = {}) {
-  const store = createSettingsStore({ storage });
+export function initSettings({ win = window, doc = document, storage = safeStorage(), onWriteError = null } = {}) {
+  const store = createSettingsStore({ storage, onWriteError });
   const custom = () => { try { return loadStoredTheme(); } catch { return null; } };
   const listeners = new Set();
   let lastDark = store.get('appearance.theme') === 'light' ? 'oled' : store.get('appearance.theme');

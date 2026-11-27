@@ -130,7 +130,7 @@ let albums = [];           // album objects for the library component (albumsToC
 const view = { kind: 'all', sort: 'artist' };
 
 // ── settings: read before first paint (theme, accent, text size, motion), see src/settings/ and docs/SETTINGS.md ──────────────
-const settings = initSettings();
+const settings = initSettings({ onWriteError: () => toast('Could not save that setting: this phone\u2019s storage is full or blocked. It works until you close the app, then it resets.') });
 const lsOk = () => { try { return window.localStorage; } catch { return null; } };
 // the radio-side reads (saved stations, the flag, the canned index) and fx/persist.js are fetched on demand: the boot path stays free of
 // radio and FX code (test/radio-core/boot-path, test/fx-ship). The bridge module is the single door for everything radio Search/Settings read.
@@ -445,6 +445,12 @@ function failToast(title, err, it) {
   try { if (isAccessError(err) && deviceLibrary.isAvailable()) deviceLibrary.status.set({ phase: 'denied', permission: 'denied' }); } catch { /* card is best effort */ }
 }
 
+// The next track of a playing album cannot be decoded: it is skipped (playback goes on to the next playable one, or the record ends), and the user is told which one.
+function skipToast(title, err, it) {
+  if (isAccessError(err)) { toast(LOST_ACCESS); return; }
+  toast(`Skipped "${shortTitle(title) || 'a track'}": ${friendlyReason({ message: failText(err, it) })}`);
+}
+
 // The platter still holds the built-in synthesized test pressing although the library has real albums. The demo is only for an empty
 // library (or when the user picks it); with real albums on the shelf it must be replaced by the focused album before anything plays.
 // One playback-intent token: every user-initiated play action (a library pick, Play all, a track jump, a loose file, a tape song, a station) bumps it, and every
@@ -736,7 +742,7 @@ async function preloadAlbumNext(index) {
   } catch (err) {
     if (stale()) return;
     if (err && err.tooLong) state.aq = { ...state.aq, phase: 'skipped', next: index };       // too big to hold two: the boundary is a cold load (which says so)
-    else { it.bad = true; state.aq = queueReduce(state.aq, { type: 'preloadFailed', index }).state; }   // undecodable: skipped from now on
+    else { it.bad = true; state.aq = queueReduce(state.aq, { type: 'preloadFailed', index }).state; skipToast(it.title, err, it); }   // undecodable: skipped from now on, and said so (tapping it directly says so too)
   }
 }
 function joinAlbumNext(index, fadeSec) {
@@ -1534,6 +1540,7 @@ function installLibrary() {
 
   // Mixtapes: custom playlists (pure model in mixtape.js; this is wiring only).
   state.mixtapes = new MixtapeUI({
+    toast: (t) => toast(t),
     getLibraryTracks: () => library.tracks,
     closeLibrary: () => { /* the player opens over the page; nothing to close */ },
     playFile: async (file) => {

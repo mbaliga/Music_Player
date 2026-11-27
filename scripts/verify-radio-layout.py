@@ -140,7 +140,7 @@ with sync_playwright() as p:
         txt = page.inner_text('#paneRadio')
         check('Pre-written show' not in txt and '(any time)' not in txt and 'Night (' not in txt, f'{tag}: no "Pre-written show" / "Night (any time)" jargon on the tab')
         sw = page.locator('#aiStationsToggle')
-        check(sw.get_attribute('role') == 'switch' and 'st-switch' in sw.get_attribute('class'), f'{tag}: AI stations is the same role=switch control as Settings')
+        check(sw.get_attribute('role') == 'switch' and 'st-switch' in sw.get_attribute('class'), f'{tag}: the You Radio switch is the same role=switch control as Settings')
         check(sw.get_attribute('aria-checked') == 'true' and 'Off by default' in page.inner_text('#aiStationsHelp'), f'{tag}: AI switch has its plain help line ("Off by default...")')
         tall(page, '.radio-chips .sort-chip', 'genre chips', tag); tall(page, '.radio-go', 'Search button', tag); tall(page, '.dial-card[data-station] .dial-play[data-play]', 'canned card Play button', tag)
         tall(page, '.lib-grid-wrap > .radio-list .radio-row .rr-play', 'internet row Play button', tag); tall(page, '.radio-ai-sec .rr-play', 'You Radio Play button', tag); tall(page, '.radio-star', 'stars', tag)

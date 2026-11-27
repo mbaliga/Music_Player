@@ -44,7 +44,8 @@ test('flag on: types register under the one-dial ids and sessions follow the Ses
   registerStationType({ id: 'radio-browser', label: 'Radio stations', createSession: () => ({ start() {}, stop() {}, onChange() {} }) });
   let loads = 0;
   assert.equal(registerAiStationTypes({ isEnabled: () => true, loadCore: async () => { loads++; } }), true);
-  assert.deepEqual(listStationTypes().map((t) => t.id), ['radio-browser', AI_TYPE_YOU, AI_TYPE_YOU_CITY]);
+  assert.deepEqual(listStationTypes().map((t) => t.id), ['radio-browser', AI_TYPE_YOU]);   // ai-you-city has no screen and no engine: not registered
+  assert.equal(getStationType(AI_TYPE_YOU_CITY), null);
   assert.equal(getStationType(AI_TYPE_YOU).label, 'You Radio');
   const s = createSessionFor(aiYouStation(), {});
   assert.deepEqual(Object.keys(s).sort(), ['onChange', 'start', 'state', 'stop']);
@@ -55,7 +56,7 @@ test('flag on: types register under the one-dial ids and sessions follow the Ses
   assert.equal(loads, 1);
   assert.deepEqual(seen, ['connecting', 'error']);
   // stop during connecting wins over the late error
-  const t = createSessionFor(aiYouCityStation(), {});
+  const t = createSessionFor(aiYouStation(), {});
   const seen2 = [];
   t.onChange((x) => seen2.push(x.phase));
   const p = t.start(); t.stop(); await p;

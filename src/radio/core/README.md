@@ -20,7 +20,7 @@ That is what makes every test deterministic and what lets the core move unchange
 * Flag `radio.ai` (`src/radio/flag.js`), **default off**. No UI in P0. Dev switch:
   `localStorage.setItem('runout.flag.radio.ai', '1')` and reload.
 * Off: no station type is registered, nothing in this folder is fetched, no network. Behaviour is identical to before.
-* On: `src/stations.js` registers the stub types `ai-you` / `ai-you-city` (ids `you`, `you-city:<slug>`, so they share the
+* On: `src/stations.js` registers `ai-you` (id `you`; `ai-you-city`, id `you-city:<slug>`, is no longer registered: no screen offers it. Both share the
   existing `type|id` favourites/recents keys, the "one dial"). Their session lazy-loads `./radio/core/index.js` through the single
   dynamic `import()` in `src/radio-player.js`, then reports phase `error` / `unavailable` — there is no engine until P2.
 * `test/radio-core/boot-path.test.mjs` walks the static import graph from `index.html` and fails if anything under
