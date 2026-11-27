@@ -222,13 +222,55 @@ def phase_sleep(b, URL):
         pg.evaluate("window.__sleep.start(5)"); pg.wait_for_timeout(300); skew(pg, 301); pg.wait_for_timeout(2500)
         tape = pg.evaluate("(() => { const p = window.__rt.app().state.mixtapes.play; return p ? { paused: p.paused, ended: p.ended } : null; })()")
         check(bool(tape) and (tape['paused'] or tape['ended']) , f'a playing mixtape is paused by the sleep timer ({tape})')
-        pg.wait_for_timeout(800); dd = pg.evaluate('window.__dom()'); check(dd < 50, f'tape: the music is gone after the stop (dominant {dd:.0f} Hz; the tape's paused output is low-frequency only, as it is for a manual pause)')
+        pg.wait_for_timeout(800); dd = pg.evaluate('window.__dom()'); check(dd < 50, f'tape: the music is gone after the stop (dominant {dd:.0f} Hz; the paused output of a tape is low-frequency only, as it is for a manual pause)')
     else:
         check(False, 'could not start a tape for the sleep check')
     check(not errs, f'no console / page errors {errs[:3]}')
     ctx.close()
 
-PHASES = {'resume': phase_resume, 'shuffle': phase_shuffle, 'sleep': phase_sleep}
+
+def phase_notify(b, URL):
+    print('\n=== 4. notification permission rationale ===', flush=True)
+    ctx, pg, errs = open_app_pb(b, URL, ALB, secs=40)
+    pg.evaluate(PLAY); pg.wait_for_timeout(3500)
+    names = [c[0] for c in pb_calls(pg)]
+    check('start' in names, f'the playback service starts on the first Play ({names})')
+    card = pg.evaluate("(() => { const c = document.querySelector('.nr-card'); return c ? c.textContent : null; })()")
+    check(card is not None and 'Show playback controls on your lock screen and in notifications?' in card and 'Allow' in card and 'Not now' in card, f'a one-line rationale with Allow / Not now is shown first ({card!r})')
+    check('perm' not in names, 'the OS permission dialog has NOT been raised yet (no back-to-back dialogs)')
+    sizes = pg.evaluate("[...document.querySelectorAll('.nr-btn')].map((b) => { const r = b.getBoundingClientRect(); return [Math.round(r.width), Math.round(r.height)]; })")
+    check(all(w >= 44 and h >= 44 for w, h in sizes), f'both buttons are touch-sized ({sizes})')
+    pg.screenshot(path='/tmp/claude-0/scratch/rationale.png')
+    pg.click('.nr-allow'); pg.wait_for_timeout(900)
+    check('perm' in [c[0] for c in pb_calls(pg)], 'Allow raises the OS dialog')
+    check(pg.evaluate("document.querySelector('.nr-card') === null"), 'the card is gone')
+    metas = len(pb_calls(pg, 'setMetadata')); check(metas >= 2, f'after a grant the notification picture is sent again ({metas} setMetadata)')
+    reload(pg); pg.evaluate("window.__pb.perm = 'prompt'")       # the OS would say granted; pretend it still asks, to prove OUR once-only rule
+    pg.evaluate("async () => { const m = await import('/src/device/index.js'); await m.deviceLibrary.scan({ force: true }); }"); pg.wait_for_timeout(1500)
+    pg.evaluate('window.__rt.setZ(0)'); pg.wait_for_timeout(1500)
+    pg.evaluate(PLAY); pg.wait_for_timeout(3000)
+    check(pg.evaluate("document.querySelector('.nr-card') === null") and 'perm' not in [c[0] for c in pb_calls(pg)], 'shown only once: the next launch does not ask again')
+    ctx.close()
+    # Not now: no OS dialog, playback and the service are unaffected
+    ctx, pg, errs = open_app_pb(b, URL, ALB, secs=40)
+    pg.evaluate(PLAY); pg.wait_for_timeout(3500)
+    pg.click('.nr-btn:not(.nr-allow)'); pg.wait_for_timeout(800)
+    names = [c[0] for c in pb_calls(pg)]
+    check('perm' not in names and 'start' in names, f'Not now: no OS dialog, the service still runs ({names})')
+    check(near(settle_dom(pg, TONES[0], 5000), TONES[0]), 'Not now: the music is unaffected')
+    pg.evaluate(PLAY); pg.wait_for_timeout(500); pg.evaluate(PLAY); pg.wait_for_timeout(2500)
+    check(pg.evaluate("document.querySelector('.nr-card') === null"), 'Not now: never nags again in this session')
+    ctx.close()
+    # already granted at the OS: no rationale at all
+    ctx = b.new_context(bypass_csp=True, viewport={'width': 412, 'height': 860})
+    ctx.add_init_script("window.__preGranted = true;")
+    ctx2, pg, errs = open_app_pb(b, URL, ALB, secs=40, ctx=ctx)
+    pg.evaluate("window.__pb.perm = 'granted'"); pg.evaluate(PLAY); pg.wait_for_timeout(3500)
+    check(pg.evaluate("document.querySelector('.nr-card') === null") and 'perm' not in [c[0] for c in pb_calls(pg)], 'permission already granted: no rationale, no dialog')
+    check(not errs, f'no console / page errors {errs[:3]}')
+    ctx.close()
+
+PHASES = {'resume': phase_resume, 'shuffle': phase_shuffle, 'sleep': phase_sleep, 'notify': phase_notify}
 
 def main():
     want = sys.argv[1:] or list(PHASES)

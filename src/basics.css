@@ -15,3 +15,12 @@
 .sl-chip[hidden] { display: none; }
 .rs-chip:not([hidden]) ~ .sl-chip { top: calc(var(--head-h, 56px) + 60px); }
 .sl-chip:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
+/* notification rationale */
+.nr-card { position: fixed; z-index: 60; left: 12px; right: 12px; top: calc(64px + env(safe-area-inset-top, 0px)); max-width: 460px; margin: 0 auto; padding: 14px 16px; border-radius: 16px;
+  background: #1c1c24; color: #f2f2f6; border: 1px solid rgba(255,255,255,.18); box-shadow: 0 8px 28px rgba(0,0,0,.6); }
+.nr-text { margin: 0 0 12px; font: 500 15px/1.35 system-ui, sans-serif; }
+.nr-row { display: flex; gap: 10px; justify-content: flex-end; }
+.nr-btn { min-height: 44px; min-width: 96px; padding: 0 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,.25); background: transparent; color: #f2f2f6; font: 600 14px system-ui, sans-serif; cursor: pointer; }
+.nr-allow { background: var(--accent, #8e7bff); color: var(--on-accent, #111); border-color: transparent; }
+.nr-btn:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }

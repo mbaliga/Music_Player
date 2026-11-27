@@ -68,3 +68,44 @@ def settle_dom(pg, want, timeout=9000):
 def near(a, b, tol=0.03): return bool(a) and bool(b) and abs(a - b) / b < tol
 
 def pos(pg): return pg.evaluate("window.__rt.app().state.engine.position / window.__rt.app().state.engine.sampleRate")
+
+
+# A fake DevicePlayback plugin (the notification / media-session service) that records every call, so the web side can be driven without a phone.
+PLAYBACK_MOCK = r"""
+;(() => {
+  const cap = window.Capacitor; if (!cap) return;
+  window.__pb = { calls: [], perm: 'prompt', listeners: {} };
+  const rec = (n, a) => { window.__pb.calls.push([n, a === undefined ? null : JSON.parse(JSON.stringify(a))]); };
+  const PB = {
+    addListener: async (n, f) => { window.__pb.listeners[n] = f; return { remove() {} }; },
+    checkPermissions: async () => ({ notifications: window.__pb.perm }),
+    requestNotificationPermission: async () => { rec('perm'); window.__pb.perm = 'granted'; return { granted: true }; },
+    start: async () => { rec('start'); }, stop: async () => { rec('stop'); },
+    setMetadata: async (m) => { rec('setMetadata', m); }, setState: async (s) => { rec('setState', s); },
+    setPosition: async (p) => { rec('setPosition', p); },
+  };
+  const old = cap.registerPlugin;
+  cap.registerPlugin = (n) => (n === 'DevicePlayback' ? PB : old(n));
+  cap.isPluginAvailable = () => true;
+})();
+"""
+
+def open_app_pb(b, URL, albums, secs=60, viewport=None, ctx=None):
+    """open_app with the DevicePlayback mock installed (window.__pb.calls)."""
+    ctx = ctx or b.new_context(bypass_csp=True, viewport=viewport or {'width': 412, 'height': 860}, device_scale_factor=1)
+    ctx.add_init_script(TAP)
+    ctx.add_init_script("try { localStorage.getItem('runout.wtDone') || localStorage.setItem('runout.wtDone', '1'); } catch (e) {}")
+    ctx.add_init_script(device_script(albums, secs))
+    ctx.add_init_script(PLAYBACK_MOCK)
+    pg = ctx.new_page(); errs = []
+    pg.on('pageerror', lambda e: errs.append(str(e)))
+    pg.on('console', lambda m: errs.append('console:' + m.text) if m.type == 'error' and 'stations/' not in m.text and '404' not in m.text else None)
+    pg.goto(URL); pg.wait_for_function(READY, timeout=30000); pg.wait_for_timeout(800)
+    pg.evaluate("async () => { const m = await import('/src/device/index.js'); await m.deviceLibrary.scan({ force: true }); }")
+    pg.wait_for_function('window.__rt.app().shelf.length >= 1', timeout=30000)
+    pg.evaluate('window.__rt.setZ(0)'); pg.wait_for_timeout(2200)
+    return ctx, pg, errs
+
+def pb_calls(pg, name=None):
+    c = pg.evaluate('window.__pb.calls')
+    return [x for x in c if name is None or x[0] == name]

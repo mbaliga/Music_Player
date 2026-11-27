@@ -212,3 +212,39 @@ test('sleep driver: its own interval runs only while a timer exists, ticks on vi
   assert.equal(expired, 1); assert.equal(d.running, false); assert.equal(ivs.size, 0); assert.equal(listeners.visibilitychange, undefined);
   d.destroy();
 });
+
+// ── notification rationale ──
+test('media bridge + rationale: the service starts at once; "Allow" goes on to the OS dialog, once; a re-send follows a grant', async () => {
+  const plugin = fakePlugin(); const asked = [];
+  plugin.checkPermissions = async () => ({ notifications: 'prompt' });
+  plugin.requestNotificationPermission = async () => { plugin.calls.push(['perm']); return { granted: true }; };
+  const b = createMediaBridge({ plugin, actions: {}, rationale: async () => { asked.push(1); return true; }, env: { doc: { hidden: false } } });
+  await flush(); b.sync(album()); await flush(); await flush();
+  assert.deepEqual(plugin.calls.map((c) => c[0]), ['meta', 'state', 'start', 'perm'], 'start first, the question after (never delays the audio)');
+  assert.equal(asked.length, 1);
+  plugin.calls.length = 0;
+  b.sync(album()); await flush();
+  assert.deepEqual(plugin.calls.map((c) => c[0]), ['meta', 'state'], 'a grant makes the bridge send the picture again');
+  b.sync(album({ title: 'Two' })); b.sync(album({ title: 'Three' })); await flush();
+  assert.equal(asked.length, 1, 'asked once');
+});
+
+test('media bridge + rationale: "Not now" never reaches the OS dialog; already granted / denied states are not asked about', async () => {
+  for (const [state, rat, wantPerm, wantAsk] of [['prompt', false, 0, 1], ['granted', true, 0, 0], ['denied', true, 0, 0]]) {
+    const plugin = fakePlugin(); let asked = 0;
+    plugin.checkPermissions = async () => ({ notifications: state });
+    const b = createMediaBridge({ plugin, actions: {}, rationale: async () => { asked++; return rat; }, env: { doc: { hidden: false } } });
+    b.sync(album()); await flush(); await flush();
+    assert.equal(plugin.calls.filter((c) => c[0] === 'perm').length, wantPerm, state);
+    assert.equal(asked, wantAsk, state);
+    assert.ok(plugin.calls.some((c) => c[0] === 'start'), 'playback service runs whatever the answer');
+  }
+});
+
+test('media bridge + rationale: a failing rationale or permission call is tolerated', async () => {
+  const plugin = fakePlugin(); plugin.checkPermissions = async () => { throw new Error('x'); };
+  const b = createMediaBridge({ plugin, actions: {}, rationale: async () => { throw new Error('ui'); }, env: { doc: { hidden: false } } });
+  b.sync(album()); await flush(); await flush();
+  assert.ok(plugin.calls.some((c) => c[0] === 'start'));
+  assert.ok(!plugin.calls.some((c) => c[0] === 'perm'));
+});

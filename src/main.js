@@ -38,7 +38,8 @@ import { onAodOutlineMode } from './devicemode/aodhooks.js';   // Device mode: l
 let deviceMode = null;
 import { mountBooth } from './shell/booth.js';
 import { createEngineGate } from './engine-gate.js';
-import { startBackground, createSleepDriver } from './background.js';        // background playback: timer-driven loop while hidden, native media service, media buttons (docs/DEVICE_LIBRARY.md)
+import { startBackground, createSleepDriver } from './background.js';
+import { createRationale, showRationaleCard } from './notify-rationale.js';   // the one-line reason shown before the OS notification dialog        // background playback: timer-driven loop while hidden, native media service, media buttons (docs/DEVICE_LIBRARY.md)
 import { installBackButton } from './backbutton.js';      // hardware Back: close the topmost layer, else minimise
 import { LibraryManager } from './library.js';
 import { orderForPlayAll } from './albums.js';
@@ -153,7 +154,7 @@ async function boot() {
   installCustomTheme();
   installSettingsAndSearch();
   createSleepDriver(sleep);   // the sleep timer's own clock: ticks while the page is hidden too
-  bg = startBackground({ step: loop, engine: state.engine, actions: miniActions, getMeta: mediaMeta, notice: (t) => toast(t) });   // starts the frame loop (rAF visible / timer hidden)
+  bg = startBackground({ step: loop, engine: state.engine, actions: miniActions, getMeta: mediaMeta, notice: (t) => toast(t), rationale: createRationale({ storage: lsOk(), show: () => showRationaleCard({ host: el('shell') || document.body }) }) });   // starts the frame loop (rAF visible / timer hidden)
   installBackButton({ deviceMode, getSearch: () => search, getShell: () => shell, library: { isOpen: () => !!stage && stage.zoom > 0.5, close: closeLibrary } });
   updateLatencyReadout();
   showBuildId();

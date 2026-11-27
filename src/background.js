@@ -126,10 +126,12 @@ export function getPlaybackPlugin(win = typeof window !== 'undefined' ? window :
  * actions       { toggle(source), next(source), prev(source), stop() }   the app's own transport (main.js miniActions)
  * getMeta(src)  -> { artist?, album? } for the playing source (main.js knows the library; this module does not)
  * duck(on)      music-bus ducking for AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK
+ * rationale()   optional, () => Promise<boolean>: the in-app explanation shown before the OS notification dialog (true = go on and ask). Without it the
+ *               permission is requested straight away as before. With it, the service starts at once and the question follows (a pending question never delays audio).
  * notice(text)  a short plain-words message for the user (toast)
  * env           { doc, nav, now, setTimeout, clearTimeout, MediaMetadata } for tests
  */
-export function createMediaBridge({ plugin = null, actions = {}, getMeta = () => ({}), duck = () => {}, notice = () => {}, env = {} } = {}) {
+export function createMediaBridge({ plugin = null, actions = {}, getMeta = () => ({}), duck = () => {}, notice = () => {}, rationale = null, env = {} } = {}) {
   const doc = env.doc !== undefined ? env.doc : (typeof document !== 'undefined' ? document : null);
   const nav = env.nav !== undefined ? env.nav : (typeof navigator !== 'undefined' ? navigator : null);
   const now = env.now || (() => Date.now());
@@ -182,16 +184,27 @@ export function createMediaBridge({ plugin = null, actions = {}, getMeta = () =>
   }
 
   // ── now playing -> out ──
+  // API 33+: the notification permission, with our own one-line reason first. 'granted' / 'denied' need no question (a denied one cannot be asked again
+  // by us); a refusal anywhere is tolerated: playback and the media session work, the OS simply hides the notification.
+  async function askNotifications() {
+    const st = await safe(() => plugin.checkPermissions && plugin.checkPermissions());
+    const n = st && st.notifications;
+    if (n === 'granted' || n === 'denied') return;
+    if (!(await safe(() => rationale()))) return;
+    const r = await safe(() => plugin.requestNotificationPermission && plugin.requestNotificationPermission());
+    if (r && r.granted) { lastSent = ''; key = ''; }            // granted a moment after the service started: send the picture again so the notification shows it
+  }
   async function ensureService() {
     if (started || !plugin) return;
     if (!visible()) return;                                     // never start a foreground service from the background (API 31+ refuses)
     started = true;
-    if (!askedPerm) {                                           // API 33+: ask once, on the first play; a refusal only hides the notification
+    if (!askedPerm && !rationale) {                             // no rationale UI: ask once, on the first play, before the service starts
       askedPerm = true;
       await safe(() => plugin.requestNotificationPermission && plugin.requestNotificationPermission());
     }
     const ok = await safe(async () => { await plugin.start(); return true; });
     if (!ok) { started = false; startTries++; }             // refused (e.g. the OS would not start it): retried a few times, then left alone
+    else if (!askedPerm) { askedPerm = true; askNotifications(); }   // not awaited: the question must never hold the audio up
   }
 
   function sync(sources) {
@@ -257,7 +270,7 @@ export function createSleepDriver(sleep, { tickMs = 250, env = {} } = {}) {
 }
 
 // ── everything, for main.js ────────────────────────────────────────────────────────────────────────────────────────────────
-export function startBackground({ step, engine, actions, getMeta, notice, win = typeof window !== 'undefined' ? window : null, doc = typeof document !== 'undefined' ? document : null } = {}) {
+export function startBackground({ step, engine, actions, getMeta, notice, rationale, win = typeof window !== 'undefined' ? window : null, doc = typeof document !== 'undefined' ? document : null } = {}) {
   const driver = createLoopDriver(step, { doc });
   installAudioResume({ getCtx: () => engine && engine.ctx, doc });
   if (engine) {
@@ -270,7 +283,7 @@ export function startBackground({ step, engine, actions, getMeta, notice, win = 
       g.setTargetAtTime(on ? 0.25 : 1, t, 0.08);
     } catch { /* no engine yet */ }
   };
-  const bridge = createMediaBridge({ plugin: getPlaybackPlugin(win), actions, getMeta, duck, notice });
+  const bridge = createMediaBridge({ plugin: getPlaybackPlugin(win), actions, getMeta, duck, notice, rationale });
   driver.start();
   return { driver, bridge, sync: (sources) => bridge.sync(sources), poke: () => driver.poke() };
 }
